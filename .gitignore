@@ -1,7 +1,9 @@
 qrc_*
 *.moc
+moc_*
 *.o
 *.so
+*.user
 bin/*
 gen/*
 Makefile

@@ -1,51 +1,13 @@
-/****************************************************************************
-**
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
-**
-** This file is part of the QtCore module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** No Commercial Usage
-** This file contains pre-release code and may not be distributed.
-** You may use this file in accordance with the terms and conditions
-** contained in the Technology Preview License Agreement accompanying
-** this package.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Nokia gives you certain additional
-** rights.  These rights are described in the Nokia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
-**
-**
-**
-**
-**
-**
-**
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 #include <QtGui>
+#include <QScopedPointer>
 #include <QtCore/qstate.h>
 #include <QPluginLoader>
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QPushButton>
 #include <QMessageBox>
+#include <QWidget>
+#include "GrymQtAndroidViewProxy.h"
 
 #ifdef Q_OS_ANDROID
 QString qt_android_get_current_plugin();
@@ -126,46 +88,27 @@ private:
     QPixmap _pix;
 };
 
-/* Multiple windows are not supported on Android yet */
-// #defined ABOUT_BUTTON
 
 class View : public QGraphicsView
 {
     Q_OBJECT
 public:
-    View(QGraphicsScene *scene) 
-            : QGraphicsView(scene)
-            , quitButton(this)
-#ifdef ABOUT_BUTTON
-            , aboutButton(this)
-#endif
+	View(QGraphicsScene * scene, QWidget * parent)
+		: QGraphicsView(scene, parent)
+		, quitButton(this)
+		//, aview(this)
     {
         quitButton.resize(100, 60);
         quitButton.move(15,15);
         quitButton.setText("Quit");
         connect(&quitButton, SIGNAL(clicked()), QCoreApplication::instance(), SLOT(quit()));
 
-#ifdef ABOUT_BUTTON
-        aboutButton.resize(100, 60);
-        aboutButton.move(120,15);
-        aboutButton.setText("About");
-        connect(&aboutButton, SIGNAL(clicked()), this, SLOT(about()));
-#endif
+		// aview.resize(500, 500);
+		// aview.move(15, 100);
     }
-
-#ifdef ABOUT_BUTTON
-public slots:
-    void about()
-    {
-       QMessageBox::about(this, "About", "Qt Animated Tiles");
-    }
-#endif
-
 protected:
     QPushButton quitButton;
-#ifdef ABOUT_BUTTON
-    QPushButton aboutButton;
-#endif
+	// GrymQtAndroidViewProxy aview;
 
     void resizeEvent(QResizeEvent *event)
     {
@@ -200,7 +143,7 @@ int main(int argc, char **argv)
     QPixmap bgPix(":/images/Time-For-Lunch-2.png");
 
     qDebug()<<TAG<<"Graphics scene...";
-    QGraphicsScene scene(-350, -350, 700, 700);
+	QGraphicsScene scene(-350, -350, 700, 700);
 
     QList<Pixmap *> items;
     for (int i = 0; i < 64; ++i) {
@@ -269,22 +212,27 @@ int main(int argc, char **argv)
 
     // Ui
     qDebug()<<TAG<<"Creating view...";
-    View *view = new View(&scene);
-    view->setObjectName("MainWindow"); // Used by TLW filter in mw_grym plugins (a name containing word "Window")
+	QScopedPointer<QWidget> window(new QWidget());
 
-    // Window centering, incl. Android plugin debugging ;-)
-    view->resize(220, 220);
-    QDesktopWidget* desk = QApplication::desktop();
-    QRect geom = desk->screenGeometry();
-    int x = (geom.width()-view->width())/2, y = (geom.height()-view->height())/2;
-    qDebug()<<"Desktop size is:"<<geom.width()<<"x"<<geom.height()<<"; desired window pos:"<<x<<","<<y;
-    if( x>0 && y>0 )
-        view->move(x, y);
-    else
-        qDebug()<<"(Won't move the window to negative position!)";
+	QScopedPointer<QGLWidget> gl_layer(new QGLWidget(window.data()));
+	gl_layer->setAutoFillBackground(false);
+	gl_layer->setAttribute(Qt::WA_OpaquePaintEvent);
+	gl_layer->setAttribute(Qt::WA_NoSystemBackground);
+	gl_layer->setAttribute(Qt::WA_NoBackground);
+	gl_layer->setAttribute(Qt::WA_StyledBackground, false);
+	gl_layer->resize(100, 100);
 
-    view->setWindowTitle(QT_TRANSLATE_NOOP(QGraphicsView, "Animated Tiles"));
-    view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+	View * view = new View(&scene, gl_layer.data());
+
+	QScopedPointer<GrymQtAndroidViewProxy> aview(new GrymQtAndroidViewProxy(window.data(), gl_layer.data()));
+	aview->resize(500, 500);
+	aview->move(15, 100);
+
+	window->setObjectName("MainWindow"); // Used by TLW filter in mw_grym plugins (a name containing word "Window")
+
+	window->setWindowTitle(QT_TRANSLATE_NOOP(QGraphicsView, "Animated Tiles"));
+
+	view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
     view->setBackgroundBrush(bgPix);
     view->setCacheMode(QGraphicsView::CacheBackground);
     view->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
@@ -294,12 +242,18 @@ int main(int argc, char **argv)
     QString pn = qt_android_get_current_plugin();
     qDebug()<<"Current Android plugin:"<<pn;
     if( pn.contains("Lite") ) // This is a plugin known to need and support fullscreen
-        view->showFullScreen();
+		window->showFullScreen();
     else
-        view->show(); // Other plugins go blankscreen on showFullScreen()
+		window->show(); // Other plugins go blankscreen on showFullScreen()
 #else
-    view->show();
+	window->show();
 #endif
+
+	qDebug()<<TAG<<"Fixing sizes (FIXME)";
+	gl_layer->resize(window->size());
+	view->resize(window->size());
+
+
 
     qDebug()<<TAG<<"State machine...";
     QStateMachine states;
@@ -344,6 +298,12 @@ int main(int argc, char **argv)
     qDebug()<<"Executing app...";
     int ret = app.exec();
     qDebug()<<TAG<<"Done! C U";
+
+#if defined(Q_OS_ANDROID)
+	gl_layer->__qpaDetachContext();
+	aview->__qpaDetachContext();
+#endif
+
     return ret;
 }
 
