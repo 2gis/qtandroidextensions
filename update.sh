@@ -1,10 +1,11 @@
 #!/bin/sh
 
-STRIP=`which arm-eabi-strip`
 SDK="$DGIS_ALH_SOURCE"
 SRCJAVA="$SDK/src/plugins/platforms/android/grym/java/src"
 INSTDIR=$QT_INSTALL_DIR
 JAVA_DIRS="lite core util"
+STRIP="$DGIS_ANDROID_TOOLS_BIN/$DGIS_ANDROID_TOOLS_PREFIX-strip"
+
 
 if [ ! -x "$STRIP" ] ; then
   echo "WARNING: arm-eabi-strip is not in PATH, the libs won't be stripped!" ;
