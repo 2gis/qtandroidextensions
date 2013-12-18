@@ -12,3 +12,18 @@ android-g++ {
 
     TARGET = /../../libs/armeabi/libanimatedtiles
 }
+
+OTHER_FILES += \
+    images/Time-For-Lunch-2.jpg \
+    images/tile.png \
+    images/random.png \
+    images/kinetic.png \
+    images/figure8.png \
+    images/ellipse.png \
+    images/centered.png \
+    ../build.sh \
+    ../qtcreator.sh \
+    ../update.sh \
+    ../AndroidManifest.xml
+
+

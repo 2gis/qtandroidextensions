@@ -197,7 +197,7 @@ int main(int argc, char **argv)
 
     qDebug()<<TAG<<"Load pixmaps...";
     QPixmap kineticPix(":/images/kinetic.png");
-    QPixmap bgPix(":/images/Time-For-Lunch-2.jpg");
+    QPixmap bgPix(":/images/Time-For-Lunch-2.png");
 
     qDebug()<<TAG<<"Graphics scene...";
     QGraphicsScene scene(-350, -350, 700, 700);
