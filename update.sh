@@ -1,7 +1,10 @@
 #!/bin/sh
 
-INSTDIR=/data/local/qt
 STRIP=`which arm-eabi-strip`
+SDK="$DGIS_ALH_SOURCE"
+SRCJAVA="$SDK/src/plugins/platforms/android/grym/java/src"
+INSTDIR=$QT_INSTALL_DIR
+JAVA_DIRS="lite core util"
 
 if [ ! -x "$STRIP" ] ; then
   echo "WARNING: arm-eabi-strip is not in PATH, the libs won't be stripped!" ;
@@ -17,4 +20,11 @@ for LIB in QtCore QtGui QAndroidCore QtOpenGL QwpLiteApi9 ; do
   if [ "$STRIP" != "" ] ; then
     "$STRIP" --strip-all libs/armeabi/lib$LIB.so ;
   fi ;
+done
+
+echo "Creating Qt Java symlinks..."
+mkdir -p "src/org/qt"
+for J in $JAVA_DIRS ; do
+  rm -f "src/org/qt/$J"
+  ln -sfv "$SRCJAVA/org/qt/$J" "src/org/qt/$J" || exit 1 ;
 done

@@ -1,0 +1,13 @@
+qrc_*
+*.moc
+*.o
+*.so
+bin/*
+gen/*
+Makefile
+build.xml
+local.properties
+project.properties
+proguard-project.txt
+src/org/qt
+

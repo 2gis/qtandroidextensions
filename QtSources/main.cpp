@@ -186,8 +186,14 @@ int main(int argc, char **argv)
     qDebug()<<TAG<<"Init resource...";
     Q_INIT_RESOURCE(animatedtiles);
 
-    qDebug()<<TAG<<"Construct QApplication...";
-    QApplication app(argc, argv);
+    qDebug()<<TAG<<"Construct QApplication..."<<argc<<"args";
+    QVector<char *> qargs;
+    for(int i = 0; i < argc; ++i)
+    {
+        qargs.push_back(argv[i]);
+        qDebug()<<"...arg"<<i<<":"<<argv[i];
+    }
+    QApplication app(argc, qargs.data());
 
     qDebug()<<TAG<<"Load pixmaps...";
     QPixmap kineticPix(":/images/kinetic.png");

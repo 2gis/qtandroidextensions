@@ -9,6 +9,10 @@ cd QtSources
 qmake && make || exit 1
 cd ..
 
-android update project -p . -t 3 --target "android-15"
+android update project -p . -t 8 --target "android-15" || exit 1
 
-ant debug install
+ant debug install || exit 1
+
+echo "Starting app..."
+adb shell am start -n org.animatedtiles/org.animatedtiles.QtAnimatedTiles
+
