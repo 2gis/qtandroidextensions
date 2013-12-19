@@ -98,8 +98,8 @@ public:
 		, quitButton(this)
 		//, aview(this)
     {
-        quitButton.resize(100, 60);
-        quitButton.move(15,15);
+		quitButton.resize(150, 100);
+		quitButton.move(20, 20);
         quitButton.setText("Quit");
         connect(&quitButton, SIGNAL(clicked()), QCoreApplication::instance(), SLOT(quit()));
 
@@ -116,6 +116,60 @@ protected:
         fitInView(sceneRect(), Qt::KeepAspectRatio);
     }
 };
+
+class MyWindow
+	: public QWidget
+{
+	Q_OBJECT
+public:
+	MyWindow()
+		: QWidget()
+		, gl_layer_(0)
+	{
+		// QGLFormat format;
+		gl_layer_ = new QGLWidget(this);
+		gl_layer_->setAutoFillBackground(false);
+		gl_layer_->setAttribute(Qt::WA_OpaquePaintEvent);
+		gl_layer_->setAttribute(Qt::WA_NoSystemBackground);
+		gl_layer_->setAttribute(Qt::WA_NoBackground);
+		gl_layer_->setAttribute(Qt::WA_StyledBackground, false);
+
+		setObjectName("MainWindow");
+		setWindowTitle(QT_TRANSLATE_NOOP(QGraphicsView, "Protoweb"));
+		gl_layer_->resize(size());
+	}
+
+	virtual ~MyWindow()
+	{
+		#if defined(Q_OS_ANDROID)
+			gl_layer_->__qpaDetachContext();
+		#endif
+	}
+
+	QGLWidget * glLayer() { return gl_layer_; }
+
+protected:
+	void keyReleaseEvent(QKeyEvent * e)
+	{
+		if (e->key() == Qt::Key_Escape)
+		{
+			QCoreApplication::exit();
+		}
+		QWidget::keyReleaseEvent(e);
+	}
+
+
+	void resizeEvent(QResizeEvent * e)
+	{
+		QWidget::resizeEvent(e);
+		gl_layer_->resize(e->size());
+	}
+
+private:
+	QGLWidget * gl_layer_;
+};
+
+
 
 static const char* const TAG = "**** main() ****";
 
@@ -212,48 +266,28 @@ int main(int argc, char **argv)
 
     // Ui
     qDebug()<<TAG<<"Creating view...";
-	QScopedPointer<QWidget> window(new QWidget());
-
-	QScopedPointer<QGLWidget> gl_layer(new QGLWidget(window.data()));
-	gl_layer->setAutoFillBackground(false);
-	gl_layer->setAttribute(Qt::WA_OpaquePaintEvent);
-	gl_layer->setAttribute(Qt::WA_NoSystemBackground);
-	gl_layer->setAttribute(Qt::WA_NoBackground);
-	gl_layer->setAttribute(Qt::WA_StyledBackground, false);
-	gl_layer->resize(100, 100);
-
-	View * view = new View(&scene, gl_layer.data());
-
-	QScopedPointer<GrymQtAndroidViewProxy> aview(new GrymQtAndroidViewProxy(window.data(), gl_layer.data()));
-	aview->resize(500, 500);
-	aview->move(15, 100);
-
-	window->setObjectName("MainWindow"); // Used by TLW filter in mw_grym plugins (a name containing word "Window")
-
-	window->setWindowTitle(QT_TRANSLATE_NOOP(QGraphicsView, "Animated Tiles"));
+	QScopedPointer<MyWindow> window(new MyWindow());
+	View * view = new View(&scene, window->glLayer());
+	QScopedPointer<GrymQtAndroidViewGraphicsProxy> aview(new GrymQtAndroidViewGraphicsProxy());
+	scene.addItem(aview.data());
 
 	view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
     view->setBackgroundBrush(bgPix);
     view->setCacheMode(QGraphicsView::CacheBackground);
     view->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+	// view->setVisible(false);
 
     qDebug()<<TAG<<"Display window...";
-#ifdef Q_OS_ANDROID
-    QString pn = qt_android_get_current_plugin();
-    qDebug()<<"Current Android plugin:"<<pn;
-    if( pn.contains("Lite") ) // This is a plugin known to need and support fullscreen
+
+	#ifdef Q_OS_ANDROID
 		window->showFullScreen();
-    else
-		window->show(); // Other plugins go blankscreen on showFullScreen()
-#else
-	window->show();
-#endif
+	#else
+		window->show();
+	#endif
 
 	qDebug()<<TAG<<"Fixing sizes (FIXME)";
-	gl_layer->resize(window->size());
 	view->resize(window->size());
-
-
+	aview->setGeometry(-300, -300, 500, 500);
 
     qDebug()<<TAG<<"State machine...";
     QStateMachine states;
@@ -285,26 +319,21 @@ int main(int argc, char **argv)
 
     qDebug()<<TAG<<"Starting timer...";
     QTimer timer;
-    timer.start(125);
+	timer.start(125);
     timer.setSingleShot(true);
     trans = rootState->addTransition(&timer, SIGNAL(timeout()), ellipseState);
     trans->addAnimation(group);
 
-    states.start();
+	states.start();
 
-#ifdef QT_KEYPAD_NAVIGATION
-    QApplication::setNavigationMode(Qt::NavigationModeCursorAuto);
-#endif
+	#ifdef QT_KEYPAD_NAVIGATION
+		QApplication::setNavigationMode(Qt::NavigationModeCursorAuto);
+	#endif
     qDebug()<<"Executing app...";
     int ret = app.exec();
     qDebug()<<TAG<<"Done! C U";
 
-#if defined(Q_OS_ANDROID)
-	gl_layer->__qpaDetachContext();
-	aview->__qpaDetachContext();
-#endif
-
-    return ret;
+	return ret;
 }
 
 #include "main.moc"
