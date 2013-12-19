@@ -148,8 +148,9 @@ public:
 		view_->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
 		aview.reset(new GrymQtAndroidViewGraphicsProxy());
-		aview->setGeometry(-300, -300, 500, 500);
 		scene_.addItem(aview.data());
+
+		doLayout(size());
 	}
 
 	virtual ~MyWindow()
@@ -178,8 +179,19 @@ protected:
 	void resizeEvent(QResizeEvent * e)
 	{
 		QWidget::resizeEvent(e);
-		gl_layer_->resize(e->size());
-		view_->resize(e->size());
+		doLayout(e->size());
+	}
+
+	void doLayout(const QSize & newsize)
+	{
+		gl_layer_->resize(newsize);
+		scene_.setSceneRect(-newsize.width()/2, -newsize.height()/2, newsize.width(), newsize.height());
+		view_->resize(newsize);
+		aview->setGeometry(
+			20 + scene_.sceneRect().left()
+			, 150  + scene_.sceneRect().top()
+			, scene_.sceneRect().width() - 50
+			, scene_.sceneRect().height() - 200);
 	}
 
 private:
