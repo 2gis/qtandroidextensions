@@ -7,7 +7,7 @@
 #include <QPushButton>
 #include <QMessageBox>
 #include <QWidget>
-#include "GrymQtAndroidViewProxy.h"
+#include "GrymQtAndroidViewGraphicsProxy.h"
 
 #ifdef Q_OS_ANDROID
 QString qt_android_get_current_plugin();
@@ -125,6 +125,9 @@ public:
 	MyWindow()
 		: QWidget()
 		, gl_layer_(0)
+		, view_(0)
+		, scene_(-350, -350, 700, 700)
+		, bgPix(":/images/Time-For-Lunch-2.png")
 	{
 		// QGLFormat format;
 		gl_layer_ = new QGLWidget(this);
@@ -137,6 +140,16 @@ public:
 		setObjectName("MainWindow");
 		setWindowTitle(QT_TRANSLATE_NOOP(QGraphicsView, "Protoweb"));
 		gl_layer_->resize(size());
+
+		view_ = new View(&scene_, gl_layer_);
+		view_->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+		view_->setBackgroundBrush(bgPix);
+		view_->setCacheMode(QGraphicsView::CacheBackground);
+		view_->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+
+		aview.reset(new GrymQtAndroidViewGraphicsProxy());
+		aview->setGeometry(-300, -300, 500, 500);
+		scene_.addItem(aview.data());
 	}
 
 	virtual ~MyWindow()
@@ -147,6 +160,9 @@ public:
 	}
 
 	QGLWidget * glLayer() { return gl_layer_; }
+	View * view() { return view_; }
+	QGraphicsScene * scene() { return &scene_; }
+
 
 protected:
 	void keyReleaseEvent(QKeyEvent * e)
@@ -163,10 +179,15 @@ protected:
 	{
 		QWidget::resizeEvent(e);
 		gl_layer_->resize(e->size());
+		view_->resize(e->size());
 	}
 
 private:
 	QGLWidget * gl_layer_;
+	View * view_;
+	QGraphicsScene scene_;
+	QScopedPointer<GrymQtAndroidViewGraphicsProxy> aview;
+	QPixmap bgPix;
 };
 
 
@@ -192,12 +213,11 @@ int main(int argc, char **argv)
     }
     QApplication app(argc, qargs.data());
 
-    qDebug()<<TAG<<"Load pixmaps...";
-    QPixmap kineticPix(":/images/kinetic.png");
-    QPixmap bgPix(":/images/Time-For-Lunch-2.png");
+	QPixmap kineticPix(":/images/kinetic.png");
 
-    qDebug()<<TAG<<"Graphics scene...";
-	QGraphicsScene scene(-350, -350, 700, 700);
+	// Ui
+	qDebug()<<TAG<<"Creating view...";
+	QScopedPointer<MyWindow> window(new MyWindow());
 
     QList<Pixmap *> items;
     for (int i = 0; i < 64; ++i) {
@@ -205,7 +225,7 @@ int main(int argc, char **argv)
         item->setOffset(-kineticPix.width()/2, -kineticPix.height()/2);
         item->setZValue(i);
         items << item;
-        scene.addItem(item);
+		window->scene()->addItem(item);
     }
 
     // Buttons
@@ -223,7 +243,7 @@ int main(int argc, char **argv)
     tiledButton->setPos(-100, 100);
     centeredButton->setPos(100, 100);
 
-    scene.addItem(buttonParent);
+	window->scene()->addItem(buttonParent);
     // buttonParent->scale(0.75, 0.75);
     buttonParent->setPos(150, 150);
     buttonParent->setZValue(65);
@@ -264,19 +284,6 @@ int main(int argc, char **argv)
         centeredState->assignProperty(item, "pos", QPointF());
     }
 
-    // Ui
-    qDebug()<<TAG<<"Creating view...";
-	QScopedPointer<MyWindow> window(new MyWindow());
-	View * view = new View(&scene, window->glLayer());
-	QScopedPointer<GrymQtAndroidViewGraphicsProxy> aview(new GrymQtAndroidViewGraphicsProxy());
-	scene.addItem(aview.data());
-
-	view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-    view->setBackgroundBrush(bgPix);
-    view->setCacheMode(QGraphicsView::CacheBackground);
-    view->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-	// view->setVisible(false);
-
     qDebug()<<TAG<<"Display window...";
 
 	#ifdef Q_OS_ANDROID
@@ -286,8 +293,7 @@ int main(int argc, char **argv)
 	#endif
 
 	qDebug()<<TAG<<"Fixing sizes (FIXME)";
-	view->resize(window->size());
-	aview->setGeometry(-300, -300, 500, 500);
+	window->view()->resize(window->size());
 
     qDebug()<<TAG<<"State machine...";
     QStateMachine states;

@@ -1,10 +1,10 @@
 QT += core gui opengl
 
 HEADERS += \
-	GrymQtAndroidViewProxy.h
+    GrymQtAndroidViewGraphicsProxy.h
 
 SOURCES = main.cpp \
-    GrymQtAndroidViewProxy.cpp
+    GrymQtAndroidViewGraphicsProxy.cpp
 
 RESOURCES = animatedtiles.qrc
 
@@ -31,6 +31,10 @@ OTHER_FILES += \
     ../qtcreator.sh \
     ../update.sh \
     ../AndroidManifest.xml
+
+
+
+
 
 
 

@@ -1,6 +1,6 @@
 #include <QtOpenGL>
 #include <EGL/egl.h>
-#include "GrymQtAndroidViewProxy.h"
+#include "GrymQtAndroidViewGraphicsProxy.h"
 
 GrymQtAndroidViewProxy::GrymQtAndroidViewProxy(QWidget * parent, const QGLWidget * shareWidget, Qt::WindowFlags f)
 	: QGLWidget(parent, shareWidget, f)
