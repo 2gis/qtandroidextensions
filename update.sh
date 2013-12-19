@@ -29,3 +29,6 @@ for J in $JAVA_DIRS ; do
   rm -f "src/org/qt/$J"
   ln -sfv "$SRCJAVA/org/qt/$J" "src/org/qt/$J" || exit 1 ;
 done
+
+android update project -p . -t 8 --target "android-15" || exit 1
+
