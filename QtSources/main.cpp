@@ -266,15 +266,9 @@ int main(int argc, char **argv)
     qDebug()<<TAG<<"Init resource...";
     Q_INIT_RESOURCE(animatedtiles);
 
-    qDebug()<<TAG<<"Construct QApplication..."<<argc<<"args";
-    QVector<char *> qargs;
-    for(int i = 0; i < argc; ++i)
-    {
-        qargs.push_back(argv[i]);
-        qDebug()<<"...arg"<<i<<":"<<argv[i];
-    }
+	qDebug()<<TAG<<"Construct QApplication...";
 	QApplication::setGraphicsSystem(QLatin1String("opengl"));
-    QApplication app(argc, qargs.data());
+	QApplication app(argc, argv);
 
 	QPixmap kineticPix(":/images/kinetic.png");
 
