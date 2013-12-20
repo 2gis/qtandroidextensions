@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="myStyleTheme" parent="android:Theme">
+        <item name="android:windowNoTitle">true</item>
+        <!-- Заголовок не бросает тень на окно -->
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+    <style name="noAnimTheme" parent="android:Theme">
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+</resources>

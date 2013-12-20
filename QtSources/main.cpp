@@ -117,6 +117,26 @@ protected:
     }
 };
 
+class MyGlWidget
+	: public QGLWidget
+{
+	Q_OBJECT
+public:
+	MyGlWidget(QWidget * parent)
+		: QGLWidget(parent)
+	{
+	}
+
+	virtual void paintGL()
+	{
+		// glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//glEnable(GL_SCISSOR_TEST);
+		//glScissor(10, 10, width()-20, height()-20);
+		QGLWidget::paintGL();
+	}
+};
+
 class MyWindow
 	: public QWidget
 {
@@ -129,21 +149,24 @@ public:
 		, scene_(-350, -350, 700, 700)
 		, bgPix(":/images/Time-For-Lunch-2.png")
 	{
+		setObjectName("MainWindow");
+		setWindowTitle("setWindowTitle");
+		setAutoFillBackground(false);
+		setAttribute(Qt::WA_OpaquePaintEvent);
+		setAttribute(Qt::WA_NoSystemBackground);
+		setAttribute(Qt::WA_NoBackground);
+		setAttribute(Qt::WA_StyledBackground, false);
+		// setAttribute(Qt::WA_AcceptTouchEvents);
+
 		// QGLFormat format;
 		gl_layer_ = new QGLWidget(this);
-		gl_layer_->move(0, 0);
 		gl_layer_->setAutoFillBackground(false);
 		gl_layer_->setAttribute(Qt::WA_OpaquePaintEvent);
 		gl_layer_->setAttribute(Qt::WA_NoSystemBackground);
 		gl_layer_->setAttribute(Qt::WA_NoBackground);
-		gl_layer_->setAttribute(Qt::WA_StyledBackground, false);
-
-		setObjectName("MainWindow");
-		setWindowTitle(QT_TRANSLATE_NOOP(QGraphicsView, "Protoweb"));
-		gl_layer_->resize(size());
+		gl_layer_->setAttribute(Qt::WA_StyledBackground, false);		
 
 		view_ = new View(&scene_, gl_layer_);
-		view_->move(0, 0);
 		view_->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 		view_->setBackgroundBrush(bgPix);
 		view_->setCacheMode(QGraphicsView::CacheBackground);
@@ -167,9 +190,8 @@ public:
 	View * view() { return view_; }
 	QGraphicsScene * scene() { return &scene_; }
 
-
 protected:
-	void keyReleaseEvent(QKeyEvent * e)
+	virtual void keyReleaseEvent(QKeyEvent * e)
 	{
 		if (e->key() == Qt::Key_Escape)
 		{
@@ -178,18 +200,22 @@ protected:
 		QWidget::keyReleaseEvent(e);
 	}
 
-
-	void resizeEvent(QResizeEvent * e)
+	virtual void resizeEvent(QResizeEvent * e)
 	{
 		QWidget::resizeEvent(e);
 		doLayout(e->size());
 	}
 
-	void doLayout(const QSize & newsize)
+	virtual void doLayout(const QSize & newsize)
 	{
+		gl_layer_->move(0, 0);
 		gl_layer_->resize(newsize);
+
 		scene_.setSceneRect(-newsize.width()/2, -newsize.height()/2, newsize.width(), newsize.height());
+
+		view_->move(0, 0);
 		view_->resize(newsize);
+
 		aview->setGeometry(
 			20 + scene_.sceneRect().left()
 			, 150  + scene_.sceneRect().top()

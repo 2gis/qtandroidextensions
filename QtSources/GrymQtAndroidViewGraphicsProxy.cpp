@@ -16,6 +16,7 @@ GrymQtAndroidViewGraphicsProxy::~GrymQtAndroidViewGraphicsProxy()
 
 void GrymQtAndroidViewGraphicsProxy::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+	Q_UNUSED(option);
 	Q_ASSERT(painter->paintEngine()->type() == QPaintEngine::OpenGL2);
 
 	// NB: это обязательно, если делаем glClear
@@ -27,29 +28,49 @@ void GrymQtAndroidViewGraphicsProxy::paint(QPainter *painter, const QStyleOption
 	painter->beginNativePainting();
 
 	QPaintDevice *device = painter->device();
-	{
-		QTransform combined_transform = painter->combinedTransform();
 
-		Q_ASSERT(
-			(combined_transform.type() == QTransform::TxNone) ||
-			(combined_transform.type() == QTransform::TxTranslate) ||
-			(combined_transform.type() == QTransform::TxScale));
+	QTransform combined_transform = painter->combinedTransform();
 
-		QRectF widget_geometry = combined_transform.mapRect(QRectF(QPointF(0, 0), size()));
+	Q_ASSERT(
+		(combined_transform.type() == QTransform::TxNone) ||
+		(combined_transform.type() == QTransform::TxTranslate) ||
+		(combined_transform.type() == QTransform::TxScale));
 
-		GLint l = static_cast<GLint>(widget_geometry.left());
-		GLint b = static_cast<GLint>(device->height() - static_cast<int>(widget_geometry.bottom()));
-		GLsizei w = static_cast<GLsizei>(widget_geometry.width());
-		GLsizei h = static_cast<GLsizei>(widget_geometry.height());
-		glViewport(l, b, w, h);
+	QRectF widget_geometry = combined_transform.mapRect(QRectF(QPointF(0, 0), size()));
 
-		#if defined(SCISSOR_WORKAROUND)
-			glEnable(GL_SCISSOR_TEST);
-			glScissor(l, b, w, h);
-		#endif
-	}
+	GLint l = static_cast<GLint>(widget_geometry.left());
+	GLint b = static_cast<GLint>(device->height() - static_cast<int>(widget_geometry.bottom()));
+	GLsizei w = static_cast<GLsizei>(widget_geometry.width());
+	GLsizei h = static_cast<GLsizei>(widget_geometry.height());
 
-	doGLPainting();
+	QPoint viewpos = this->scene()->views().at(0)->pos();
+	Q_UNUSED(viewpos);
+
+#if 0
+
+	qDebug()
+			<<"widget_geometry:"<<widget_geometry.left()<<widget_geometry.top()
+			<<"("<<widget_geometry.width()<<"x"<<widget_geometry.height()<<")"
+			<<"right"<<widget_geometry.right()<<"bottom"<<widget_geometry.bottom()
+			<<"//////// l"<<l<<"b"<<b<<"w"<<w<<"h"<<h
+			<<"widget_pos"<<widget->pos().x()<<widget->pos().y()
+			<<"viewpos"<<viewpos.x()<<viewpos.y();
+#endif
+
+	// SGEXP
+	/*l += widget->pos().x();
+	b -= widget->pos().y();
+	l += widget_geometry.left();
+	b -= viewpos.y();*/
+
+	glViewport(l, b, w, h);
+
+	#if defined(SCISSOR_WORKAROUND)
+		glEnable(GL_SCISSOR_TEST);
+		glScissor(l, b, w, h);
+	#endif
+
+	doGLPainting(l, b, w, h);
 
 	#if defined(SCISSOR_WORKAROUND)
 		glScissor(0, 0, static_cast<GLsizei>(device->width()), static_cast<GLsizei>(device->height()));
@@ -77,16 +98,21 @@ static inline void QRectFToVertexArray(const QRectF &r, GLfloat *array)
 	array[7] = bottom;
 }
 
-static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize, const QRectF &br = QRectF())
+static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize, const QRectF &bitmap_rect = QRectF())
 {
 	static const GLuint QT_VERTEX_COORDS_ATTR  = 0;
 	static const GLuint QT_TEXTURE_COORDS_ATTR = 1;
 	static const GLenum target = GL_TEXTURE_2D;
 
 	// src - исходный прямоугольник (из текстуры)
-	QRectF src = br.isEmpty()
+	QRectF src = bitmap_rect.isEmpty()
+		// Исходный регион не задан - используем всю текстуру
 		? QRectF(QPointF(), texSize)
-		: QRectF(QPointF(br.x(), texSize.height() - br.bottom()), br.size());
+		// Исходный регион не задан - используем кусочек текстуры.
+		: QRectF(
+			 // Поскольку в OpenGL ось Y снизу вверх, то перевернём.
+			 QPointF(bitmap_rect.x(), texSize.height() - bitmap_rect.bottom())
+			 , bitmap_rect.size());
 
 	if (target == GL_TEXTURE_2D)
 	{
@@ -219,15 +245,21 @@ static QGLShaderProgram * GrymBlitProgram()
 	return m_blitProgram;
 }
 
+
+/*!
+	\param texSize - размер текстуры
+	\param targetRect - прямоугольник в координатах GL-контекста
+	\todo Пока считаем, что размер вьюпорта равен размеру таргетректа, на понятно, нафига вот это всё?
+*/
 static void blitTexture(GLuint texture, const QSize &viewport, const QSize &texSize, const QRect &targetRect, const QRect &sourceRect)
 {
 	#if defined(QT_OPENGL_ES_2)
 		glDisable(GL_STENCIL_TEST);
 		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_SCISSOR_TEST); // WTF
+		// glDisable(GL_SCISSOR_TEST); // WTF
 		glDisable(GL_BLEND);
 
-		glViewport(0, 0, viewport.width(), viewport.height());
+		// glViewport(0, 0, viewport.width(), viewport.height());
 
 		QGLShaderProgram *blitProgram =	GrymBlitProgram();
 		blitProgram->bind();
@@ -260,36 +292,43 @@ static void blitTexture(GLuint texture, const QSize &viewport, const QSize &texS
 
 		drawTexture(r, texture, texSize, sourceRect);
 	#else
-		const QRect & br = sourceRect; // WTF
-		const QRect & window = targetRect;
+		// Не-GL ES реализация, используем не шейдеры
 
+		// Возьмём текстуру и сделаем ей glCopyTexSubImage2D. Поскольку ось Y в OpenGL перевёрнутая,
+		// то нужно вычислить правильный bottom.
 		glBindTexture(GL_TEXTURE_2D, texture);
-		const uint bottom = window.height() - (br.y() + br.height());
-		glCopyTexSubImage2D(GL_TEXTURE_2D, 0, br.x(), bottom, br.x(), bottom, br.width(), br.height());
+		const uint bottom = targetRect.height() - (sourceRect.y() + sourceRect.height());
+		glCopyTexSubImage2D(GL_TEXTURE_2D, 0, sourceRect.x(), bottom, sourceRect.x(), bottom, sourceRect.width(), sourceRect.height());
 		glBindTexture(GL_TEXTURE_2D, 0);
 
+		// Включим правильный набор трансформаций
 		glDisable(GL_DEPTH_TEST);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-
 		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
+		glLoadIdentity(); // Интересно, нафига это второй раз?
 		#ifndef QT_OPENGL_ES
-			glOrtho(0, window.width(), window.height(), 0, -999999, 999999);
+			glOrtho(0, targetRect.width(), targetRect.height(), 0, -999999, 999999);
 		#else
-			glOrthof(0, window.width(), window.height(), 0, -999999, 999999);
+			glOrthof(0, targetRect.width(), targetRect.height(), 0, -999999, 999999);
 		#endif
-		glViewport(0, 0, viewport.width(), viewport.height());
-		glColor4f(1, 1, 1, 1);
-		drawTexture(targetRect, texture, window.size(), br);
+
+		// Спозиционируем view port на нужный регион
+		// glViewport(0, 0, viewport.width(), viewport.height());
+
+		// На этот цвет умножится текстура
+		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+
+		// Готово!
+		drawTexture(targetRect, texture, targetRect.size(), sourceRect);
 	#endif
 }
 
-void GrymQtAndroidViewGraphicsProxy::doGLPainting()
+void GrymQtAndroidViewGraphicsProxy::doGLPainting(int x, int y, int w, int h)
 {
 	// verbose qDebug()<<__PRETTY_FUNCTION__;
 
-	glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (!texture_available_)
@@ -298,10 +337,31 @@ void GrymQtAndroidViewGraphicsProxy::doGLPainting()
 	}
 
 	// (GLuint texture, const QSize &viewport, const QSize &texSize, const QRect &targetRect, const QRect &sourceRect)
-	blitTexture(texture_id_, QSize(256, 256), QSize(256, 256), QRect(0, 0, 256, 256), QRect(0, 0, 256, 256));
+	QSize draw_size = getDrawableSize();
+
+	// Пока считаем, что w, h у нас совпадают с размерами виджета, значит, в getDrawableSize всё учтено
+	Q_UNUSED(w);
+	Q_UNUSED(h);
+	// Прямоугольник в координатах OpenGL
+	QRect target_rect(
+		x
+		, y + h - draw_size.height()
+		, draw_size.width()
+		, draw_size.height());
+
+	// verbose qDebug()<<"Mapped to parent:"<<target_rect.left()<<","<<target_rect.top()<<"("<<target_rect.width()<<","<<target_rect.height()<<")";
+
+	glViewport(target_rect.x(), target_rect.y(), target_rect.width(), target_rect.height());
+
+	blitTexture(
+		texture_id_ // texture
+		, draw_size // viewport
+		, texture_size_ // texture size
+		, QRect(QPoint(0, 0), draw_size) // target rect
+		, QRect(QPoint(0, 0), draw_size)); // source rect
 }
 
-static void GrymCreateTestTexture(GLuint * texture_id_)
+static void GrymCreateTestTexture(GLuint * texture_id_, QSize * texture_size_)
 {
 	qDebug()<<__PRETTY_FUNCTION__;
 	QImage img;
@@ -332,6 +392,9 @@ static void GrymCreateTestTexture(GLuint * texture_id_)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	*texture_size_ = GL_formatted_image.size();
+
 	qDebug()<<"Done"<<__PRETTY_FUNCTION__<<"Texture size:"<<GL_formatted_image.width()<<"x"<<GL_formatted_image.height();
 }
 
@@ -342,7 +405,7 @@ void GrymQtAndroidViewGraphicsProxy::initTexture()
 	{
 		qDebug()<<__PRETTY_FUNCTION__<<"Have to create a texture...";
 		texture_available_ = true;
-		GrymCreateTestTexture(&texture_id_);
+		GrymCreateTestTexture(&texture_id_, &texture_size_);
 	}
 }
 
@@ -356,3 +419,10 @@ void GrymQtAndroidViewGraphicsProxy::destroyTexture()
 	}
 	qDebug()<<"Done"<<__PRETTY_FUNCTION__;
 }
+
+QSize GrymQtAndroidViewGraphicsProxy::getDrawableSize() const
+{
+	QSize mysize = size().toSize();
+	return QSize(qMin(mysize.width(), texture_size_.width()), qMin(mysize.height(), texture_size_.height()));
+}
+
