@@ -1,0 +1,10 @@
+Tiny, but very useful wrappers around JNI (Java-Native Interface).
+Created for porting GrymMobile to Android platform.
+Used in:
+	- Software/LocationService
+
+JNI Docs:
+	- http://download.oracle.com/javase/6/docs/technotes/guides/jni/spec/invocation.html
+	- http://download.oracle.com/javase/6/docs/technotes/guides/jni/spec/types.html
+	- http://download.oracle.com/javase/6/docs/technotes/guides/jni/spec/functions.html
+	- Android JNI tips: http://android.git.kernel.org/?p=platform/dalvik.git;a=blob_plain;f=docs/jni-tips.html;hb=HEAD

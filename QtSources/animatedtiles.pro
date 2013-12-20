@@ -13,11 +13,11 @@ android-g++ {
     # This causes stripping out symbols which are neither explicitly
     # exported nor used inside of the application.
     QMAKE_CXXFLAGS += -fvisibility=hidden
-
     CONFIG += dll
-
-    TARGET = /../../libs/armeabi/libanimatedtiles
+    TARGET = /../../libs/armeabi/libanimatedtiles   
 }
+
+include("JNIUtils/JNIUtils.pri")
 
 OTHER_FILES += \
     images/Time-For-Lunch-2.jpg \
