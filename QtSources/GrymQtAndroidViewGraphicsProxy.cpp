@@ -2,6 +2,8 @@
 #include <QGLWidget>
 #include "GrymQtAndroidViewGraphicsProxy.h"
 
+#define ANDROIDVIEWGRAPHICSPROXY_CLEARALL
+
 GrymQtAndroidViewGraphicsProxy::GrymQtAndroidViewGraphicsProxy(QGraphicsItem *parent, Qt::WindowFlags wFlags)
 	: QGraphicsWidget(parent, wFlags)
 	, texture_id_(0)
@@ -20,11 +22,10 @@ void GrymQtAndroidViewGraphicsProxy::paint(QPainter *painter, const QStyleOption
 	Q_UNUSED(widget);
 	Q_ASSERT(painter->paintEngine()->type() == QPaintEngine::OpenGL2);
 
-	// NB: это обязательно, если делаем glClear
-	#define SCISSOR_WORKAROUND
-
+#if defined(ANDROIDVIEWGRAPHICSPROXY_CLEARALL)
 	// SGEXP
 	painter->fillRect(rect(), Qt::green);
+#endif
 
 	painter->beginNativePainting();
 
@@ -59,20 +60,24 @@ void GrymQtAndroidViewGraphicsProxy::paint(QPainter *painter, const QStyleOption
 	// SGEXP
 	l += widget->pos().x();
 	b += widget->pos().y();
+	//! \todo Учесть положение вьюшки внутри окна!
 	w++;
 	h++;
 
 	glViewport(l, b, w, h);
 
-	#if defined(SCISSOR_WORKAROUND)
+	#if defined(ANDROIDVIEWGRAPHICSPROXY_CLEARALL)
 		glEnable(GL_SCISSOR_TEST);
 		glScissor(l, b, w, h);
+
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	#endif
 
 	// Теперь можно просто нарисовать нашу текстурку вот в этих вот GL-координатах.
 	doGLPainting(l, b, w, h);
 
-	#if defined(SCISSOR_WORKAROUND)
+	#if defined(ANDROIDVIEWGRAPHICSPROXY_CLEARALL)
 		glScissor(0, 0, static_cast<GLsizei>(device->width()), static_cast<GLsizei>(device->height()));
 		glDisable(GL_SCISSOR_TEST);
 	#endif
@@ -333,9 +338,6 @@ static void blitTexture(GLuint texture, const QSize &texSize, const QRect &targe
  */
 void GrymQtAndroidViewGraphicsProxy::doGLPainting(int x, int y, int w, int h)
 {
-	// verbose qDebug()<<__PRETTY_FUNCTION__;
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	if (!texture_available_)
 	{
 		initTexture();
