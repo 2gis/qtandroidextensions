@@ -30,7 +30,9 @@ OTHER_FILES += \
     ../build.sh \
     ../qtcreator.sh \
     ../update.sh \
-    ../AndroidManifest.xml
+    ../AndroidManifest.xml \
+    images/kotik.png
+
 
 
 

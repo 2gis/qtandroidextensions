@@ -1,11 +1,12 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource>
-    <file>images/Time-For-Lunch-2.png</file>
-    <file>images/centered.png</file>
-    <file>images/ellipse.png</file>
-    <file>images/figure8.png</file>
-    <file>images/kinetic.png</file>
-    <file>images/random.png</file>
-    <file>images/tile.png</file>
-</qresource>
+<RCC>
+    <qresource prefix="/">
+        <file>images/Time-For-Lunch-2.png</file>
+        <file>images/centered.png</file>
+        <file>images/ellipse.png</file>
+        <file>images/figure8.png</file>
+        <file>images/kinetic.png</file>
+        <file>images/random.png</file>
+        <file>images/tile.png</file>
+        <file>images/kotik.png</file>
+    </qresource>
 </RCC>

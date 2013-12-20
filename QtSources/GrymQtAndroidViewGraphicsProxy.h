@@ -2,6 +2,7 @@
 #include <QtOpenGL/QGLWidget>
 #include <QtGui/QGraphicsWidget>
 #include <QPaintEvent>
+#include <EGL/egl.h>
 
 class GrymQtAndroidViewGraphicsProxy
 	: public QGraphicsWidget
@@ -14,7 +15,10 @@ public:
 protected:
 	virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 	virtual void doGLPainting();
+	void initTexture();
+	void destroyTexture();
 
 private:
-	int texture_id_;
+	GLuint texture_id_;
+	bool texture_available_;
 };

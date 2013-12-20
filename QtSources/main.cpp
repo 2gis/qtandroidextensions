@@ -13,12 +13,12 @@
 QString qt_android_get_current_plugin();
 #endif
 
-class Pixmap : public QObject, public QGraphicsPixmapItem
+class MyAnimatedPixmap : public QObject, public QGraphicsPixmapItem
 {
     Q_OBJECT
     Q_PROPERTY(QPointF pos READ pos WRITE setPos)
 public:
-    Pixmap(const QPixmap &pix)
+	MyAnimatedPixmap(const QPixmap &pix)
         : QObject(), QGraphicsPixmapItem(pix)
     {
         setCacheMode(DeviceCoordinateCache);
@@ -131,6 +131,7 @@ public:
 	{
 		// QGLFormat format;
 		gl_layer_ = new QGLWidget(this);
+		gl_layer_->move(0, 0);
 		gl_layer_->setAutoFillBackground(false);
 		gl_layer_->setAttribute(Qt::WA_OpaquePaintEvent);
 		gl_layer_->setAttribute(Qt::WA_NoSystemBackground);
@@ -142,6 +143,7 @@ public:
 		gl_layer_->resize(size());
 
 		view_ = new View(&scene_, gl_layer_);
+		view_->move(0, 0);
 		view_->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 		view_->setBackgroundBrush(bgPix);
 		view_->setCacheMode(QGraphicsView::CacheBackground);
@@ -150,6 +152,7 @@ public:
 		aview.reset(new GrymQtAndroidViewGraphicsProxy());
 		scene_.addItem(aview.data());
 
+		resize(1000, 1000);
 		doLayout(size());
 	}
 
@@ -223,6 +226,7 @@ int main(int argc, char **argv)
         qargs.push_back(argv[i]);
         qDebug()<<"...arg"<<i<<":"<<argv[i];
     }
+	QApplication::setGraphicsSystem(QLatin1String("opengl"));
     QApplication app(argc, qargs.data());
 
 	QPixmap kineticPix(":/images/kinetic.png");
@@ -231,9 +235,9 @@ int main(int argc, char **argv)
 	qDebug()<<TAG<<"Creating view...";
 	QScopedPointer<MyWindow> window(new MyWindow());
 
-    QList<Pixmap *> items;
+	QList<MyAnimatedPixmap *> items;
     for (int i = 0; i < 64; ++i) {
-        Pixmap *item = new Pixmap(kineticPix);
+		MyAnimatedPixmap *item = new MyAnimatedPixmap(kineticPix);
         item->setOffset(-kineticPix.width()/2, -kineticPix.height()/2);
         item->setZValue(i);
         items << item;
@@ -271,7 +275,7 @@ int main(int argc, char **argv)
 
     // Values
     for (int i = 0; i < items.count(); ++i) {
-        Pixmap *item = items.at(i);
+		MyAnimatedPixmap *item = items.at(i);
         // Ellipse
         ellipseState->assignProperty(item, "pos",
                                          QPointF(cos((i / 63.0) * 6.28) * 250,
