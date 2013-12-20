@@ -8,6 +8,7 @@
 #include <QMessageBox>
 #include <QWidget>
 #include <QMainWindow>
+#include <QGraphicsView>
 #include "GrymQtAndroidViewGraphicsProxy.h"
 
 #ifdef Q_OS_ANDROID
@@ -100,6 +101,7 @@ public:
     {
 		setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 		setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+		setFrameShape(QFrame::NoFrame); // OMG!
 
 		quitButton.resize(150, 100);
 		quitButton.move(20, 20);
@@ -228,9 +230,13 @@ protected:
 
 		scene_.setSceneRect(-newsize.width()/2, -newsize.height()/2, newsize.width(), newsize.height());
 
+#if 1
 		view_->move(0, 0);
 		view_->resize(newsize);
-
+#else
+		view_->move(20, 20);
+		view_->resize(newsize.width()-40, newsize.height()-40);
+#endif
 		aview->setGeometry(
 			20 + scene_.sceneRect().left()
 			, 150  + scene_.sceneRect().top()
