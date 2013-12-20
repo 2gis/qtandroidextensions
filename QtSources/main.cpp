@@ -7,6 +7,7 @@
 #include <QPushButton>
 #include <QMessageBox>
 #include <QWidget>
+#include <QMainWindow>
 #include "GrymQtAndroidViewGraphicsProxy.h"
 
 #ifdef Q_OS_ANDROID
@@ -96,24 +97,21 @@ public:
 	View(QGraphicsScene * scene, QWidget * parent)
 		: QGraphicsView(scene, parent)
 		, quitButton(this)
-		//, aview(this)
     {
+		setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+		setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
 		quitButton.resize(150, 100);
 		quitButton.move(20, 20);
         quitButton.setText("Quit");
         connect(&quitButton, SIGNAL(clicked()), QCoreApplication::instance(), SLOT(quit()));
-
-		// aview.resize(500, 500);
-		// aview.move(15, 100);
     }
 protected:
     QPushButton quitButton;
-	// GrymQtAndroidViewProxy aview;
-
     void resizeEvent(QResizeEvent *event)
     {
         QGraphicsView::resizeEvent(event);
-        fitInView(sceneRect(), Qt::KeepAspectRatio);
+		fitInView(sceneRect(), Qt::KeepAspectRatio);
     }
 };
 
@@ -129,6 +127,7 @@ public:
 
 	virtual void paintGL()
 	{
+		qDebug()<<"Grym"<<__PRETTY_FUNCTION__;
 		// glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		//glEnable(GL_SCISSOR_TEST);
@@ -143,34 +142,50 @@ class MyWindow
 	Q_OBJECT
 public:
 	MyWindow()
-		: QWidget()
+		: QWidget(0)
 		, gl_layer_(0)
 		, view_(0)
 		, scene_(-350, -350, 700, 700)
 		, bgPix(":/images/Time-For-Lunch-2.png")
 	{
+		move(0, 0);
+
+		setFocusPolicy(Qt::NoFocus);
 		setObjectName("MainWindow");
-		setWindowTitle("setWindowTitle");
+		setWindowTitle("Protoview");
+#if 1
 		setAutoFillBackground(false);
 		setAttribute(Qt::WA_OpaquePaintEvent);
 		setAttribute(Qt::WA_NoSystemBackground);
 		setAttribute(Qt::WA_NoBackground);
 		setAttribute(Qt::WA_StyledBackground, false);
-		// setAttribute(Qt::WA_AcceptTouchEvents);
+#endif
 
 		// QGLFormat format;
 		gl_layer_ = new QGLWidget(this);
+		gl_layer_->setFocusPolicy(Qt::NoFocus);
+#if 1
 		gl_layer_->setAutoFillBackground(false);
 		gl_layer_->setAttribute(Qt::WA_OpaquePaintEvent);
 		gl_layer_->setAttribute(Qt::WA_NoSystemBackground);
 		gl_layer_->setAttribute(Qt::WA_NoBackground);
 		gl_layer_->setAttribute(Qt::WA_StyledBackground, false);		
+#endif
 
 		view_ = new View(&scene_, gl_layer_);
+		view_->setFocusPolicy(Qt::NoFocus);
+
+#if 1
 		view_->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+#else
+		view_->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+#endif
+
+#if 1
 		view_->setBackgroundBrush(bgPix);
 		view_->setCacheMode(QGraphicsView::CacheBackground);
 		view_->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+#endif
 
 		aview.reset(new GrymQtAndroidViewGraphicsProxy());
 		scene_.addItem(aview.data());
@@ -333,9 +348,6 @@ int main(int argc, char **argv)
 	#else
 		window->show();
 	#endif
-
-	qDebug()<<TAG<<"Fixing sizes (FIXME)";
-	window->view()->resize(window->size());
 
     qDebug()<<TAG<<"State machine...";
     QStateMachine states;

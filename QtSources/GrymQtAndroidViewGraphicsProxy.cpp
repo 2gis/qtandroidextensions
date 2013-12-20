@@ -14,9 +14,10 @@ GrymQtAndroidViewGraphicsProxy::~GrymQtAndroidViewGraphicsProxy()
 	destroyTexture();
 }
 
-void GrymQtAndroidViewGraphicsProxy::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void GrymQtAndroidViewGraphicsProxy::paint(QPainter *painter, const QStyleOptionGraphicsItem * option, QWidget * widget)
 {
 	Q_UNUSED(option);
+	Q_UNUSED(widget);
 	Q_ASSERT(painter->paintEngine()->type() == QPaintEngine::OpenGL2);
 
 	// NB: это обязательно, если делаем glClear
@@ -28,7 +29,6 @@ void GrymQtAndroidViewGraphicsProxy::paint(QPainter *painter, const QStyleOption
 	painter->beginNativePainting();
 
 	QPaintDevice *device = painter->device();
-
 	QTransform combined_transform = painter->combinedTransform();
 
 	Q_ASSERT(
@@ -38,16 +38,15 @@ void GrymQtAndroidViewGraphicsProxy::paint(QPainter *painter, const QStyleOption
 
 	QRectF widget_geometry = combined_transform.mapRect(QRectF(QPointF(0, 0), size()));
 
-	GLint l = static_cast<GLint>(widget_geometry.left());
-	GLint b = static_cast<GLint>(device->height() - static_cast<int>(widget_geometry.bottom()));
-	GLsizei w = static_cast<GLsizei>(widget_geometry.width());
-	GLsizei h = static_cast<GLsizei>(widget_geometry.height());
+	GLint l = static_cast<GLint>(widget_geometry.left() + 0.5);
+	GLint b = static_cast<GLint>(device->height() - static_cast<int>(widget_geometry.bottom() + 0.5));
+	GLsizei w = static_cast<GLsizei>(widget_geometry.width()+0.5);
+	GLsizei h = static_cast<GLsizei>(widget_geometry.height()+0.5);
 
 	QPoint viewpos = this->scene()->views().at(0)->pos();
 	Q_UNUSED(viewpos);
 
 #if 0
-
 	qDebug()
 			<<"widget_geometry:"<<widget_geometry.left()<<widget_geometry.top()
 			<<"("<<widget_geometry.width()<<"x"<<widget_geometry.height()<<")"
@@ -58,10 +57,10 @@ void GrymQtAndroidViewGraphicsProxy::paint(QPainter *painter, const QStyleOption
 #endif
 
 	// SGEXP
-	/*l += widget->pos().x();
-	b -= widget->pos().y();
-	l += widget_geometry.left();
-	b -= viewpos.y();*/
+	l += widget->pos().x();
+	b += widget->pos().y();
+	w++;
+	h++;
 
 	glViewport(l, b, w, h);
 
@@ -70,6 +69,7 @@ void GrymQtAndroidViewGraphicsProxy::paint(QPainter *painter, const QStyleOption
 		glScissor(l, b, w, h);
 	#endif
 
+	// Теперь можно просто нарисовать нашу текстурку вот в этих вот GL-координатах.
 	doGLPainting(l, b, w, h);
 
 	#if defined(SCISSOR_WORKAROUND)
@@ -98,6 +98,9 @@ static inline void QRectFToVertexArray(const QRectF &r, GLfloat *array)
 	array[7] = bottom;
 }
 
+/*!
+ * Рисовалка текстуры из Qt. Подразумевается, что подготовительные операции уже сделаны.
+ */
 static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize, const QRectF &bitmap_rect = QRectF())
 {
 	static const GLuint QT_VERTEX_COORDS_ATTR  = 0;
@@ -174,14 +177,19 @@ static void drawTexture(const QRectF &rect, GLuint tex_id, const QSize &texSize,
 #endif
 }
 
+#if defined(QT_OPENGL_ES_2)
+/*!
+ * Шейдерная рисовалка текстуры для ES 2.0.
+ * \todo Сделать более человеческий синглтон? Или и так ОК?
+ */
 static QGLShaderProgram * GrymBlitProgram()
 {
 	static const GLuint QT_VERTEX_COORDS_ATTR  = 0;
 	static const GLuint QT_TEXTURE_COORDS_ATTR = 1;
 
 	static const char * const qglslMainWithTexCoordsVertexShader =
-		"attribute highp   vec2      textureCoordArray; \n"
-		"varying   highp   vec2      textureCoords; \n"
+		"attribute highp vec2 textureCoordArray; \n"
+		"varying   highp vec2 textureCoords; \n"
 		"void setPosition(); \n"
 		"void main(void) \n"
 		"{ \n"
@@ -190,7 +198,7 @@ static QGLShaderProgram * GrymBlitProgram()
 		"}\n";
 
 	static const char* const qglslUntransformedPositionVertexShader =
-		"attribute highp   vec4      vertexCoordsArray; \n"
+		"attribute highp vec4 vertexCoordsArray; \n"
 		"void setPosition(void) \n"
 		"{ \n"
 		"  gl_Position = vertexCoordsArray; \n"
@@ -211,16 +219,16 @@ static QGLShaderProgram * GrymBlitProgram()
 		"  return texture2D(imageTexture, textureCoords); \n"
 		"}\n";
 
-	static QGLShaderProgram * m_blitProgram = 0;
-	if (m_blitProgram == 0)
+	static QScopedPointer<QGLShaderProgram> m_blitProgram;
+	if (m_blitProgram.isNull())
 	{
-		m_blitProgram = new QGLShaderProgram();
+		m_blitProgram.reset(new QGLShaderProgram());
 		{
 			QString source;
 			source.append(QLatin1String(qglslMainWithTexCoordsVertexShader));
 			source.append(QLatin1String(qglslUntransformedPositionVertexShader));
 
-			QGLShader *vertexShader = new QGLShader(QGLShader::Vertex, m_blitProgram);
+			QGLShader *vertexShader = new QGLShader(QGLShader::Vertex, m_blitProgram.data());
 			vertexShader->compileSourceCode(source);
 
 			m_blitProgram->addShader(vertexShader);
@@ -231,7 +239,7 @@ static QGLShaderProgram * GrymBlitProgram()
 			source.append(QLatin1String(qglslMainFragmentShader));
 			source.append(QLatin1String(qglslImageSrcFragmentShader));
 
-			QGLShader *fragmentShader = new QGLShader(QGLShader::Fragment, m_blitProgram);
+			QGLShader *fragmentShader = new QGLShader(QGLShader::Fragment, m_blitProgram.data());
 			fragmentShader->compileSourceCode(source);
 
 			m_blitProgram->addShader(fragmentShader);
@@ -242,24 +250,23 @@ static QGLShaderProgram * GrymBlitProgram()
 
 		m_blitProgram->link();
 	}
-	return m_blitProgram;
+	return m_blitProgram.data();
 }
-
+#endif
 
 /*!
-	\param texSize - размер текстуры
-	\param targetRect - прямоугольник в координатах GL-контекста
-	\todo Пока считаем, что размер вьюпорта равен размеру таргетректа, на понятно, нафига вот это всё?
+ * Нарисуем текстуру.
+ * \param texSize - размер текстуры
+ * \param targetRect - прямоугольник в координатах GL-контекста
+ * \todo Пока считаем, что размер вьюпорта равен размеру таргетректа, на понятно, нафига вот это всё?
 */
-static void blitTexture(GLuint texture, const QSize &viewport, const QSize &texSize, const QRect &targetRect, const QRect &sourceRect)
+static void blitTexture(GLuint texture, const QSize &texSize, const QRect &targetRect, const QRect &sourceRect)
 {
 	#if defined(QT_OPENGL_ES_2)
 		glDisable(GL_STENCIL_TEST);
 		glDisable(GL_DEPTH_TEST);
-		// glDisable(GL_SCISSOR_TEST); // WTF
+		// glDisable(GL_SCISSOR_TEST);
 		glDisable(GL_BLEND);
-
-		// glViewport(0, 0, viewport.width(), viewport.height());
 
 		QGLShaderProgram *blitProgram =	GrymBlitProgram();
 		blitProgram->bind();
@@ -269,10 +276,10 @@ static void blitTexture(GLuint texture, const QSize &viewport, const QSize &texS
 		// vertices by the pmv matrix, so we need to do the effect
 		// of the orthographic projection here ourselves.
 		QRectF r;
-		qreal w = viewport.width();
-		qreal h = viewport.height();
+		qreal w = targetRect.width();
+		qreal h = targetRect.height();
 		r.setLeft((targetRect.left() / w) * 2.0f - 1.0f);
-		if (targetRect.right() == (viewport.width() - 1))
+		if (targetRect.right() == (targetRect.width() - 1))
 		{
 			r.setRight(1.0f);
 		}
@@ -281,7 +288,7 @@ static void blitTexture(GLuint texture, const QSize &viewport, const QSize &texS
 			r.setRight((targetRect.right() / w) * 2.0f - 1.0f);
 		}
 		r.setBottom((targetRect.top() / h) * 2.0f - 1.0f);
-		if (targetRect.bottom() == (viewport.height() - 1))
+		if (targetRect.bottom() == (targetRect.height() - 1))
 		{
 			r.setTop(1.0f);
 		}
@@ -313,9 +320,6 @@ static void blitTexture(GLuint texture, const QSize &viewport, const QSize &texS
 			glOrthof(0, targetRect.width(), targetRect.height(), 0, -999999, 999999);
 		#endif
 
-		// Спозиционируем view port на нужный регион
-		// glViewport(0, 0, viewport.width(), viewport.height());
-
 		// На этот цвет умножится текстура
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -324,21 +328,20 @@ static void blitTexture(GLuint texture, const QSize &viewport, const QSize &texS
 	#endif
 }
 
+/*!
+ * \param Координаты передаются в терминах OpenGL.
+ */
 void GrymQtAndroidViewGraphicsProxy::doGLPainting(int x, int y, int w, int h)
 {
 	// verbose qDebug()<<__PRETTY_FUNCTION__;
-
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	if (!texture_available_)
 	{
 		initTexture();
 	}
-
 	// (GLuint texture, const QSize &viewport, const QSize &texSize, const QRect &targetRect, const QRect &sourceRect)
 	QSize draw_size = getDrawableSize();
-
 	// Пока считаем, что w, h у нас совпадают с размерами виджета, значит, в getDrawableSize всё учтено
 	Q_UNUSED(w);
 	Q_UNUSED(h);
@@ -348,19 +351,19 @@ void GrymQtAndroidViewGraphicsProxy::doGLPainting(int x, int y, int w, int h)
 		, y + h - draw_size.height()
 		, draw_size.width()
 		, draw_size.height());
-
-	// verbose qDebug()<<"Mapped to parent:"<<target_rect.left()<<","<<target_rect.top()<<"("<<target_rect.width()<<","<<target_rect.height()<<")";
-
+	// verbose qDebug()<<"Mapped to parent:"<<target_rect.left()<<","<<target_rect.top()
+	// <<"("<<target_rect.width()<<","<<target_rect.height()<<")";
 	glViewport(target_rect.x(), target_rect.y(), target_rect.width(), target_rect.height());
-
 	blitTexture(
 		texture_id_ // texture
-		, draw_size // viewport
 		, texture_size_ // texture size
 		, QRect(QPoint(0, 0), draw_size) // target rect
 		, QRect(QPoint(0, 0), draw_size)); // source rect
 }
 
+/*!
+ * Тестовая текстура - с котиком.
+ */
 static void GrymCreateTestTexture(GLuint * texture_id_, QSize * texture_size_)
 {
 	qDebug()<<__PRETTY_FUNCTION__;
