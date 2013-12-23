@@ -9,10 +9,12 @@
 #include <QWidget>
 #include <QMainWindow>
 #include <QGraphicsView>
+#include "JNIUtils/JniEnvPtr.h"
 #include "GrymQtAndroidViewGraphicsProxy.h"
 
 #ifdef Q_OS_ANDROID
-QString qt_android_get_current_plugin();
+	extern QString qt_android_get_current_plugin();
+	extern JavaVM * qt_android_get_java_vm();
 #endif
 
 class MyAnimatedPixmap : public QObject, public QGraphicsPixmapItem
@@ -258,6 +260,8 @@ static const char* const TAG = "**** main() ****";
 
 int main(int argc, char **argv)
 {
+	JniEnvPtr::SetJavaVM(qt_android_get_java_vm());
+
     qDebug()<<"Static plugins "<<QPluginLoader::staticInstances().count();
     foreach(QObject * obj, QPluginLoader::staticInstances())
         qDebug()<<"Plugin: "<<obj;

@@ -3,6 +3,8 @@
 #include <QtGui/QGraphicsWidget>
 #include <QPaintEvent>
 #include <EGL/egl.h>
+#include "JNIUtils/JclassPtr.h"
+#include "JNIUtils/jcGeneric.h"
 
 class GrymQtAndroidViewGraphicsProxy
 	: public QGraphicsWidget
@@ -17,6 +19,7 @@ protected:
 	//! \param x, y, w, h - координаты региона в терминах OpenGL
 	virtual void doGLPainting(int x, int y, int w, int h);
 	void initTexture();
+
 	void destroyTexture();
 
 	QSize getDrawableSize() const;
@@ -25,4 +28,6 @@ private:
 	GLuint texture_id_;
 	bool texture_available_;
 	QSize texture_size_;
+	QScopedPointer<jcGeneric> offscreen_view_factory_;
+	QScopedPointer<jcGeneric> offscreen_view_;
 };

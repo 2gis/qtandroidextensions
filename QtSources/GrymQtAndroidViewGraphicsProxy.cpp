@@ -1,14 +1,25 @@
+#include <jni.h>
 #include <QtOpenGL>
 #include <QGLWidget>
 #include "GrymQtAndroidViewGraphicsProxy.h"
 
 #define ANDROIDVIEWGRAPHICSPROXY_CLEARALL
 
+static const QString c_class_path_ = QLatin1String("ru/dublgis/offscreenview");
+
 GrymQtAndroidViewGraphicsProxy::GrymQtAndroidViewGraphicsProxy(QGraphicsItem *parent, Qt::WindowFlags wFlags)
 	: QGraphicsWidget(parent, wFlags)
 	, texture_id_(0)
 	, texture_available_(false)
 {
+	qDebug()<<__PRETTY_FUNCTION__;
+	offscreen_view_factory_.reset(new jcGeneric((c_class_path_+"/OffscreenViewFactory").toAscii(), true));
+
+	qDebug()<<__PRETTY_FUNCTION__<<"Connected to OffscreenViewFactory.";
+	qDebug()<<__PRETTY_FUNCTION__<<"Test string:"<<offscreen_view_factory_->CallStaticString("Test");
+
+	// device_listener_->RegisterNativeMethod("ScreenSwitch", "(JZ)V", (void*)Java_DeviceListener_ScreenSwitch);
+	qDebug()<<"Done"<<__PRETTY_FUNCTION__;
 }
 
 GrymQtAndroidViewGraphicsProxy::~GrymQtAndroidViewGraphicsProxy()
@@ -366,7 +377,7 @@ void GrymQtAndroidViewGraphicsProxy::doGLPainting(int x, int y, int w, int h)
 /*!
  * Тестовая текстура - с котиком.
  */
-static void GrymCreateTestTexture(GLuint * texture_id_, QSize * texture_size_)
+static void GrymCreateTestTexture(GLuint * texture_id_, QSize * out_texture_size_)
 {
 	qDebug()<<__PRETTY_FUNCTION__;
 	QImage img;
@@ -398,7 +409,42 @@ static void GrymCreateTestTexture(GLuint * texture_id_, QSize * texture_size_)
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	*texture_size_ = GL_formatted_image.size();
+	*out_texture_size_ = GL_formatted_image.size();
+
+	qDebug()<<"Done"<<__PRETTY_FUNCTION__<<"Texture size:"<<GL_formatted_image.width()<<"x"<<GL_formatted_image.height();
+}
+
+static void GrymCreateEmptyTexture(GLuint * texture_id_, int desired_width, int desired_height, QSize * out_texture_size_)
+{
+	qDebug()<<__PRETTY_FUNCTION__;
+	QImage GL_formatted_image = QGLWidget::convertToGLFormat(QImage(desired_width, desired_height, QImage::Format_ARGB32));
+
+	if (GL_formatted_image.isNull())
+	{
+		qFatal("GL IMAGE IS NULL");
+	}
+
+	//! \todo тестовая заливка
+	GL_formatted_image.fill(Qt::green);
+
+	glGenTextures(1, texture_id_);
+
+	// Выберем эту текстуру для работы
+	glBindTexture(GL_TEXTURE_2D, *texture_id_);
+
+	// Создадим данные текстуры (собственно картинку)
+	glTexImage2D(
+		GL_TEXTURE_2D, 0, GL_RGBA
+		, GL_formatted_image.width(), GL_formatted_image.height()
+		, 0, GL_RGBA, GL_UNSIGNED_BYTE, GL_formatted_image.bits());
+
+	// Параметры текстуры
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	*out_texture_size_ = GL_formatted_image.size();
 
 	qDebug()<<"Done"<<__PRETTY_FUNCTION__<<"Texture size:"<<GL_formatted_image.width()<<"x"<<GL_formatted_image.height();
 }
@@ -410,7 +456,20 @@ void GrymQtAndroidViewGraphicsProxy::initTexture()
 	{
 		qDebug()<<__PRETTY_FUNCTION__<<"Have to create a texture...";
 		texture_available_ = true;
-		GrymCreateTestTexture(&texture_id_, &texture_size_);
+		#if 0
+			GrymCreateTestTexture(&texture_id_, &texture_size_);
+		#else
+		//! \todo задание размеров
+			GrymCreateEmptyTexture(&texture_id_, 512, 512, &texture_size_);
+			if (offscreen_view_factory_)
+			{
+				offscreen_view_factory_->CallParamVoid("SetTexture", "I", jint(texture_id_));
+				offscreen_view_factory_->CallParamVoid("SetTextureWidth", "I", jint(texture_size_.width()));
+				offscreen_view_factory_->CallParamVoid("SetTextureHeight", "I", jint(texture_size_.height()));
+				offscreen_view_.reset(offscreen_view_factory_->CallObject("DoCreateView"
+					, (c_class_path_+"/OffscreenView").toAscii()));
+			}
+		#endif
 	}
 }
 
@@ -431,3 +490,12 @@ QSize GrymQtAndroidViewGraphicsProxy::getDrawableSize() const
 	return QSize(qMin(mysize.width(), texture_size_.width()), qMin(mysize.height(), texture_size_.height()));
 }
 
+
+/*Q_DECL_EXPORT void JNICALL Java_DeviceListener_ScreenSwitch(
+	JNIEnv*
+	, jobject
+	, jlong param
+	, jboolean on)
+{
+}
+*/

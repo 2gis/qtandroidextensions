@@ -41,14 +41,36 @@ class OffscreenViewFactory
 {
     public static final String TAG = "OffscreenView";
 
+    // This block is only to walkaround limitations in jcGeneric.
+    private String default_class_name_ = "OffscreenWebView";
+    private String default_object_name_ = "MyWebView";
+    private int default_texture_id_ = 0;
+    private int default_texture_width_ = 512;
+    private int default_texture_height_ = 512;
+    public void SetClassName(String name) { default_class_name_ = name; }
+    public void SetObjectName(String name) { default_object_name_ = name; }
+    public void SetTexture(int tex) { default_texture_id_ = tex; }
+    public void SetTextureWidth(int w) { default_texture_width_ = w; }
+    public void SetTextureHeight(int h) { default_texture_height_ = h; }
+    public OffscreenView DoCreateView()
+    {
+        return CreateOffscreenView(default_class_name_, default_object_name_, default_texture_id_, default_texture_width_, default_texture_height_);
+    }
+
 
     OffscreenViewFactory()
     {
     }
 
+    public static String Test()
+    {
+        return "TestString";
+    }
+
     public static OffscreenView CreateOffscreenView(String classname, String objectname, int gltextureid, int width, int height)
     {
         Log.i(TAG, "CreateOffscreenView");
+        // TODO: Use classname to create various views
         return new OffscreenWebView(objectname, gltextureid, width, height);
     }
 

@@ -48,8 +48,11 @@ jcGeneric::jcGeneric(const char* full_class_name, bool create)
 	: instance_(0)
 	, class_(0)
 {
+	qDebug()<<"Grym"<<__FILE__<<__LINE__;
 	JniEnvPtr jep;
+	qDebug()<<"Grym"<<__FILE__<<__LINE__;
 	init(jep.env(), full_class_name, create);
+	qDebug()<<"Grym"<<__FILE__<<__LINE__;
 }
 
 jcGeneric::jcGeneric()

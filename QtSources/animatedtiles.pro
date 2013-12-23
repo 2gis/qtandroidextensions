@@ -3,10 +3,13 @@ QT += core gui opengl
 HEADERS += \
     GrymQtAndroidViewGraphicsProxy.h
 
-SOURCES = main.cpp \
+SOURCES = \
+	main.cpp \
     GrymQtAndroidViewGraphicsProxy.cpp
 
 RESOURCES = animatedtiles.qrc
+
+INCLUDEPATH += JNIUtils
 
 android-g++ {
     # Reduce binary size by not exporting all symbols by default.

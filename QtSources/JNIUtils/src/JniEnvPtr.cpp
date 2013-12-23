@@ -18,6 +18,7 @@ JniEnvPtr::JniEnvPtr()
 {
 	if(g_JavaVm == 0)
 	{
+		LOG("Java VM pointer is not set!");
 		return;
 	}
 	was_already_attached_ = true;
