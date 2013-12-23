@@ -24,4 +24,7 @@
                       android:xlargeScreens="true"
                       android:anyDensity="true" />
     <uses-sdk android:minSdkVersion="15" android:targetSdkVersion="15" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
 </manifest>

@@ -37,22 +37,9 @@ import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.view.inputmethod.InputMethodManager;
 
-class OffscreenViewFactory
+interface OffscreenView
 {
-    public static final String TAG = "OffscreenView";
-
-
-    OffscreenViewFactory()
-    {
-    }
-
-    public static OffscreenView CreateOffscreenView(String classname, String objectname, int gltextureid, int width, int height)
-    {
-        Log.i(TAG, "CreateOffscreenView");
-        return new OffscreenWebView(objectname, gltextureid, width, height);
-    }
-
+    abstract public void updateGlTexture();
 }
-
 
 
