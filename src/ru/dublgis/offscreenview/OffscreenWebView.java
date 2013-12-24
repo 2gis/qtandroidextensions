@@ -100,6 +100,7 @@ onLayout(true, 0, 0, width, height);
             else
             {
                 super.onDraw(canvas);
+canvas.drawARGB (255, 255, 100, 0);
                 helper_.unlockCanvas(canvas);
                 Log.i(TAG, "OffscreenWebView.drawViewOnTexture success.");
             }

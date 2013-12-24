@@ -93,7 +93,7 @@ void GrymQtAndroidViewGraphicsProxy::paint(QPainter * painter, const QStyleOptio
 	#endif
 
 	initTexture();
-	updateTexture(painter);
+	updateTexture();
 
 	// Теперь можно просто нарисовать нашу текстурку вот в этих вот GL-координатах.
 	doGLPainting(l, b, w, h);
@@ -207,12 +207,15 @@ static void drawTexture(const QRectF &rect, GLuint tex_id, GLenum target, const 
  * Шейдерная рисовалка текстуры для ES 2.0.
  * \todo Сделать более человеческий синглтон? Или и так ОК?
  */
-static QGLShaderProgram * GrymBlitProgram()
+static QGLShaderProgram * CreateBlitProgram(GLenum target)
 {
 	static const GLuint QT_VERTEX_COORDS_ATTR  = 0;
 	static const GLuint QT_TEXTURE_COORDS_ATTR = 1;
 
-	static const char * const qglslMainWithTexCoordsVertexShader =
+	static const QLatin1String c_for_external_("#extension GL_OES_EGL_image_external : require \n");
+
+	QString qglslMainWithTexCoordsVertexShader =
+		QString((target == GL_TEXTURE_EXTERNAL_OES)? c_for_external_: QLatin1String("")) +
 		"attribute highp vec2 textureCoordArray; \n"
 		"varying   highp vec2 textureCoords; \n"
 		"void setPosition(); \n"
@@ -222,36 +225,42 @@ static QGLShaderProgram * GrymBlitProgram()
 		"  textureCoords = textureCoordArray; \n"
 		"}\n";
 
-	static const char* const qglslUntransformedPositionVertexShader =
+	QString qglslUntransformedPositionVertexShader =
+		QString((target == GL_TEXTURE_EXTERNAL_OES)? c_for_external_: QLatin1String("")) +
 		"attribute highp vec4 vertexCoordsArray; \n"
 		"void setPosition(void) \n"
 		"{ \n"
 		"  gl_Position = vertexCoordsArray; \n"
 		"}\n";
 
-	static const char* const qglslMainFragmentShader =
+	QString qglslMainFragmentShader =
+		QString((target == GL_TEXTURE_EXTERNAL_OES)? c_for_external_: QLatin1String("")) +
 		"lowp vec4 srcPixel(); \n"
 		"void main() \n"
 		"{ \n"
 		"  gl_FragColor = srcPixel(); \n"
 		"}\n";
 
-	static const char* const qglslImageSrcFragmentShader =
-		"varying   highp   vec2      textureCoords; \n"
-		"uniform           sampler2D imageTexture; \n"
+	QString qglslImageSrcFragmentShader =
+		QString((target == GL_TEXTURE_EXTERNAL_OES)? c_for_external_: QLatin1String("")) +
+		"varying   highp   vec2      textureCoords; \n" +
+		QString((target == GL_TEXTURE_EXTERNAL_OES)?
+			"uniform samplerExternalOES imageTexture; \n" :
+			"uniform sampler2D imageTexture; \n") +
 		"lowp vec4 srcPixel() \n"
 		"{ \n"
 		"  return texture2D(imageTexture, textureCoords); \n"
 		"}\n";
 
-	static QScopedPointer<QGLShaderProgram> m_blitProgram;
+	static QMap<GLenum, QSharedPointer<QGLShaderProgram> > programs;
+	QSharedPointer<QGLShaderProgram> & m_blitProgram = programs[target];
 	if (m_blitProgram.isNull())
 	{
-		m_blitProgram.reset(new QGLShaderProgram());
+		m_blitProgram = QSharedPointer<QGLShaderProgram>(new QGLShaderProgram());
 		{
 			QString source;
-			source.append(QLatin1String(qglslMainWithTexCoordsVertexShader));
-			source.append(QLatin1String(qglslUntransformedPositionVertexShader));
+			source.append(qglslMainWithTexCoordsVertexShader);
+			source.append(qglslUntransformedPositionVertexShader);
 
 			QGLShader *vertexShader = new QGLShader(QGLShader::Vertex, m_blitProgram.data());
 			vertexShader->compileSourceCode(source);
@@ -261,8 +270,8 @@ static QGLShaderProgram * GrymBlitProgram()
 
 		{
 			QString source;
-			source.append(QLatin1String(qglslMainFragmentShader));
-			source.append(QLatin1String(qglslImageSrcFragmentShader));
+			source.append(qglslMainFragmentShader);
+			source.append(qglslImageSrcFragmentShader);
 
 			QGLShader *fragmentShader = new QGLShader(QGLShader::Fragment, m_blitProgram.data());
 			fragmentShader->compileSourceCode(source);
@@ -293,7 +302,7 @@ static void blitTexture(GLuint texture, GLenum target, const QSize &texSize, con
 		// glDisable(GL_SCISSOR_TEST);
 		glDisable(GL_BLEND);
 
-		QGLShaderProgram *blitProgram =	GrymBlitProgram();
+		QGLShaderProgram * blitProgram = CreateBlitProgram(target);
 		blitProgram->bind();
 		blitProgram->setUniformValue("imageTexture", 0 /*QT_IMAGE_TEXTURE_UNIT*/);
 
@@ -422,46 +431,17 @@ void GrymQtAndroidViewGraphicsProxy::CreateTestTexture(QSize * out_texture_size_
 	qDebug()<<"Done"<<__PRETTY_FUNCTION__<<"Texture size:"<<GL_formatted_image.width()<<"x"<<GL_formatted_image.height();
 }
 
-void GrymQtAndroidViewGraphicsProxy::CreateEmptyTexture(int desired_width, int desired_height, QSize * out_texture_size_)
+void GrymQtAndroidViewGraphicsProxy::CreateEmptyTexture()
 {
 	qDebug()<<__PRETTY_FUNCTION__<<"tid"<<gettid();
-
-	#if defined(ANDROIDVIEWGRAPHICSPROXY_GREEN_FILL)
-		QImage GL_formatted_image = QGLWidget::convertToGLFormat(QImage(desired_width, desired_height, QImage::Format_ARGB32));
-		if (GL_formatted_image.isNull())
-		{
-			qFatal("GL IMAGE IS NULL");
-		}
-		GL_formatted_image.fill(Qt::green);
-	#endif
-
 	glGenTextures(1, &texture_id_);
-	// Текстуры должны быть GL_TEXTURE_EXTERNAL_OES, этого требует SurfaceTexture
-	static const GLenum target = GL_TEXTURE_EXTERNAL_OES; // GL_TEXTURE_2D
+	static const GLenum target = GL_TEXTURE_EXTERNAL_OES; // Требование SurfaceTexture
 	texture_type_ = target;
 	glBindTexture(target, texture_id_);
-
-	#if defined(ANDROIDVIEWGRAPHICSPROXY_GREEN_FILL)
-		// Создадим данные текстуры (собственно картинку)
-		glTexImage2D(
-			target, 0, GL_RGBA
-			, GL_formatted_image.width(), GL_formatted_image.height()
-			, 0, GL_RGBA, GL_UNSIGNED_BYTE, GL_formatted_image.bits());
-	#endif
-
-	// Параметры текстуры
 	glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glBindTexture(target, 0);
-
-	#if defined(ANDROIDVIEWGRAPHICSPROXY_GREEN_FILL)
-		*out_texture_size_ = GL_formatted_image.size();
-	#else
-		//! \todo wipe desired size?
-		*out_texture_size_ = QSize(desired_width, desired_height);
-	#endif
-
-	qDebug()<<"Done"<<__PRETTY_FUNCTION__<<"Texture size:"<<GL_formatted_image.width()<<"x"<<GL_formatted_image.height();
+	qDebug()<<"Done"<<__PRETTY_FUNCTION__;
 }
 
 void GrymQtAndroidViewGraphicsProxy::initTexture()
@@ -485,7 +465,8 @@ void GrymQtAndroidViewGraphicsProxy::initTexture()
 			CreateTestTexture(&texture_size_);
 		#else
 			//! \todo задание размеров
-			CreateEmptyTexture(512, 512, &texture_size_);
+			CreateEmptyTexture();
+texture_size_ = QSize(512, 512); // SGEXP todo
 			if (offscreen_view_factory_)
 			{
 				offscreen_view_factory_->CallParamVoid("SetTexture", "I", jint(texture_id_));
@@ -498,20 +479,12 @@ void GrymQtAndroidViewGraphicsProxy::initTexture()
 	}
 }
 
-void GrymQtAndroidViewGraphicsProxy::updateTexture(QPainter * painter)
+void GrymQtAndroidViewGraphicsProxy::updateTexture()
 {
-	Q_UNUSED(painter); //! \todo remove?
-
-	// !!!!!!!!!!!!!! TODO
 	if (offscreen_view_)
 	{
 		offscreen_view_->CallVoid("drawViewOnTexture");
-
-		///EGLContext
-
-		//painter->beginNativePainting();
 		offscreen_view_->CallVoid("updateTexture");
-		//painter->endNativePainting();
 	}
 }
 

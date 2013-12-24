@@ -19,14 +19,14 @@ protected:
 	//! \param x, y, w, h - координаты региона в терминах OpenGL
 	virtual void doGLPainting(int x, int y, int w, int h);
 	void initTexture();
-	void updateTexture(QPainter * painter);
+	void updateTexture();
 	void destroyTexture();
 
 	QSize getDrawableSize() const;
 
 private:
 	void CreateTestTexture(QSize * out_texture_size_);
-	void CreateEmptyTexture(int desired_width, int desired_height, QSize * out_texture_size_);
+	void CreateEmptyTexture();
 
 private:
 	GLuint texture_id_;
