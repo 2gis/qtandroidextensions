@@ -151,24 +151,61 @@ void GrymQtAndroidViewGraphicsProxy::drawTexture(const QRectF &rect, GLuint tex_
 	src.setTop(src.top() / height);
 	src.setBottom(src.bottom() / height);
 
-	const GLfloat tx1 = src.left();
-	const GLfloat tx2 = src.right();
-	const GLfloat ty1 = src.top();
-	const GLfloat ty2 = src.bottom();
+	GLfloat tx1 = src.left();
+	GLfloat tx2 = src.right();
+	GLfloat ty1 = src.top();
+	GLfloat ty2 = src.bottom();
 
-	#if 1
-		qDebug()<<__PRETTY_FUNCTION__<<"src:"<<src.left()<<src.top()<<src.right()<<src.bottom()
-			   << " //////// "
-			   <<texture_transform_[0]<<texture_transform_[1]<<texture_transform_[2]<<texture_transform_[3]
-			   <<texture_transform_[4]<<texture_transform_[5]<<texture_transform_[6]<<texture_transform_[7]
-			   <<texture_transform_[8]<<texture_transform_[9]<<texture_transform_[10]<<texture_transform_[11]
-			   <<texture_transform_[12]<<texture_transform_[13]<<texture_transform_[14]<<texture_transform_[15];
-	#endif
+	GLfloat texCoordArray[4*2];
 
-	GLfloat texCoordArray[4*2] =
+	if (texture_transform_set_)
 	{
-		tx1, ty2, tx2, ty2, tx2, ty1, tx1, ty1
-	};
+		GLfloat * const A = texture_transform_;
+
+		#if 0
+			qDebug()<<__PRETTY_FUNCTION__<<"src:"<<src.left()<<src.top()<<src.right()<<src.bottom()
+				   << " ////////\n"
+				   <<A[0]<<A[4]<<A [8]<<A[12]<<"\n"
+				   <<A[1]<<A[5]<<A [9]<<A[13]<<"\n"
+				   <<A[2]<<A[6]<<A[10]<<A[14]<<"\n"
+				   <<A[3]<<A[7]<<A[11]<<A[15];
+		#endif
+		// Применяем матрицу преобразований. Подразумеваем, что в матрице texture_transform_ нету ничего над Z.
+		// Тогда матрица применяется так:
+		// (0 4)(x) + (12)
+		// (1 5)(y)   (13)
+		//! \todo Надо понять, нужно ли когда-либо применять матрицу более продвинутым образом?
+		GLfloat tx1m = A[0] * tx1 + A[4] * ty1 + A[12];
+		GLfloat tx2m = A[0] * tx2 + A[4] * ty2 + A[12];
+		GLfloat ty1m = A[1] * tx1 + A[5] * ty1 + A[13];
+		GLfloat ty2m = A[1] * tx2 + A[5] * ty2 + A[13];
+		#if 0
+			qDebug()<<__PRETTY_FUNCTION__<<"A:\n"
+				<<A[0]<<A[4]<<"\n"
+				<<A[1]<<A[5]<<"\n"
+				<<"b:"<<A[12]<<A[13]<<"\n"
+				<<"("<<tx1m<<ty1m<<"-"<<tx2m<<ty2m<<")";
+		#endif
+		texCoordArray[0] = tx1m;
+		texCoordArray[1] = ty2m;
+		texCoordArray[2] = tx2m;
+		texCoordArray[3] = ty2m;
+		texCoordArray[4] = tx2m;
+		texCoordArray[5] = ty1m;
+		texCoordArray[6] = tx1m;
+		texCoordArray[7] = ty1m;
+	}
+	else
+	{
+		texCoordArray[0] = tx1;
+		texCoordArray[1] = ty2;
+		texCoordArray[2] = tx2;
+		texCoordArray[3] = ty2;
+		texCoordArray[4] = tx2;
+		texCoordArray[5] = ty1;
+		texCoordArray[6] = tx1;
+		texCoordArray[7] = ty1;
+	}
 
 	// Запихнём координаты выхлопного прямоугольника в vertexArray
 	GLfloat vertexArray[4*2];

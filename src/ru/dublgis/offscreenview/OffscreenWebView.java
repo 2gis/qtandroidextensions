@@ -62,17 +62,17 @@ class OffscreenWebView extends WebView implements OffscreenView
 // !!!! WORKAROUND FOR CHROMIUM !!!!
 //setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 
-/*onAttachedToWindow();
+onAttachedToWindow();
 onSizeChanged(width, height, 0, 0);
 onVisibilityChanged(this, View.VISIBLE);
-onLayout(true, 0, 0, width, height);*/
+onLayout(true, 0, 0, width, height);
 
         // getSettings().setJavaScriptEnabled(true);
         // webview.loadUrl("http://slashdot.org/");
         // OR, you can also load from an HTML string:
         // String summary = "<html><body>You scored <b>192</b> points.</body></html>";
         // webview.loadData(summary, "text/html", null);
-//        loadData("<html><body style=\"background-color: orange;\"><h1>Teach Me To Web</h1></body></html>", "text/html", null);
+        loadData("<html><body style=\"background-color: orange;\"><h1>Teach Me To Web</h1></body></html>", "text/html", null);
     }
 
     @Override
