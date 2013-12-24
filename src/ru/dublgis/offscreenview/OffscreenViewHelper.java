@@ -1,5 +1,6 @@
 package ru.dublgis.offscreenview;
 
+import java.lang.Thread;
 import java.util.Set;
 import java.util.List;
 import java.util.LinkedList;
@@ -43,37 +44,52 @@ import android.view.inputmethod.InputMethodManager;
 
 class OffscreenViewHelper
 {
-    public static final String TAG = "OffscreenView";
+    public static final String TAG = "Grym/OffscreenView";
 
     int gl_texture_id_ = 0;
-    int width_ = 64;
-    int height_ = 64;
+    int texture_width_ = 512;
+    int texture_height_ = 512;
     SurfaceTexture surface_texture_ = null;
     Surface surface_ = null;
     View view_;
     String object_name_ = null;
 
-    public OffscreenViewHelper(String objectname, View view, int gltextureid, int width, int height)
+    public OffscreenViewHelper(String objectname, View view, int gltextureid, int texwidth, int texheight)
     {
-        Log.i(TAG, "OffscreenViewHelper(obj=\""+objectname+"\", texture="+gltextureid+", w="+width+", h="+height);
+        Log.i(TAG, "OffscreenViewHelper(obj=\""+objectname+"\", texture="+gltextureid+", w="+texwidth+", h="+texheight+") tid="+Thread.currentThread().getId());
 
         view_ = view;
         gl_texture_id_ = gltextureid;
-        width_ = width;
-        height_ = height;
+        texture_width_ = texwidth;
+        texture_height_ = texheight;
         object_name_ = objectname;
 
         surface_texture_ = new SurfaceTexture(gltextureid);
         surface_ = new Surface(surface_texture_);
 
-        surface_texture_.setDefaultBufferSize(width, height); // API 15
+        surface_texture_.setDefaultBufferSize(texwidth, texheight); // API 15
+    }
+
+    final int getTexture()
+    {
+        return gl_texture_id_;
+    }
+
+    final int getTextureWidth()
+    {
+        return texture_width_;
+    }
+
+    final int getTextureHeight()
+    {
+        return texture_height_;
     }
 
     protected Canvas lockCanvas()
     {
         try
         {
-            return surface_.lockCanvas(new Rect(0, 0, width_, height_));
+            return surface_.lockCanvas(new Rect(0, 0, texture_width_, texture_height_));
         }
         catch(Exception e)
         {
@@ -94,6 +110,20 @@ class OffscreenViewHelper
         catch(Exception e)
         {
             Log.e(TAG, "Failed to unlock canvas", e);
+        }
+    }
+
+    protected void updateTexture()
+    {
+        Log.i(TAG, "updateTexture tid="+Thread.currentThread().getId()+", tex="+gl_texture_id_);
+        try
+        {
+            // "You may call it in OnDrawFrame()."
+            surface_texture_.updateTexImage();
+        }
+        catch(Exception e)
+        {
+            Log.e(TAG, "Failed to update texture", e);
         }
     }
 

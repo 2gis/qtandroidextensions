@@ -1,5 +1,6 @@
 package ru.dublgis.offscreenview;
 
+import java.lang.Thread;
 import java.util.Set;
 import java.util.List;
 import java.util.LinkedList;
@@ -39,7 +40,7 @@ import android.view.inputmethod.InputMethodManager;
 
 class OffscreenViewFactory
 {
-    public static final String TAG = "OffscreenView";
+    public static final String TAG = "Grym/OffscreenView";
 
     // This block is only to walkaround limitations in jcGeneric.
     private String default_class_name_ = "OffscreenWebView";
@@ -54,9 +55,12 @@ class OffscreenViewFactory
     public void SetTextureHeight(int h) { default_texture_height_ = h; }
     public OffscreenView DoCreateView()
     {
-        return CreateOffscreenView(default_class_name_, default_object_name_, default_texture_id_, default_texture_width_, default_texture_height_);
+        Log.i(TAG, "DoCreateView tid="+Thread.currentThread().getId()+" class=\""+default_class_name_+"\", object=\""+default_object_name_+
+            "\", texid="+default_texture_id_+", texsize="+
+            default_texture_width_+"x"+default_texture_height_);
+        return CreateOffscreenView(default_class_name_, default_object_name_,
+            default_texture_id_, default_texture_width_, default_texture_height_);
     }
-
 
     OffscreenViewFactory()
     {

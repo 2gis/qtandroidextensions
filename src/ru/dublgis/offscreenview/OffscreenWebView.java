@@ -1,5 +1,6 @@
 package ru.dublgis.offscreenview;
 
+import java.lang.Thread;
 import java.util.Set;
 import java.util.List;
 import java.util.LinkedList;
@@ -45,7 +46,7 @@ import ru.dublgis.offscreenview.OffscreenViewHelper;
 
 class OffscreenWebView extends WebView implements OffscreenView
 {
-    public static final String TAG = "OffscreenView";
+    public static final String TAG = "Grym/OffscreenView";
     OffscreenViewHelper helper_;
 
     OffscreenWebView(final String objectname, int gltextureid, int width, int height)
@@ -53,6 +54,9 @@ class OffscreenWebView extends WebView implements OffscreenView
         super(getContextStatic());
         Log.i(TAG, "OffscreenWebView(name=\""+objectname+"\", texture="+gltextureid+")");
         helper_ = new OffscreenViewHelper(objectname, (View)this, gltextureid, width, height);
+
+// !!!! WORKAROUND FOR CHROMIUM !!!!
+//setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 
 onAttachedToWindow();
 onSizeChanged(width, height, 0, 0);
@@ -64,14 +68,14 @@ onLayout(true, 0, 0, width, height);
         // OR, you can also load from an HTML string:
         // String summary = "<html><body>You scored <b>192</b> points.</body></html>";
         // webview.loadData(summary, "text/html", null);
-        loadData("<html><body><h1>Teach Me To Web</h1></body></html>", "text/html", null);
+        loadData("<html><body style=\"background-color: orange;\"><h1>Teach Me To Web</h1></body></html>", "text/html", null);
     }
 
     @Override
     protected void onDraw(Canvas canvas)
     {
-        Log.i(TAG, "OffscreenWebView.onDraw");
-        updateGlTexture();
+        Log.i(TAG, "OffscreenWebView.onDraw tid="+Thread.currentThread().getId());
+        drawViewOnTexture();
     }
 
     // http://developer.android.com/reference/android/view/View.html
@@ -82,26 +86,34 @@ onLayout(true, 0, 0, width, height);
     }
 
     @Override
-    public void updateGlTexture()
+    public void drawViewOnTexture()
     {
-        Log.i(TAG, "OffscreenWebView.updateGlTexture");
+        Log.i(TAG, "OffscreenWebView.drawViewOnTexture tid="+Thread.currentThread().getId()+
+            " texture="+helper_.getTexture()+", size="+helper_.getTextureWidth()+"x"+helper_.getTextureHeight());
         try
         {
             Canvas canvas = helper_.lockCanvas();
             if (canvas == null)
             {
-                Log.e(TAG, "updateGlTexture: failed to lock canvas!");
+                Log.e(TAG, "drawViewOnTexture: failed to lock canvas!");
             }
             else
             {
                 super.onDraw(canvas);
                 helper_.unlockCanvas(canvas);
+                Log.i(TAG, "OffscreenWebView.drawViewOnTexture success.");
             }
         }
         catch(Exception e)
         {
-            Log.e(TAG, "updateGlTexture failed", e);
+            Log.e(TAG, "drawViewOnTexture failed", e);
         }
+    }
+
+    @Override
+    public void updateTexture()
+    {
+        helper_.updateTexture();
     }
 
 // protected void onSizeChanged (int w, int h, int oldw, int oldh) 

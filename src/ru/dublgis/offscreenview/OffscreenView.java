@@ -1,5 +1,6 @@
 package ru.dublgis.offscreenview;
 
+import java.lang.Thread;
 import java.util.Set;
 import java.util.List;
 import java.util.LinkedList;
@@ -39,7 +40,8 @@ import android.view.inputmethod.InputMethodManager;
 
 interface OffscreenView
 {
-    abstract public void updateGlTexture();
+    abstract public void drawViewOnTexture();
+    abstract public void updateTexture();
 }
 
 
