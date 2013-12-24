@@ -1,5 +1,6 @@
 #include <jni.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <QtOpenGL>
@@ -9,6 +10,7 @@
 #define ANDROIDVIEWGRAPHICSPROXY_CLEARALL
 // #define ANDROIDVIEWGRAPHICSPROXY_TEST_TEXTURE
 #define ANDROIDVIEWGRAPHICSPROXY_GREEN_FILL
+#define ANDROIDVIEWGRAPHICSPROXY_READ_ONLY_XY_TRANSFORM
 
 static const QString c_class_path_ = QLatin1String("ru/dublgis/offscreenview");
 
@@ -27,6 +29,8 @@ GrymQtAndroidViewGraphicsProxy::GrymQtAndroidViewGraphicsProxy(QGraphicsItem *pa
 
 	// device_listener_->RegisterNativeMethod("ScreenSwitch", "(JZ)V", (void*)Java_DeviceListener_ScreenSwitch);
 	qDebug()<<"Done"<<__PRETTY_FUNCTION__;
+
+	memset(texture_transform_, 0, sizeof(texture_transform_));
 }
 
 GrymQtAndroidViewGraphicsProxy::~GrymQtAndroidViewGraphicsProxy()
@@ -542,10 +546,20 @@ void GrymQtAndroidViewGraphicsProxy::updateTexture()
 	{
 		offscreen_view_->CallVoid("drawViewOnTexture");
 		offscreen_view_->CallVoid("updateTexture");
-		for (int i = 0; i < 16; ++i)
-		{
-			texture_transform_[i] = offscreen_view_->CallFloat("getTextureTransformMatrix", i);
-		}
+
+		#if defined(ANDROIDVIEWGRAPHICSPROXY_READ_ONLY_XY_TRANSFORM)
+			texture_transform_[0] = offscreen_view_->CallFloat("getTextureTransformMatrix", 0);
+			texture_transform_[1] = offscreen_view_->CallFloat("getTextureTransformMatrix", 1);
+			texture_transform_[4] = offscreen_view_->CallFloat("getTextureTransformMatrix", 4);
+			texture_transform_[5] = offscreen_view_->CallFloat("getTextureTransformMatrix", 5);
+			texture_transform_[12] = offscreen_view_->CallFloat("getTextureTransformMatrix", 12);
+			texture_transform_[13] = offscreen_view_->CallFloat("getTextureTransformMatrix", 13);
+		#else
+			for (int i = 0; i < 16; ++i)
+			{
+				texture_transform_[i] = offscreen_view_->CallFloat("getTextureTransformMatrix", i);
+			}
+		#endif
 		texture_transform_set_ = true;
 
 		#if 0
