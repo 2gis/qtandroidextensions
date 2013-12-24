@@ -56,7 +56,8 @@ class OffscreenViewHelper
 
     public OffscreenViewHelper(String objectname, View view, int gltextureid, int texwidth, int texheight)
     {
-        Log.i(TAG, "OffscreenViewHelper(obj=\""+objectname+"\", texture="+gltextureid+", w="+texwidth+", h="+texheight+") tid="+Thread.currentThread().getId());
+        Log.i(TAG, "OffscreenViewHelper(obj=\""+objectname+"\", texture="+gltextureid
+            +", w="+texwidth+", h="+texheight+") tid="+Thread.currentThread().getId());
 
         view_ = view;
         gl_texture_id_ = gltextureid;
@@ -89,7 +90,7 @@ class OffscreenViewHelper
     {
         try
         {
-            return surface_.lockCanvas(new Rect(0, 0, texture_width_, texture_height_));
+            return surface_.lockCanvas(new Rect(0, 0, texture_width_-1, texture_height_-1));
         }
         catch(Exception e)
         {
@@ -113,6 +114,13 @@ class OffscreenViewHelper
         }
     }
 
+    private float [] mtx_ = {
+       0, 0, 0, 0,
+       0, 0, 0, 0,
+       0, 0, 0, 0,
+       0, 0, 0, 0
+    };
+
     protected void updateTexture()
     {
         Log.i(TAG, "updateTexture tid="+Thread.currentThread().getId()+", tex="+gl_texture_id_);
@@ -120,6 +128,7 @@ class OffscreenViewHelper
         {
             // "You may call it in OnDrawFrame()."
             surface_texture_.updateTexImage();
+            surface_texture_.getTransformMatrix(mtx_);
         }
         catch(Exception e)
         {
@@ -127,6 +136,10 @@ class OffscreenViewHelper
         }
     }
 
+    public float getTextureTransformMatrix(int index)
+    {
+        return mtx_[index];
+    }
 
 /*
     The steps to render your view to OpenGL:

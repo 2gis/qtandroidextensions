@@ -19,6 +19,10 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ConfigurationInfo;
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
@@ -58,17 +62,17 @@ class OffscreenWebView extends WebView implements OffscreenView
 // !!!! WORKAROUND FOR CHROMIUM !!!!
 //setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 
-onAttachedToWindow();
+/*onAttachedToWindow();
 onSizeChanged(width, height, 0, 0);
 onVisibilityChanged(this, View.VISIBLE);
-onLayout(true, 0, 0, width, height);
+onLayout(true, 0, 0, width, height);*/
 
         // getSettings().setJavaScriptEnabled(true);
         // webview.loadUrl("http://slashdot.org/");
         // OR, you can also load from an HTML string:
         // String summary = "<html><body>You scored <b>192</b> points.</body></html>";
         // webview.loadData(summary, "text/html", null);
-        loadData("<html><body style=\"background-color: orange;\"><h1>Teach Me To Web</h1></body></html>", "text/html", null);
+//        loadData("<html><body style=\"background-color: orange;\"><h1>Teach Me To Web</h1></body></html>", "text/html", null);
     }
 
     @Override
@@ -85,6 +89,35 @@ onLayout(true, 0, 0, width, height);
         return QtApplicationBase.getActivityStatic();
     }
 
+    static Bitmap bitmap_ = null;
+    private int DrawableResourceId(Context my_context, final String name)
+    {
+        return my_context.getResources().getIdentifier(name, "drawable", my_context.getPackageName());
+    }
+    private void CheckBitmap()
+    {
+        if (bitmap_ == null)
+        {
+            try
+            {
+                Context ctx = getContextStatic();
+                int resource = DrawableResourceId(ctx, "kotik");
+                BitmapFactory.Options ops = new BitmapFactory.Options();
+                ops.inScaled = false;
+                ops.inDensity = 0;
+                ops.inTargetDensity = 0;
+                ops.inScreenDensity = 0;
+                bitmap_ = BitmapFactory.decodeResource(ctx.getResources(), resource, ops);
+                bitmap_.setDensity(Bitmap.DENSITY_NONE);
+            }
+            catch(Exception e)
+            {
+                Log.e(TAG, "CheckBitmap error", e);
+            }
+        }
+    }
+
+
     @Override
     public void drawViewOnTexture()
     {
@@ -99,8 +132,21 @@ onLayout(true, 0, 0, width, height);
             }
             else
             {
-                super.onDraw(canvas);
+//                super.onDraw(canvas);
+
 canvas.drawARGB (255, 255, 100, 0);
+Paint paint = new Paint();
+paint.setColor(Color.BLACK);
+// paint.setAntiAlias(true);
+canvas.drawLine(0, 0, 400, 400, paint);
+
+CheckBitmap();
+if (bitmap_ != null){
+Log.i(TAG, ">>>>>>>>>>>>>>>>> PAINTING <<<<<<<<<<<<<<<<<<<<");
+canvas.drawBitmap(bitmap_, 0, 0, paint);
+}else Log.i(TAG, "!!!!!!!!!!!!!!!! NO BITMAP !!!!!!!!!!!!!!!!!!!");
+
+
                 helper_.unlockCanvas(canvas);
                 Log.i(TAG, "OffscreenWebView.drawViewOnTexture success.");
             }
@@ -115,6 +161,12 @@ canvas.drawARGB (255, 255, 100, 0);
     public void updateTexture()
     {
         helper_.updateTexture();
+    }
+
+    @Override
+    public float getTextureTransformMatrix(int index)
+    {
+        return helper_.getTextureTransformMatrix(index);
     }
 
 // protected void onSizeChanged (int w, int h, int oldw, int oldh) 

@@ -17,6 +17,7 @@ GrymQtAndroidViewGraphicsProxy::GrymQtAndroidViewGraphicsProxy(QGraphicsItem *pa
 	, texture_id_(0)
 	, texture_type_(GL_TEXTURE_2D)
 	, texture_available_(false)
+	, texture_transform_set_(false)
 {
 	qDebug()<<__PRETTY_FUNCTION__<<"tid"<<gettid();
 	offscreen_view_factory_.reset(new jcGeneric((c_class_path_+"/OffscreenViewFactory").toAscii(), true));
@@ -127,7 +128,7 @@ static inline void QRectFToVertexArray(const QRectF &r, GLfloat *array)
 /*!
  * Рисовалка текстуры из Qt. Подразумевается, что подготовительные операции уже сделаны.
  */
-static void drawTexture(const QRectF &rect, GLuint tex_id, GLenum target, const QSize &texSize, const QRectF &bitmap_rect = QRectF())
+void GrymQtAndroidViewGraphicsProxy::drawTexture(const QRectF &rect, GLuint tex_id, GLenum target, const QSize &texSize, const QRectF &bitmap_rect)
 {
 	static const GLuint QT_VERTEX_COORDS_ATTR  = 0;
 	static const GLuint QT_TEXTURE_COORDS_ATTR = 1;
@@ -142,21 +143,27 @@ static void drawTexture(const QRectF &rect, GLuint tex_id, GLenum target, const 
 			 QPointF(bitmap_rect.x(), texSize.height() - bitmap_rect.bottom())
 			 , bitmap_rect.size());
 
-	if (target == GL_TEXTURE_2D)
-	{
-		// Конвертируем координаты исходного прямоугольника из текстуры в [0..1]
-		qreal width = texSize.width();
-		qreal height = texSize.height();
-		src.setLeft(src.left() / width);
-		src.setRight(src.right() / width);
-		src.setTop(src.top() / height);
-		src.setBottom(src.bottom() / height);
-	}
+	// Конвертируем координаты исходного прямоугольника из текстуры в [0..1]
+	qreal width = texSize.width();
+	qreal height = texSize.height();
+	src.setLeft(src.left() / width);
+	src.setRight(src.right() / width);
+	src.setTop(src.top() / height);
+	src.setBottom(src.bottom() / height);
 
 	const GLfloat tx1 = src.left();
 	const GLfloat tx2 = src.right();
 	const GLfloat ty1 = src.top();
 	const GLfloat ty2 = src.bottom();
+
+	#if 1
+		qDebug()<<__PRETTY_FUNCTION__<<"src:"<<src.left()<<src.top()<<src.right()<<src.bottom()
+			   << " //////// "
+			   <<texture_transform_[0]<<texture_transform_[1]<<texture_transform_[2]<<texture_transform_[3]
+			   <<texture_transform_[4]<<texture_transform_[5]<<texture_transform_[6]<<texture_transform_[7]
+			   <<texture_transform_[8]<<texture_transform_[9]<<texture_transform_[10]<<texture_transform_[11]
+			   <<texture_transform_[12]<<texture_transform_[13]<<texture_transform_[14]<<texture_transform_[15];
+	#endif
 
 	GLfloat texCoordArray[4*2] =
 	{
@@ -294,7 +301,7 @@ static QGLShaderProgram * CreateBlitProgram(GLenum target)
  * \param targetRect - прямоугольник в координатах GL-контекста
  * \todo Пока считаем, что размер вьюпорта равен размеру таргетректа, на понятно, нафига вот это всё?
 */
-static void blitTexture(GLuint texture, GLenum target, const QSize &texSize, const QRect &targetRect, const QRect &sourceRect)
+void GrymQtAndroidViewGraphicsProxy::blitTexture(GLuint texture, GLenum target, const QSize &texSize, const QRect &targetRect, const QRect &sourceRect)
 {
 	#if defined(QT_OPENGL_ES_2)
 		glDisable(GL_STENCIL_TEST);
@@ -330,7 +337,6 @@ static void blitTexture(GLuint texture, GLenum target, const QSize &texSize, con
 		{
 			r.setTop((targetRect.bottom() / w) * 2.0f - 1.0f);
 		}
-
 		drawTexture(r, texture, target, texSize, sourceRect);
 	#else
 		// Не-GL ES реализация, используем не шейдеры
@@ -378,9 +384,20 @@ void GrymQtAndroidViewGraphicsProxy::doGLPainting(int x, int y, int w, int h)
 		, y + h - draw_size.height()
 		, draw_size.width()
 		, draw_size.height());
-	// verbose qDebug()<<<<"tid"<<gettid()"Mapped to parent:"<<target_rect.left()<<","<<target_rect.top()
+	// verbose qDebug()<<"tid"<<gettid()<<"Mapped to parent:"<<target_rect.left()<<","<<target_rect.top()
 	// <<"("<<target_rect.width()<<","<<target_rect.height()<<")";
 	glViewport(target_rect.x(), target_rect.y(), target_rect.width(), target_rect.height());
+
+	// Debug
+	#if 0 // !defined(QT_OPENGL_ES_2)
+		GLuint width = 0, height = 0;
+		glBindTexture(texture_type_, texture_id_);
+		glGetTexLevelParameteriv(texture_type_, 0, GL_TEXTURE_WIDTH, &width);
+		glGetTexLevelParameteriv(texture_type_, 0, GL_TEXTURE_HEIGHT, &height);
+		glBindTexture(texture_type_, 0);
+		qDebug<<__PRETTY_FUNCTION__<<"TRUE TEXTURE SIZE:"<<width<<height;
+	#endif
+
 	blitTexture(
 		texture_id_ // texture
 		, texture_type_
@@ -395,6 +412,7 @@ void GrymQtAndroidViewGraphicsProxy::doGLPainting(int x, int y, int w, int h)
 void GrymQtAndroidViewGraphicsProxy::CreateTestTexture(QSize * out_texture_size_)
 {
 	qDebug()<<__PRETTY_FUNCTION__<<"tid"<<gettid();
+
 	QImage img;
 	if (!img.load(":/images/kotik.png"))
 	{
@@ -451,6 +469,7 @@ void GrymQtAndroidViewGraphicsProxy::initTexture()
 	{
 		qDebug()<<__PRETTY_FUNCTION__<<"tid"<<gettid()<<"Have to create a texture...";
 		texture_available_ = true;
+		texture_transform_set_ = false;
 
 		// Определяем максимальные размеры текстуры
 		GLint maxdims[2];
@@ -469,6 +488,7 @@ void GrymQtAndroidViewGraphicsProxy::initTexture()
 texture_size_ = QSize(512, 512); // SGEXP todo
 			if (offscreen_view_factory_)
 			{
+				//! \todo Мы задаём размер вьюшки, а не текстур!
 				offscreen_view_factory_->CallParamVoid("SetTexture", "I", jint(texture_id_));
 				offscreen_view_factory_->CallParamVoid("SetTextureWidth",	"I", jint(texture_size_.width()));
 				offscreen_view_factory_->CallParamVoid("SetTextureHeight", "I", jint(texture_size_.height()));
@@ -485,6 +505,20 @@ void GrymQtAndroidViewGraphicsProxy::updateTexture()
 	{
 		offscreen_view_->CallVoid("drawViewOnTexture");
 		offscreen_view_->CallVoid("updateTexture");
+		for (int i = 0; i < 16; ++i)
+		{
+			texture_transform_[i] = offscreen_view_->CallFloat("getTextureTransformMatrix", i);
+		}
+		texture_transform_set_ = true;
+
+		#if 0
+			QString msg;
+			for (int i = 0; i < 16; ++i)
+			{
+				msg += QString("%1 ").arg(texture_transform_[i]);
+			}
+			qDebug()<<__PRETTY_FUNCTION__<<"Transform matrix:"<<msg;
+		#endif
 	}
 }
 

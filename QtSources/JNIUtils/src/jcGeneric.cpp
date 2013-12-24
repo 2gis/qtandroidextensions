@@ -240,6 +240,20 @@ float jcGeneric::CallFloat(const char* method_name)
 	return (float)env->CallFloatMethod(instance_, mid);
 }
 
+float jcGeneric::CallFloat(const char* method_name, int param)
+{
+	LOGV("float jcGeneric::CallFloat(const char* method_name) %p \"%s\" (%d)",this,method_name, param);
+	JniEnvPtr jep;
+	JNIEnv* env = jep.env();
+	jmethodID mid = env->GetMethodID(class_, method_name, "(I)F");
+	if (!mid)
+	{
+		LOG("%s: method not found.", __FUNCTION__);
+		throw method_not_found_exception();
+	}
+	return (float)env->CallFloatMethod(instance_, mid, jint(param));
+}
+
 double jcGeneric::CallDouble(const char* method_name)
 {
 	LOGV("float jcGeneric::CallDouble(const char* method_name) %p \"%s\"",this,method_name);

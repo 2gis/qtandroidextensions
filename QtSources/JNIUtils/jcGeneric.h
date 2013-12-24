@@ -65,6 +65,9 @@ public:
 	//! Call float method of the wrapped Java object
 	float CallFloat(const char* method_name);
 
+	//! Call float method of the wrapped Java object with int parameter
+	float CallFloat(const char* method_name, int param);
+
 	//! Call double method of the wrapped Java object
 	double CallDouble(const char* method_name);
 
