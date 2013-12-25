@@ -53,11 +53,11 @@ class OffscreenWebView extends WebView implements OffscreenView
     public static final String TAG = "Grym/OffscreenView";
     OffscreenViewHelper helper_;
 
-    OffscreenWebView(final String objectname, int gltextureid, int width, int height)
+    OffscreenWebView(final String objectname, final long nativeptr, final int gltextureid, final int width, final int height)
     {
         super(getContextStatic());
         Log.i(TAG, "OffscreenWebView(name=\""+objectname+"\", texture="+gltextureid+")");
-        helper_ = new OffscreenViewHelper(objectname, (View)this, gltextureid, width, height);
+        helper_ = new OffscreenViewHelper(nativeptr, objectname, (View)this, gltextureid, width, height);
 
 // !!!! WORKAROUND FOR CHROMIUM !!!!
 //setLayerType(View.LAYER_TYPE_SOFTWARE, null);
@@ -169,6 +169,9 @@ canvas.drawBitmap(bitmap_, 0, 0, paint);
         return helper_.getTextureTransformMatrix(index);
     }
 
+    // JNI
+    public native void nativeUpdate(long nativeptr);
+    
 // protected void onSizeChanged (int w, int h, int oldw, int oldh) 
 
  // Repainting: invalidate().

@@ -14,6 +14,21 @@
 
 static const QString c_class_path_ = QLatin1String("ru/dublgis/offscreenview");
 
+Q_DECL_EXPORT void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv *, jobject, jlong param)
+{
+	if (param)
+	{
+		void * vp = reinterpret_cast<void*>(param);
+		GrymQtAndroidViewGraphicsProxy * proxy = reinterpret_cast<GrymQtAndroidViewGraphicsProxy*>(vp);
+		if (proxy)
+		{
+			proxy->javaUpdate();
+			return;
+		}
+	}
+	qWarning()<<__FUNCTION__<<"Zero param!";
+}
+
 GrymQtAndroidViewGraphicsProxy::GrymQtAndroidViewGraphicsProxy(QGraphicsItem *parent, Qt::WindowFlags wFlags)
 	: QGraphicsWidget(parent, wFlags)
 	, texture_id_(0)
@@ -27,7 +42,6 @@ GrymQtAndroidViewGraphicsProxy::GrymQtAndroidViewGraphicsProxy(QGraphicsItem *pa
 	qDebug()<<__PRETTY_FUNCTION__<<"Connected to OffscreenViewFactory.";
 	qDebug()<<__PRETTY_FUNCTION__<<"Test string:"<<offscreen_view_factory_->CallStaticString("Test");
 
-	// device_listener_->RegisterNativeMethod("ScreenSwitch", "(JZ)V", (void*)Java_DeviceListener_ScreenSwitch);
 	qDebug()<<"Done"<<__PRETTY_FUNCTION__;
 
 	memset(texture_transform_, 0, sizeof(texture_transform_));
@@ -35,6 +49,9 @@ GrymQtAndroidViewGraphicsProxy::GrymQtAndroidViewGraphicsProxy(QGraphicsItem *pa
 
 GrymQtAndroidViewGraphicsProxy::~GrymQtAndroidViewGraphicsProxy()
 {
+	// Разрушим Java-объекты первым делом
+	offscreen_view_.reset();
+	offscreen_view_factory_.reset();
 	destroyTexture();
 }
 
@@ -178,7 +195,6 @@ void GrymQtAndroidViewGraphicsProxy::drawTexture(const QRectF &rect, GLuint tex_
 		// Тогда матрица применяется так:
 		// (0 4)(x) + (12)
 		// (1 5)(y)   (13)
-		//! \todo Надо понять, нужно ли когда-либо применять матрицу более продвинутым образом?
 		GLfloat tx1m = A[0] * tx1 + A[4] * ty1 + A[12];
 		GLfloat tx2m = A[0] * tx2 + A[4] * ty2 + A[12];
 		GLfloat ty1m = A[1] * tx1 + A[5] * ty1 + A[13];
@@ -265,7 +281,7 @@ static QGLShaderProgram * CreateBlitProgram(GLenum target)
 	QString qglslMainWithTexCoordsVertexShader =
 		QString((target == GL_TEXTURE_EXTERNAL_OES)? c_for_external_: QLatin1String("")) +
 		"attribute highp vec2 textureCoordArray; \n"
-		"varying   highp vec2 textureCoords; \n"
+		"varying highp vec2 textureCoords; \n"
 		"void setPosition(); \n"
 		"void main(void) \n"
 		"{ \n"
@@ -291,7 +307,7 @@ static QGLShaderProgram * CreateBlitProgram(GLenum target)
 
 	QString qglslImageSrcFragmentShader =
 		QString((target == GL_TEXTURE_EXTERNAL_OES)? c_for_external_: QLatin1String("")) +
-		"varying   highp   vec2      textureCoords; \n" +
+		"varying highp vec2 textureCoords; \n" +
 		QString((target == GL_TEXTURE_EXTERNAL_OES)?
 			"uniform samplerExternalOES imageTexture; \n" :
 			"uniform sampler2D imageTexture; \n") +
@@ -400,13 +416,15 @@ void GrymQtAndroidViewGraphicsProxy::blitTexture(GLuint texture, GLenum target, 
 		#else
 			glOrthof(0, targetRect.width(), targetRect.height(), 0, -999999, 999999);
 		#endif
-
-		// На этот цвет умножится текстура
-		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-
+		glColor4f(1.0f, 1.0f, 1.0f, 1.0f); // На этот цвет умножится текстура
 		// Готово!
 		drawTexture(targetRect, texture, target, targetRect.size(), sourceRect);
 	#endif
+}
+
+void GrymQtAndroidViewGraphicsProxy::javaUpdate()
+{
+	qDebug()<<__PRETTY_FUNCTION__;
 }
 
 /*!
@@ -441,7 +459,7 @@ void GrymQtAndroidViewGraphicsProxy::doGLPainting(int x, int y, int w, int h)
 
 	blitTexture(
 		texture_id_ // texture
-		, texture_type_
+		, texture_type_ // texture type (2D / external)
 		, texture_size_ // texture size
 		, QRect(QPoint(0, 0), draw_size) // target rect
 		, QRect(QPoint(0, 0), draw_size)); // source rect
@@ -453,44 +471,38 @@ void GrymQtAndroidViewGraphicsProxy::doGLPainting(int x, int y, int w, int h)
 void GrymQtAndroidViewGraphicsProxy::CreateTestTexture(QSize * out_texture_size_)
 {
 	qDebug()<<__PRETTY_FUNCTION__<<"tid"<<gettid();
-
 	QImage img;
 	if (!img.load(":/images/kotik.png"))
 	{
-		qFatal("ERROR LOADING IMAGE");
+		qFatal("Failed to load PNG image for test texture.");
 	}
-
 	QImage GL_formatted_image = QGLWidget::convertToGLFormat(img);
 	if (GL_formatted_image.isNull())
 	{
-		qFatal("GL IMAGE IS NULL");
+		qFatal("Result of conversion to GL format is null.");
 	}
-
+	// Создаём текстуру
 	glGenTextures(1, &texture_id_);
-
 	static const GLenum target = GL_TEXTURE_2D;
 	texture_type_ = target;
 
 	// Выберем эту текстуру для работы
 	glBindTexture(GL_TEXTURE_2D, texture_id_);
-
-	// Создадим данные текстуры (собственно картинку)
+	// Загрузим данные текстуры (собственно картинку)
 	glTexImage2D(
 		target, 0, GL_RGBA
 		, GL_formatted_image.width(), GL_formatted_image.height()
 		, 0, GL_RGBA, GL_UNSIGNED_BYTE, GL_formatted_image.bits());
-
 	// Параметры текстуры
 	glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glBindTexture(target, 0);
 
 	*out_texture_size_ = GL_formatted_image.size();
-
 	qDebug()<<"Done"<<__PRETTY_FUNCTION__<<"Texture size:"<<GL_formatted_image.width()<<"x"<<GL_formatted_image.height();
 }
 
-void GrymQtAndroidViewGraphicsProxy::CreateEmptyTexture()
+void GrymQtAndroidViewGraphicsProxy::CreateEmptyExternalTexture()
 {
 	qDebug()<<__PRETTY_FUNCTION__<<"tid"<<gettid();
 	glGenTextures(1, &texture_id_);
@@ -525,16 +537,22 @@ void GrymQtAndroidViewGraphicsProxy::initTexture()
 			CreateTestTexture(&texture_size_);
 		#else
 			//! \todo задание размеров
-			CreateEmptyTexture();
-texture_size_ = QSize(512, 512); // SGEXP todo
+			CreateEmptyExternalTexture();
+
+			// Мы можем создать Java-вьюху только имея текстуру, а текстуру мы можем создать
+			// только в OpenGL-контексте, поэтому конструирование сделаем при первой отрисовке.
+			// Если вьюха тяжёлая, то её создание можно отложить на стороне Java.
+			texture_size_ = QSize(512, 512); // SGEXP todo
 			if (offscreen_view_factory_)
 			{
 				//! \todo Мы задаём размер вьюшки, а не текстур!
 				offscreen_view_factory_->CallParamVoid("SetTexture", "I", jint(texture_id_));
 				offscreen_view_factory_->CallParamVoid("SetTextureWidth",	"I", jint(texture_size_.width()));
 				offscreen_view_factory_->CallParamVoid("SetTextureHeight", "I", jint(texture_size_.height()));
+				offscreen_view_factory_->CallParamVoid("SetNativePtr", "J", jlong(reinterpret_cast<void*>(this)));
 				offscreen_view_.reset(offscreen_view_factory_->CallObject("DoCreateView"
 					, (c_class_path_+"/OffscreenView").toAscii()));
+				offscreen_view_->RegisterNativeMethod("Java_OffscreenView_nativeUpdate", "(J)V", (void*)Java_OffscreenView_nativeUpdate);
 			}
 		#endif
 	}
@@ -545,8 +563,11 @@ void GrymQtAndroidViewGraphicsProxy::updateTexture()
 	if (offscreen_view_)
 	{
 		offscreen_view_->CallVoid("drawViewOnTexture");
+
+		// Заберём нарисованное изображение в текстуру
 		offscreen_view_->CallVoid("updateTexture");
 
+		// Заберём матрицу преобразований текстуры
 		#if defined(ANDROIDVIEWGRAPHICSPROXY_READ_ONLY_XY_TRANSFORM)
 			texture_transform_[0] = offscreen_view_->CallFloat("getTextureTransformMatrix", 0);
 			texture_transform_[1] = offscreen_view_->CallFloat("getTextureTransformMatrix", 1);
@@ -561,7 +582,6 @@ void GrymQtAndroidViewGraphicsProxy::updateTexture()
 			}
 		#endif
 		texture_transform_set_ = true;
-
 		#if 0
 			QString msg;
 			for (int i = 0; i < 16; ++i)
@@ -579,7 +599,9 @@ void GrymQtAndroidViewGraphicsProxy::destroyTexture()
 	if (texture_available_)
 	{
 		qDebug()<<__PRETTY_FUNCTION__<<"Deleting texture...";
-		glDeleteTextures( 1, &texture_id_ );
+		glDeleteTextures(1, &texture_id_);
+		texture_available_ = false;
+		texture_id_ = 0;
 	}
 	qDebug()<<"Done"<<__PRETTY_FUNCTION__;
 }
@@ -591,11 +613,3 @@ QSize GrymQtAndroidViewGraphicsProxy::getDrawableSize() const
 }
 
 
-/*Q_DECL_EXPORT void JNICALL Java_DeviceListener_ScreenSwitch(
-	JNIEnv*
-	, jobject
-	, jlong param
-	, jboolean on)
-{
-}
-*/

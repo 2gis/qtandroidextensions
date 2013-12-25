@@ -26,12 +26,14 @@ protected:
 
 private:
 	void CreateTestTexture(QSize * out_texture_size_);
-	void CreateEmptyTexture();
+	void CreateEmptyExternalTexture();
 
 	//! \todo refactor
 	void drawTexture(const QRectF &rect, GLuint tex_id, GLenum target, const QSize &texSize, const QRectF &bitmap_rect = QRectF());
 	void blitTexture(GLuint texture, GLenum target, const QSize &texSize, const QRect &targetRect, const QRect &sourceRect);
+	void javaUpdate();
 
+	friend void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv * env, jobject jo, jlong param);
 private:
 	GLuint texture_id_;
 	GLenum texture_type_;

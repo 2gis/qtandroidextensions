@@ -48,18 +48,25 @@ class OffscreenViewFactory
     private int default_texture_id_ = 0;
     private int default_texture_width_ = 512;
     private int default_texture_height_ = 512;
+    private long default_native_ptr_ = 0;
     public void SetClassName(String name) { default_class_name_ = name; }
     public void SetObjectName(String name) { default_object_name_ = name; }
     public void SetTexture(int tex) { default_texture_id_ = tex; }
     public void SetTextureWidth(int w) { default_texture_width_ = w; }
     public void SetTextureHeight(int h) { default_texture_height_ = h; }
+    public void SetNativePtr(long ptr) { default_native_ptr_ = ptr; }
     public OffscreenView DoCreateView()
     {
         Log.i(TAG, "DoCreateView tid="+Thread.currentThread().getId()+" class=\""+default_class_name_+"\", object=\""+default_object_name_+
             "\", texid="+default_texture_id_+", texsize="+
             default_texture_width_+"x"+default_texture_height_);
-        return CreateOffscreenView(default_class_name_, default_object_name_,
-            default_texture_id_, default_texture_width_, default_texture_height_);
+        return CreateOffscreenView(
+            default_class_name_,
+            default_object_name_,
+            default_native_ptr_,
+            default_texture_id_,
+            default_texture_width_,
+            default_texture_height_);
     }
 
     OffscreenViewFactory()
@@ -71,14 +78,11 @@ class OffscreenViewFactory
         return "TestString";
     }
 
-    public static OffscreenView CreateOffscreenView(String classname, String objectname, int gltextureid, int width, int height)
+    public static OffscreenView CreateOffscreenView(String classname, String objectname, long nativeptr, int gltextureid, int width, int height)
     {
         Log.i(TAG, "CreateOffscreenView");
         // TODO: Use classname to create various views
-        return new OffscreenWebView(objectname, gltextureid, width, height);
+        return new OffscreenWebView(objectname, nativeptr, gltextureid, width, height);
     }
 
 }
-
-
-

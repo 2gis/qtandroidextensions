@@ -46,6 +46,7 @@ class OffscreenViewHelper
 {
     public static final String TAG = "Grym/OffscreenView";
 
+    long native_ptr_ = 0;
     int gl_texture_id_ = 0;
     int texture_width_ = 512;
     int texture_height_ = 512;
@@ -54,11 +55,12 @@ class OffscreenViewHelper
     View view_;
     String object_name_ = null;
 
-    public OffscreenViewHelper(String objectname, View view, int gltextureid, int texwidth, int texheight)
+    public OffscreenViewHelper(long nativeptr, String objectname, View view, int gltextureid, int texwidth, int texheight)
     {
         Log.i(TAG, "OffscreenViewHelper(obj=\""+objectname+"\", texture="+gltextureid
             +", w="+texwidth+", h="+texheight+") tid="+Thread.currentThread().getId());
 
+        native_ptr_ = nativeptr;
         view_ = view;
         gl_texture_id_ = gltextureid;
         texture_width_ = texwidth;
@@ -84,6 +86,11 @@ class OffscreenViewHelper
     final int getTextureHeight()
     {
         return texture_height_;
+    }
+
+    final long getNativePtr()
+    {
+        return native_ptr_;
     }
 
     protected Canvas lockCanvas()

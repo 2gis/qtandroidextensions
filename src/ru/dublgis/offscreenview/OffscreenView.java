@@ -43,6 +43,9 @@ interface OffscreenView
     abstract public void drawViewOnTexture();
     abstract public void updateTexture();
     abstract public float getTextureTransformMatrix(int index);
+
+    // JNI
+    abstract public void nativeUpdate(long nativeptr);
 }
 
 
