@@ -22,6 +22,7 @@ import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -34,6 +35,7 @@ import android.util.DisplayMetrics;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View;
+import android.view.ViewParent;
 import android.view.KeyEvent;
 import android.view.KeyCharacterMap;
 import android.view.Menu;
@@ -43,6 +45,7 @@ import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 import android.graphics.Canvas;
 
@@ -58,10 +61,43 @@ class OffscreenWebView implements OffscreenView
 
     class MyWebView extends WebView
     {
+        // TODO: pauseTimers/ resumeTimers ()
+        // http://developer.android.com/reference/android/webkit/WebView.html
+        //  public void setInitialScale (int scaleInPercent) (0 = default)
+
+        int width_ = 100, height_ = 100;
+        MyWebViewClient webviewclient_ = null;
+
+        private class MyWebViewClient extends WebViewClient
+        {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url)
+            {
+                // This should always be done for Chrome to avoid opening links in external browser.
+                view.loadUrl(url);
+                return true;
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url)
+            {
+                Log.i(TAG, "MyWebView.MyWebViewClient.onPageFinished");
+                if (helper_ != null)
+                {
+                     nativeUpdate(helper_.getNativePtr());
+                }
+                super.onPageFinished(view, url);
+            }
+        }
+
         public MyWebView(Context context, int width, int height)
         {
             super(context);
             Log.i(TAG, "MyWebView "+width+"x"+height);
+            width_ = width;
+            height_ = height;
+            webviewclient_ = new MyWebViewClient();
+            setWebViewClient(webviewclient_);
             /*onAttachedToWindow();
             onSizeChanged(width, height, 0, 0);
             onVisibilityChanged(this, View.VISIBLE);
@@ -92,6 +128,24 @@ class OffscreenWebView implements OffscreenView
             */
         }
 
+        /*@Override
+        protected void dispatchDraw(Canvas canvas)
+        {
+             Log.i(TAG, "MyWebView.dispatchDraw");
+             super.dispatchDraw(canvas);
+        }*/
+
+        /*@Override
+        protected void onDraw (Canvas canvas)
+        {
+            Log.i(TAG, "MyWebView.onDraw");
+            if (helper_ != null)
+            {
+                 nativeUpdate(helper_.getNativePtr());
+            }
+        }*/
+
+        // Old WebKit updating
         @Override
         public void invalidate(Rect dirty)
         {
@@ -103,6 +157,7 @@ class OffscreenWebView implements OffscreenView
             // super.invalidate(dirty);
         }
 
+        // Old WebKit updating
         @Override
         public void invalidate(int l, int t, int r, int b)
         {
@@ -114,6 +169,7 @@ class OffscreenWebView implements OffscreenView
             // super.invalidate(l, t, r, b);
         }
 
+        // Old WebKit updating
         @Override
         public void invalidate()
         {
@@ -124,6 +180,71 @@ class OffscreenWebView implements OffscreenView
             }
             // super.invalidate();
         }
+
+        /*@Override
+        public ViewParent invalidateChildInParent(int[] location, Rect r)
+        {
+            Log.i(TAG, "MyWebView.invalidateChildInParent(int[] location, Rect r)");
+            if (helper_ != null)
+            {
+                 nativeUpdate(helper_.getNativePtr());
+            }
+            return super.invalidateChildInParent(location, r);
+        }*/
+
+        // Chromium updating
+        @Override
+        public void requestLayout()
+        {
+            Log.i(TAG, "MyWebView.requestLayout()");
+            if (helper_ != null)
+            {
+               final Activity context = getContextStatic();
+               context.runOnUiThread(new Runnable()
+               {
+                   @Override
+                   public void run()
+                   {
+                       onLayout(true, 0, 0, width_, height_);
+                       nativeUpdate(helper_.getNativePtr());
+                   }
+               });
+            }
+            super.requestLayout();
+        }
+
+      /*  @Override
+        public void invalidateDrawable(Drawable drawable)
+        {
+            Log.i(TAG, "MyWebView.invalidateDrawable()");
+            if (helper_ != null)
+            {
+                 nativeUpdate(helper_.getNativePtr());
+            }
+        }
+
+        @Override
+        public void scheduleDrawable(Drawable who, Runnable what, long when)
+        {
+            Log.i(TAG, "MyWebView.scheduleDrawable()");
+            if (helper_ != null)
+            {
+                 nativeUpdate(helper_.getNativePtr());
+            }
+        }
+        
+        @Override
+        public void childDrawableStateChanged(View child)
+        {
+            Log.i(TAG, "MyWebView.childDrawableStateChanged()");
+            if (helper_ != null)
+            {
+                 nativeUpdate(helper_.getNativePtr());
+            }
+            super.childDrawableStateChanged(child);
+        }*/
+
+        //  public boolean isDirty () 
     }
 
     OffscreenWebView(final String objectname, final long nativeptr, final int gltextureid, final int width, final int height)
@@ -139,7 +260,7 @@ class OffscreenWebView implements OffscreenView
                  webview_ = new MyWebView(context, width, height);
                  helper_ = new OffscreenViewHelper(nativeptr, objectname, webview_, gltextureid, width, height);
                  webview_.getSettings().setJavaScriptEnabled(true);
-                 webview_.loadUrl("http://2gis.ru/");
+                 webview_.loadUrl("http://google.com/");
                  //webview_.loadData("<html><body style=\"background-color: green;\"><h1>Teach Me To Web</h1></body></html>", "text/html", null);
             }
         });

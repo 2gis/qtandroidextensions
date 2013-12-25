@@ -30,5 +30,5 @@ for J in $JAVA_DIRS ; do
   ln -sfv "$SRCJAVA/org/qt/$J" "src/org/qt/$J" || exit 1 ;
 done
 
-android update project -p . -t 8 --target "android-15" || exit 1
+android update project -p . -t 8 --target "android-19" || exit 1
 

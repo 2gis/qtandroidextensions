@@ -86,7 +86,7 @@ void GrymQtAndroidViewGraphicsProxy::paint(QPainter * painter, const QStyleOptio
 	QPoint viewpos = this->scene()->views().at(0)->pos();
 	Q_UNUSED(viewpos);
 
-#if 1
+#if 0
 	qDebug()
 			<<__PRETTY_FUNCTION__
 			<<"tid"<<gettid()
