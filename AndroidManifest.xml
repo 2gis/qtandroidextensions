@@ -10,7 +10,8 @@
             android:name="QtAnimatedTiles"
             android:label="@string/app_name"
             android:theme="@style/myStyleTheme"
-            android:windowSoftInputMode="stateUnchanged">
+            android:windowSoftInputMode="stateUnchanged"
+            android:configChanges="orientation|keyboardHidden|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

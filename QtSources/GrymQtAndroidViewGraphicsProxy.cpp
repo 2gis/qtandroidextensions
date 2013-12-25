@@ -22,7 +22,7 @@ Q_DECL_EXPORT void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv *, jobject, jl
 		GrymQtAndroidViewGraphicsProxy * proxy = reinterpret_cast<GrymQtAndroidViewGraphicsProxy*>(vp);
 		if (proxy)
 		{
-			proxy->javaUpdate();
+			QMetaObject::invokeMethod(proxy, "javaUpdate", Qt::QueuedConnection);
 			return;
 		}
 	}
@@ -35,6 +35,7 @@ GrymQtAndroidViewGraphicsProxy::GrymQtAndroidViewGraphicsProxy(QGraphicsItem *pa
 	, texture_type_(GL_TEXTURE_2D)
 	, texture_available_(false)
 	, texture_transform_set_(false)
+	, need_update_texture_(false)
 {
 	qDebug()<<__PRETTY_FUNCTION__<<"tid"<<gettid();
 	offscreen_view_factory_.reset(new jcGeneric((c_class_path_+"/OffscreenViewFactory").toAscii(), true));
@@ -115,7 +116,10 @@ void GrymQtAndroidViewGraphicsProxy::paint(QPainter * painter, const QStyleOptio
 	#endif
 
 	initTexture();
-	updateTexture();
+	if (need_update_texture_)
+	{
+		updateTexture();
+	}
 
 	// Теперь можно просто нарисовать нашу текстурку вот в этих вот GL-координатах.
 	doGLPainting(l, b, w, h);
@@ -425,6 +429,8 @@ void GrymQtAndroidViewGraphicsProxy::blitTexture(GLuint texture, GLenum target, 
 void GrymQtAndroidViewGraphicsProxy::javaUpdate()
 {
 	qDebug()<<__PRETTY_FUNCTION__;
+	need_update_texture_ = true;
+	update();
 }
 
 /*!
@@ -471,6 +477,7 @@ void GrymQtAndroidViewGraphicsProxy::doGLPainting(int x, int y, int w, int h)
 void GrymQtAndroidViewGraphicsProxy::CreateTestTexture(QSize * out_texture_size_)
 {
 	qDebug()<<__PRETTY_FUNCTION__<<"tid"<<gettid();
+	need_update_texture_ = false;
 	QImage img;
 	if (!img.load(":/images/kotik.png"))
 	{
@@ -504,7 +511,7 @@ void GrymQtAndroidViewGraphicsProxy::CreateTestTexture(QSize * out_texture_size_
 
 void GrymQtAndroidViewGraphicsProxy::CreateEmptyExternalTexture()
 {
-	qDebug()<<__PRETTY_FUNCTION__<<"tid"<<gettid();
+	qDebug()<<__PRETTY_FUNCTION__<<"tid"<<gettid();	
 	glGenTextures(1, &texture_id_);
 	static const GLenum target = GL_TEXTURE_EXTERNAL_OES; // Требование SurfaceTexture
 	texture_type_ = target;
@@ -512,6 +519,7 @@ void GrymQtAndroidViewGraphicsProxy::CreateEmptyExternalTexture()
 	glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glBindTexture(target, 0);
+	need_update_texture_ = true;
 	qDebug()<<"Done"<<__PRETTY_FUNCTION__;
 }
 
@@ -524,13 +532,6 @@ void GrymQtAndroidViewGraphicsProxy::initTexture()
 		texture_available_ = true;
 		texture_transform_set_ = false;
 
-		// Определяем максимальные размеры текстуры
-		GLint maxdims[2];
-		GLint maxtextsz;
-		glGetIntegerv(GL_MAX_VIEWPORT_DIMS, maxdims);
-		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxtextsz);
-		qDebug()<<__PRETTY_FUNCTION__<<"GL_MAX_VIEWPORT_DIMS"<<maxdims[0]<<maxdims[1]<<"GL_MAX_TEXTURE_SIZE"<<maxtextsz;
-
 		//! \todo Клипнуть запрошенные размеры по максимальным?
 
 		#if defined(ANDROIDVIEWGRAPHICSPROXY_TEST_TEXTURE)
@@ -539,10 +540,24 @@ void GrymQtAndroidViewGraphicsProxy::initTexture()
 			//! \todo задание размеров
 			CreateEmptyExternalTexture();
 
+			// Определяем максимальные размеры текстуры
+			GLint maxdims[2];
+			GLint maxtextsz;
+			glGetIntegerv(GL_MAX_VIEWPORT_DIMS, maxdims);
+			glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxtextsz);
+			int max_x = qMin(maxdims[0], maxtextsz);
+			int max_y = qMin(maxdims[1], maxtextsz);
+			QSize mysize = size().toSize();
+			texture_size_ = QSize(qMin(max_x, mysize.width()), qMin(max_y, mysize.height()));
+			// texture_size_ = QSize(512, 512);
+			qDebug()<<__PRETTY_FUNCTION__<<"GL_MAX_VIEWPORT_DIMS"<<maxdims[0]<<maxdims[1]
+				<<"GL_MAX_TEXTURE_SIZE"<<maxtextsz
+				<<"My size:"<<mysize.width()<<"x"<<mysize.height()
+				<<"Resuling size:"<<texture_size_.width()<<"x"<<texture_size_.height();
+
 			// Мы можем создать Java-вьюху только имея текстуру, а текстуру мы можем создать
 			// только в OpenGL-контексте, поэтому конструирование сделаем при первой отрисовке.
 			// Если вьюха тяжёлая, то её создание можно отложить на стороне Java.
-			texture_size_ = QSize(512, 512); // SGEXP todo
 			if (offscreen_view_factory_)
 			{
 				//! \todo Мы задаём размер вьюшки, а не текстур!
@@ -550,9 +565,13 @@ void GrymQtAndroidViewGraphicsProxy::initTexture()
 				offscreen_view_factory_->CallParamVoid("SetTextureWidth",	"I", jint(texture_size_.width()));
 				offscreen_view_factory_->CallParamVoid("SetTextureHeight", "I", jint(texture_size_.height()));
 				offscreen_view_factory_->CallParamVoid("SetNativePtr", "J", jlong(reinterpret_cast<void*>(this)));
-				offscreen_view_.reset(offscreen_view_factory_->CallObject("DoCreateView"
+				offscreen_view_.reset(
+					offscreen_view_factory_->CallObject("DoCreateView"
 					, (c_class_path_+"/OffscreenView").toAscii()));
-				offscreen_view_->RegisterNativeMethod("Java_OffscreenView_nativeUpdate", "(J)V", (void*)Java_OffscreenView_nativeUpdate);
+				offscreen_view_->RegisterNativeMethod(
+					"nativeUpdate"
+					, "(J)V"
+					, (void*)Java_OffscreenView_nativeUpdate);
 			}
 		#endif
 	}
@@ -590,6 +609,7 @@ void GrymQtAndroidViewGraphicsProxy::updateTexture()
 			}
 			qDebug()<<__PRETTY_FUNCTION__<<"Transform matrix:"<<msg;
 		#endif
+		need_update_texture_ = false;
 	}
 }
 

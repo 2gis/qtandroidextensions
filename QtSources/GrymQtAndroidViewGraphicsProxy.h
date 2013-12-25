@@ -31,9 +31,12 @@ private:
 	//! \todo refactor
 	void drawTexture(const QRectF &rect, GLuint tex_id, GLenum target, const QSize &texSize, const QRectF &bitmap_rect = QRectF());
 	void blitTexture(GLuint texture, GLenum target, const QSize &texSize, const QRect &targetRect, const QRect &sourceRect);
-	void javaUpdate();
 
 	friend void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv * env, jobject jo, jlong param);
+
+private slots:
+	void javaUpdate();
+
 private:
 	GLuint texture_id_;
 	GLenum texture_type_;
@@ -43,4 +46,5 @@ private:
 	QScopedPointer<jcGeneric> offscreen_view_;
 	GLfloat texture_transform_[16];
 	bool texture_transform_set_;
+	bool need_update_texture_;
 };

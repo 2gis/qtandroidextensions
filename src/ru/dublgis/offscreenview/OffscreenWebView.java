@@ -23,6 +23,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
@@ -76,10 +77,10 @@ class OffscreenWebView implements OffscreenView
 
             Log.i(TAG, "MyWebView.onDrawPublic "+getWidth()+"x"+getHeight());
             canvas.drawARGB (255, 255, 255, 255);
-            onDraw(canvas);
+            super.onDraw(canvas);
+
+            /*
             Paint paint = new Paint();
-            // paint.setColor(Color.BLACK);
-            //canvas.drawLine(0, 0, 400, 400, paint);
             paint.setColor(Color.BLUE);
             canvas.drawLine(0, 0, getWidth()-1, getHeight()-1, paint);
             canvas.drawLine(getWidth()-1, 0, 0, getHeight()-1, paint);
@@ -87,20 +88,42 @@ class OffscreenWebView implements OffscreenView
             canvas.drawLine(0, getHeight()-1, getWidth()-1, getHeight()-1, paint);
             canvas.drawLine(0, 0, 0, getHeight()-1, paint);
             canvas.drawLine(getWidth()-1, 0, getWidth()-1, getHeight()-1, paint);
-            /*CheckBitmap();
-            if (bitmap_ != null){
-            Log.i(TAG, ">>>>>>>>>>>>>>>>> PAINTING <<<<<<<<<<<<<<<<<<<<");
-            canvas.drawBitmap(bitmap_, 200, 2000, paint);
-            }else Log.i(TAG, "!!!!!!!!!!!!!!!! NO BITMAP !!!!!!!!!!!!!!!!!!!");*/
+            // CheckBitmap(); if (bitmap_ != null){ canvas.drawBitmap(bitmap_, 200, 2000, paint); }
+            */
         }
 
-        /*@Override
-        protected void onDraw(Canvas canvas)
+        @Override
+        public void invalidate(Rect dirty)
         {
-            Log.i(TAG, "OffscreenWebView.onDraw tid="+Thread.currentThread().getId());
-            drawViewOnTexture();
-        }*/
+            Log.i(TAG, "MyWebView.invalidate(Rect dirty)");
+            if (helper_ != null)
+            {
+                 nativeUpdate(helper_.getNativePtr());
+            }
+            // super.invalidate(dirty);
+        }
 
+        @Override
+        public void invalidate(int l, int t, int r, int b)
+        {
+            Log.i(TAG, "MyWebView.invalidate(int l, int t, int r, int b)");
+            if (helper_ != null)
+            {
+                 nativeUpdate(helper_.getNativePtr());
+            }
+            // super.invalidate(l, t, r, b);
+        }
+
+        @Override
+        public void invalidate()
+        {
+            Log.i(TAG, "MyWebView.invalidate()");
+            if (helper_ != null)
+            {
+                 nativeUpdate(helper_.getNativePtr());
+            }
+            // super.invalidate();
+        }
     }
 
     OffscreenWebView(final String objectname, final long nativeptr, final int gltextureid, final int width, final int height)
@@ -108,9 +131,6 @@ class OffscreenWebView implements OffscreenView
         super();
         final Activity context = getContextStatic();
         Log.i(TAG, "OffscreenWebView(name=\""+objectname+"\", texture="+gltextureid+")");
-
-        //layout_ = new MyLayout(context, width, height);
-
         context.runOnUiThread(new Runnable()
         {
             @Override
@@ -118,19 +138,12 @@ class OffscreenWebView implements OffscreenView
             {
                  webview_ = new MyWebView(context, width, height);
                  helper_ = new OffscreenViewHelper(nativeptr, objectname, webview_, gltextureid, width, height);
-                 // !!!! WORKAROUND FOR CHROMIUM !!!!
-                 //setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-                 // getSettings().setJavaScriptEnabled(true);
-                 // webview.loadUrl("http://slashdot.org/");
-                 // OR, you can also load from an HTML string:
-                 // String summary = "<html><body>You scored <b>192</b> points.</body></html>";
-                 // webview.loadData(summary, "text/html", null);
-                 webview_.loadData("<html><body style=\"background-color: green;\"><h1>Teach Me To Web</h1></body></html>", "text/html", null);
+                 webview_.getSettings().setJavaScriptEnabled(true);
+                 webview_.loadUrl("http://2gis.ru/");
+                 //webview_.loadData("<html><body style=\"background-color: green;\"><h1>Teach Me To Web</h1></body></html>", "text/html", null);
             }
         });
-
     }
-
 
     // http://developer.android.com/reference/android/view/View.html
 
@@ -139,7 +152,7 @@ class OffscreenWebView implements OffscreenView
         return QtApplicationBase.getActivityStatic();
     }
 
-    static Bitmap bitmap_ = null;
+    /*static Bitmap bitmap_ = null;
     private int DrawableResourceId(Context my_context, final String name)
     {
         return my_context.getResources().getIdentifier(name, "drawable", my_context.getPackageName());
@@ -165,11 +178,26 @@ class OffscreenWebView implements OffscreenView
                 Log.e(TAG, "CheckBitmap error", e);
             }
         }
-    }
-
+    }*/
 
     @Override
     public void drawViewOnTexture()
+    {
+        Activity ctx = getContextStatic();
+        if (ctx != null)
+        {
+            ctx.runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    doDrawViewOnTexture();
+                }
+            });
+        }
+    }
+
+    private void doDrawViewOnTexture()
     {
         if (helper_ == null)
         {
@@ -178,46 +206,55 @@ class OffscreenWebView implements OffscreenView
         }
         Log.i(TAG, "OffscreenWebView.drawViewOnTexture tid="+Thread.currentThread().getId()+
             " texture="+helper_.getTexture()+", size="+helper_.getTextureWidth()+"x"+helper_.getTextureHeight());
-        try
+        synchronized(helper_)
         {
-            Canvas canvas = helper_.lockCanvas();
-            if (canvas == null)
+            try
             {
-                Log.e(TAG, "drawViewOnTexture: failed to lock canvas!");
-            }
-            else
-            {
-                if (webview_ != null)
+                Canvas canvas = helper_.lockCanvas();
+                if (canvas == null)
                 {
-                    Log.i(TAG, "Drawing WebView....");
-                    webview_.onDrawPublic(canvas);
+                    Log.e(TAG, "drawViewOnTexture: failed to lock canvas!");
                 }
                 else
                 {
-                    Log.i(TAG, "WebView is not available, filling with white color....");
-                    canvas.drawARGB (255, 255, 255, 255);
-                }
+                    if (webview_ != null)
+                    {
+                        Log.i(TAG, "Drawing WebView....");
+                        webview_.onDrawPublic(canvas);
+                    }
+                    else
+                    {
+                        Log.i(TAG, "WebView is not available, filling with white color....");
+                        canvas.drawARGB (255, 255, 255, 255);
+                    }
 
-                helper_.unlockCanvas(canvas);
-                Log.i(TAG, "OffscreenWebView.drawViewOnTexture success.");
+                    helper_.unlockCanvas(canvas);
+                    Log.i(TAG, "OffscreenWebView.drawViewOnTexture success.");
+                }
             }
-        }
-        catch(Exception e)
-        {
-            Log.e(TAG, "drawViewOnTexture failed", e);
+            catch(Exception e)
+            {
+                Log.e(TAG, "drawViewOnTexture failed", e);
+            }
         }
     }
 
     @Override
     public void updateTexture()
     {
-        helper_.updateTexture();
+        synchronized(helper_)
+        {
+            helper_.updateTexture();
+        }
     }
 
     @Override
     public float getTextureTransformMatrix(int index)
     {
-        return helper_.getTextureTransformMatrix(index);
+        synchronized(helper_)
+        {
+            return helper_.getTextureTransformMatrix(index);
+        }
     }
 
     // JNI
