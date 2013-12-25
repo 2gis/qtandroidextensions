@@ -88,6 +88,20 @@ class OffscreenWebView implements OffscreenView
                 }
                 super.onPageFinished(view, url);
             }
+
+            @Override
+            public void onLoadResource(WebView view, String url)
+            {
+                /*(if (url.equals("http://redirectexample.com"))
+                {
+                ...
+                }
+                else
+                {
+                    super.onLoadResource(view, url);
+                }*/
+                super.onLoadResource(view, url);
+            }
         }
 
         public MyWebView(Context context, int width, int height)

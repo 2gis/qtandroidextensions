@@ -1,10 +1,17 @@
 package org.animatedtiles;
 
+import android.content.pm.ActivityInfo;
+
+import ru.dublgis.gmbase.GrymSplashPainter;
+
+import org.qt.core.QtApplicationBase;
 import org.qt.core.QtLibraryLoader;
 import org.qt.lite.QtActivity;
 
 public class QtAnimatedTiles extends QtActivity
 {
+    private static boolean mSplashHasBeenCreatedOnce = false;
+
     public QtAnimatedTiles()
     {
         super("animatedtiles"); // Name of the library containing your Qt application
@@ -23,6 +30,13 @@ public class QtAnimatedTiles extends QtActivity
         setKeepaliveService(true);
         QtLibraryLoader.addLibrary("QtOpenGL");
         setEnableOpenGlModeFor(2, 0, 4);
+//setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+
+        if (!mSplashHasBeenCreatedOnce)
+        {
+            mSplashHasBeenCreatedOnce = true;
+            QtApplicationBase.SetSplashScreenPainter(new GrymSplashPainter());
+        }
     }
 }
 
