@@ -275,6 +275,8 @@ class OffscreenWebView implements OffscreenView
                  helper_ = new OffscreenViewHelper(nativeptr, objectname, webview_, gltextureid, width, height);
                  webview_.getSettings().setJavaScriptEnabled(true);
                  webview_.loadUrl("http://google.com/");
+// TODO FIXME this repairs rotation problem
+context.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
                  //webview_.loadData("<html><body style=\"background-color: green;\"><h1>Teach Me To Web</h1></body></html>", "text/html", null);
             }
         });
