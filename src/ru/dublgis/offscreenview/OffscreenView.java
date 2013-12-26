@@ -40,12 +40,11 @@ import android.view.inputmethod.InputMethodManager;
 
 interface OffscreenView
 {
+    // In Java
     abstract public void drawViewOnTexture();
     abstract public void updateTexture();
     abstract public float getTextureTransformMatrix(int index);
 
-    // JNI
+    // In C++
     abstract public void nativeUpdate(long nativeptr);
 }
-
-

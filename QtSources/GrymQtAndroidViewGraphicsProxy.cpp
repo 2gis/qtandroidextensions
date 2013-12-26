@@ -38,14 +38,10 @@ GrymQtAndroidViewGraphicsProxy::GrymQtAndroidViewGraphicsProxy(QGraphicsItem *pa
 	, need_update_texture_(false)
 {
 	qDebug()<<__PRETTY_FUNCTION__<<"tid"<<gettid();
-	offscreen_view_factory_.reset(new jcGeneric((c_class_path_+"/OffscreenViewFactory").toAscii(), true));
-
-	qDebug()<<__PRETTY_FUNCTION__<<"Connected to OffscreenViewFactory.";
-	qDebug()<<__PRETTY_FUNCTION__<<"Test string:"<<offscreen_view_factory_->CallStaticString("Test");
-
-	qDebug()<<"Done"<<__PRETTY_FUNCTION__;
-
 	memset(texture_transform_, 0, sizeof(texture_transform_));
+	offscreen_view_factory_.reset(new jcGeneric((c_class_path_+"/OffscreenViewFactory").toAscii(), true));
+	qDebug()<<__PRETTY_FUNCTION__<<"Connected to OffscreenViewFactory.";
+	qDebug()<<"Done"<<__PRETTY_FUNCTION__;
 }
 
 GrymQtAndroidViewGraphicsProxy::~GrymQtAndroidViewGraphicsProxy()
@@ -581,9 +577,8 @@ void GrymQtAndroidViewGraphicsProxy::updateTexture()
 {
 	if (offscreen_view_)
 	{
-		offscreen_view_->CallVoid("drawViewOnTexture");
-
-		// Заберём нарисованное изображение в текстуру
+		// Заберём нарисованное изображение в текстуру.
+		// Если прямо сейчас идёт отрисовка WebView, то придётся постоять на синхронизации в Java.
 		offscreen_view_->CallVoid("updateTexture");
 
 		// Заберём матрицу преобразований текстуры

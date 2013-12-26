@@ -54,8 +54,9 @@ class OffscreenViewHelper
     Surface surface_ = null;
     View view_;
     String object_name_ = null;
+    boolean has_texture_ = false;
 
-    public OffscreenViewHelper(long nativeptr, String objectname, View view, int gltextureid, int texwidth, int texheight)
+    public OffscreenViewHelper(final long nativeptr, final String objectname, final View view, final int gltextureid, final int texwidth, final int texheight)
     {
         Log.i(TAG, "OffscreenViewHelper(obj=\""+objectname+"\", texture="+gltextureid
             +", w="+texwidth+", h="+texheight+") tid="+Thread.currentThread().getId());
@@ -114,6 +115,7 @@ class OffscreenViewHelper
             {
                 surface_.unlockCanvasAndPost(canvas);
             }
+            has_texture_ = true;
         }
         catch(Exception e)
         {
@@ -143,9 +145,14 @@ class OffscreenViewHelper
         }
     }
 
-    public float getTextureTransformMatrix(int index)
+    final public float getTextureTransformMatrix(final int index)
     {
         return mtx_[index];
+    }
+
+    final public boolean hasTexture()
+    {
+        return has_texture_;
     }
 
 /*

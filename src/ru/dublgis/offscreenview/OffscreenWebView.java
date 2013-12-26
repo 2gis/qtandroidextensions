@@ -142,6 +142,11 @@ class OffscreenWebView implements OffscreenView
             */
         }
 
+        protected void invalidateTexture()
+        {
+            drawViewOnTexture();
+        }
+
         /*@Override
         protected void dispatchDraw(Canvas canvas)
         {
@@ -164,10 +169,7 @@ class OffscreenWebView implements OffscreenView
         public void invalidate(Rect dirty)
         {
             Log.i(TAG, "MyWebView.invalidate(Rect dirty)");
-            if (helper_ != null)
-            {
-                 nativeUpdate(helper_.getNativePtr());
-            }
+            invalidateTexture();
             // super.invalidate(dirty);
         }
 
@@ -175,11 +177,8 @@ class OffscreenWebView implements OffscreenView
         @Override
         public void invalidate(int l, int t, int r, int b)
         {
-            Log.i(TAG, "MyWebView.invalidate(int l, int t, int r, int b)");
-            if (helper_ != null)
-            {
-                 nativeUpdate(helper_.getNativePtr());
-            }
+            Log.i(TAG, "MyWebView.invalidate(int l, int t, int r, int b) "+l+", "+t+", "+r+", "+b);
+            invalidateTexture();
             // super.invalidate(l, t, r, b);
         }
 
@@ -188,10 +187,7 @@ class OffscreenWebView implements OffscreenView
         public void invalidate()
         {
             Log.i(TAG, "MyWebView.invalidate()");
-            if (helper_ != null)
-            {
-                 nativeUpdate(helper_.getNativePtr());
-            }
+            invalidateTexture();
             // super.invalidate();
         }
 
@@ -199,10 +195,7 @@ class OffscreenWebView implements OffscreenView
         public ViewParent invalidateChildInParent(int[] location, Rect r)
         {
             Log.i(TAG, "MyWebView.invalidateChildInParent(int[] location, Rect r)");
-            if (helper_ != null)
-            {
-                 nativeUpdate(helper_.getNativePtr());
-            }
+            invalidateTexture();
             return super.invalidateChildInParent(location, r);
         }*/
 
@@ -220,7 +213,7 @@ class OffscreenWebView implements OffscreenView
                    public void run()
                    {
                        onLayout(true, 0, 0, width_, height_);
-                       nativeUpdate(helper_.getNativePtr());
+                       invalidateTexture();
                    }
                });
             }
@@ -231,30 +224,21 @@ class OffscreenWebView implements OffscreenView
         public void invalidateDrawable(Drawable drawable)
         {
             Log.i(TAG, "MyWebView.invalidateDrawable()");
-            if (helper_ != null)
-            {
-                 nativeUpdate(helper_.getNativePtr());
-            }
+            invalidateTexture();
         }
 
         @Override
         public void scheduleDrawable(Drawable who, Runnable what, long when)
         {
             Log.i(TAG, "MyWebView.scheduleDrawable()");
-            if (helper_ != null)
-            {
-                 nativeUpdate(helper_.getNativePtr());
-            }
+            invalidateTexture();
         }
-        
+
         @Override
         public void childDrawableStateChanged(View child)
         {
             Log.i(TAG, "MyWebView.childDrawableStateChanged()");
-            if (helper_ != null)
-            {
-                 nativeUpdate(helper_.getNativePtr());
-            }
+            invalidateTexture();
             super.childDrawableStateChanged(child);
         }*/
 
@@ -271,12 +255,16 @@ class OffscreenWebView implements OffscreenView
             @Override
             public void run()
             {
+                 Log.i(TAG, "OffscreenWebView(name=\""+objectname+"\", texture="+gltextureid+") RUNNABLE");
+                 int save_req_orientation = context.getRequestedOrientation();
+                 Log.i(TAG, "SGEXP orientation was: "+save_req_orientation);
                  webview_ = new MyWebView(context, width, height);
                  helper_ = new OffscreenViewHelper(nativeptr, objectname, webview_, gltextureid, width, height);
                  webview_.getSettings().setJavaScriptEnabled(true);
                  webview_.loadUrl("http://google.com/");
-// TODO FIXME this repairs rotation problem
-context.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+                 //webview_.loadUrl("http://beta.2gis.ru/");
+                 // !!! Walkaround !!! Adding WebView disables automatic orientation changes.
+                 context.setRequestedOrientation(save_req_orientation); // ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
                  //webview_.loadData("<html><body style=\"background-color: green;\"><h1>Teach Me To Web</h1></body></html>", "text/html", null);
             }
         });
@@ -338,40 +326,54 @@ context.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     {
         if (helper_ == null)
         {
-            Log.i(TAG, "OffscreenWebView.drawViewOnTexture: helper is not initialized yet.");
+            Log.i(TAG, "OffscreenWebView.doDrawViewOnTexture: helper is not initialized yet.");
             return;
         }
-        Log.i(TAG, "OffscreenWebView.drawViewOnTexture tid="+Thread.currentThread().getId()+
+        Log.i(TAG, "OffscreenWebView.doDrawViewOnTexture tid="+Thread.currentThread().getId()+
             " texture="+helper_.getTexture()+", size="+helper_.getTextureWidth()+"x"+helper_.getTextureHeight());
         synchronized(helper_)
         {
             try
             {
+                long t = System.nanoTime();
                 Canvas canvas = helper_.lockCanvas();
                 if (canvas == null)
                 {
-                    Log.e(TAG, "drawViewOnTexture: failed to lock canvas!");
+                    Log.e(TAG, "doDrawViewOnTexture: failed to lock canvas!");
                 }
                 else
                 {
-                    if (webview_ != null)
+                    try
                     {
-                        Log.i(TAG, "Drawing WebView....");
-                        webview_.onDrawPublic(canvas);
+                        if (webview_ != null)
+                        {
+                            Log.i(TAG, "doDrawViewOnTexture: drawing WebView....");
+                            webview_.onDrawPublic(canvas);
+                        }
+                        else
+                        {
+                            Log.i(TAG, "doDrawViewOnTexture: WebView is not available yet, filling with white color....");
+                            canvas.drawARGB(255, 255, 255, 255);
+                        }
                     }
-                    else
+                    catch(Exception e)
                     {
-                        Log.i(TAG, "WebView is not available, filling with white color....");
-                        canvas.drawARGB (255, 255, 255, 255);
+                        Log.e(TAG, "doDrawViewOnTexture painting failed!", e);
                     }
 
                     helper_.unlockCanvas(canvas);
-                    Log.i(TAG, "OffscreenWebView.drawViewOnTexture success.");
+
+                    t = System.nanoTime() - t;
+
+                    // Tell C++ part that we have a new image
+                    nativeUpdate(helper_.getNativePtr());
+
+                    Log.i(TAG, "doDrawViewOnTexture: OffscreenWebView.doDrawViewOnTexture success, t="+t/1000000.0+"ms");
                 }
             }
             catch(Exception e)
             {
-                Log.e(TAG, "drawViewOnTexture failed", e);
+                Log.e(TAG, "doDrawViewOnTexture failed!", e);
             }
         }
     }

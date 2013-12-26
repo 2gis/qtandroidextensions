@@ -73,11 +73,6 @@ class OffscreenViewFactory
     {
     }
 
-    public static String Test()
-    {
-        return "TestString";
-    }
-
     public static OffscreenView CreateOffscreenView(String classname, String objectname, long nativeptr, int gltextureid, int width, int height)
     {
         Log.i(TAG, "CreateOffscreenView");
