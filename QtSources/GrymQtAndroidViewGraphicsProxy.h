@@ -55,4 +55,5 @@ private:
 	GLfloat texture_transform_[16];
 	bool texture_transform_set_;
 	bool need_update_texture_;
+	bool mouse_tracking_;
 };

@@ -116,6 +116,7 @@ class OffscreenWebView implements OffscreenView
             height_ = height;
             webviewclient_ = new MyWebViewClient();
             setWebViewClient(webviewclient_);
+//setVerticalScrollBarEnabled(true);
             /*onAttachedToWindow();
             onSizeChanged(width, height, 0, 0);
             onVisibilityChanged(this, View.VISIBLE);
@@ -131,6 +132,9 @@ class OffscreenWebView implements OffscreenView
 
             Log.i(TAG, "MyWebView.onDrawPublic "+getWidth()+"x"+getHeight());
             canvas.drawARGB (255, 255, 255, 255);
+            
+canvas.translate(-getScrollX(), -getScrollY());
+            
             super.onDraw(canvas);
 
             /*
@@ -282,8 +286,9 @@ class OffscreenWebView implements OffscreenView
                  //webview_.loadUrl("http://beta.2gis.ru/");
                  //webview_.loadUrl("http://google.com/");
                  //webview_.loadUrl("http://beta.2gis.ru/novosibirsk/booklet/7?utm_source=products&utm_medium=mobile");
-                 //webview_.loadUrl("http://10.54.200.77/test.html");
-                 webview_.loadUrl("http://www.fantasticnos.ru/");
+                 webview_.loadUrl("http://10.54.200.77/test2.html");
+                 //webview_.loadUrl("http://www.fantasticnos.ru/");
+                 //webview_.loadUrl("http://sageshome.net/blog/index.php/sage/2013/10/12/dzerzhinsky_quotes");
                  // !!! Walkaround !!! Adding WebView disables automatic orientation changes.
                  context.setRequestedOrientation(save_req_orientation); // ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
                  //webview_.loadData("<html><body style=\"background-color: green;\"><h1>Teach Me To Web</h1></body></html>", "text/html", null);
@@ -408,7 +413,10 @@ class OffscreenWebView implements OffscreenView
         }
         synchronized(helper_)
         {
-            return helper_.updateTexture();
+            // long t = System.nanoTime();
+            boolean result = helper_.updateTexture();
+            // Log.i(TAG, "updateTexture: "+t/1000000.0+"ms");
+            return result;
         }
     }
 
@@ -425,14 +433,31 @@ class OffscreenWebView implements OffscreenView
         }
     }
 
+    long downt = 0;
+int py = 0;
     @Override
-    public void ProcessMouseEvent(int action, int x, int y)
+    public void ProcessMouseEvent(final int action, final int x, final int y)
     {
-        Log.i(TAG, "ProcessMouseEvent("+action+", "+x+", "+y+")");
         if (webview_ != null)
         {
             final long t = SystemClock.uptimeMillis();
-            final MotionEvent event = MotionEvent.obtain(t /* downTime*/, t /* eventTime */, action, x, y, 0 /*metaState*/);
+            if (action == MotionEvent.ACTION_DOWN || downt == 0)
+            {
+
+                downt = t;
+            }
+            Log.i(TAG, "ProcessMouseEvent("+action+", "+x+", "+y+") downt="+downt+", t="+t);
+            
+//  setScroll
+
+
+            /*PointerProperties pp;
+            pp.id = 0;
+            pp.toolType = PointerProperties.TOOL_TYPE_MOUSE; // TOOL_TYPE_FINGER
+            PointerProperties [] pointerProperties = {};*/
+            
+            final MotionEvent event = MotionEvent.obtain(downt /* downTime*/, t /* eventTime */, action, x, y, 0 /*metaState*/);
+//                 MotionEvent.obtain(dtime, t, action, 1, PointerProperties[] pointerProperties, PointerCoords[] pointerCoords, int metaState, int buttonState, float xPrecision, float yPrecision, int deviceId, int edgeFlags, int source, int flags)
             Activity ctx = getContextStatic();
             if (ctx != null)
             {
@@ -441,7 +466,8 @@ class OffscreenWebView implements OffscreenView
                     @Override
                     public void run()
                     {
-                         webview_.onTouchEvent(event);
+                        webview_.onTouchEvent(event);
+doDrawViewOnTexture();
                     }
                 });
             }

@@ -36,6 +36,7 @@ GrymQtAndroidViewGraphicsProxy::GrymQtAndroidViewGraphicsProxy(QGraphicsItem *pa
 	, texture_available_(false)
 	, texture_transform_set_(false)
 	, need_update_texture_(false)
+	, mouse_tracking_(false)
 {
 	setAcceptedMouseButtons(Qt::LeftButton);
 	qDebug()<<__PRETTY_FUNCTION__<<"tid"<<gettid();
@@ -65,7 +66,7 @@ void GrymQtAndroidViewGraphicsProxy::paint(QPainter * painter, const QStyleOptio
 	{
 		if (!updateTexture())
 		{
-			qDebug()<<__PRETTY_FUNCTION__<<"Texture is not ready ret.";
+			// verbose on start qDebug()<<__PRETTY_FUNCTION__<<"Texture is not ready ret.";
 			painter->fillRect(rect(), Qt::white);
 			return;
 		}
@@ -648,7 +649,7 @@ static const int
 
 void GrymQtAndroidViewGraphicsProxy::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
 {
-	if (texture_available_ && offscreen_view_ && event->button() == Qt::LeftButton)
+	if (mouse_tracking_ && texture_available_ && offscreen_view_)
 	{
 		QPoint pos = event->pos().toPoint();
 		offscreen_view_->CallParamVoid("ProcessMouseEvent", "III", jint(ANDROID_MOTIONEVENT_ACTION_MOVE), jint(pos.x()), jint(pos.y()));
@@ -662,6 +663,8 @@ void GrymQtAndroidViewGraphicsProxy::mousePressEvent(QGraphicsSceneMouseEvent * 
 	{
 		QPoint pos = event->pos().toPoint();
 		offscreen_view_->CallParamVoid("ProcessMouseEvent", "III", jint(ANDROID_MOTIONEVENT_ACTION_DOWN), jint(pos.x()), jint(pos.y()));
+		// grabMouse();
+		mouse_tracking_ = true;
 		event->accept();
 	}
 }
@@ -672,6 +675,8 @@ void GrymQtAndroidViewGraphicsProxy::mouseReleaseEvent(QGraphicsSceneMouseEvent 
 	{
 		QPoint pos = event->pos().toPoint();
 		offscreen_view_->CallParamVoid("ProcessMouseEvent", "III", jint(ANDROID_MOTIONEVENT_ACTION_UP), jint(pos.x()), jint(pos.y()));
+		// ungrabMouse();
+		mouse_tracking_ = false;
 		event->accept();
 	}
 }
