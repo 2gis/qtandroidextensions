@@ -41,8 +41,8 @@ import android.view.inputmethod.InputMethodManager;
 interface OffscreenView
 {
     // In Java
-    abstract public void drawViewOnTexture();
-    abstract public void updateTexture();
+    abstract public void drawViewOnTexture(); // TODO: remove/hide
+    abstract public boolean updateTexture();
     abstract public float getTextureTransformMatrix(int index);
 
     // In C++

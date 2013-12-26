@@ -130,18 +130,23 @@ class OffscreenViewHelper
        0, 0, 0, 0
     };
 
-    protected void updateTexture()
+    protected boolean updateTexture()
     {
         Log.i(TAG, "updateTexture tid="+Thread.currentThread().getId()+", tex="+gl_texture_id_);
         try
         {
-            // "You may call it in OnDrawFrame()."
+            if (!has_texture_)
+            {
+                return false;
+            }
             surface_texture_.updateTexImage();
             surface_texture_.getTransformMatrix(mtx_);
+            return true;
         }
         catch(Exception e)
         {
             Log.e(TAG, "Failed to update texture", e);
+            return false;
         }
     }
 

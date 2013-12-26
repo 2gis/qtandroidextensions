@@ -58,6 +58,18 @@ void GrymQtAndroidViewGraphicsProxy::paint(QPainter * painter, const QStyleOptio
 	Q_UNUSED(widget);
 	Q_ASSERT(painter->paintEngine()->type() == QPaintEngine::OpenGL2);
 
+	// Создадим текстуру
+	initTexture();
+	if (need_update_texture_)
+	{
+		if (!updateTexture())
+		{
+			qDebug()<<__PRETTY_FUNCTION__<<"Texture is not ready ret.";
+			painter->fillRect(rect(), Qt::white);
+			return;
+		}
+	}
+
 	#if defined(ANDROIDVIEWGRAPHICSPROXY_CLEARALL)
 		painter->fillRect(rect(), Qt::green);
 	#endif
@@ -110,12 +122,6 @@ void GrymQtAndroidViewGraphicsProxy::paint(QPainter * painter, const QStyleOptio
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	#endif
-
-	initTexture();
-	if (need_update_texture_)
-	{
-		updateTexture();
-	}
 
 	// Теперь можно просто нарисовать нашу текстурку вот в этих вот GL-координатах.
 	doGLPainting(l, b, w, h);
@@ -573,13 +579,17 @@ void GrymQtAndroidViewGraphicsProxy::initTexture()
 	}
 }
 
-void GrymQtAndroidViewGraphicsProxy::updateTexture()
+bool GrymQtAndroidViewGraphicsProxy::updateTexture()
 {
 	if (offscreen_view_)
 	{
 		// Заберём нарисованное изображение в текстуру.
 		// Если прямо сейчас идёт отрисовка WebView, то придётся постоять на синхронизации в Java.
-		offscreen_view_->CallVoid("updateTexture");
+		bool success = offscreen_view_->CallBool("updateTexture");
+		if (!success)
+		{
+			return false;
+		}
 
 		// Заберём матрицу преобразований текстуры
 		#if defined(ANDROIDVIEWGRAPHICSPROXY_READ_ONLY_XY_TRANSFORM)
@@ -605,6 +615,12 @@ void GrymQtAndroidViewGraphicsProxy::updateTexture()
 			qDebug()<<__PRETTY_FUNCTION__<<"Transform matrix:"<<msg;
 		#endif
 		need_update_texture_ = false;
+		return true;
+	}
+	else
+	{
+		qDebug()<<__PRETTY_FUNCTION__<<"Offscreen view does not exist (yet?(";
+		return false;
 	}
 }
 

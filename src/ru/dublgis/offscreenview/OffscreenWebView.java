@@ -398,15 +398,15 @@ class OffscreenWebView implements OffscreenView
     }
 
     @Override
-    public void updateTexture()
+    public boolean updateTexture()
     {
         if (helper_ == null)
         {
-            return;
+            return false;
         }
         synchronized(helper_)
         {
-            helper_.updateTexture();
+            return helper_.updateTexture();
         }
     }
 
