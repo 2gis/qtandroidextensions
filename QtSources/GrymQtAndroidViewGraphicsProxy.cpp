@@ -155,7 +155,7 @@ static inline void QRectFToVertexArray(const QRectF &r, GLfloat *array)
 /*!
  * Рисовалка текстуры из Qt. Подразумевается, что подготовительные операции уже сделаны.
  */
-void GrymQtAndroidViewGraphicsProxy::drawTexture(const QRectF &rect, GLuint tex_id, GLenum target, const QSize &texSize, const QRectF &bitmap_rect)
+void GrymQtAndroidViewGraphicsProxy::drawTexture(const QRectF &rect, const QRectF &bitmap_rect)
 {
 	static const GLuint QT_VERTEX_COORDS_ATTR  = 0;
 	static const GLuint QT_TEXTURE_COORDS_ATTR = 1;
@@ -163,16 +163,16 @@ void GrymQtAndroidViewGraphicsProxy::drawTexture(const QRectF &rect, GLuint tex_
 	// src - исходный прямоугольник (из текстуры)
 	QRectF src = bitmap_rect.isEmpty()
 		// Исходный регион не задан - используем всю текстуру
-		? QRectF(QPointF(), texSize)
+		? QRectF(QPointF(), texture_size_)
 		// Исходный регион не задан - используем кусочек текстуры.
 		: QRectF(
 			 // Поскольку в OpenGL ось Y снизу вверх, то перевернём.
-			 QPointF(bitmap_rect.x(), texSize.height() - bitmap_rect.bottom())
+			 QPointF(bitmap_rect.x(), texture_size_.height() - bitmap_rect.bottom())
 			 , bitmap_rect.size());
 
 	// Конвертируем координаты исходного прямоугольника из текстуры в [0..1]
-	qreal width = texSize.width();
-	qreal height = texSize.height();
+	qreal width = texture_size_.width();
+	qreal height = texture_size_.height();
 	src.setLeft(src.left() / width);
 	src.setRight(src.right() / width);
 	src.setTop(src.top() / height);
@@ -241,8 +241,8 @@ void GrymQtAndroidViewGraphicsProxy::drawTexture(const QRectF &rect, GLuint tex_
 	glVertexPointer(2, GL_FLOAT, 0, vertexArray);
 	glTexCoordPointer(2, GL_FLOAT, 0, texCoordArray);
 
-	glBindTexture(target, tex_id);
-	glEnable(target);
+	glBindTexture(texture_type_, texture_id_);
+	glEnable(texture_type_);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -250,15 +250,15 @@ void GrymQtAndroidViewGraphicsProxy::drawTexture(const QRectF &rect, GLuint tex_
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 
-	glDisable(target);
-	glBindTexture(target, 0);
+	glDisable(texture_type_);
+	glBindTexture(texture_type_, 0);
 #else
 	// Установим координаты выхлопных вершин и соответствующие им координаты в исходной текстуре
 	glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexArray);
 	glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, texCoordArray);
 
 	// Выберем текстуру
-	glBindTexture(target, tex_id);
+	glBindTexture(texture_type_, texture_id_);
 
 	glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
 	glEnableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
@@ -268,7 +268,7 @@ void GrymQtAndroidViewGraphicsProxy::drawTexture(const QRectF &rect, GLuint tex_
 	// Отвалим
 	glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
 	glDisableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
-	glBindTexture(target, 0);
+	glBindTexture(texture_type_, 0);
 #endif
 }
 
@@ -360,11 +360,10 @@ static QGLShaderProgram * CreateBlitProgram(GLenum target)
 
 /*!
  * Нарисуем текстуру.
- * \param texSize - размер текстуры
  * \param targetRect - прямоугольник в координатах GL-контекста
  * \todo Пока считаем, что размер вьюпорта равен размеру таргетректа, на понятно, нафига вот это всё?
 */
-void GrymQtAndroidViewGraphicsProxy::blitTexture(GLuint texture, GLenum target, const QSize &texSize, const QRect &targetRect, const QRect &sourceRect)
+void GrymQtAndroidViewGraphicsProxy::blitTexture(const QRect &targetRect, const QRect &sourceRect)
 {
 	#if defined(QT_OPENGL_ES_2)
 		glDisable(GL_STENCIL_TEST);
@@ -372,7 +371,7 @@ void GrymQtAndroidViewGraphicsProxy::blitTexture(GLuint texture, GLenum target, 
 		// glDisable(GL_SCISSOR_TEST);
 		glDisable(GL_BLEND);
 
-		QGLShaderProgram * blitProgram = CreateBlitProgram(target);
+		QGLShaderProgram * blitProgram = CreateBlitProgram(texture_type_);
 		blitProgram->bind();
 		blitProgram->setUniformValue("imageTexture", 0 /*QT_IMAGE_TEXTURE_UNIT*/);
 
@@ -400,16 +399,16 @@ void GrymQtAndroidViewGraphicsProxy::blitTexture(GLuint texture, GLenum target, 
 		{
 			r.setTop((targetRect.bottom() / w) * 2.0f - 1.0f);
 		}
-		drawTexture(r, texture, target, texSize, sourceRect);
+		drawTexture(r, sourceRect);
 	#else
 		// Не-GL ES реализация, используем не шейдеры
 
 		// Возьмём текстуру и сделаем ей glCopyTexSubImage2D. Поскольку ось Y в OpenGL перевёрнутая,
 		// то нужно вычислить правильный bottom.
-		glBindTexture(target, texture);
+		glBindTexture(texture_type_, texture_id_);
 		const uint bottom = targetRect.height() - (sourceRect.y() + sourceRect.height());
 		glCopyTexSubImage2D(target, 0, sourceRect.x(), bottom, sourceRect.x(), bottom, sourceRect.width(), sourceRect.height());
-		glBindTexture(target, 0);
+		glBindTexture(texture_type_, 0);
 
 		// Включим правильный набор трансформаций
 		glDisable(GL_DEPTH_TEST);
@@ -424,7 +423,7 @@ void GrymQtAndroidViewGraphicsProxy::blitTexture(GLuint texture, GLenum target, 
 		#endif
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f); // На этот цвет умножится текстура
 		// Готово!
-		drawTexture(targetRect, texture, target, targetRect.size(), sourceRect);
+		drawTexture(targetRect, targetRect.size(), sourceRect);
 	#endif
 }
 
@@ -466,10 +465,7 @@ void GrymQtAndroidViewGraphicsProxy::doGLPainting(int x, int y, int w, int h)
 	#endif
 
 	blitTexture(
-		texture_id_ // texture
-		, texture_type_ // texture type (2D / external)
-		, texture_size_ // texture size
-		, QRect(QPoint(0, 0), draw_size) // target rect
+		QRect(QPoint(0, 0), draw_size) // target rect
 		, QRect(QPoint(0, 0), draw_size)); // source rect
 }
 
