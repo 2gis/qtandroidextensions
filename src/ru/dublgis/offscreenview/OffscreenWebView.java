@@ -29,6 +29,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.text.method.MetaKeyKeyListener;
 import android.text.InputType;
 import android.util.Log;
@@ -41,6 +42,7 @@ import android.view.KeyEvent;
 import android.view.KeyCharacterMap;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
@@ -420,6 +422,29 @@ class OffscreenWebView implements OffscreenView
         synchronized(helper_)
         {
             return helper_.getTextureTransformMatrix(index);
+        }
+    }
+
+    @Override
+    public void ProcessMouseEvent(int action, int x, int y)
+    {
+        Log.i(TAG, "ProcessMouseEvent("+action+", "+x+", "+y+")");
+        if (webview_ != null)
+        {
+            final long t = SystemClock.uptimeMillis();
+            final MotionEvent event = MotionEvent.obtain(t /* downTime*/, t /* eventTime */, action, x, y, 0 /*metaState*/);
+            Activity ctx = getContextStatic();
+            if (ctx != null)
+            {
+                ctx.runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                         webview_.onTouchEvent(event);
+                    }
+                });
+            }
         }
     }
 

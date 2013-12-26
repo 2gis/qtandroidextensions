@@ -16,6 +16,11 @@ public:
 
 protected:
 	virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+	virtual void mouseMoveEvent(QGraphicsSceneMouseEvent * event);
+	virtual void mousePressEvent(QGraphicsSceneMouseEvent * event);
+	virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent * event);
+
+
 	//! \param x, y, w, h - координаты региона в терминах OpenGL
 	virtual void doGLPainting(int x, int y, int w, int h);
 	void initTexture();

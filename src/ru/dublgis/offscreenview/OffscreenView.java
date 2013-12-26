@@ -44,6 +44,7 @@ interface OffscreenView
     abstract public void drawViewOnTexture(); // TODO: remove/hide
     abstract public boolean updateTexture();
     abstract public float getTextureTransformMatrix(int index);
+    abstract public void ProcessMouseEvent(int action, int x, int y);
 
     // In C++
     abstract public void nativeUpdate(long nativeptr);

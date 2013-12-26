@@ -37,6 +37,7 @@ GrymQtAndroidViewGraphicsProxy::GrymQtAndroidViewGraphicsProxy(QGraphicsItem *pa
 	, texture_transform_set_(false)
 	, need_update_texture_(false)
 {
+	setAcceptedMouseButtons(Qt::LeftButton);
 	qDebug()<<__PRETTY_FUNCTION__<<"tid"<<gettid();
 	memset(texture_transform_, 0, sizeof(texture_transform_));
 	offscreen_view_factory_.reset(new jcGeneric((c_class_path_+"/OffscreenViewFactory").toAscii(), true));
@@ -639,4 +640,39 @@ QSize GrymQtAndroidViewGraphicsProxy::getDrawableSize() const
 	return QSize(qMin(mysize.width(), texture_size_.width()), qMin(mysize.height(), texture_size_.height()));
 }
 
+// http://developer.android.com/reference/android/view/MotionEvent.htm
+static const int
+	ANDROID_MOTIONEVENT_ACTION_DOWN = 0,
+	ANDROID_MOTIONEVENT_ACTION_UP = 1,
+	ANDROID_MOTIONEVENT_ACTION_MOVE = 2;
+
+void GrymQtAndroidViewGraphicsProxy::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
+{
+	if (texture_available_ && offscreen_view_ && event->button() == Qt::LeftButton)
+	{
+		QPoint pos = event->pos().toPoint();
+		offscreen_view_->CallParamVoid("ProcessMouseEvent", "III", jint(ANDROID_MOTIONEVENT_ACTION_MOVE), jint(pos.x()), jint(pos.y()));
+		event->accept();
+	}
+}
+
+void GrymQtAndroidViewGraphicsProxy::mousePressEvent(QGraphicsSceneMouseEvent * event)
+{
+	if (texture_available_ && offscreen_view_ && event->button() == Qt::LeftButton)
+	{
+		QPoint pos = event->pos().toPoint();
+		offscreen_view_->CallParamVoid("ProcessMouseEvent", "III", jint(ANDROID_MOTIONEVENT_ACTION_DOWN), jint(pos.x()), jint(pos.y()));
+		event->accept();
+	}
+}
+
+void GrymQtAndroidViewGraphicsProxy::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
+{
+	if (texture_available_ && offscreen_view_ && event->button() == Qt::LeftButton)
+	{
+		QPoint pos = event->pos().toPoint();
+		offscreen_view_->CallParamVoid("ProcessMouseEvent", "III", jint(ANDROID_MOTIONEVENT_ACTION_UP), jint(pos.x()), jint(pos.y()));
+		event->accept();
+	}
+}
 
