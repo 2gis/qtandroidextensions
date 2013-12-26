@@ -27,6 +27,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.Looper;
 import android.text.method.MetaKeyKeyListener;
 import android.text.InputType;
@@ -67,6 +68,7 @@ class OffscreenWebView implements OffscreenView
 
         int width_ = 100, height_ = 100;
         MyWebViewClient webviewclient_ = null;
+        boolean invalidated_ = true;
 
         private class MyWebViewClient extends WebViewClient
         {
@@ -144,7 +146,20 @@ class OffscreenWebView implements OffscreenView
 
         protected void invalidateTexture()
         {
-            drawViewOnTexture();
+            invalidated_ = true;
+            // A little tambourine dance to filter out subsequent invalidations happened before a single paint
+            new Handler().post(new Runnable(){
+                @Override
+                public void run()
+                {
+                    Log.i(TAG, "invalidateTexture: processing with invalidated_="+invalidated_);
+                    if (invalidated_)
+                    {
+                        invalidated_ = false;
+                        doDrawViewOnTexture();
+                    }
+                }
+            });
         }
 
         /*@Override
@@ -261,8 +276,12 @@ class OffscreenWebView implements OffscreenView
                  webview_ = new MyWebView(context, width, height);
                  helper_ = new OffscreenViewHelper(nativeptr, objectname, webview_, gltextureid, width, height);
                  webview_.getSettings().setJavaScriptEnabled(true);
-                 webview_.loadUrl("http://google.com/");
+                 //webview_.loadUrl("http://www.android.com/intl/ru/about/");
                  //webview_.loadUrl("http://beta.2gis.ru/");
+                 //webview_.loadUrl("http://google.com/");
+                 //webview_.loadUrl("http://beta.2gis.ru/novosibirsk/booklet/7?utm_source=products&utm_medium=mobile");
+                 //webview_.loadUrl("http://10.54.200.77/test.html");
+                 webview_.loadUrl("http://www.fantasticnos.ru/");
                  // !!! Walkaround !!! Adding WebView disables automatic orientation changes.
                  context.setRequestedOrientation(save_req_orientation); // ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
                  //webview_.loadData("<html><body style=\"background-color: green;\"><h1>Teach Me To Web</h1></body></html>", "text/html", null);
@@ -381,6 +400,10 @@ class OffscreenWebView implements OffscreenView
     @Override
     public void updateTexture()
     {
+        if (helper_ == null)
+        {
+            return;
+        }
         synchronized(helper_)
         {
             helper_.updateTexture();
@@ -390,6 +413,10 @@ class OffscreenWebView implements OffscreenView
     @Override
     public float getTextureTransformMatrix(int index)
     {
+        if (helper_ == null)
+        {
+            return 0;
+        }
         synchronized(helper_)
         {
             return helper_.getTextureTransformMatrix(index);
