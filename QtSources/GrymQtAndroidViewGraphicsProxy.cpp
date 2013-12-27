@@ -287,7 +287,6 @@ static QGLShaderProgram * CreateBlitProgram(GLenum target)
 	static const QLatin1String c_for_external_("#extension GL_OES_EGL_image_external : require \n");
 
 	QString qglslMainWithTexCoordsVertexShader =
-		QString((target == GL_TEXTURE_EXTERNAL_OES)? c_for_external_: QLatin1String("")) +
 		"attribute highp vec2 textureCoordArray; \n"
 		"varying highp vec2 textureCoords; \n"
 		"void setPosition(); \n"
@@ -298,7 +297,6 @@ static QGLShaderProgram * CreateBlitProgram(GLenum target)
 		"}\n";
 
 	QString qglslUntransformedPositionVertexShader =
-		QString((target == GL_TEXTURE_EXTERNAL_OES)? c_for_external_: QLatin1String("")) +
 		"attribute highp vec4 vertexCoordsArray; \n"
 		"void setPosition(void) \n"
 		"{ \n"
@@ -306,7 +304,6 @@ static QGLShaderProgram * CreateBlitProgram(GLenum target)
 		"}\n";
 
 	QString qglslMainFragmentShader =
-		QString((target == GL_TEXTURE_EXTERNAL_OES)? c_for_external_: QLatin1String("")) +
 		"lowp vec4 srcPixel(); \n"
 		"void main() \n"
 		"{ \n"
@@ -342,8 +339,9 @@ static QGLShaderProgram * CreateBlitProgram(GLenum target)
 
 		{
 			QString source;
-			source.append(qglslMainFragmentShader);
+			// Fragment shader may contain #extension directive, and it should be before any other code
 			source.append(qglslImageSrcFragmentShader);
+			source.append(qglslMainFragmentShader);
 
 			QGLShader *fragmentShader = new QGLShader(QGLShader::Fragment, m_blitProgram.data());
 			fragmentShader->compileSourceCode(source);

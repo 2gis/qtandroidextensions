@@ -282,12 +282,12 @@ canvas.translate(-getScrollX(), -getScrollY());
                  webview_ = new MyWebView(context, width, height);
                  helper_ = new OffscreenViewHelper(nativeptr, objectname, webview_, gltextureid, width, height);
                  webview_.getSettings().setJavaScriptEnabled(true);
-                 //webview_.loadUrl("http://www.android.com/intl/ru/about/");
+                 webview_.loadUrl("http://www.android.com/intl/ru/about/");
                  //webview_.loadUrl("http://beta.2gis.ru/");
                  //webview_.loadUrl("http://google.com/");
                  //webview_.loadUrl("http://beta.2gis.ru/novosibirsk/booklet/7?utm_source=products&utm_medium=mobile");
-                 webview_.loadUrl("http://10.54.200.77/test2.html");
-                 //webview_.loadUrl("http://www.fantasticnos.ru/");
+                 //webview_.loadUrl("http://10.54.200.77/test2.html");
+                 // webview_.loadUrl("http://www.fantasticnos.ru/");
                  //webview_.loadUrl("http://sageshome.net/blog/index.php/sage/2013/10/12/dzerzhinsky_quotes");
                  // !!! Walkaround !!! Adding WebView disables automatic orientation changes.
                  context.setRequestedOrientation(save_req_orientation); // ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
