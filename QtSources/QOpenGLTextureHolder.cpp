@@ -168,7 +168,16 @@ void QOpenGLTextureHolder::blitTexture(const QRect & targetRect, const QRect & s
 	glDisable(GL_BLEND);
 
 	QGLShaderProgram * blitProgram = GetBlitProgram(texture_type_);
-	blitProgram->bind();
+	if (!blitProgram || !blitProgram->isLinked())
+	{
+		qWarning()<<"Shader program is not linked, can't blit the texture.";
+		return;
+	}
+	if (!blitProgram->bind())
+	{
+		qWarning()<<"Failed to bind shader program, can't blit the texture.";
+		return;
+	}
 	blitProgram->setUniformValue("imageTexture", 0 /*QT_IMAGE_TEXTURE_UNIT*/);
 
 	// The shader manager's blit program does not multiply the
