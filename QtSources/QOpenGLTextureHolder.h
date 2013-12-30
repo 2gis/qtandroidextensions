@@ -2,7 +2,8 @@
 #include <EGL/egl.h>
 #include <QtCore/QRect>
 #include <QtCore/QRectF>
-#include <QtOpenGL/QGLWidget>
+#include <QtCore/QSharedPointer>
+#include <QtOpenGL/QGLShaderProgram>
 
 /*!
  * This class:
@@ -61,8 +62,11 @@ public:
 	void deallocateTexture();
 
 private:
-	//! Helper for blitTexture.
+	//! Helper for blitTexture().
 	void drawTexture(const QRectF & rect, const QRectF & bitmap_rect);
+
+	//! Shader programs for drawTexture().
+	QGLShaderProgram * GetBlitProgram(GLenum target);
 
 protected:
 	GLuint texture_id_;
@@ -70,4 +74,5 @@ protected:
 	QSize texture_size_;
 	// Texture transformation: (v) = (A)*(b).
 	GLfloat a11_, a12_, a21_, a22_, b1_, b2_;
+	static QMap<GLenum, QSharedPointer<QGLShaderProgram> > blit_programs_;
 };

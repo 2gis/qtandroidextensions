@@ -1,7 +1,8 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
-#include <QtOpenGL/QGLShaderProgram>
 #include "QOpenGLTextureHolder.h"
+
+QMap<GLenum, QSharedPointer<QGLShaderProgram> > QOpenGLTextureHolder::blit_programs_;
 
 QOpenGLTextureHolder::QOpenGLTextureHolder(GLenum type, const QSize & size)
 	: texture_id_(0)
@@ -61,66 +62,70 @@ static inline void QRectFToVertexArray(const QRectF &r, GLfloat *array)
 	array[7] = bottom;
 }
 
-#if defined(QT_OPENGL_ES_2)
-/*!
- * Шейдерная рисовалка текстуры для ES 2.0.
- * \todo Сделать более человеческий синглтон? Или и так ОК?
- */
-static QGLShaderProgram * CreateBlitProgram(GLenum target)
+QGLShaderProgram * QOpenGLTextureHolder::GetBlitProgram(GLenum target)
 {
-	static const GLuint QT_VERTEX_COORDS_ATTR  = 0;
-	static const GLuint QT_TEXTURE_COORDS_ATTR = 1;
-	static const QLatin1String c_for_external_("#extension GL_OES_EGL_image_external : require \n");
+	#if !defined(QT_OPENGL_ES_2)
+		qFatal("GetBlitProgram should not be called if not using OpenGL ES 2.");
+		Q_UNUSED(target);
+		return 0;
+	#else
+		QSharedPointer<QGLShaderProgram> & blit_program_ptr = blit_programs_[target];
+		if (!blit_program_ptr.isNull())
+		{
+			return blit_program_ptr.data();
+		}
 
-	QString qglslMainWithTexCoordsVertexShader =
-		"attribute highp vec2 textureCoordArray; \n"
-		"varying highp vec2 textureCoords; \n"
-		"void setPosition(); \n"
-		"void main(void) \n"
-		"{ \n"
-		"  setPosition(); \n"
-		"  textureCoords = textureCoordArray; \n"
-		"}\n";
+		qDebug()<<"Creating blit shaders for tetxure type"<<target;
 
-	QString qglslUntransformedPositionVertexShader =
-		"attribute highp vec4 vertexCoordsArray; \n"
-		"void setPosition(void) \n"
-		"{ \n"
-		"  gl_Position = vertexCoordsArray; \n"
-		"}\n";
+		static const GLuint QT_VERTEX_COORDS_ATTR  = 0;
+		static const GLuint QT_TEXTURE_COORDS_ATTR = 1;
+		static const QLatin1String c_for_external_("#extension GL_OES_EGL_image_external : require \n");
 
-	QString qglslMainFragmentShader =
-		"lowp vec4 srcPixel(); \n"
-		"void main() \n"
-		"{ \n"
-		"  gl_FragColor = srcPixel(); \n"
-		"}\n";
+		QString qglslMainWithTexCoordsVertexShader =
+			"attribute highp vec2 textureCoordArray; \n"
+			"varying highp vec2 textureCoords; \n"
+			"void setPosition(); \n"
+			"void main(void) \n"
+			"{ \n"
+			"  setPosition(); \n"
+			"  textureCoords = textureCoordArray; \n"
+			"}\n";
 
-	QString qglslImageSrcFragmentShader =
-		QString((target == GL_TEXTURE_EXTERNAL_OES)? c_for_external_: QLatin1String("")) +
-		"varying highp vec2 textureCoords; \n" +
-		QString((target == GL_TEXTURE_EXTERNAL_OES)?
-			"uniform samplerExternalOES imageTexture; \n" :
-			"uniform sampler2D imageTexture; \n") +
-		"lowp vec4 srcPixel() \n"
-		"{ \n"
-		"  return texture2D(imageTexture, textureCoords); \n"
-		"}\n";
+		QString qglslUntransformedPositionVertexShader =
+			"attribute highp vec4 vertexCoordsArray; \n"
+			"void setPosition(void) \n"
+			"{ \n"
+			"  gl_Position = vertexCoordsArray; \n"
+			"}\n";
 
-	static QMap<GLenum, QSharedPointer<QGLShaderProgram> > programs;
-	QSharedPointer<QGLShaderProgram> & m_blitProgram = programs[target];
-	if (m_blitProgram.isNull())
-	{
-		m_blitProgram = QSharedPointer<QGLShaderProgram>(new QGLShaderProgram());
+		QString qglslMainFragmentShader =
+			"lowp vec4 srcPixel(); \n"
+			"void main() \n"
+			"{ \n"
+			"  gl_FragColor = srcPixel(); \n"
+			"}\n";
+
+		QString qglslImageSrcFragmentShader =
+			QString((target == GL_TEXTURE_EXTERNAL_OES)? c_for_external_: QLatin1String("")) +
+			"varying highp vec2 textureCoords; \n" +
+			QString((target == GL_TEXTURE_EXTERNAL_OES)?
+				"uniform samplerExternalOES imageTexture; \n" :
+				"uniform sampler2D imageTexture; \n") +
+			"lowp vec4 srcPixel() \n"
+			"{ \n"
+			"  return texture2D(imageTexture, textureCoords); \n"
+			"}\n";
+
+		blit_program_ptr = QSharedPointer<QGLShaderProgram>(new QGLShaderProgram());
 		{
 			QString source;
 			source.append(qglslMainWithTexCoordsVertexShader);
 			source.append(qglslUntransformedPositionVertexShader);
 
-			QGLShader *vertexShader = new QGLShader(QGLShader::Vertex, m_blitProgram.data());
+			QGLShader *vertexShader = new QGLShader(QGLShader::Vertex, blit_program_ptr.data());
 			vertexShader->compileSourceCode(source);
 
-			m_blitProgram->addShader(vertexShader);
+			blit_program_ptr->addShader(vertexShader);
 		}
 
 		{
@@ -129,20 +134,20 @@ static QGLShaderProgram * CreateBlitProgram(GLenum target)
 			source.append(qglslImageSrcFragmentShader);
 			source.append(qglslMainFragmentShader);
 
-			QGLShader *fragmentShader = new QGLShader(QGLShader::Fragment, m_blitProgram.data());
+			QGLShader *fragmentShader = new QGLShader(QGLShader::Fragment, blit_program_ptr.data());
 			fragmentShader->compileSourceCode(source);
 
-			m_blitProgram->addShader(fragmentShader);
+			blit_program_ptr->addShader(fragmentShader);
 		}
 
-		m_blitProgram->bindAttributeLocation("vertexCoordsArray", QT_VERTEX_COORDS_ATTR);
-		m_blitProgram->bindAttributeLocation("textureCoordArray", QT_TEXTURE_COORDS_ATTR);
+		blit_program_ptr->bindAttributeLocation("vertexCoordsArray", QT_VERTEX_COORDS_ATTR);
+		blit_program_ptr->bindAttributeLocation("textureCoordArray", QT_TEXTURE_COORDS_ATTR);
 
-		m_blitProgram->link();
-	}
-	return m_blitProgram.data();
+		blit_program_ptr->link();
+
+		return blit_program_ptr.data();
+	#endif // ES 2.0
 }
-#endif
 
 void QOpenGLTextureHolder::blitTexture(const QRect & targetRect, const QRect & sourceRect)
 {
@@ -162,7 +167,7 @@ void QOpenGLTextureHolder::blitTexture(const QRect & targetRect, const QRect & s
 	// glDisable(GL_SCISSOR_TEST);
 	glDisable(GL_BLEND);
 
-	QGLShaderProgram * blitProgram = CreateBlitProgram(texture_type_);
+	QGLShaderProgram * blitProgram = GetBlitProgram(texture_type_);
 	blitProgram->bind();
 	blitProgram->setUniformValue("imageTexture", 0 /*QT_IMAGE_TEXTURE_UNIT*/);
 
@@ -191,6 +196,7 @@ void QOpenGLTextureHolder::blitTexture(const QRect & targetRect, const QRect & s
 		r.setTop((targetRect.bottom() / w) * 2.0f - 1.0f);
 	}
 	drawTexture(r, sourceRect);
+	blitProgram->release();
 #else
 	glBindTexture(texture_type_, texture_id_);
 	// (In OpenGL coordinates Y is reversed)
