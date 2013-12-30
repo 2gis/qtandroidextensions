@@ -30,7 +30,6 @@ protected:
 
 private:
 	//void CreateTestTexture(QSize * out_texture_size_);
-	//void CreateEmptyExternalTexture();
 
 	/*! Java вызывает эту функцию, чтобы сообщить, что дорисовалась новая текстура.
 		Она оборачивает вызов javaUpdate() в нашем треде. */

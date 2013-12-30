@@ -187,8 +187,7 @@ class OffscreenWebView implements OffscreenView
             if (helper_ != null)
             {
                  nativeUpdate(helper_.getNativePtr());
-            }
-        }*/
+            }        }*/
 
         // Old WebKit updating
         @Override
@@ -287,9 +286,9 @@ class OffscreenWebView implements OffscreenView
                  webview_ = new MyWebView(context, width, height);
                  helper_ = new OffscreenViewHelper(nativeptr, objectname, webview_, gltextureid, width, height);
                  webview_.getSettings().setJavaScriptEnabled(true);
-                 webview_.loadUrl("http://www.android.com/intl/ru/about/");
+                 webview_.loadUrl("http://www.android.com/intl/en/about/");
                  //webview_.loadUrl("http://beta.2gis.ru/");
-                 //webview_.loadUrl("http://google.com/");
+                 // webview_.loadUrl("http://google.com/");
                  //webview_.loadUrl("http://beta.2gis.ru/novosibirsk/booklet/7?utm_source=products&utm_medium=mobile");
                  // TODO !!! Walkaround !!! Adding WebView disables automatic orientation changes on some devices (with Lite plug-in),
                  // have to figure out why.
@@ -362,6 +361,11 @@ class OffscreenWebView implements OffscreenView
             " texture="+helper_.getTexture()+", size="+helper_.getTextureWidth()+"x"+helper_.getTextureHeight());
         synchronized(helper_)
         {
+            if (helper_.getNativePtr() == 0)
+            {
+                Log.i(TAG, "doDrawViewOnTexture: zero native ptr, will not draw!");
+                return;
+            }
             try
             {
                 // TODO: disable time measurement
@@ -426,6 +430,20 @@ class OffscreenWebView implements OffscreenView
     }
 
     @Override
+    public void cppDestroyed()
+    {
+        if (helper_ == null)
+        {
+            return;
+        }
+        synchronized(helper_)
+        {
+            Log.i(TAG, "cppDestroyed");
+            helper_.cppDestroyed();
+        }
+    }
+
+    @Override
     public float getTextureTransformMatrix(int index)
     {
         if (helper_ == null)
@@ -443,6 +461,12 @@ class OffscreenWebView implements OffscreenView
     @Override
     public void ProcessMouseEvent(final int action, final int x, final int y)
     {
+        if (helper_.getNativePtr() == 0)
+        {
+            Log.i(TAG, "ProcessMouseEvent: zero native ptr, ignoring.");
+            return;
+        }
+
         if (webview_ != null)
         {
             final long t = SystemClock.uptimeMillis();

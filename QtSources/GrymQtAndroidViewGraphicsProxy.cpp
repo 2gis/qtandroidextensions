@@ -44,9 +44,13 @@ GrymQtAndroidViewGraphicsProxy::GrymQtAndroidViewGraphicsProxy(QGraphicsItem *pa
 GrymQtAndroidViewGraphicsProxy::~GrymQtAndroidViewGraphicsProxy()
 {
 	// Разрушим Java-объекты первым делом
-	offscreen_view_.reset();
+	if (offscreen_view_)
+	{
+		offscreen_view_->CallVoid("cppDestroyed");
+		offscreen_view_.reset();
+	}
 	offscreen_view_factory_.reset();
-	// tex_.deallocateTexture(); - will be done after deleting Java parts
+	tex_.deallocateTexture();
 }
 
 void GrymQtAndroidViewGraphicsProxy::paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget)
@@ -132,9 +136,6 @@ void GrymQtAndroidViewGraphicsProxy::paint(QPainter * painter, const QStyleOptio
 	glViewport(0, 0, static_cast<GLsizei>(device->width()), static_cast<GLsizei>(device->height()));
 	painter->endNativePainting();
 }
-
-
-
 
 void GrymQtAndroidViewGraphicsProxy::javaUpdate()
 {

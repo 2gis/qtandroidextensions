@@ -150,6 +150,11 @@ class OffscreenViewHelper
         }
     }
 
+    public void cppDestroyed()
+    {
+        native_ptr_ = 0;
+    }
+
     final public float getTextureTransformMatrix(final int index)
     {
         return mtx_[index];
