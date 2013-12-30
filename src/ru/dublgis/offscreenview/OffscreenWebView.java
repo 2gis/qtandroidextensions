@@ -62,6 +62,9 @@ class OffscreenWebView implements OffscreenView
     OffscreenViewHelper helper_ = null;
     MyWebView webview_ = null;
 
+    // WebView wants everything to happen in UI thread only, so it's better to
+    // make it a separate class inside of OffscreenWebView and call any of its functions
+    // via runOnUiThread().
     class MyWebView extends WebView
     {
         // TODO: pauseTimers/ resumeTimers ()
@@ -116,7 +119,7 @@ class OffscreenWebView implements OffscreenView
             height_ = height;
             webviewclient_ = new MyWebViewClient();
             setWebViewClient(webviewclient_);
-//setVerticalScrollBarEnabled(true);
+            //setVerticalScrollBarEnabled(true);
             /*onAttachedToWindow();
             onSizeChanged(width, height, 0, 0);
             onVisibilityChanged(this, View.VISIBLE);
@@ -132,9 +135,11 @@ class OffscreenWebView implements OffscreenView
 
             Log.i(TAG, "MyWebView.onDrawPublic "+getWidth()+"x"+getHeight());
             canvas.drawARGB (255, 255, 255, 255);
-            
-canvas.translate(-getScrollX(), -getScrollY());
-            
+
+            // Take View scroll into account. (It converts touch coordinates by itself,
+            // but it doesn't draw scrolled).
+            canvas.translate(-getScrollX(), -getScrollY());
+
             super.onDraw(canvas);
 
             /*
@@ -153,7 +158,7 @@ canvas.translate(-getScrollX(), -getScrollY());
         protected void invalidateTexture()
         {
             invalidated_ = true;
-            // A little tambourine dance to filter out subsequent invalidations happened before a single paint
+            // A little dance with a tambourine to filter out subsequent invalidations happened before a single paint
             new Handler().post(new Runnable(){
                 @Override
                 public void run()
@@ -277,8 +282,8 @@ canvas.translate(-getScrollX(), -getScrollY());
             public void run()
             {
                  Log.i(TAG, "OffscreenWebView(name=\""+objectname+"\", texture="+gltextureid+") RUNNABLE");
-                 int save_req_orientation = context.getRequestedOrientation();
-                 Log.i(TAG, "SGEXP orientation was: "+save_req_orientation);
+                 // int save_req_orientation = context.getRequestedOrientation();
+                 // Log.i(TAG, "SGEXP orientation was: "+save_req_orientation);
                  webview_ = new MyWebView(context, width, height);
                  helper_ = new OffscreenViewHelper(nativeptr, objectname, webview_, gltextureid, width, height);
                  webview_.getSettings().setJavaScriptEnabled(true);
@@ -286,11 +291,9 @@ canvas.translate(-getScrollX(), -getScrollY());
                  //webview_.loadUrl("http://beta.2gis.ru/");
                  //webview_.loadUrl("http://google.com/");
                  //webview_.loadUrl("http://beta.2gis.ru/novosibirsk/booklet/7?utm_source=products&utm_medium=mobile");
-                 //webview_.loadUrl("http://10.54.200.77/test2.html");
-                 // webview_.loadUrl("http://www.fantasticnos.ru/");
-                 //webview_.loadUrl("http://sageshome.net/blog/index.php/sage/2013/10/12/dzerzhinsky_quotes");
-                 // !!! Walkaround !!! Adding WebView disables automatic orientation changes.
-                 context.setRequestedOrientation(save_req_orientation); // ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+                 // TODO !!! Walkaround !!! Adding WebView disables automatic orientation changes on some devices (with Lite plug-in),
+                 // have to figure out why.
+                 context.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
                  //webview_.loadData("<html><body style=\"background-color: green;\"><h1>Teach Me To Web</h1></body></html>", "text/html", null);
             }
         });
@@ -361,6 +364,7 @@ canvas.translate(-getScrollX(), -getScrollY());
         {
             try
             {
+                // TODO: disable time measurement
                 long t = System.nanoTime();
                 Canvas canvas = helper_.lockCanvas();
                 if (canvas == null)
@@ -373,7 +377,7 @@ canvas.translate(-getScrollX(), -getScrollY());
                     {
                         if (webview_ != null)
                         {
-                            Log.i(TAG, "doDrawViewOnTexture: drawing WebView....");
+                            // Log.i(TAG, "doDrawViewOnTexture: drawing WebView....");
                             webview_.onDrawPublic(canvas);
                         }
                         else
@@ -404,6 +408,7 @@ canvas.translate(-getScrollX(), -getScrollY());
         }
     }
 
+    // TODO: add non-blocking version of updateTexture()?
     @Override
     public boolean updateTexture()
     {
@@ -433,8 +438,8 @@ canvas.translate(-getScrollX(), -getScrollY());
         }
     }
 
+    // TODO: refactor downt
     long downt = 0;
-int py = 0;
     @Override
     public void ProcessMouseEvent(final int action, final int x, final int y)
     {
@@ -447,17 +452,7 @@ int py = 0;
                 downt = t;
             }
             Log.i(TAG, "ProcessMouseEvent("+action+", "+x+", "+y+") downt="+downt+", t="+t);
-            
-//  setScroll
-
-
-            /*PointerProperties pp;
-            pp.id = 0;
-            pp.toolType = PointerProperties.TOOL_TYPE_MOUSE; // TOOL_TYPE_FINGER
-            PointerProperties [] pointerProperties = {};*/
-            
             final MotionEvent event = MotionEvent.obtain(downt /* downTime*/, t /* eventTime */, action, x, y, 0 /*metaState*/);
-//                 MotionEvent.obtain(dtime, t, action, 1, PointerProperties[] pointerProperties, PointerCoords[] pointerCoords, int metaState, int buttonState, float xPrecision, float yPrecision, int deviceId, int edgeFlags, int source, int flags)
             Activity ctx = getContextStatic();
             if (ctx != null)
             {
@@ -467,7 +462,9 @@ int py = 0;
                     public void run()
                     {
                         webview_.onTouchEvent(event);
-doDrawViewOnTexture();
+                        // TODO: If the view has only been scrolled, it won't call invalidate(). So we just force it to repaint for now.
+                        // We should keep a larger piece of rendered HTML in the texture and only scroll the texture if possible.
+                        doDrawViewOnTexture();
                     }
                 });
             }
