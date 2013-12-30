@@ -1,11 +1,13 @@
 QT += core gui opengl
 
 HEADERS += \
-    GrymQtAndroidViewGraphicsProxy.h
+    GrymQtAndroidViewGraphicsProxy.h \
+    QOpenGLTextureHolder.h
 
 SOURCES = \
 	main.cpp \
-    GrymQtAndroidViewGraphicsProxy.cpp
+    GrymQtAndroidViewGraphicsProxy.cpp \
+    QOpenGLTextureHolder.cpp
 
 RESOURCES = animatedtiles.qrc
 
@@ -35,6 +37,8 @@ OTHER_FILES += \
     ../update.sh \
     ../AndroidManifest.xml \
     images/kotik.png
+
+
 
 
 
