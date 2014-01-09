@@ -155,7 +155,7 @@ class OffscreenWebView implements OffscreenView
             */
         }
 
-        protected void invalidateTexture()
+        public void invalidateTexture()
         {
             invalidated_ = true;
             // A little dance with a tambourine to filter out subsequent invalidations happened before a single paint
@@ -216,7 +216,8 @@ class OffscreenWebView implements OffscreenView
             // super.invalidate();
         }
 
-        /*@Override
+        /*// ????
+        @Override
         public ViewParent invalidateChildInParent(int[] location, Rect r)
         {
             Log.i(TAG, "MyWebView.invalidateChildInParent(int[] location, Rect r)");
@@ -245,13 +246,16 @@ class OffscreenWebView implements OffscreenView
             super.requestLayout();
         }
 
-      /*  @Override
+        /*
+        // ????
+        @Override
         public void invalidateDrawable(Drawable drawable)
         {
             Log.i(TAG, "MyWebView.invalidateDrawable()");
             invalidateTexture();
         }
 
+        // ????
         @Override
         public void scheduleDrawable(Drawable who, Runnable what, long when)
         {
@@ -259,13 +263,15 @@ class OffscreenWebView implements OffscreenView
             invalidateTexture();
         }
 
+        // ????
         @Override
         public void childDrawableStateChanged(View child)
         {
             Log.i(TAG, "MyWebView.childDrawableStateChanged()");
             invalidateTexture();
             super.childDrawableStateChanged(child);
-        }*/
+        }
+        */
 
         //  public boolean isDirty () 
     }
@@ -287,6 +293,7 @@ class OffscreenWebView implements OffscreenView
                  helper_ = new OffscreenViewHelper(nativeptr, objectname, webview_, gltextureid, width, height);
                  webview_.getSettings().setJavaScriptEnabled(true);
                  webview_.loadUrl("http://www.android.com/intl/en/about/");
+                 //webview_.loadUrl("http://www.youtube.com/watch?v=D36JUfE1oYk");
                  //webview_.loadUrl("http://beta.2gis.ru/");
                  // webview_.loadUrl("http://google.com/");
                  //webview_.loadUrl("http://beta.2gis.ru/novosibirsk/booklet/7?utm_source=products&utm_medium=mobile");
@@ -492,6 +499,24 @@ class OffscreenWebView implements OffscreenView
                     }
                 });
             }
+        }
+    }
+
+    @Override
+    public void invalidateOffscreenView()
+    {
+        if (webview_ != null)
+        {
+            Log.i(TAG, "invalidateOffscreenView");
+            final Activity context = getContextStatic();
+            context.runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    webview_.invalidateTexture();
+                }
+            });
         }
     }
 

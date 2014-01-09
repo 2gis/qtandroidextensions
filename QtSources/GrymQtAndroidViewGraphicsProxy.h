@@ -1,5 +1,6 @@
 #pragma once
 #include <QtOpenGL/QGLWidget>
+#include <QTimer>
 #include <QtGui/QGraphicsWidget>
 #include <QPaintEvent>
 #include <EGL/egl.h>
@@ -39,10 +40,13 @@ private slots:
 	/*! Вызывается, когда нужно инициировать перерисовку себя (есть новая текстура). */
 	void javaUpdate();
 
+	void onRefreshTimer();
+
 private:
 	QOpenGLTextureHolder tex_;
 	QScopedPointer<jcGeneric> offscreen_view_factory_;
 	QScopedPointer<jcGeneric> offscreen_view_;
 	bool need_update_texture_;
 	bool mouse_tracking_;
+	QTimer refresh_timer_;
 };

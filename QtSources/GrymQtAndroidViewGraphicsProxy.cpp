@@ -39,6 +39,10 @@ GrymQtAndroidViewGraphicsProxy::GrymQtAndroidViewGraphicsProxy(QGraphicsItem *pa
 	offscreen_view_factory_.reset(new jcGeneric((c_class_path_+"/OffscreenViewFactory").toAscii(), true));
 	qDebug()<<__PRETTY_FUNCTION__<<"Connected to OffscreenViewFactory.";
 	qDebug()<<"Done"<<__PRETTY_FUNCTION__;
+
+	connect(&refresh_timer_, SIGNAL(timeout()), this, SLOT(onRefreshTimer()));
+	refresh_timer_.setInterval(100);
+	//refresh_timer_.start();
 }
 
 GrymQtAndroidViewGraphicsProxy::~GrymQtAndroidViewGraphicsProxy()
@@ -342,3 +346,10 @@ void GrymQtAndroidViewGraphicsProxy::mouseReleaseEvent(QGraphicsSceneMouseEvent 
 	}
 }
 
+void GrymQtAndroidViewGraphicsProxy::onRefreshTimer()
+{
+	if (offscreen_view_)
+	{
+		offscreen_view_->CallVoid("invalidateOffscreenView");
+	}
+}
