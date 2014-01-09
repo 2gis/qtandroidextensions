@@ -6,6 +6,7 @@ INSTDIR=$QT_INSTALL_DIR
 JAVA_DIRS="lite core util"
 STRIP="$DGIS_ANDROID_TOOLS_BIN/$DGIS_ANDROID_TOOLS_PREFIX-strip"
 
+OFFSCREENVIEWJAVA="../../../../../QtOffscreenViews/ru.dublgis.offscreenview"
 
 if [ ! -x "$STRIP" ] ; then
   echo "WARNING: arm-eabi-strip is not in PATH, the libs won't be stripped!" ;
@@ -23,7 +24,9 @@ for LIB in QtCore QtGui QAndroidCore QtOpenGL QwpLiteApi9 QtOpenGL; do
   fi ;
 done
 
-echo "Creating Qt Java symlinks..."
+echo "Creating Java symlinks..."
+rm -f "src/ru/dublgis/offscreenview"
+ln -svf "$OFFSCREENVIEWJAVA" "src/ru/dublgis/offscreenview"
 mkdir -p "src/org/qt"
 for J in $JAVA_DIRS ; do
   rm -f "src/org/qt/$J"
