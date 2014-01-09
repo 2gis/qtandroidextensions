@@ -11,5 +11,5 @@ build.xml
 local.properties
 project.properties
 proguard-project.txt
-src/org/qt
+Samples/AndroidWebView/src/org/qt
 
