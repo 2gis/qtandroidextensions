@@ -2,6 +2,7 @@ qrc_*
 *.moc
 moc_*
 *.o
+*.a
 *.so
 *.user
 bin/*

@@ -1,17 +1,20 @@
 QT += core gui opengl
 
 HEADERS += \
-    GrymQtAndroidViewGraphicsProxy.h \
-    QOpenGLTextureHolder.h
+    GrymQtAndroidViewGraphicsProxy.h
 
-SOURCES = \
+SOURCES += \
 	main.cpp \
-    GrymQtAndroidViewGraphicsProxy.cpp \
-    QOpenGLTextureHolder.cpp
+    GrymQtAndroidViewGraphicsProxy.cpp
+
+#include("../../../QtOffscreenViews/QtOffscreenViews.pri")
 
 RESOURCES = resources.qrc
 
-INCLUDEPATH += JNIUtils
+INCLUDEPATH += JNIUtils ../../../QtOffscreenViews
+
+#QMAKE_LFLAGS += 
+LIBS += -L../../../QtOffscreenViews -lQtOffscreenViews
 
 android-g++ {
     # Reduce binary size by not exporting all symbols by default.
@@ -37,15 +40,4 @@ OTHER_FILES += \
     ../update.sh \
     ../AndroidManifest.xml \
     images/kotik.png
-
-
-
-
-
-
-
-
-
-
-
 

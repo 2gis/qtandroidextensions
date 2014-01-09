@@ -14,6 +14,8 @@
  *    necessary for blitTexture() to work correctly.
  * 3. Paints GL texture on some GL context.
  * 4. It supports GL_TEXTURE_2D and GL_TEXTURE_EXTERNAL_OES textures.
+ * 5. It is graphics-system agnostic and can be used as a helper in QWidget,
+ *    QGLWidget, QGraphicsWidget, QML, and etc.
  */
 class QOpenGLTextureHolder
 {
