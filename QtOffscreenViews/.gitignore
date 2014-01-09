@@ -1,0 +1,4 @@
+*.a
+*.o
+*.user
+Makefile
