@@ -9,7 +9,7 @@ SOURCES = \
     GrymQtAndroidViewGraphicsProxy.cpp \
     QOpenGLTextureHolder.cpp
 
-RESOURCES = animatedtiles.qrc
+RESOURCES = resources.qrc
 
 INCLUDEPATH += JNIUtils
 
@@ -19,7 +19,7 @@ android-g++ {
     # exported nor used inside of the application.
     QMAKE_CXXFLAGS += -fvisibility=hidden
     CONFIG += dll
-    TARGET = /../../libs/armeabi/libanimatedtiles   
+    TARGET = /../../libs/armeabi/libandroidwebviewdemo
 }
 
 include("JNIUtils/JNIUtils.pri")

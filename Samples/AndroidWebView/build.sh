@@ -14,5 +14,5 @@ cd ..
 ant debug install || exit 1
 
 echo "Starting app..."
-adb shell am start -n org.animatedtiles/org.animatedtiles.QtAnimatedTiles
+adb shell am start -n ru.dublgis.androidwebviewdemo/ru.dublgis.androidwebviewdemo.AndroidWebViewDemo
 

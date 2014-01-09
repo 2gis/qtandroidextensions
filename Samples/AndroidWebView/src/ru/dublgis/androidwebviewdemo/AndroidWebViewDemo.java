@@ -1,4 +1,4 @@
-package org.animatedtiles;
+package ru.dublgis.androidwebviewdemo;
 
 import android.content.pm.ActivityInfo;
 
@@ -8,14 +8,14 @@ import org.qt.core.QtApplicationBase;
 import org.qt.core.QtLibraryLoader;
 import org.qt.lite.QtActivity;
 
-public class QtAnimatedTiles extends QtActivity
+public class AndroidWebViewDemo extends QtActivity
 {
     private static boolean mSplashHasBeenCreatedOnce = false;
 
-    public QtAnimatedTiles()
+    public AndroidWebViewDemo()
     {
-        super("animatedtiles"); // Name of the library containing your Qt application
-                                // (without "lib" and ".so")
+        super("androidwebviewdemo"); // Name of the library containing your Qt application
+                                     // (without "lib" and ".so")
 
         // You could add more libraries here, e.g.:
         // addLibrary("QtNetwork");
@@ -30,7 +30,6 @@ public class QtAnimatedTiles extends QtActivity
         setKeepaliveService(true);
         QtLibraryLoader.addLibrary("QtOpenGL");
         setEnableOpenGlModeFor(2, 0, 4);
-//setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
 
         if (!mSplashHasBeenCreatedOnce)
         {

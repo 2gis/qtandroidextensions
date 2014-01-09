@@ -270,7 +270,7 @@ int main(int argc, char **argv)
 
     // qDebug()<<"main "<<argc<<","<<argv[0]<<argv[1];
     qDebug()<<TAG<<"Init resource...";
-    Q_INIT_RESOURCE(animatedtiles);
+    Q_INIT_RESOURCE(resources);
 
 	qDebug()<<TAG<<"Construct QApplication...";
 	QApplication::setGraphicsSystem(QLatin1String("opengl"));
