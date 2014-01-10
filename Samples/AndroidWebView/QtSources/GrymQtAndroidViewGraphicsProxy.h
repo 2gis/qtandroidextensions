@@ -21,6 +21,7 @@ protected:
 	virtual void mouseMoveEvent(QGraphicsSceneMouseEvent * event);
 	virtual void mousePressEvent(QGraphicsSceneMouseEvent * event);
 	virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent * event);
+	virtual void resizeEvent(QGraphicsSceneResizeEvent *event);
 
 private:
 	//void CreateTestTexture(QSize * out_texture_size_);

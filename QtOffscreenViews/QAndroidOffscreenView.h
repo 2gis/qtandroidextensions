@@ -95,6 +95,7 @@ protected:
 	QSize size_;
 	QColor fill_color_;
 	bool need_update_texture_;
+	bool view_painted_;
 
 private:
 	Q_DISABLE_COPY(QAndroidOffscreenView)

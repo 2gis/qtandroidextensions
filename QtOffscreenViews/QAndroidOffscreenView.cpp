@@ -28,6 +28,7 @@ QAndroidOffscreenView::QAndroidOffscreenView(const QString & classname, const QS
 	, size_(defsize)
 	, fill_color_(Qt::white)
 	, need_update_texture_(false)
+	, view_painted_(false)
 {
 	setObjectName(objectname);
 	offscreen_view_factory_.reset(new jcGeneric((c_class_path_+"/OffscreenViewFactory").toAscii(), true));
@@ -112,7 +113,7 @@ static void clearGlRect(int l, int b, int w, int h, const QColor & fill_color_)
 void QAndroidOffscreenView::paintGL(int l, int b, int w, int h)
 {
 	glViewport(l, b, w, h);
-	if (tex_.isAllocated())
+	if (tex_.isAllocated() && view_painted_)
 	{
 		if (need_update_texture_)
 		{
@@ -168,6 +169,7 @@ void QAndroidOffscreenView::javaUpdate()
 {
 	qDebug()<<__PRETTY_FUNCTION__;
 	need_update_texture_ = true;
+	view_painted_ = true;
 	emit updated();
 }
 
