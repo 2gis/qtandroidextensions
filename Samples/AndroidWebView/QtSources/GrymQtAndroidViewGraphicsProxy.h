@@ -4,8 +4,8 @@
 #include <QtGui/QGraphicsWidget>
 #include <QPaintEvent>
 #include <EGL/egl.h>
-#include "JNIUtils/JclassPtr.h"
-#include "JNIUtils/jcGeneric.h"
+#include <JclassPtr.h>
+#include <jcGeneric.h>
 #include "QOpenGLTextureHolder.h"
 
 class GrymQtAndroidViewGraphicsProxy

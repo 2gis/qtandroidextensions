@@ -11,10 +11,10 @@ SOURCES += \
 
 RESOURCES = resources.qrc
 
-INCLUDEPATH += JNIUtils ../../../QtOffscreenViews
+INCLUDEPATH += ../../../JNIUtils ../../../QtOffscreenViews
 
 #QMAKE_LFLAGS += 
-LIBS += -L../../../QtOffscreenViews -lQtOffscreenViews
+LIBS += -L../../../QtOffscreenViews -lQtOffscreenViews -L../../../JNIUtils -lJNIUtils
 
 android-g++ {
     # Reduce binary size by not exporting all symbols by default.

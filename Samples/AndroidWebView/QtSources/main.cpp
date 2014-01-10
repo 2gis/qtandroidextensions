@@ -9,7 +9,7 @@
 #include <QWidget>
 #include <QMainWindow>
 #include <QGraphicsView>
-#include "JNIUtils/JniEnvPtr.h"
+#include <JniEnvPtr.h>
 #include "GrymQtAndroidViewGraphicsProxy.h"
 
 #ifdef Q_OS_ANDROID

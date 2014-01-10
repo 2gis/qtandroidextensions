@@ -8,6 +8,11 @@
 
 MYDIR="$PWD"
 
+cd "../../JNIUtils" || exit 1
+qmake || exit 1
+make || exit 1
+cd "$MYDIR" || exit 1
+
 cd "../../QtOffscreenViews" || exit 1
 qmake || exit 1
 make || exit 1
