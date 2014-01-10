@@ -7,13 +7,13 @@ QT += core
 android-g++ {
 
 HEADERS += \
-	JniEnvPtr.h \
-	JclassPtr.h \
-	jcGeneric.h \
-	stdafx.h
+    JniEnvPtr.h \
+    JclassPtr.h \
+    jcGeneric.h \
+    stdafx.h
 
 SOURCES += \
-	JniEnvPtr.cpp \
-	JclassPtr.cpp \
-	jcGeneric.cpp
+    JniEnvPtr.cpp \
+    JclassPtr.cpp \
+    jcGeneric.cpp
 }

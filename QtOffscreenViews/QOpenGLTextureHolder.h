@@ -85,6 +85,8 @@ protected:
 	// Texture transformation: (v) = (A)*(b).
 	GLfloat a11_, a12_, a21_, a22_, b1_, b2_;
 	static QMap<GLenum, QSharedPointer<QGLShaderProgram> > blit_programs_;
+private:
+	Q_DISABLE_COPY(QOpenGLTextureHolder)
 };
 
 void QOpenGLTextureHolder::setTransformation(GLfloat a11, GLfloat a12, GLfloat a21, GLfloat a22, GLfloat b1, GLfloat b2)

@@ -2,5 +2,7 @@ TEMPLATE = lib
 CONFIG += staticlib
 QT += core gui opengl
 
-HEADERS += QOpenGLTextureHolder.h
-SOURCES += QOpenGLTextureHolder.cpp
+INCLUDEPATH += ../JNIUtils
+
+HEADERS += QOpenGLTextureHolder.h QAndroidOffscreenView.h
+SOURCES += QOpenGLTextureHolder.cpp QAndroidOffscreenView.cpp
