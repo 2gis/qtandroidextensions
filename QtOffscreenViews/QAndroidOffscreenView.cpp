@@ -65,7 +65,7 @@ void QAndroidOffscreenView::initializeGL()
 	qDebug()<<__PRETTY_FUNCTION__<<"GL_MAX_VIEWPORT_DIMS"<<maxdims[0]<<maxdims[1]
 		<<"GL_MAX_TEXTURE_SIZE"<<maxtextsz
 		<<"My size:"<<size_.width()<<"x"<<size_.height()
-		<<"Resuling size:"<<texture_size.width()<<"x"<<texture_size.height();
+		<<"Resulting size:"<<texture_size.width()<<"x"<<texture_size.height();
 
 	size_ = texture_size;
 
@@ -215,6 +215,14 @@ void QAndroidOffscreenView::mouse(int android_action, int x, int y)
 
 void QAndroidOffscreenView::resize(const QSize & size)
 {
-	//! \todo
+	if (size_ != size)
+	{
+		qDebug()<<__PRETTY_FUNCTION__<<"Old size:"<<size_<<"New size:"<<size_;
+		size_ = size;
+		if (offscreen_view_)
+		{
+			//! \todo
+		}
+	}
 }
 

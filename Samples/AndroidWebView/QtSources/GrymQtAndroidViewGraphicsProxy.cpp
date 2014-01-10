@@ -174,7 +174,8 @@ void GrymQtAndroidViewGraphicsProxy::mouseReleaseEvent(QGraphicsSceneMouseEvent 
 
 void GrymQtAndroidViewGraphicsProxy::resizeEvent(QGraphicsSceneResizeEvent *event)
 {
-	aview_.resize(event->newSize().toSize());
+	qDebug()<<__PRETTY_FUNCTION__<<event->newSize().toSize();
 	QGraphicsWidget::resizeEvent(event);
+	aview_.resize(event->newSize().toSize());
 }
 
