@@ -7,6 +7,11 @@
 #include <jcGeneric.h>
 #include "QOpenGLTextureHolder.h"
 
+/*!
+ * A general wrapper for Android offscreen views.
+ * It can be used to create a QWidget / QGLWidget / QGraphicsWidget / QML component
+ * which displays Android view.
+ */
 class QAndroidOffscreenView: public QObject
 {
 	Q_OBJECT
@@ -69,9 +74,15 @@ public:
 		ANDROID_MOTIONEVENT_ACTION_UP = 1,
 		ANDROID_MOTIONEVENT_ACTION_MOVE = 2;
 
+	/*!
+	 * Single-touch / mouse support.
+	 * Typically, this function is called from Qt mouse event handlers.
+	 * \param android_action can be ANDROID_MOTIONEVENT_ACTION_DOWN, ANDROID_MOTIONEVENT_ACTION_UP,
+	 *  ANDROID_MOTIONEVENT_ACTION_MOVE.
+	 */
 	void mouse(int android_action, int x, int y);
 
-	//! \todo Add keyboard and multi-touch
+	//! \todo Add keyboard and multi-touch support
 
 signals:
 	/*!
@@ -96,6 +107,7 @@ protected:
 	QColor fill_color_;
 	bool need_update_texture_;
 	bool view_painted_;
+	bool texture_received_;
 
 private:
 	Q_DISABLE_COPY(QAndroidOffscreenView)

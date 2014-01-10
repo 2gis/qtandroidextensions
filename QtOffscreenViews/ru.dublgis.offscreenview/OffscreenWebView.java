@@ -71,7 +71,7 @@ class OffscreenWebView implements OffscreenView
         // http://developer.android.com/reference/android/webkit/WebView.html
         //  public void setInitialScale (int scaleInPercent) (0 = default)
 
-        int width_ = 100, height_ = 100;
+        int width_ = 0, height_ = 0;
         MyWebViewClient webviewclient_ = null;
         boolean invalidated_ = true;
 
@@ -128,6 +128,7 @@ class OffscreenWebView implements OffscreenView
         // NB: caller should call the invalidation
         public void resizeOffscreenView(int width, int height)
         {
+            onSizeChanged(width, height, width_, height_);
             width_ = width;
             height_ = height;
             setLeft(0);
@@ -200,8 +201,8 @@ class OffscreenWebView implements OffscreenView
         public void invalidate(Rect dirty)
         {
             Log.i(TAG, "MyWebView.invalidate(Rect dirty)");
+            super.invalidate(dirty);
             invalidateTexture();
-            // super.invalidate(dirty);
         }
 
         // Old WebKit updating
@@ -209,8 +210,8 @@ class OffscreenWebView implements OffscreenView
         public void invalidate(int l, int t, int r, int b)
         {
             Log.i(TAG, "MyWebView.invalidate(int l, int t, int r, int b) "+l+", "+t+", "+r+", "+b);
+            super.invalidate(l, t, r, b);
             invalidateTexture();
-            // super.invalidate(l, t, r, b);
         }
 
         // Old WebKit updating
@@ -218,8 +219,8 @@ class OffscreenWebView implements OffscreenView
         public void invalidate()
         {
             Log.i(TAG, "MyWebView.invalidate()");
+            super.invalidate();
             invalidateTexture();
-            // super.invalidate();
         }
 
         /*// ????
@@ -370,8 +371,6 @@ class OffscreenWebView implements OffscreenView
             Log.i(TAG, "OffscreenWebView.doDrawViewOnTexture: helper is not initialized yet.");
             return;
         }
-        Log.i(TAG, "OffscreenWebView.doDrawViewOnTexture tid="+Thread.currentThread().getId()+
-            " texture="+helper_.getTexture()+", size="+helper_.getTextureWidth()+"x"+helper_.getTextureHeight());
         synchronized(helper_)
         {
             if (helper_.getNativePtr() == 0)
@@ -394,7 +393,10 @@ class OffscreenWebView implements OffscreenView
                     {
                         if (webview_ != null)
                         {
-                            // Log.i(TAG, "doDrawViewOnTexture: drawing WebView....");
+                            Log.i(TAG, "OffscreenWebView.doDrawViewOnTexture tid="+Thread.currentThread().getId()+
+                                " texture="+helper_.getTexture()+", helper's texSize="+
+                                helper_.getTextureWidth()+"x"+helper_.getTextureHeight()+
+                                ", view size:"+webview_.getWidth()+"x"+webview_.getHeight());
                             webview_.onDrawPublic(canvas);
                         }
                         else
@@ -527,7 +529,7 @@ class OffscreenWebView implements OffscreenView
     }
 
     @Override
-    public void resizeOffscreenView(int w, int h)
+    public void resizeOffscreenView(final int w, final int h)
     {
         if (helper_ == null)
         {
@@ -536,14 +538,19 @@ class OffscreenWebView implements OffscreenView
         synchronized(helper_)
         {
             Log.i(TAG, "resizeOffscreenView "+w+"x"+h);
-            if (helper_.getTextureWidth() != w || helper_.getTextureHeight() != h)
+            helper_.setNewSize(w, h);
+            if (webview_ != null)
             {
-                helper_.setNewSize(w, h);
-                if (webview_ != null)
+                final Activity context = getContextStatic();
+                context.runOnUiThread(new Runnable()
                 {
-                    webview_.resizeOffscreenView(w, h);
-                    webview_.invalidateTexture();
-                }
+                    @Override
+                    public void run()
+                    {
+                        webview_.resizeOffscreenView(w, h);
+                        webview_.invalidateTexture();
+                    }
+                });
             }
         }
     }

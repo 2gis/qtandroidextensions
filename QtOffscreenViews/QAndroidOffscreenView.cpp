@@ -29,6 +29,7 @@ QAndroidOffscreenView::QAndroidOffscreenView(const QString & classname, const QS
 	, fill_color_(Qt::white)
 	, need_update_texture_(false)
 	, view_painted_(false)
+	, texture_received_(false)
 {
 	setObjectName(objectname);
 	offscreen_view_factory_.reset(new jcGeneric((c_class_path_+"/OffscreenViewFactory").toAscii(), true));
@@ -39,10 +40,6 @@ QAndroidOffscreenView::~QAndroidOffscreenView()
 	deinitialize();
 }
 
-/*!
- * Initialize Android view. This function should be called within active proper GL context
- * as it may want to create OpenGL texture.
- */
 void QAndroidOffscreenView::initializeGL()
 {
 	if (tex_.isAllocated())
@@ -125,14 +122,13 @@ void QAndroidOffscreenView::paintGL(int l, int b, int w, int h)
 	{
 		if (need_update_texture_)
 		{
-			if (!updateTexture())
+			bool texture_updated_ok = updateTexture();
+			if (!texture_updated_ok)
 			{
 				clearGlRect(l, b, w, h, fill_color_);
 				return;
 			}
 		}
-
-		//! \todo check source rect calculations!
 		tex_.blitTexture(
 			QRect(QPoint(0, 0), QSize(w, h)) // target rect (relatively to viewport)
 			, QRect(QPoint(0, 0), QSize(w, h))); // source rect (in texture)
@@ -143,14 +139,17 @@ void QAndroidOffscreenView::paintGL(int l, int b, int w, int h)
 
 bool QAndroidOffscreenView::isCreated() const
 {
-	//! \todo
-	return true;
+	if (offscreen_view_)
+	{
+		//! \todo check that View actually created
+		return true;
+	}
+	return false;
 }
 
 bool QAndroidOffscreenView::hasValidImage() const
 {
-	//! \todo
-	return true;
+	return view_painted_ && texture_received_;
 }
 
 void QAndroidOffscreenView::invalidate()
@@ -191,6 +190,7 @@ bool QAndroidOffscreenView::updateTexture()
 		bool success = offscreen_view_->CallBool("updateTexture");
 		if (!success)
 		{
+			qDebug()<<__PRETTY_FUNCTION__<<"Failed to update the texture - Java says it's not OK (yet?)";
 			return false;
 		}
 
@@ -203,7 +203,14 @@ bool QAndroidOffscreenView::updateTexture()
 		float b2 = offscreen_view_->CallFloat("getTextureTransformMatrix", 13);
 		tex_.setTransformation(a11, a12, a21, a22, b1, b2);
 
+		/*
+		qDebug()<<__PRETTY_FUNCTION__<<"Transform Matrix:\n"<<
+				  __PRETTY_FUNCTION__<<"("<<a11<<a12<<") +"<<b1<<"\n"<<
+				  __PRETTY_FUNCTION__<<"("<<a21<<a22<<") +"<<b2;
+		*/
+
 		need_update_texture_ = false;
+		texture_received_ = true;
 		return true;
 	}
 	else
@@ -230,6 +237,7 @@ void QAndroidOffscreenView::resize(const QSize & size)
 		if (offscreen_view_)
 		{
 			offscreen_view_->CallParamVoid("resizeOffscreenView", "II", jint(size.width()), jint(size.height()));
+			tex_.setTextureSize(size);
 		}
 	}
 }
