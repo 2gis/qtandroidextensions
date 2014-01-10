@@ -215,7 +215,7 @@ bool QAndroidOffscreenView::updateTexture()
 
 void QAndroidOffscreenView::mouse(int android_action, int x, int y)
 {
-	if (tex_.isAllocated() && offscreen_view_)
+	if (offscreen_view_)
 	{
 		offscreen_view_->CallParamVoid("ProcessMouseEvent", "III", jint(android_action), jint(x), jint(y));
 	}
@@ -229,7 +229,7 @@ void QAndroidOffscreenView::resize(const QSize & size)
 		size_ = size;
 		if (offscreen_view_)
 		{
-			//! \todo
+			offscreen_view_->CallParamVoid("resizeOffscreenView", "II", jint(size.width()), jint(size.height()));
 		}
 	}
 }

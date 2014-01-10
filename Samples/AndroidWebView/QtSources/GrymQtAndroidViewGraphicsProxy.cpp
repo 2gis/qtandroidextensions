@@ -15,10 +15,16 @@ GrymQtAndroidViewGraphicsProxy::GrymQtAndroidViewGraphicsProxy(QGraphicsItem *pa
 	, mouse_tracking_(false)
 {
 	setAcceptedMouseButtons(Qt::LeftButton);
+	connect(&aview_, SIGNAL(updated()), this, SLOT(onOffscreenUpdated()));
 }
 
 GrymQtAndroidViewGraphicsProxy::~GrymQtAndroidViewGraphicsProxy()
 {
+}
+
+void GrymQtAndroidViewGraphicsProxy::onOffscreenUpdated()
+{
+	update();
 }
 
 void GrymQtAndroidViewGraphicsProxy::paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget)
@@ -142,7 +148,7 @@ void GrymQtAndroidViewGraphicsProxy::paint(QPainter * painter, const QStyleOptio
 
 void GrymQtAndroidViewGraphicsProxy::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
 {
-	if (mouse_tracking_ && event->button() == Qt::LeftButton)
+	if (mouse_tracking_)
 	{
 		QPoint pos = event->pos().toPoint();
 		aview_.mouse(QAndroidOffscreenView::ANDROID_MOTIONEVENT_ACTION_MOVE, pos.x(), pos.y());

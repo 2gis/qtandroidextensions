@@ -23,6 +23,9 @@ protected:
 	virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent * event);
 	virtual void resizeEvent(QGraphicsSceneResizeEvent *event);
 
+private slots:
+	void onOffscreenUpdated();
+
 private:
 	//void CreateTestTexture(QSize * out_texture_size_);
 

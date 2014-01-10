@@ -115,8 +115,6 @@ class OffscreenWebView implements OffscreenView
         {
             super(context);
             Log.i(TAG, "MyWebView "+width+"x"+height);
-            width_ = width;
-            height_ = height;
             webviewclient_ = new MyWebViewClient();
             setWebViewClient(webviewclient_);
             //setVerticalScrollBarEnabled(true);
@@ -124,6 +122,14 @@ class OffscreenWebView implements OffscreenView
             onSizeChanged(width, height, 0, 0);
             onVisibilityChanged(this, View.VISIBLE);
             onLayout(true, 0, 0, width, height);*/
+            resizeOffscreenView(width, height);
+        }
+
+        // NB: caller should call the invalidation
+        public void resizeOffscreenView(int width, int height)
+        {
+            width_ = width;
+            height_ = height;
             setLeft(0);
             setRight(width-1);
             setTop(0);
@@ -517,6 +523,28 @@ class OffscreenWebView implements OffscreenView
                     webview_.invalidateTexture();
                 }
             });
+        }
+    }
+
+    @Override
+    public void resizeOffscreenView(int w, int h)
+    {
+        if (helper_ == null)
+        {
+            return;
+        }
+        synchronized(helper_)
+        {
+            Log.i(TAG, "resizeOffscreenView "+w+"x"+h);
+            if (helper_.getTextureWidth() != w || helper_.getTextureHeight() != h)
+            {
+                helper_.setNewSize(w, h);
+                if (webview_ != null)
+                {
+                    webview_.resizeOffscreenView(w, h);
+                    webview_.invalidateTexture();
+                }
+            }
         }
     }
 

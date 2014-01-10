@@ -47,6 +47,7 @@ interface OffscreenView
     abstract public void ProcessMouseEvent(int action, int x, int y);
     abstract public void cppDestroyed();
     abstract public void invalidateOffscreenView();
+    abstract public void resizeOffscreenView(int w, int h);
 
     // In C++
     abstract public void nativeUpdate(long nativeptr);

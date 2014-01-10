@@ -165,6 +165,13 @@ class OffscreenViewHelper
         return has_texture_;
     }
 
+    public void setNewSize(int w, int h)
+    {
+        texture_width_ = w;
+        texture_height_ = h;
+        surface_texture_.setDefaultBufferSize(w, h); // API 15
+    }
+
 /*
     The steps to render your view to OpenGL:
     Initialize an OpenGL texture
