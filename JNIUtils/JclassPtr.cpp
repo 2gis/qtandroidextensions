@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include <JNIUtils/JclassPtr.h>
-#include <JNIUtils/JniEnvPtr.h>
+#include "JclassPtr.h"
+#include "JniEnvPtr.h"
 
 namespace jni_utils {
 

@@ -2,10 +2,8 @@
 //#include <map>
 
 #include "stdafx.h"
-
-#include <JNIUtils/debug.h>
-
-#include <JNIUtils/JniEnvPtr.h>
+#include "debug.h"
+#include "JniEnvPtr.h"
 
 static JavaVM* g_JavaVm = 0;
 typedef std::map<std::string,jclass> PreloadedClasses;

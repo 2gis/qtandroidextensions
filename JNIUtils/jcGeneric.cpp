@@ -2,9 +2,9 @@
 #include <string>
 #include <stdarg.h>
 #include <QtCore/qdebug.h>
-#include <JNIUtils/debug.h>
-#include <JNIUtils/JniEnvPtr.h>
-#include <JNIUtils/jcGeneric.h>
+#include "debug.h"
+#include "JniEnvPtr.h"
+#include "jcGeneric.h"
 
 // Влючение более старого кода работы со ссылками.
 // См. GRMPPC-5775.
