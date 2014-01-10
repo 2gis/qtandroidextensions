@@ -5,11 +5,6 @@
 #include "JniEnvPtr.h"
 #include "jcGeneric.h"
 
-// Влючение более старого кода работы со ссылками.
-// См. GRMPPC-5775.
-//! \todo Если в этом направлении всё будет ОК, то в 2014 можно вычистить.
-// #define OLD_GOOD_CODE
-
 const char * jcGeneric::method_not_found_exception::what() const throw()
 {
 	return "Java method not found";
@@ -68,13 +63,10 @@ jcGeneric::~jcGeneric()
 	{
 		jep.env()->DeleteGlobalRef(instance_);
 	}
-#ifndef OLD_GOOD_CODE
-	// OLD CODE: no this block
 	if (class_ != NULL)
 	{
 		jep.env()->DeleteGlobalRef(class_);
 	}
-#endif
 }
 
 void jcGeneric::init(JNIEnv* env, jobject instance)
@@ -88,16 +80,11 @@ void jcGeneric::init(JNIEnv* env, jobject instance)
 	//env->DeleteLocalRef(instance);
 
 	// class is expected to be a valid ref during the whole lifetime of the instance_ object
-#ifdef OLD_GOOD_CODE
-	// OLD CODE:
-	class_ = env->GetObjectClass(instance_);
-#else
 	jclass clazz = env->GetObjectClass(instance_);
 	class_ = static_cast<jclass>(env->NewGlobalRef(clazz));
 	// VERBOSE(qDebug()<<QString("DeleteLocalRef: 0x%1 >>>>").arg((unsigned long)clazz, 0, 16)<<__LINE__);
 	env->DeleteLocalRef(clazz);
 	// VERBOSE(qDebug()<<QString("DeleteLocalRef: 0x%1 <<<<").arg((unsigned long)clazz, 0, 16)<<__LINE__);
-#endif
 }
 
 void jcGeneric::init(JNIEnv* env, jclass class_to_instantiate, bool create)
@@ -123,12 +110,7 @@ void jcGeneric::init(JNIEnv* env, jclass class_to_instantiate, bool create)
 	}
 	else
 	{
-#ifdef OLD_GOOD_CODE
-		// OLD CODE:
-		class_ = class_to_instantiate;
-#else
 		class_ = static_cast<jclass>(env->NewGlobalRef(class_to_instantiate));
-#endif
 		instance_ = NULL;
 	}
 }
@@ -152,12 +134,7 @@ void jcGeneric::init(JNIEnv* env, const char * full_class_name, bool create)
 	}
 	else
 	{
-#ifdef OLD_GOOD_CODE
-		// OLD CODE:
-		class_ = cls;
-#else
 		class_ = static_cast<jclass>(env->NewGlobalRef(cls));
-#endif
 		instance_ = NULL;
 	}
 #ifndef OLD_GOOD_CODE
