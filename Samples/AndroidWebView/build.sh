@@ -4,12 +4,19 @@
 # apk file and install to Android device or emulator
 # (must be connected / running).
 
-cd QtSources
-#PATH="/data/local/qt/bin:$PATH" 
-qmake && make || exit 1
-cd ..
+#PATH="/data/local/qt/bin:$PATH"
 
-#android update project -p . -t 8 --target "android-15" || exit 1
+MYDIR="$PWD"
+
+cd "../../QtOffscreenViews" || exit 1
+qmake || exit 1
+make || exit 1
+cd "$MYDIR" || exit 1
+
+cd QtSources || exit 1
+qmake || exit 1
+make || exit 1
+cd "$MYDIR" || exit 1
 
 ant debug install || exit 1
 
