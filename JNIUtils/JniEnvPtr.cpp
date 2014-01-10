@@ -1,14 +1,9 @@
-//#include <string>
-//#include <map>
-
 #include "stdafx.h"
-#include "debug.h"
 #include "JniEnvPtr.h"
 
-static JavaVM* g_JavaVm = 0;
+static JavaVM * g_JavaVm = 0;
 typedef std::map<std::string,jclass> PreloadedClasses;
 static PreloadedClasses g_PreloadedClasses;
-//static std::string g_PackageName;
 
 JniEnvPtr::JniEnvPtr()
 	: env_(0)
@@ -16,7 +11,7 @@ JniEnvPtr::JniEnvPtr()
 {
 	if(g_JavaVm == 0)
 	{
-		LOG("Java VM pointer is not set!");
+		qWarning("Java VM pointer is not set!");
 		return;
 	}
 	was_already_attached_ = true;
@@ -27,13 +22,13 @@ JniEnvPtr::JniEnvPtr()
 		errsv = g_JavaVm->AttachCurrentThread(&env_, 0);
 		if( errsv != 0 )
 		{
-			LOG("Error attaching current thread: %d", errsv);
+			qWarning("Error attaching current thread: %d", errsv);
 			return;
 		}
 	}
 	else if(errsv != 0)
 	{
-		LOG("Error getting Java environment: %d", errsv);
+		qWarning("Error getting Java environment: %d", errsv);
 		return;
 	}
 }
@@ -51,7 +46,7 @@ JniEnvPtr::~JniEnvPtr()
 		int errsv = g_JavaVm->DetachCurrentThread();
 		if(errsv != 0 )
 		{
-			LOG("thread detach failed: %d", errsv);
+			qWarning("thread detach failed: %d", errsv);
 		}
 	}
 }
@@ -63,18 +58,18 @@ JNIEnv* JniEnvPtr::env()
 
 int JniEnvPtr::PreloadClass(const char* class_name)
 {
-	LOG("Preloading class \"%s\"", class_name);
+	qWarning("Preloading class \"%s\"", class_name);
 	jclass clazz = env_->FindClass(class_name);
 	if (env_->ExceptionCheck())
 	{
-		LOG("...Failed to preload class %s", class_name);
+		qWarning("...Failed to preload class %s", class_name);
 		env_->ExceptionClear();
 		return -1;
 	}
 	jclass gclazz = (jclass)env_->NewGlobalRef(clazz);
 	env_->DeleteLocalRef(clazz);
 	g_PreloadedClasses.insert(std::pair<std::string,jclass>(std::string(class_name),gclazz));
-	LOGV("...Preloaded class \"%s\" as %p", class_name, gclazz);
+	VERBOSE(qDebug("...Preloaded class \"%s\" as %p", class_name, gclazz));
 	return 0;
 }
 
@@ -104,7 +99,7 @@ void JniEnvPtr::UnloadClasses()
 jclass JniEnvPtr::FindClass(const char * name)
 {
 	// first try for preloaded classes
-	LOGV("Searching for class \"%s\"", name);
+	VERBOSE(qDebug("Searching for class \"%s\"", name));
     PreloadedClasses::iterator it = g_PreloadedClasses.find(std::string(name));
     if (it != g_PreloadedClasses.end())
 	{
