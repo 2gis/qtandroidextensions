@@ -45,7 +45,7 @@ public:
 	 * This is necessary addition to support texture transformation from Android SurfaceTexture.
 	 * By default, the object is initialized with identity transformation.
 	 */
-	void setTransformation(GLfloat a11, GLfloat a12, GLfloat a21, GLfloat a22, GLfloat b1, GLfloat b2);
+	inline void setTransformation(GLfloat a11, GLfloat a12, GLfloat a21, GLfloat a22, GLfloat b1, GLfloat b2);
 
 	/*!
 	 * Draw the texture in current GL context.
@@ -58,17 +58,25 @@ public:
 
 	//! Allocate a texture of the current texture type.
 	void allocateTexture();
+
 	//! Set texture type and allocated a texture.
 	void allocateTexture(GLenum type);
-	//! Deallocate texture.
+
+	//! Deallocate texture, if it has been allocated.
 	void deallocateTexture();
+
+	/*!
+	 * This function may be called during initialization of GL to prevent shader compilation
+	 * during first blitTexture() call.
+	 */
+	static void initializeGL();
 
 private:
 	//! Helper for blitTexture().
 	void drawTexture(const QRectF & rect, const QRectF & bitmap_rect);
 
 	//! Shader programs for drawTexture().
-	QGLShaderProgram * GetBlitProgram(GLenum target);
+	static QGLShaderProgram * GetBlitProgram(GLenum target);
 
 protected:
 	GLuint texture_id_;
@@ -78,3 +86,15 @@ protected:
 	GLfloat a11_, a12_, a21_, a22_, b1_, b2_;
 	static QMap<GLenum, QSharedPointer<QGLShaderProgram> > blit_programs_;
 };
+
+void QOpenGLTextureHolder::setTransformation(GLfloat a11, GLfloat a12, GLfloat a21, GLfloat a22, GLfloat b1, GLfloat b2)
+{
+	a11_ = a11;
+	a12_ = a12;
+	a21_ = a21;
+	a22_ = a22;
+	b1_ = b1;
+	b2_ = b2;
+}
+
+
