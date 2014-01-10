@@ -137,13 +137,10 @@ void jcGeneric::init(JNIEnv* env, const char * full_class_name, bool create)
 		class_ = static_cast<jclass>(env->NewGlobalRef(cls));
 		instance_ = NULL;
 	}
-#ifndef OLD_GOOD_CODE
-	// OLD CODE: it was not here
-	/* См. комментарий к jclass cls = jep.FindClass(full_class_name);
+	/* See comment for: jclass cls = jep.FindClass(full_class_name);
 	VERBOSE(qDebug()<<QString("DeleteLocalRef: 0x%1 >>>>").arg((unsigned long)cls, 0, 16)<<__LINE__);
 	env->DeleteLocalRef(cls);
 	VERBOSE(qDebug()<<QString("DeleteLocalRef: 0x%1 <<<").arg((unsigned long)cls, 0, 16)<<__LINE__); */
-#endif
 }
 
 void jcGeneric::CallVoid(const char* method_name)
