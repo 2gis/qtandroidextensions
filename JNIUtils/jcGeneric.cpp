@@ -15,7 +15,14 @@ const char * jcGeneric::field_not_found_exception::what() const throw()
 	return "Java field not found";
 }
 
-// TODO: severely optimize (delete local refs, etc)
+// Be sure to delete the ref via env->DeleteLocalRef(jstring)
+static inline jstring QStringToJstring(JNIEnv *env, const QString& str)
+{
+	jstring ret = env->NewString(str.utf16(), str.length());
+	if (env->ExceptionCheck())
+		env->ExceptionClear();
+	return ret;
+}
 
 jcGeneric::jcGeneric(jobject instance, bool take_ownership)
 	: instance_(0)
@@ -413,6 +420,25 @@ void jcGeneric::CallParamVoid(const char* method_name, const char* param_signatu
 		env->ExceptionClear();
 		return;
 	}
+}
+
+void jcGeneric::CallVoid(const char * method_name, jint x)
+{
+	CallParamVoid(method_name, "I", x);
+}
+
+void jcGeneric::CallVoid(const char * method_name, jlong x)
+{
+	CallParamVoid(method_name, "J", x);
+}
+
+void jcGeneric::CallVoid(const char * method_name, const QString & string)
+{
+	JniEnvPtr jep;
+	JNIEnv * env = jep.env();
+	jstring js = QStringToJstring(env, string);
+	CallParamVoid(method_name, "Ljava/lang/String;", js);
+	env->DeleteLocalRef(js);
 }
 
 void jcGeneric::RegisterNativeMethod(const char* name, const char* signature, void* ptr)

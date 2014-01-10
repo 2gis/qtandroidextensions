@@ -71,6 +71,8 @@ void QAndroidOffscreenView::initializeGL()
 
 	if (offscreen_view_factory_)
 	{
+		offscreen_view_factory_->CallVoid("SetClassName", view_class_name_);
+		offscreen_view_factory_->CallVoid("SetObjectName", view_object_name_);
 		offscreen_view_factory_->CallParamVoid("SetTexture", "I", jint(tex_.getTexture()));
 		offscreen_view_factory_->CallParamVoid("SetTextureWidth",	"I", jint(texture_size.width()));
 		offscreen_view_factory_->CallParamVoid("SetTextureHeight", "I", jint(texture_size.height()));
@@ -78,6 +80,12 @@ void QAndroidOffscreenView::initializeGL()
 		offscreen_view_.reset(
 			offscreen_view_factory_->CallObject("DoCreateView"
 			, (c_class_path_+"/OffscreenView").toAscii()));
+		if (offscreen_view_->jObject() == 0)
+		{
+			qCritical()<<"Failed to create View:"<<view_class_name_<<"/"<<view_object_name_;
+			offscreen_view_.reset();
+			return;
+		}
 		offscreen_view_->RegisterNativeMethod(
 			"nativeUpdate"
 			, "(J)V"
