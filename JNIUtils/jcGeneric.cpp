@@ -441,6 +441,17 @@ void jcGeneric::CallVoid(const char * method_name, const QString & string)
 	env->DeleteLocalRef(js);
 }
 
+void jcGeneric::CallVoid(const char * method_name, const QString & string1, const QString & string2)
+{
+	JniEnvPtr jep;
+	JNIEnv * env = jep.env();
+	jstring js1 = QStringToJstring(env, string1);
+	jstring js2 = QStringToJstring(env, string2);
+	CallParamVoid(method_name, "Ljava/lang/String;Ljava/lang/String;", js1, js2);
+	env->DeleteLocalRef(js1);
+	env->DeleteLocalRef(js2);
+}
+
 void jcGeneric::RegisterNativeMethod(const char* name, const char* signature, void* ptr)
 {
 	JniEnvPtr jep;

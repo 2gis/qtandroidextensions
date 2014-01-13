@@ -284,6 +284,11 @@ abstract class OffscreenView
         }
     }
 
+    public boolean isViewCreated()
+    {
+        return getView() != null;
+    }
+
     // C++ function called from Java to tell that the texture has new contents.
     // abstract public native void nativeUpdate(long nativeptr);
 

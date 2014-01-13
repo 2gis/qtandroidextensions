@@ -6,7 +6,7 @@
 #include <EGL/egl.h>
 #include <JclassPtr.h>
 #include <jcGeneric.h>
-#include "QAndroidOffscreenView.h"
+#include "QAndroidOffscreenWebView.h"
 
 class GrymQtAndroidViewGraphicsProxy
 	: public QGraphicsWidget
@@ -30,6 +30,6 @@ private:
 	//void CreateTestTexture(QSize * out_texture_size_);
 
 private:
-	QAndroidOffscreenView aview_;
+	QAndroidOffscreenWebView aview_;
 	bool mouse_tracking_;
 };

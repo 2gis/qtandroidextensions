@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#include <QThread>
 #include <QMutexLocker>
 #include "QAndroidOffscreenView.h"
 
@@ -142,15 +143,29 @@ bool QAndroidOffscreenView::isCreated() const
 {
 	if (offscreen_view_)
 	{
-		//! \todo check that View actually created
-		return true;
+		return offscreen_view_->CallBool("isViewCreated");
 	}
 	return false;
 }
 
-void QAndroidOffscreenView::waitForViewCreation()
+bool QAndroidOffscreenView::waitForViewCreation()
 {
-	//! \todo
+	if (isCreated())
+	{
+		return true;
+	}
+	if (!offscreen_view_)
+	{
+		qWarning("QAndroidOffscreenView: will not wait for View creation because View is not initialized (yet?)");
+		return false;
+	}
+	//! \todo: Use semaphore-based wait?
+	while (!isCreated())
+	{
+		usleep(5000);
+		// QThread::yieldCurrentThread();
+	}
+	return true;
 }
 
 bool QAndroidOffscreenView::hasValidImage() const

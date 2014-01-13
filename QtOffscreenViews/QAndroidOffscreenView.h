@@ -62,7 +62,7 @@ public:
 	 * If the View is already created or initializeGL() has not been called the function
 	 * returns immediately.
 	 */
-	void waitForViewCreation();
+	bool waitForViewCreation();
 
 	//! Check if Android View has already painted something
 	virtual bool hasValidImage() const;
@@ -105,8 +105,9 @@ private slots:
 
 protected:
 	bool updateTexture();
+	jcGeneric * offscreenView() { return offscreen_view_.data(); }
 
-protected:
+private:
 	QString view_class_name_;
 	QString view_object_name_;
 	QOpenGLTextureHolder tex_;

@@ -87,6 +87,7 @@ public:
 	void CallVoid(const char * method_name, jint x);
 	void CallVoid(const char * method_name, jlong x);
 	void CallVoid(const char * method_name, const QString & string);
+	void CallVoid(const char * method_name, const QString & string1, const QString & string2);
 
 	//! Call void static method of the wrapped Java class
 	void CallStaticVoid(const char* method_name);

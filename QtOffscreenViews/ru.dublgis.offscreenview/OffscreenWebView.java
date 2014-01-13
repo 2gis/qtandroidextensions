@@ -276,15 +276,9 @@ class OffscreenWebView extends OffscreenView
                  webview_ = new MyWebView(context, width, height);
                  helper_ = new OffscreenViewHelper(nativeptr, objectname, webview_, gltextureid, width, height);
                  webview_.getSettings().setJavaScriptEnabled(true);
-                 webview_.loadUrl("http://www.android.com/intl/en/about/");
-                 //webview_.loadUrl("http://www.youtube.com/watch?v=D36JUfE1oYk");
-                 //webview_.loadUrl("http://beta.2gis.ru/");
-                 // webview_.loadUrl("http://google.com/");
-                 //webview_.loadUrl("http://beta.2gis.ru/novosibirsk/booklet/7?utm_source=products&utm_medium=mobile");
                  // TODO !!! Walkaround !!! Adding WebView disables automatic orientation changes on some devices (with Lite plug-in),
-                 // have to figure out why.
+                 // have to figure out why. [VNA-23]
                  context.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-                 //webview_.loadData("<html><body style=\"background-color: green;\"><h1>Teach Me To Web</h1></body></html>", "text/html", null);
             }
         });
     }
@@ -320,8 +314,54 @@ class OffscreenWebView extends OffscreenView
     }
 
 
- 
- /*Event processing onKeyDown(int, KeyEvent) Called when a new hardware key event occurs.
+    // From C++
+    public void loadUrl(final String url)
+    {
+        Log.i(TAG, "loadUrl: scheduling");
+        Activity ctx = getContextStatic();
+        if (ctx != null && webview_ != null)
+        {
+            ctx.runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    Log.i(TAG, "loadUrl: doing it");
+                    webview_.loadUrl(url);
+                }
+            });
+        }
+        else
+        {
+            Log.e(TAG, "loadUrl failed because context or view is not available!");
+        }
+    }
+
+    // From C++
+    public void loadData(final String text, final String mime)
+    {
+        Log.i(TAG, "loadData: scheduling");
+        Activity ctx = getContextStatic();
+        if (ctx != null && webview_ != null)
+        {
+            ctx.runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    Log.i(TAG, "loadData: doing it");
+                    webview_.loadData(text, mime, null);
+                }
+            });
+        }
+        else
+        {
+            Log.e(TAG, "loadData failed because context or view is not available!");
+        }
+    }
+
+
+/*Event processing onKeyDown(int, KeyEvent) Called when a new hardware key event occurs.
 onKeyUp(int, KeyEvent) Called when a hardware key up event occurs.
 onTrackballEvent(MotionEvent) Called when a trackball motion event occurs.
 onTouchEvent(MotionEvent) Called when a touch screen motion event occurs. */
