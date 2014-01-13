@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#include <QMutexLocker>
 #include "QAndroidOffscreenView.h"
 
 static const QString c_class_path_(QLatin1String("ru/dublgis/offscreenview"));
@@ -106,7 +107,7 @@ void QAndroidOffscreenView::deinitialize()
 	tex_.deallocateTexture();
 }
 
-static void clearGlRect(int l, int b, int w, int h, const QColor & fill_color_)
+static inline void clearGlRect(int l, int b, int w, int h, const QColor & fill_color_)
 {
 	glEnable(GL_SCISSOR_TEST);
 	glScissor(l, b, w, h);
@@ -145,6 +146,11 @@ bool QAndroidOffscreenView::isCreated() const
 		return true;
 	}
 	return false;
+}
+
+void QAndroidOffscreenView::waitForViewCreation()
+{
+	//! \todo
 }
 
 bool QAndroidOffscreenView::hasValidImage() const

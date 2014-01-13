@@ -51,20 +51,13 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 import android.graphics.Canvas;
-
 import org.qt.core.QtApplicationBase;
-
 import ru.dublgis.offscreenview.OffscreenViewHelper;
 
-class OffscreenWebView implements OffscreenView
+class OffscreenWebView extends OffscreenView
 {
-    public static final String TAG = "Grym/OffscreenView";
-    OffscreenViewHelper helper_ = null;
     MyWebView webview_ = null;
 
-    // WebView wants everything to happen in UI thread only, so it's better to
-    // make it a separate class inside of OffscreenWebView and call any of its functions
-    // via runOnUiThread().
     class MyWebView extends WebView
     {
         // TODO: pauseTimers/ resumeTimers ()
@@ -179,22 +172,6 @@ class OffscreenWebView implements OffscreenView
                 }
             });
         }
-
-        /*@Override
-        protected void dispatchDraw(Canvas canvas)
-        {
-             Log.i(TAG, "MyWebView.dispatchDraw");
-             super.dispatchDraw(canvas);
-        }*/
-
-        /*@Override
-        protected void onDraw (Canvas canvas)
-        {
-            Log.i(TAG, "MyWebView.onDraw");
-            if (helper_ != null)
-            {
-                 nativeUpdate(helper_.getNativePtr());
-            }        }*/
 
         // Old WebKit updating
         @Override
@@ -312,259 +289,49 @@ class OffscreenWebView implements OffscreenView
         });
     }
 
-    // http://developer.android.com/reference/android/view/View.html
-
-    static private Activity getContextStatic()
-    {
-        return QtApplicationBase.getActivityStatic();
-    }
-
-    /*static Bitmap bitmap_ = null;
-    private int DrawableResourceId(Context my_context, final String name)
-    {
-        return my_context.getResources().getIdentifier(name, "drawable", my_context.getPackageName());
-    }
-    private void CheckBitmap()
-    {
-        if (bitmap_ == null)
-        {
-            try
-            {
-                Context ctx = getContextStatic();
-                int resource = DrawableResourceId(ctx, "kotik");
-                BitmapFactory.Options ops = new BitmapFactory.Options();
-                ops.inScaled = false;
-                ops.inDensity = 0;
-                ops.inTargetDensity = 0;
-                ops.inScreenDensity = 0;
-                bitmap_ = BitmapFactory.decodeResource(ctx.getResources(), resource, ops);
-                bitmap_.setDensity(Bitmap.DENSITY_NONE);
-            }
-            catch(Exception e)
-            {
-                Log.e(TAG, "CheckBitmap error", e);
-            }
-        }
-    }*/
-
     @Override
-    public void drawViewOnTexture()
+    public View getView()
     {
-        Activity ctx = getContextStatic();
-        if (ctx != null)
-        {
-            ctx.runOnUiThread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    doDrawViewOnTexture();
-                }
-            });
-        }
+        return webview_;
     }
 
-    private void doDrawViewOnTexture()
-    {
-        if (helper_ == null)
-        {
-            Log.i(TAG, "OffscreenWebView.doDrawViewOnTexture: helper is not initialized yet.");
-            return;
-        }
-        synchronized(helper_)
-        {
-            if (helper_.getNativePtr() == 0)
-            {
-                Log.i(TAG, "doDrawViewOnTexture: zero native ptr, will not draw!");
-                return;
-            }
-            try
-            {
-                // TODO: disable time measurement
-                long t = System.nanoTime();
-                Canvas canvas = helper_.lockCanvas();
-                if (canvas == null)
-                {
-                    Log.e(TAG, "doDrawViewOnTexture: failed to lock canvas!");
-                }
-                else
-                {
-                    try
-                    {
-                        if (webview_ != null)
-                        {
-                            Log.i(TAG, "OffscreenWebView.doDrawViewOnTexture tid="+Thread.currentThread().getId()+
-                                " texture="+helper_.getTexture()+", helper's texSize="+
-                                helper_.getTextureWidth()+"x"+helper_.getTextureHeight()+
-                                ", view size:"+webview_.getWidth()+"x"+webview_.getHeight());
-                            webview_.onDrawPublic(canvas);
-                        }
-                        else
-                        {
-                            Log.i(TAG, "doDrawViewOnTexture: WebView is not available yet, filling with white color....");
-                            canvas.drawARGB(255, 255, 255, 255);
-                        }
-                    }
-                    catch(Exception e)
-                    {
-                        Log.e(TAG, "doDrawViewOnTexture painting failed!", e);
-                    }
-
-                    helper_.unlockCanvas(canvas);
-
-                    t = System.nanoTime() - t;
-
-                    // Tell C++ part that we have a new image
-                    nativeUpdate(helper_.getNativePtr());
-
-                    Log.i(TAG, "doDrawViewOnTexture: OffscreenWebView.doDrawViewOnTexture success, t="+t/1000000.0+"ms");
-                }
-            }
-            catch(Exception e)
-            {
-                Log.e(TAG, "doDrawViewOnTexture failed!", e);
-            }
-        }
-    }
-
-    // TODO: add non-blocking version of updateTexture()?
-    @Override
-    public boolean updateTexture()
-    {
-        if (helper_ == null)
-        {
-            return false;
-        }
-        synchronized(helper_)
-        {
-            // long t = System.nanoTime();
-            boolean result = helper_.updateTexture();
-            // Log.i(TAG, "updateTexture: "+t/1000000.0+"ms");
-            return result;
-        }
-    }
-
-    @Override
-    public void cppDestroyed()
-    {
-        if (helper_ == null)
-        {
-            return;
-        }
-        synchronized(helper_)
-        {
-            Log.i(TAG, "cppDestroyed");
-            helper_.cppDestroyed();
-        }
-    }
-
-    @Override
-    public float getTextureTransformMatrix(int index)
-    {
-        if (helper_ == null)
-        {
-            return 0;
-        }
-        synchronized(helper_)
-        {
-            return helper_.getTextureTransformMatrix(index);
-        }
-    }
-
-    // TODO: refactor downt
-    long downt = 0;
-    @Override
-    public void ProcessMouseEvent(final int action, final int x, final int y)
-    {
-        if (helper_.getNativePtr() == 0)
-        {
-            Log.i(TAG, "ProcessMouseEvent: zero native ptr, ignoring.");
-            return;
-        }
-
-        if (webview_ != null)
-        {
-            final long t = SystemClock.uptimeMillis();
-            if (action == MotionEvent.ACTION_DOWN || downt == 0)
-            {
-
-                downt = t;
-            }
-            Log.i(TAG, "ProcessMouseEvent("+action+", "+x+", "+y+") downt="+downt+", t="+t);
-            final MotionEvent event = MotionEvent.obtain(downt /* downTime*/, t /* eventTime */, action, x, y, 0 /*metaState*/);
-            Activity ctx = getContextStatic();
-            if (ctx != null)
-            {
-                ctx.runOnUiThread(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        webview_.onTouchEvent(event);
-                        // TODO: If the view has only been scrolled, it won't call invalidate(). So we just force it to repaint for now.
-                        // We should keep a larger piece of rendered HTML in the texture and only scroll the texture if possible.
-                        doDrawViewOnTexture();
-                    }
-                });
-            }
-        }
-    }
-
-    @Override
-    public void invalidateOffscreenView()
+    public void callViewPaintMethod(Canvas canvas)
     {
         if (webview_ != null)
         {
-            Log.i(TAG, "invalidateOffscreenView");
-            final Activity context = getContextStatic();
-            context.runOnUiThread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    webview_.invalidateTexture();
-                }
-            });
+            webview_.onDrawPublic(canvas);
         }
     }
 
-    @Override
-    public void resizeOffscreenView(final int w, final int h)
+    public void doInvalidateOffscreenView()
     {
-        if (helper_ == null)
+        if (webview_ != null)
         {
-            return;
-        }
-        synchronized(helper_)
-        {
-            Log.i(TAG, "resizeOffscreenView "+w+"x"+h);
-            helper_.setNewSize(w, h);
-            if (webview_ != null)
-            {
-                final Activity context = getContextStatic();
-                context.runOnUiThread(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        webview_.resizeOffscreenView(w, h);
-                        webview_.invalidateTexture();
-                    }
-                });
-            }
+            webview_.invalidateTexture();
         }
     }
 
-    // JNI
-    public native void nativeUpdate(long nativeptr);
+    public void doResizeOffscreenView(final int width, final int height)
+    {
+        if (webview_ != null)
+        {
+            webview_.resizeOffscreenView(width, height);
+        }
+    }
 
- // Repainting: invalidate().
+
  
  /*Event processing onKeyDown(int, KeyEvent) Called when a new hardware key event occurs.
 onKeyUp(int, KeyEvent) Called when a hardware key up event occurs.
 onTrackballEvent(MotionEvent) Called when a trackball motion event occurs.
 onTouchEvent(MotionEvent) Called when a touch screen motion event occurs. */
+
+    private native void nativeUpdate(long nativeptr);
+
+    @Override
+    public void doNativeUpdate(long nativeptr)
+    {
+        nativeUpdate(nativeptr);
+    }
 }
-
-
 

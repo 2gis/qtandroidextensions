@@ -3,6 +3,7 @@
 #include <QSize>
 #include <QRect>
 #include <QScopedPointer>
+#include <QMutex>
 #include <JclassPtr.h>
 #include <jcGeneric.h>
 #include "QOpenGLTextureHolder.h"
@@ -54,6 +55,14 @@ public:
 
 	//! Check if Android View already exists
 	bool isCreated() const;
+
+	/*!
+	 * Wait until Android View will be actually created.
+	 * This function should be called after initializeGL().
+	 * If the View is already created or initializeGL() has not been called the function
+	 * returns immediately.
+	 */
+	void waitForViewCreation();
 
 	//! Check if Android View has already painted something
 	virtual bool hasValidImage() const;
