@@ -7,7 +7,7 @@
 #include <QGLWidget>
 #include "GrymQtAndroidViewGraphicsProxy.h"
 
-#define ANDROIDVIEWGRAPHICSPROXY_CLEARALL
+// #define ANDROIDVIEWGRAPHICSPROXY_CLEARALL
 
 GrymQtAndroidViewGraphicsProxy::GrymQtAndroidViewGraphicsProxy(QGraphicsItem *parent, Qt::WindowFlags wFlags)
 	: QGraphicsWidget(parent, wFlags)
