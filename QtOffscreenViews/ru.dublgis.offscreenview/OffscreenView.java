@@ -36,6 +36,7 @@
 
 package ru.dublgis.offscreenview;
 
+import java.lang.Boolean;
 import java.lang.Thread;
 import java.util.Set;
 import java.util.List;
@@ -103,6 +104,7 @@ abstract class OffscreenView
     private String object_name_ = "UnnamedView";
     private long native_ptr_ = 0;
     private int gl_texture_id_ = 0;
+    private Boolean painting_now_ = new Boolean(false);
 
     private int initial_width_ = 512;
     private int initial_height_ = 512;
@@ -220,6 +222,11 @@ abstract class OffscreenView
                 }
                 else
                 {
+                    synchronized(painting_now_)
+                    {
+                        painting_now_ = true;
+                    }
+
                     try
                     {
                         View v = getView();
@@ -242,6 +249,11 @@ abstract class OffscreenView
 
                     rendering_surface_.unlockCanvas(canvas);
 
+                    synchronized(painting_now_)
+                    {
+                        painting_now_ = false;
+                    }
+
                     t = System.nanoTime() - t;
 
                     // Tell C++ part that we have a new image
@@ -258,19 +270,27 @@ abstract class OffscreenView
     }
 
     //! Called from C++ to get current texture.
-    public boolean updateTexture()
+    public boolean updateTexture(boolean synced)
     {
-        synchronized(this)
+        if (synced)
         {
-            if (rendering_surface_ == null)
+            synchronized(this)
+            {
+                return updateTexture(false);
+            }
+        }
+        if (rendering_surface_ == null)
+        {
+            return false;
+        }
+        synchronized(painting_now_)
+        {
+            if (painting_now_)
             {
                 return false;
             }
-            // long t = System.nanoTime();
-            boolean result = rendering_surface_.updateTexture();
-            // Log.i(TAG, "updateTexture: "+t/1000000.0+"ms");
-            return result;
         }
+        return rendering_surface_.updateTexture();
     }
 
     //! Called from C++ to get texture coordinate transformation matrix (filled in updateTexture()).

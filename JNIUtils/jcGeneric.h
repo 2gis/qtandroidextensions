@@ -93,6 +93,8 @@ public:
 	//! Call boolean method of the wrapped Java object
 	bool CallBool(const char* method_name);
 
+	bool CallBool(const char* method_name, bool param);
+
 	//! Call int method of the wrapped Java object
 	int CallInt(const char* method_name);
 

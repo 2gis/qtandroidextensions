@@ -54,6 +54,7 @@ class QAndroidOffscreenView: public QObject
 	Q_OBJECT
 	Q_PROPERTY(QSize size READ size WRITE resize)
 	Q_PROPERTY(QColor fillColor READ fillColor WRITE setFillColor)
+	Q_PROPERTY(bool synchronizedTextureUpdate READ synchronizedTextureUpdate WRITE setSynchronizedTextureUpdate)
 public:
 	/*!
 	 * \param waitforcreation - if set, pauses current thread until Android View is actually
@@ -117,6 +118,16 @@ public:
 	QColor fillColor() const { return fill_color_; }
 	virtual void setFillColor(const QColor & color);
 
+	/*!
+	 * When we want to get new texture, and the View is doing its drawing, do we wait until
+	 * the will finish (synced mode), or just use previous texture (not synced)?
+	 * In the non-sync mode Qt UI gets more green light but updates of the View
+	 * will be ignored until Qt's UI thread is busy.
+	 * The default mode is synced as it typically provides better user experience.
+	 */
+	bool synchronizedTextureUpdate() const { return synchronized_texture_update_; }
+	void setSynchronizedTextureUpdate(bool synced) { synchronized_texture_update_ = synced; }
+
 	//
 	// Handling of user input events
 	//
@@ -159,6 +170,7 @@ private:
 	bool need_update_texture_;
 	bool view_painted_;
 	bool texture_received_;
+	bool synchronized_texture_update_;
 
 private:
 	Q_DISABLE_COPY(QAndroidOffscreenView)

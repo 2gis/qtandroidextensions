@@ -68,6 +68,7 @@ QAndroidOffscreenView::QAndroidOffscreenView(const QString & classname, const QS
 	, need_update_texture_(false)
 	, view_painted_(false)
 	, texture_received_(false)
+	, synchronized_texture_update_(true)
 {
 	setObjectName(objectname);
 
@@ -190,7 +191,7 @@ void QAndroidOffscreenView::paintGL(int l, int b, int w, int h)
 		if (need_update_texture_)
 		{
 			bool texture_updated_ok = updateTexture();
-			if (!texture_updated_ok)
+			if (!texture_updated_ok && !texture_received_)
 			{
 				clearGlRect(l, b, w, h, fill_color_);
 				return;
@@ -271,12 +272,12 @@ bool QAndroidOffscreenView::updateTexture()
 	if (offscreen_view_)
 	{
 		// Get last View image into the texture.
-		// NB: this may cause a wait on mutex if the view is being painted
-		//! \todo Avoid waiting on mutex (optionally?)
-		bool success = offscreen_view_->CallBool("updateTexture");
+		// If synchronized_texture_update_ is set, this will cause a wait on mutex if the view
+		// is being painted. If synchronized_texture_update_ is false, then the texture update
+		// will be skipped (we'll receive an update from Java later, after the frame is painted).
+		bool success = offscreen_view_->CallBool("updateTexture", synchronized_texture_update_);
 		if (!success)
 		{
-			qDebug()<<__PRETTY_FUNCTION__<<"Failed to update the texture - Java says it's not OK (yet?)";
 			return false;
 		}
 

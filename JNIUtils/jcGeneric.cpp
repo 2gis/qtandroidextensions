@@ -215,6 +215,20 @@ bool jcGeneric::CallBool(const char* method_name)
 	return (JNI_TRUE==env->CallBooleanMethod(instance_, mid));
 }
 
+bool jcGeneric::CallBool(const char* method_name, bool param)
+{
+	VERBOSE(qDebug("bool jcGeneric::CallBool(const char* method_name, bool param) %p \"%s\"",this,method_name));
+	JniEnvPtr jep;
+	JNIEnv* env = jep.env();
+	jmethodID mid = env->GetMethodID(class_, method_name, "(Z)Z");
+	if (!mid)
+	{
+		qWarning("%s: method not found.", __FUNCTION__);
+		throw method_not_found_exception();
+	}
+	return (JNI_TRUE==env->CallBooleanMethod(instance_, mid, jboolean(param)));
+}
+
 int jcGeneric::CallInt(const char* method_name)
 {
 	VERBOSE(qDebug("int jcGeneric::CallInt(const char* method_name) %p \"%s\"",this,method_name));
