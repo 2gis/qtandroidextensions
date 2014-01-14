@@ -114,13 +114,12 @@ abstract class OffscreenView
     public void SetNativePtr(long ptr) { native_ptr_ = ptr; }
 
     /*!
-     * Invokes object initialization based on values passed via SetObjectName(), SetTexture(),
-     * SetInitialWidth(), SetInitialHeight(), SetNativePtr().
+     * Invokes View creation in Android UI thread.
      */
-    void initialize()
+    void createView()
     {
+        Log.i(TAG, "OffscreenView.createView(name=\""+object_name_+"\")");
         final Activity context = getContextStatic();
-        Log.i(TAG, "OffscreenView.intialize(name=\""+object_name_+"\", texture="+gl_texture_id_+")");
         context.runOnUiThread(new Runnable()
         {
             @Override
@@ -129,8 +128,32 @@ abstract class OffscreenView
                 synchronized(this)
                 {
                     doCreateView();
+                }
+            }
+        });
+    }
+
+    /*!
+     * Invokes object initialization based on values passed via SetObjectName(), SetTexture(),
+     * SetInitialWidth(), SetInitialHeight(), SetNativePtr().
+     */
+    void initializeGL()
+    {
+        final Activity context = getContextStatic();
+        Log.i(TAG, "OffscreenView.intializeGL(name=\""+object_name_+"\", texture="+gl_texture_id_+")");
+        context.runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                synchronized(this)
+                {
                     rendering_surface_ = new OffscreenGLTextureRenderingSurface();
                     doResizeOffscreenView(initial_width_, initial_height_);
+                    // Make sure the view will be repainted on the rendering surface, even it did
+                    // finish its updates before the surface is available and its size didn't change
+                    // and/or not triggered update by the resize call.
+                    invalidateOffscreenView();
 
                     // TODO !!! Walkaround !!! Something disables automatic orientation changes on some devices (with Lite plug-in),
                     // have to figure out why. [VNA-23]

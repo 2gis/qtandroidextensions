@@ -59,7 +59,7 @@ Q_DECL_EXPORT void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv *, jobject, jl
 	qWarning()<<__FUNCTION__<<"Zero param!";
 }
 
-QAndroidOffscreenView::QAndroidOffscreenView(const QString & classname, const QString & objectname, const QSize & defsize, QObject * parent)
+QAndroidOffscreenView::QAndroidOffscreenView(const QString & classname, const QString & objectname, bool waitforcreation, const QSize & defsize, QObject * parent)
 	: QObject(parent)
 	, view_class_name_(classname)
 	, view_object_name_(objectname)
@@ -70,6 +70,42 @@ QAndroidOffscreenView::QAndroidOffscreenView(const QString & classname, const QS
 	, texture_received_(false)
 {
 	setObjectName(objectname);
+
+	// Expand OffscreenWebView => ru/dublgis/offscreenview/OffscreenWebView
+	if (!view_class_name_.contains('/'))
+	{
+		view_class_name_.prepend(c_class_path_);
+	}
+
+	qDebug()<<__PRETTY_FUNCTION__<<"Creating object of"<<view_class_name_;
+	offscreen_view_.reset(new jcGeneric(
+		view_class_name_.toAscii()
+		, true // Keep ownership
+	));
+
+	if (offscreen_view_ && offscreen_view_->jObject())
+	{
+		offscreen_view_->CallVoid("SetObjectName", view_object_name_);
+		offscreen_view_->CallParamVoid("SetNativePtr", "J", jlong(reinterpret_cast<void*>(this)));
+		offscreen_view_->RegisterNativeMethod(
+			"nativeUpdate"
+			, "(J)V"
+			, (void*)Java_OffscreenView_nativeUpdate);
+		// Invoke creation of the view, so its functions will be available
+		// before initialization of GL part.
+		offscreen_view_->CallVoid("createView");
+	}
+	else
+	{
+		qCritical()<<"Failed to create View:"<<view_class_name_<<"/"<<view_object_name_;
+		offscreen_view_.reset();
+		return;
+	}
+
+	if (waitforcreation)
+	{
+		waitForViewCreation();
+	}
 }
 
 QAndroidOffscreenView::~QAndroidOffscreenView()
@@ -88,6 +124,14 @@ void QAndroidOffscreenView::initializeGL()
 
 	tex_.allocateTexture(GL_TEXTURE_EXTERNAL_OES);
 
+	if (!offscreen_view_)
+	{
+		qWarning("Cannot initialize QAndroidOffscreenView because OffscreenView object was not created!");
+		return;
+	}
+
+	qDebug()<<__PRETTY_FUNCTION__;
+
 	// Check for max texture size
 	GLint maxdims[2];
 	GLint maxtextsz;
@@ -104,32 +148,14 @@ void QAndroidOffscreenView::initializeGL()
 
 	size_ = texture_size;
 
-	if (!view_class_name_.contains('/'))
-	{
-		view_class_name_.prepend(c_class_path_);
-	}
-	qDebug()<<__PRETTY_FUNCTION__<<"Creating object of"<<view_class_name_;
-	offscreen_view_.reset(new jcGeneric(view_class_name_.toAscii(), true));
+	qDebug()<<"waitForViewCreation >>";
+	waitForViewCreation();
+	qDebug()<<"<< waitForViewCreation";
 
-	if (offscreen_view_ && offscreen_view_->jObject())
-	{
-		offscreen_view_->CallVoid("SetObjectName", view_object_name_);
-		offscreen_view_->CallParamVoid("SetTexture", "I", jint(tex_.getTexture()));
-		offscreen_view_->CallParamVoid("SetInitialWidth", "I", jint(texture_size.width()));
-		offscreen_view_->CallParamVoid("SetInitialHeight", "I", jint(texture_size.height()));
-		offscreen_view_->CallParamVoid("SetNativePtr", "J", jlong(reinterpret_cast<void*>(this)));
-		offscreen_view_->RegisterNativeMethod(
-			"nativeUpdate"
-			, "(J)V"
-			, (void*)Java_OffscreenView_nativeUpdate);
-		offscreen_view_->CallVoid("initialize");
-	}
-	else
-	{
-		qCritical()<<"Failed to create View:"<<view_class_name_<<"/"<<view_object_name_;
-		offscreen_view_.reset();
-		return;
-	}
+	offscreen_view_->CallParamVoid("SetTexture", "I", jint(tex_.getTexture()));
+	offscreen_view_->CallParamVoid("SetInitialWidth", "I", jint(size_.width()));
+	offscreen_view_->CallParamVoid("SetInitialHeight", "I", jint(size_.height()));
+	offscreen_view_->CallVoid("initializeGL");
 }
 
 void QAndroidOffscreenView::deleteAndroidView()
@@ -195,13 +221,13 @@ bool QAndroidOffscreenView::waitForViewCreation()
 	}
 	if (!offscreen_view_)
 	{
-		qWarning("QAndroidOffscreenView: will not wait for View creation because View is not initialized (yet?)");
+		qWarning("QAndroidOffscreenView: will not wait for View creation because OffscreenView is not initialized (yet?)");
 		return false;
 	}
 	//! \todo: Use semaphore-based wait?
 	while (!isCreated())
 	{
-		usleep(5000);
+		usleep(5000); // 5 ms
 		// QThread::yieldCurrentThread();
 	}
 	return true;

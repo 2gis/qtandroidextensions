@@ -11,12 +11,15 @@
 
 GrymQtAndroidViewGraphicsProxy::GrymQtAndroidViewGraphicsProxy(QGraphicsItem *parent, Qt::WindowFlags wFlags)
 	: QGraphicsWidget(parent, wFlags)
-	, aview_("WebView1", QSize(512, 512))
+	, aview_("WebView1", true, QSize(512, 512))
 	, mouse_tracking_(false)
 {
 	setAcceptedMouseButtons(Qt::LeftButton);
 	connect(&aview_, SIGNAL(updated()), this, SLOT(onOffscreenUpdated()));
 
+	// Since we created aview_ with "waitforcreation", we can safely start loading
+	// the page right now.
+	aview_.loadUrl("http://www.android.com/intl/en/about/");
 }
 
 GrymQtAndroidViewGraphicsProxy::~GrymQtAndroidViewGraphicsProxy()
@@ -38,8 +41,6 @@ void GrymQtAndroidViewGraphicsProxy::paint(QPainter * painter, const QStyleOptio
 	if (!aview_.isIntialized())
 	{
 		aview_.initializeGL();
-		aview_.waitForViewCreation();
-		aview_.loadUrl("http://www.android.com/intl/en/about/");
 	}
 
 	#if defined(ANDROIDVIEWGRAPHICSPROXY_CLEARALL)

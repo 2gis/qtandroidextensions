@@ -55,7 +55,13 @@ class QAndroidOffscreenView: public QObject
 	Q_PROPERTY(QSize size READ size WRITE resize)
 	Q_PROPERTY(QColor fillColor READ fillColor WRITE setFillColor)
 public:
-	QAndroidOffscreenView(const QString & classname, const QString & objectname, const QSize & defsize, QObject * parent = 0);
+	/*!
+	 * \param waitforcreation - if set, pauses current thread until Android View is actually
+	 * created, so you can safely use View-specific functions. If not set, the function will
+	 * return faster and the View will be created in background, but it will be necessary to call
+	 * waitForViewCreation() before using any functionality which access View.
+	 */
+	QAndroidOffscreenView(const QString & classname, const QString & objectname, bool waitforcreation, const QSize & defsize, QObject * parent = 0);
 	virtual ~QAndroidOffscreenView();
 
 	/*!
