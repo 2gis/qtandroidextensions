@@ -42,7 +42,7 @@
 #include <QMutexLocker>
 #include "QAndroidOffscreenView.h"
 
-static const QString c_class_path_(QLatin1String("ru/dublgis/offscreenview"));
+static const QString c_class_path_(QLatin1String("ru/dublgis/offscreenview/"));
 
 Q_DECL_EXPORT void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv *, jobject, jlong param)
 {
@@ -70,7 +70,6 @@ QAndroidOffscreenView::QAndroidOffscreenView(const QString & classname, const QS
 	, texture_received_(false)
 {
 	setObjectName(objectname);
-	offscreen_view_factory_.reset(new jcGeneric((c_class_path_+"/OffscreenViewFactory").toAscii(), true));
 }
 
 QAndroidOffscreenView::~QAndroidOffscreenView()
@@ -80,6 +79,7 @@ QAndroidOffscreenView::~QAndroidOffscreenView()
 
 void QAndroidOffscreenView::initializeGL()
 {
+	qDebug()<<__PRETTY_FUNCTION__;
 	if (tex_.isAllocated())
 	{
 		qWarning("Attempting to initialize QAndroidOffscreenView second time!");
@@ -104,27 +104,31 @@ void QAndroidOffscreenView::initializeGL()
 
 	size_ = texture_size;
 
-	if (offscreen_view_factory_)
+	if (!view_class_name_.contains('/'))
 	{
-		offscreen_view_factory_->CallVoid("SetClassName", view_class_name_);
-		offscreen_view_factory_->CallVoid("SetObjectName", view_object_name_);
-		offscreen_view_factory_->CallParamVoid("SetTexture", "I", jint(tex_.getTexture()));
-		offscreen_view_factory_->CallParamVoid("SetTextureWidth",	"I", jint(texture_size.width()));
-		offscreen_view_factory_->CallParamVoid("SetTextureHeight", "I", jint(texture_size.height()));
-		offscreen_view_factory_->CallParamVoid("SetNativePtr", "J", jlong(reinterpret_cast<void*>(this)));
-		offscreen_view_.reset(
-			offscreen_view_factory_->CallObject("DoCreateView"
-			, (c_class_path_+"/OffscreenView").toAscii()));
-		if (offscreen_view_->jObject() == 0)
-		{
-			qCritical()<<"Failed to create View:"<<view_class_name_<<"/"<<view_object_name_;
-			offscreen_view_.reset();
-			return;
-		}
+		view_class_name_.prepend(c_class_path_);
+	}
+	qDebug()<<__PRETTY_FUNCTION__<<"Creating object of"<<view_class_name_;
+	offscreen_view_.reset(new jcGeneric(view_class_name_.toAscii(), true));
+
+	if (offscreen_view_ && offscreen_view_->jObject())
+	{
+		offscreen_view_->CallVoid("SetObjectName", view_object_name_);
+		offscreen_view_->CallParamVoid("SetTexture", "I", jint(tex_.getTexture()));
+		offscreen_view_->CallParamVoid("SetWidth",	"I", jint(texture_size.width()));
+		offscreen_view_->CallParamVoid("SetHeight", "I", jint(texture_size.height()));
+		offscreen_view_->CallParamVoid("SetNativePtr", "J", jlong(reinterpret_cast<void*>(this)));
 		offscreen_view_->RegisterNativeMethod(
 			"nativeUpdate"
 			, "(J)V"
 			, (void*)Java_OffscreenView_nativeUpdate);
+		offscreen_view_->CallVoid("initialize");
+	}
+	else
+	{
+		qCritical()<<"Failed to create View:"<<view_class_name_<<"/"<<view_object_name_;
+		offscreen_view_.reset();
+		return;
 	}
 }
 
@@ -140,7 +144,6 @@ void QAndroidOffscreenView::deleteAndroidView()
 void QAndroidOffscreenView::deinitialize()
 {
 	deleteAndroidView();
-	offscreen_view_factory_.reset();
 	tex_.deallocateTexture();
 }
 

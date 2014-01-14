@@ -37,7 +37,7 @@
 #include "QAndroidOffscreenWebView.h"
 
 QAndroidOffscreenWebView::QAndroidOffscreenWebView(const QString & object_name, const QSize & def_size, QObject * parent)
-	: QAndroidOffscreenView(QLatin1String("WebView"), object_name, def_size, parent)
+	: QAndroidOffscreenView(QLatin1String("OffscreenWebView"), object_name, def_size, parent)
 {
 }
 

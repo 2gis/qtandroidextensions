@@ -295,27 +295,19 @@ class OffscreenWebView extends OffscreenView
         //  public boolean isDirty () 
     }
 
-    OffscreenWebView(final String objectname, final long nativeptr, final int gltextureid, final int width, final int height)
+    @Override
+    public void doInitialize(final String objectname, final long nativeptr, final int gltextureid, final int width, final int height)
     {
-        super();
-        final Activity context = getContextStatic();
-        Log.i(TAG, "OffscreenWebView(name=\""+objectname+"\", texture="+gltextureid+")");
-        context.runOnUiThread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                 Log.i(TAG, "OffscreenWebView(name=\""+objectname+"\", texture="+gltextureid+") RUNNABLE");
-                 // int save_req_orientation = context.getRequestedOrientation();
-                 // Log.i(TAG, "SGEXP orientation was: "+save_req_orientation);
-                 webview_ = new MyWebView(context, width, height);
-				 rendering_surface_ = new OffscreenRenderingSurface(nativeptr, objectname, webview_, gltextureid, width, height);
-                 webview_.getSettings().setJavaScriptEnabled(true);
-                 // TODO !!! Walkaround !!! Adding WebView disables automatic orientation changes on some devices (with Lite plug-in),
-                 // have to figure out why. [VNA-23]
-                 context.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-            }
-        });
+        Log.i(TAG, "OffscreenWebView.doInitialize(name=\""+objectname+"\", texture="+gltextureid+")");
+        // int save_req_orientation = context.getRequestedOrientation();
+        // Log.i(TAG, "SGEXP orientation was: "+save_req_orientation);
+        Activity context = getContextStatic();
+        webview_ = new MyWebView(context, width, height);
+        rendering_surface_ = new OffscreenRenderingSurface(nativeptr, objectname, webview_, gltextureid, width, height);
+        webview_.getSettings().setJavaScriptEnabled(true);
+        // TODO !!! Walkaround !!! Adding WebView disables automatic orientation changes on some devices (with Lite plug-in),
+        // have to figure out why. [VNA-23]
+        context.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     }
 
     @Override

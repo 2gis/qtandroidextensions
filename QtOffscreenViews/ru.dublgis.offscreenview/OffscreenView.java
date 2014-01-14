@@ -98,12 +98,38 @@ abstract class OffscreenView
     public static final String TAG = "Grym/OffscreenView";
 	protected OffscreenRenderingSurface rendering_surface_ = null;
 
+	private String default_object_name_ = "UnnamedView";
+	private int default_texture_id_ = 0;
+	private int default_texture_width_ = 512;
+	private int default_texture_height_ = 512;
+	private long default_native_ptr_ = 0;
+	public void SetObjectName(String name) { default_object_name_ = name; }
+	public void SetTexture(int tex) { default_texture_id_ = tex; }
+	public void SetWidth(int w) { default_texture_width_ = w; }
+	public void SetHeight(int h) { default_texture_height_ = h; }
+	public void SetNativePtr(long ptr) { default_native_ptr_ = ptr; }
+
+	void initialize()
+	{
+		final Activity context = getContextStatic();
+		Log.i(TAG, "OffscreenView.intialize(name=\""+default_object_name_+"\", texture="+default_texture_id_+")");
+		context.runOnUiThread(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				doInitialize(default_object_name_, default_native_ptr_, default_texture_id_, default_texture_width_, default_texture_height_);
+			}
+		});
+	}
+
     static protected Activity getContextStatic()
     {
         //! \todo Use a way compatible with Qt 5
         return QtApplicationBase.getActivityStatic();
     }
 
+	abstract public void doInitialize(final String objectname, final long nativeptr, final int gltextureid, final int width, final int height);
     abstract public View getView();
     abstract public void callViewPaintMethod(Canvas canvas);
     abstract public void doInvalidateOffscreenView();

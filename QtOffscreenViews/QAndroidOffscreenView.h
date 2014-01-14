@@ -147,7 +147,6 @@ private:
 	QString view_class_name_;
 	QString view_object_name_;
 	QOpenGLTextureHolder tex_;
-	QScopedPointer<jcGeneric> offscreen_view_factory_;
 	QScopedPointer<jcGeneric> offscreen_view_;
 	QSize size_;
 	QColor fill_color_;
