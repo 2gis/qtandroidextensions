@@ -13,3 +13,8 @@ SOURCES += \
     QOpenGLTextureHolder.cpp \
     QAndroidOffscreenView.cpp \
     QAndroidOffscreenWebView.cpp
+
+OTHER_FILES += \
+    ru.dublgis.offscreenview/OffscreenViewFactory.java \
+    ru.dublgis.offscreenview/OffscreenView.java \
+    ru.dublgis.offscreenview/OffscreenWebView.java

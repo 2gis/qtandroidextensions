@@ -88,7 +88,6 @@ import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 import android.graphics.Canvas;
 import org.qt.core.QtApplicationBase;
-import ru.dublgis.offscreenview.OffscreenViewHelper;
 
 class OffscreenWebView extends OffscreenView
 {
@@ -118,9 +117,9 @@ class OffscreenWebView extends OffscreenView
             public void onPageFinished(WebView view, String url)
             {
                 Log.i(TAG, "MyWebView.MyWebViewClient.onPageFinished");
-                if (helper_ != null)
+				if (rendering_surface_ != null)
                 {
-                     nativeUpdate(helper_.getNativePtr());
+					 nativeUpdate(rendering_surface_.getNativePtr());
                 }
                 super.onPageFinished(view, url);
             }
@@ -250,7 +249,7 @@ class OffscreenWebView extends OffscreenView
         public void requestLayout()
         {
             Log.i(TAG, "MyWebView.requestLayout()");
-            if (helper_ != null)
+			if (rendering_surface_ != null)
             {
                final Activity context = getContextStatic();
                context.runOnUiThread(new Runnable()
@@ -310,7 +309,7 @@ class OffscreenWebView extends OffscreenView
                  // int save_req_orientation = context.getRequestedOrientation();
                  // Log.i(TAG, "SGEXP orientation was: "+save_req_orientation);
                  webview_ = new MyWebView(context, width, height);
-                 helper_ = new OffscreenViewHelper(nativeptr, objectname, webview_, gltextureid, width, height);
+				 rendering_surface_ = new OffscreenRenderingSurface(nativeptr, objectname, webview_, gltextureid, width, height);
                  webview_.getSettings().setJavaScriptEnabled(true);
                  // TODO !!! Walkaround !!! Adding WebView disables automatic orientation changes on some devices (with Lite plug-in),
                  // have to figure out why. [VNA-23]
