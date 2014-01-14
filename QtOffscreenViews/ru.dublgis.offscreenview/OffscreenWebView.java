@@ -117,10 +117,7 @@ class OffscreenWebView extends OffscreenView
             public void onPageFinished(WebView view, String url)
             {
                 Log.i(TAG, "MyWebView.MyWebViewClient.onPageFinished");
-                if (rendering_surface_ != null)
-                {
-                     nativeUpdate(rendering_surface_.getNativePtr());
-                }
+                nativeUpdate(getNativePtr());
                 super.onPageFinished(view, url);
             }
 
@@ -393,9 +390,9 @@ onTouchEvent(MotionEvent) Called when a touch screen motion event occurs. */
     private native void nativeUpdate(long nativeptr);
 
     @Override
-    public void doNativeUpdate(long nativeptr)
+    public void doNativeUpdate()
     {
-        nativeUpdate(nativeptr);
+        nativeUpdate(getNativePtr());
     }
 }
 
