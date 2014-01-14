@@ -130,13 +130,13 @@ abstract class OffscreenView
     //! Performs actual painting of the view. Should be called in Android UI thread.
     protected void doDrawViewOnTexture()
     {
-		if (rendering_surface_ == null)
+		synchronized(this)
         {
-            Log.i(TAG, "doDrawViewOnTexture: helper is not initialized yet.");
-            return;
-        }
-		synchronized(rendering_surface_)
-        {
+			if (rendering_surface_ == null)
+			{
+				Log.i(TAG, "doDrawViewOnTexture: helper is not initialized yet.");
+				return;
+			}
 			if (rendering_surface_.getNativePtr() == 0)
             {
                 Log.i(TAG, "doDrawViewOnTexture: zero native ptr, will not draw!");
@@ -195,12 +195,12 @@ abstract class OffscreenView
     //! Called from C++ to get current texture.
     public boolean updateTexture()
     {
-		if (rendering_surface_ == null)
+		synchronized(this)
         {
-            return false;
-        }
-		synchronized(rendering_surface_)
-        {
+			if (rendering_surface_ == null)
+			{
+				return false;
+			}
             // long t = System.nanoTime();
 			boolean result = rendering_surface_.updateTexture();
             // Log.i(TAG, "updateTexture: "+t/1000000.0+"ms");
@@ -211,13 +211,13 @@ abstract class OffscreenView
     //! Called from C++ to notify us that the associated C++ object is being destroyed.
     public void cppDestroyed()
     {
-		if (rendering_surface_ == null)
-        {
-            return;
-        }
-		synchronized(rendering_surface_)
+		synchronized(this)
         {
             Log.i(TAG, "cppDestroyed");
+			if (rendering_surface_ == null)
+			{
+				return;
+			}
 			rendering_surface_.cppDestroyed();
         }
     }
@@ -225,12 +225,12 @@ abstract class OffscreenView
     //! Called from C++ to get texture coordinate transformation matrix (filled in updateTexture()).
     public float getTextureTransformMatrix(int index)
     {
-		if (rendering_surface_ == null)
+		synchronized(this)
         {
-            return 0;
-        }
-		synchronized(rendering_surface_)
-        {
+			if (rendering_surface_ == null)
+			{
+				return 0;
+			}
 			return rendering_surface_.getTextureTransformMatrix(index);
         }
     }
@@ -295,13 +295,13 @@ abstract class OffscreenView
     //! Called from C++ to change size of the view.
     public void resizeOffscreenView(final int w, final int h)
     {
-		if (rendering_surface_ == null)
-        {
-            return;
-        }
-		synchronized(rendering_surface_)
+		synchronized(this)
         {
             Log.i(TAG, "resizeOffscreenView "+w+"x"+h);
+			if (rendering_surface_ == null)
+			{
+				return;
+			}
 			rendering_surface_.setNewSize(w, h);
             View view = getView();
             if (view != null)
