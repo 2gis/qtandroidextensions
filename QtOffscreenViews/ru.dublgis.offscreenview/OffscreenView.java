@@ -118,6 +118,8 @@ abstract class OffscreenView
             @Override
             public void run()
             {
+                doCreateView();
+
                 rendering_surface_ = new OffscreenRenderingSurface(default_native_ptr_, default_object_name_, getView()
                     , default_texture_id_, default_texture_width_, default_texture_height_);
 
@@ -146,6 +148,7 @@ abstract class OffscreenView
     abstract public void doInvalidateOffscreenView();
     abstract public void doResizeOffscreenView(final int width, final int height);
     abstract public void doNativeUpdate(long nativeptr);
+    abstract public void doCreateView();
 
     //! Schedule painting of the view (will be done in Android UI thread).
     protected void drawViewOnTexture()

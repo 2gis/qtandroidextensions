@@ -297,16 +297,14 @@ class OffscreenWebView extends OffscreenView
 
     OffscreenWebView()
     {
-        Log.i(TAG, "OffscreenWebView constructor");
+        // Log.i(TAG, "OffscreenWebView constructor");
+    }
+
+    @Override
+    public void doCreateView()
+    {
         final Activity context = getContextStatic();
-        context.runOnUiThread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                webview_ = new MyWebView(context);
-            }
-        });
+        webview_ = new MyWebView(context);
     }
 
     @Override
