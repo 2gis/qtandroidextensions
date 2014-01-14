@@ -93,6 +93,9 @@ import android.graphics.Canvas;
 //! \todo Not compatible with official Qt5, used in getContextStatic()
 import org.qt.core.QtApplicationBase;
 
+/*!
+ * A base class for all Android off-screen views which implements any common interfaces and functionality.
+ */
 abstract class OffscreenView
 {
     public static final String TAG = "Grym/OffscreenView";
@@ -103,12 +106,17 @@ abstract class OffscreenView
 
     private int initial_width_ = 512;
     private int initial_height_ = 512;
+
     public void SetObjectName(String name) { object_name_ = name; }
     public void SetTexture(int tex) { gl_texture_id_ = tex; }
     public void SetInitialWidth(int w) { initial_width_ = w; }
     public void SetInitialHeight(int h) { initial_height_ = h; }
     public void SetNativePtr(long ptr) { native_ptr_ = ptr; }
 
+    /*!
+     * Invokes object initialization based on values passed via SetObjectName(), SetTexture(),
+     * SetInitialWidth(), SetInitialHeight(), SetNativePtr().
+     */
     void initialize()
     {
         final Activity context = getContextStatic();
@@ -118,20 +126,17 @@ abstract class OffscreenView
             @Override
             public void run()
             {
-                doCreateView();
-
-                rendering_surface_ = new OffscreenGLTextureRenderingSurface();
-
-                View view = getView();
-                if (view != null)
+                synchronized(this)
                 {
+                    doCreateView();
+                    rendering_surface_ = new OffscreenGLTextureRenderingSurface();
                     doResizeOffscreenView(initial_width_, initial_height_);
-                }
 
-                // TODO !!! Walkaround !!! Something disables automatic orientation changes on some devices (with Lite plug-in),
-                // have to figure out why. [VNA-23]
-                Activity context = getContextStatic();
-                context.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+                    // TODO !!! Walkaround !!! Something disables automatic orientation changes on some devices (with Lite plug-in),
+                    // have to figure out why. [VNA-23]
+                    Activity context = getContextStatic();
+                    context.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+                }
             }
         });
     }
@@ -362,11 +367,6 @@ abstract class OffscreenView
         }
     }
 
-    /*public final int getTexture()
-    {
-        return gl_texture_id_;
-    }*/
-
     // C++ function called from Java to tell that the texture has new contents.
     // abstract public native void nativeUpdate(long nativeptr);
 
@@ -402,16 +402,6 @@ abstract class OffscreenView
             setNewSize(initial_width_, initial_height_);
         }
 
-        public final int getTextureWidth()
-        {
-            return texture_width_;
-        }
-
-        public final int getTextureHeight()
-        {
-            return texture_height_;
-        }
-
         @Override
         public Canvas lockCanvas()
         {
@@ -443,6 +433,10 @@ abstract class OffscreenView
             }
         }
 
+        // Texture coordinate transformation matrix. The transformation is typically simply a flip of Y axis.
+        // And, of course, it should never change Z. So it could be a 2D matrix + shift vector as well.
+        // However, Android returns a 4D uniform matrix so it could be passed to GL functions directly.
+        // We optimize that on C++/JNI side by reading only relevant values.
         private float [] mtx_ = {
            0, 0, 0, 0,
            0, 0, 0, 0,
