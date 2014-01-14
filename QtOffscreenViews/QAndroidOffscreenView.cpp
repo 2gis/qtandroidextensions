@@ -115,8 +115,8 @@ void QAndroidOffscreenView::initializeGL()
 	{
 		offscreen_view_->CallVoid("SetObjectName", view_object_name_);
 		offscreen_view_->CallParamVoid("SetTexture", "I", jint(tex_.getTexture()));
-		offscreen_view_->CallParamVoid("SetWidth",	"I", jint(texture_size.width()));
-		offscreen_view_->CallParamVoid("SetHeight", "I", jint(texture_size.height()));
+		offscreen_view_->CallParamVoid("SetInitialWidth", "I", jint(texture_size.width()));
+		offscreen_view_->CallParamVoid("SetInitialHeight", "I", jint(texture_size.height()));
 		offscreen_view_->CallParamVoid("SetNativePtr", "J", jlong(reinterpret_cast<void*>(this)));
 		offscreen_view_->RegisterNativeMethod(
 			"nativeUpdate"

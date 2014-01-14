@@ -117,9 +117,9 @@ class OffscreenWebView extends OffscreenView
             public void onPageFinished(WebView view, String url)
             {
                 Log.i(TAG, "MyWebView.MyWebViewClient.onPageFinished");
-				if (rendering_surface_ != null)
+                if (rendering_surface_ != null)
                 {
-					 nativeUpdate(rendering_surface_.getNativePtr());
+                     nativeUpdate(rendering_surface_.getNativePtr());
                 }
                 super.onPageFinished(view, url);
             }
@@ -139,18 +139,18 @@ class OffscreenWebView extends OffscreenView
             }
         }
 
-        public MyWebView(Context context, int width, int height)
+        public MyWebView(Context context)
         {
             super(context);
-            Log.i(TAG, "MyWebView "+width+"x"+height);
+            Log.i(TAG, "MyWebView constructor");
             webviewclient_ = new MyWebViewClient();
             setWebViewClient(webviewclient_);
-            //setVerticalScrollBarEnabled(true);
-            /*onAttachedToWindow();
-            onSizeChanged(width, height, 0, 0);
-            onVisibilityChanged(this, View.VISIBLE);
-            onLayout(true, 0, 0, width, height);*/
-            resizeOffscreenView(width, height);
+
+            // Fill in default properties
+            setHorizontalScrollBarEnabled(false);
+            setVerticalScrollBarEnabled(true);
+            resizeOffscreenView(256, 256);
+            getSettings().setJavaScriptEnabled(true);
         }
 
         // NB: caller should call the invalidation
@@ -249,7 +249,7 @@ class OffscreenWebView extends OffscreenView
         public void requestLayout()
         {
             Log.i(TAG, "MyWebView.requestLayout()");
-			if (rendering_surface_ != null)
+            if (rendering_surface_ != null)
             {
                final Activity context = getContextStatic();
                context.runOnUiThread(new Runnable()
@@ -295,19 +295,18 @@ class OffscreenWebView extends OffscreenView
         //  public boolean isDirty () 
     }
 
-    @Override
-    public void doInitialize(final String objectname, final long nativeptr, final int gltextureid, final int width, final int height)
+    OffscreenWebView()
     {
-        Log.i(TAG, "OffscreenWebView.doInitialize(name=\""+objectname+"\", texture="+gltextureid+")");
-        // int save_req_orientation = context.getRequestedOrientation();
-        // Log.i(TAG, "SGEXP orientation was: "+save_req_orientation);
-        Activity context = getContextStatic();
-        webview_ = new MyWebView(context, width, height);
-        rendering_surface_ = new OffscreenRenderingSurface(nativeptr, objectname, webview_, gltextureid, width, height);
-        webview_.getSettings().setJavaScriptEnabled(true);
-        // TODO !!! Walkaround !!! Adding WebView disables automatic orientation changes on some devices (with Lite plug-in),
-        // have to figure out why. [VNA-23]
-        context.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        Log.i(TAG, "OffscreenWebView constructor");
+        final Activity context = getContextStatic();
+        context.runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                webview_ = new MyWebView(context);
+            }
+        });
     }
 
     @Override
