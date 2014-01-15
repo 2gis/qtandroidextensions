@@ -118,7 +118,7 @@ abstract class OffscreenView
     void createView()
     {
         Log.i(TAG, "OffscreenView.createView(name=\""+object_name_+"\")");
-        final Activity context = getContext();
+        final Activity context = getActivity();
         context.runOnUiThread(new Runnable()
         {
             @Override
@@ -138,7 +138,7 @@ abstract class OffscreenView
      */
     void initializeGL()
     {
-        final Activity context = getContext();
+        final Activity context = getActivity();
         Log.i(TAG, "OffscreenView.intializeGL(name=\""+object_name_+"\", texture="+gl_texture_id_+")");
         context.runOnUiThread(new Runnable()
         {
@@ -164,12 +164,12 @@ abstract class OffscreenView
     abstract public void doResizeOffscreenView(final int width, final int height);
     abstract public void doNativeUpdate();
     abstract public void doCreateView();
-    abstract public Activity getContext();
+    abstract public Activity getActivity();
 
     //! Schedule painting of the view (will be done in Android UI thread).
     protected void drawViewOnTexture()
     {
-        Activity ctx = getContext();
+        Activity ctx = getActivity();
         if (ctx != null)
         {
             ctx.runOnUiThread(new Runnable()
@@ -314,7 +314,7 @@ abstract class OffscreenView
             }
             Log.i(TAG, "ProcessMouseEvent("+action+", "+x+", "+y+") downt="+downt+", t="+t);
             final MotionEvent event = MotionEvent.obtain(downt /* downTime*/, t /* eventTime */, action, x, y, 0 /*metaState*/);
-            Activity ctx = getContext();
+            Activity ctx = getActivity();
             if (ctx != null)
             {
                 ctx.runOnUiThread(new Runnable()
@@ -338,7 +338,7 @@ abstract class OffscreenView
         Log.i(TAG, "invalidateOffscreenView");
         if (getView() != null)
         {
-            final Activity context = getContext();
+            final Activity context = getActivity();
             context.runOnUiThread(new Runnable()
             {
                 @Override
@@ -364,7 +364,7 @@ abstract class OffscreenView
             View view = getView();
             if (view != null)
             {
-                final Activity context = getContext();
+                final Activity context = getActivity();
                 context.runOnUiThread(new Runnable()
                 {
                     @Override

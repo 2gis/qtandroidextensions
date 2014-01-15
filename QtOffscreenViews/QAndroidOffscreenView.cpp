@@ -91,7 +91,7 @@ QAndroidOffscreenView::QAndroidOffscreenView(const QString & classname, const QS
 		offscreen_view_->CallParamVoid("SetNativePtr", "J", jlong(reinterpret_cast<void*>(this)));
 
 		offscreen_view_->RegisterNativeMethod("nativeUpdate", "(J)V", (void*)Java_OffscreenView_nativeUpdate);
-		offscreen_view_->RegisterNativeMethod("nativeGetContext", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity);
+		offscreen_view_->RegisterNativeMethod("nativeGetActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity);
 
 		// Invoke creation of the view, so its functions will be available
 		// before initialization of GL part.
