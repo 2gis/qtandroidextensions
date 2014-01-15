@@ -42,10 +42,40 @@ static JavaVM * g_JavaVm = 0;
 typedef std::map<std::string,jclass> PreloadedClasses;
 static PreloadedClasses g_PreloadedClasses;
 
+#if defined(Q_OS_ANDROID)
+	#if QT_VERSION < 0x050000 && defined(JNIUTILS_GRYM)
+		extern JavaVM * qt_android_get_java_vm();
+	#elif QT_VERSION >= 0x050000
+		#include <QAndroidJniEnvironment>
+	#endif
+
+	static void AutoSetJavaVM()
+	{
+		if (!g_JavaVm)
+		{
+			#if QT_VERSION < 0x050000 && defined(JNIUTILS_GRYM)
+				// Qt 4.x, in Grym port of Qt there's the right exported function in QtAndroidCore
+				JniEnvPtr::SetJavaVM(qt_android_get_java_vm());
+				// #pragma message("Using Grym/Lite JVM autodetection")
+			#elif QT_VERSION >= 0x050000
+				// Qt 5.x, assuming that QtAndroidExtras available.
+				JniEnvPtr::SetJavaVM(QAndroidJniEnvironment::javaVM());
+				// #pragma message("Using Qt5 autodetection")
+			#else
+				#warning "AutoSetJavaVM is not implemented for this QT configuration."
+			#endif
+		}
+	}
+#endif
+
 JniEnvPtr::JniEnvPtr()
 	: env_(0)
 	, was_already_attached_(false)
 {
+	#if defined(Q_OS_ANDROID) || defined(ANDROID)
+		AutoSetJavaVM();
+	#endif
+
 	if(g_JavaVm == 0)
 	{
 		qWarning("Java VM pointer is not set!");
@@ -74,6 +104,9 @@ JniEnvPtr::JniEnvPtr(JNIEnv* env)
 	: env_(env)
 	, was_already_attached_(true)
 {
+	#if defined(Q_OS_ANDROID) || defined(ANDROID)
+		AutoSetJavaVM();
+	#endif
 }
 
 JniEnvPtr::~JniEnvPtr()

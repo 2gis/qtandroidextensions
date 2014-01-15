@@ -9,3 +9,8 @@
 #else
 	#define VERBOSE(x)
 #endif
+
+#if defined(QT_CORE_LIB)
+	#include <qconfig.h>
+	#include <QString>
+#endif

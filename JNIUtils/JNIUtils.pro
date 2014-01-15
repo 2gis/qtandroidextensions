@@ -6,14 +6,16 @@ QT += core
 
 android-g++ {
 
-HEADERS += \
-    JniEnvPtr.h \
-    JclassPtr.h \
-    jcGeneric.h \
-    stdafx.h
+    CONFIG(android_autolink_grym): DEFINES += JNIUTILS_GRYM
 
-SOURCES += \
-    JniEnvPtr.cpp \
-    JclassPtr.cpp \
-    jcGeneric.cpp
+    HEADERS += \
+        JniEnvPtr.h \
+        JclassPtr.h \
+        jcGeneric.h \
+        stdafx.h
+
+    SOURCES += \
+        JniEnvPtr.cpp \
+        JclassPtr.cpp \
+        jcGeneric.cpp
 }
