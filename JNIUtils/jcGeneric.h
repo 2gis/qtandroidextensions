@@ -83,6 +83,11 @@ public:
 	 */
 	jcGeneric(const char* full_class_name, bool create=true);
 
+	/*!
+	 * Returns jobject and zeroes it.
+	 */
+	jobject TakeJobjectOver();
+
 	//! Create fully uninitialized jcGeneric.
 	jcGeneric();
 	virtual ~jcGeneric();

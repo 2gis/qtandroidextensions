@@ -248,7 +248,7 @@ class OffscreenWebView extends OffscreenView
             Log.i(TAG, "MyWebView.requestLayout()");
             if (rendering_surface_ != null)
             {
-               final Activity context = getContextStatic();
+               final Activity context = OffscreenWebView.this.getContext();
                context.runOnUiThread(new Runnable()
                {
                    @Override
@@ -300,7 +300,7 @@ class OffscreenWebView extends OffscreenView
     @Override
     public void doCreateView()
     {
-        final Activity context = getContextStatic();
+        final Activity context = getContext();
         webview_ = new MyWebView(context);
     }
 
@@ -339,7 +339,7 @@ class OffscreenWebView extends OffscreenView
     public void loadUrl(final String url)
     {
         Log.i(TAG, "loadUrl: scheduling");
-        Activity ctx = getContextStatic();
+        Activity ctx = getContext();
         if (ctx != null && webview_ != null)
         {
             ctx.runOnUiThread(new Runnable()
@@ -362,7 +362,7 @@ class OffscreenWebView extends OffscreenView
     public void loadData(final String text, final String mime)
     {
         Log.i(TAG, "loadData: scheduling");
-        Activity ctx = getContextStatic();
+        Activity ctx = getContext();
         if (ctx != null && webview_ != null)
         {
             ctx.runOnUiThread(new Runnable()
@@ -388,11 +388,18 @@ onTrackballEvent(MotionEvent) Called when a trackball motion event occurs.
 onTouchEvent(MotionEvent) Called when a touch screen motion event occurs. */
 
     private native void nativeUpdate(long nativeptr);
+    private native Activity nativeGetContext();
 
     @Override
     public void doNativeUpdate()
     {
         nativeUpdate(getNativePtr());
+    }
+
+    @Override
+    public Activity getContext()
+    {
+        return nativeGetContext();
     }
 }
 

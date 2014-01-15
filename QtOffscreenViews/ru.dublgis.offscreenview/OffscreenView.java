@@ -91,9 +91,6 @@ import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 import android.graphics.Canvas;
 
-//! \todo Not compatible with official Qt5, used in getContextStatic()
-import org.qt.core.QtApplicationBase;
-
 /*!
  * A base class for all Android off-screen views which implements any common interfaces and functionality.
  */
@@ -121,7 +118,7 @@ abstract class OffscreenView
     void createView()
     {
         Log.i(TAG, "OffscreenView.createView(name=\""+object_name_+"\")");
-        final Activity context = getContextStatic();
+        final Activity context = getContext();
         context.runOnUiThread(new Runnable()
         {
             @Override
@@ -141,7 +138,7 @@ abstract class OffscreenView
      */
     void initializeGL()
     {
-        final Activity context = getContextStatic();
+        final Activity context = getContext();
         Log.i(TAG, "OffscreenView.intializeGL(name=\""+object_name_+"\", texture="+gl_texture_id_+")");
         context.runOnUiThread(new Runnable()
         {
@@ -161,23 +158,18 @@ abstract class OffscreenView
         });
     }
 
-    static protected Activity getContextStatic()
-    {
-        //! \todo Use a way compatible with Qt 5
-        return QtApplicationBase.getActivityStatic();
-    }
-
     abstract public View getView();
     abstract public void callViewPaintMethod(Canvas canvas);
     abstract public void doInvalidateOffscreenView();
     abstract public void doResizeOffscreenView(final int width, final int height);
     abstract public void doNativeUpdate();
     abstract public void doCreateView();
+    abstract public Activity getContext();
 
     //! Schedule painting of the view (will be done in Android UI thread).
     protected void drawViewOnTexture()
     {
-        Activity ctx = getContextStatic();
+        Activity ctx = getContext();
         if (ctx != null)
         {
             ctx.runOnUiThread(new Runnable()
@@ -322,7 +314,7 @@ abstract class OffscreenView
             }
             Log.i(TAG, "ProcessMouseEvent("+action+", "+x+", "+y+") downt="+downt+", t="+t);
             final MotionEvent event = MotionEvent.obtain(downt /* downTime*/, t /* eventTime */, action, x, y, 0 /*metaState*/);
-            Activity ctx = getContextStatic();
+            Activity ctx = getContext();
             if (ctx != null)
             {
                 ctx.runOnUiThread(new Runnable()
@@ -346,7 +338,7 @@ abstract class OffscreenView
         Log.i(TAG, "invalidateOffscreenView");
         if (getView() != null)
         {
-            final Activity context = getContextStatic();
+            final Activity context = getContext();
             context.runOnUiThread(new Runnable()
             {
                 @Override
@@ -372,7 +364,7 @@ abstract class OffscreenView
             View view = getView();
             if (view != null)
             {
-                final Activity context = getContextStatic();
+                final Activity context = getContext();
                 context.runOnUiThread(new Runnable()
                 {
                     @Override

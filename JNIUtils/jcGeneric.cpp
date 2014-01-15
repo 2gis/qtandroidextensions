@@ -113,6 +113,13 @@ jcGeneric::~jcGeneric()
 	}
 }
 
+jobject jcGeneric::TakeJobjectOver()
+{
+	jobject ret = instance_;
+	instance_ = 0;
+	return ret;
+}
+
 void jcGeneric::init(JNIEnv* env, jobject instance)
 {
 	VERBOSE(qDebug("jcGeneric::init(JNIEnv* env, jobject instance) %p", this));

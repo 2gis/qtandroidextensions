@@ -40,6 +40,7 @@
 #include <GLES2/gl2ext.h>
 #include <QThread>
 #include <QMutexLocker>
+#include "QAndroidQPAPluginGap.h"
 #include "QAndroidOffscreenView.h"
 
 static const QString c_class_path_(QLatin1String("ru/dublgis/offscreenview/"));
@@ -88,10 +89,10 @@ QAndroidOffscreenView::QAndroidOffscreenView(const QString & classname, const QS
 	{
 		offscreen_view_->CallVoid("SetObjectName", view_object_name_);
 		offscreen_view_->CallParamVoid("SetNativePtr", "J", jlong(reinterpret_cast<void*>(this)));
-		offscreen_view_->RegisterNativeMethod(
-			"nativeUpdate"
-			, "(J)V"
-			, (void*)Java_OffscreenView_nativeUpdate);
+
+		offscreen_view_->RegisterNativeMethod("nativeUpdate", "(J)V", (void*)Java_OffscreenView_nativeUpdate);
+		offscreen_view_->RegisterNativeMethod("nativeGetContext", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity);
+
 		// Invoke creation of the view, so its functions will be available
 		// before initialization of GL part.
 		offscreen_view_->CallVoid("createView");
