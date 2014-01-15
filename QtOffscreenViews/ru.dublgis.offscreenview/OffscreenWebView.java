@@ -218,8 +218,17 @@ class OffscreenWebView extends OffscreenView
         @Override
         public void invalidate(int l, int t, int r, int b)
         {
-            Log.i(TAG, "MyWebView.invalidate(int l, int t, int r, int b) "+l+", "+t+", "+r+", "+b);
+            // Log.i(TAG, "MyWebView.invalidate(int l, int t, int r, int b) "+l+", "+t+", "+r+", "+b+
+            //    "; width="+width_+", height="+height_+"; scrollX="+getScrollX()+", scrollY="+getScrollY());
             super.invalidate(l, t, r, b);
+            int my_r = getScrollX() + width_;
+            int my_b = getScrollY() + height_;
+            // Check that the invalidated rectangle actually visible
+            if (l > my_r || t > my_b)
+            {
+                // Log.i(TAG, "MyWebView.invalidate: ignoring invisible rectangle");
+                return;
+            }
             invalidateTexture();
         }
 
