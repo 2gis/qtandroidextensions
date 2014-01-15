@@ -148,6 +148,10 @@ class OffscreenWebView extends OffscreenView
             setVerticalScrollBarEnabled(true);
             resizeOffscreenView(256, 256);
             getSettings().setJavaScriptEnabled(true);
+
+            // No positive effect found
+            // setPersistentDrawingCache(PERSISTENT_ALL_CACHES);
+            // setAlwaysDrawnWithCacheEnabled(true);
         }
 
         // NB: caller should call the invalidation
