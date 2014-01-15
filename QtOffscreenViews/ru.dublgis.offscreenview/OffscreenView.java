@@ -156,11 +156,6 @@ abstract class OffscreenView
                     // finish its updates before the surface is available and its size didn't change
                     // and/or not triggered update by the resize call.
                     invalidateOffscreenView();
-
-                    // TODO !!! Walkaround !!! Something disables automatic orientation changes on some devices (with Lite plug-in),
-                    // have to figure out why. [VNA-23]
-                    Activity context = getContextStatic();
-                    context.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
                 }
             }
         });
