@@ -510,15 +510,15 @@ void jcGeneric::CallVoid(const char * method_name, const QString & string1, cons
 	env->DeleteLocalRef(js2);
 }
 
-void jcGeneric::RegisterNativeMethod(const char* name, const char* signature, void* ptr)
+bool jcGeneric::RegisterNativeMethod(const char* name, const char* signature, void* ptr)
 {
-	JniEnvPtr jep;
 	JNINativeMethod jnm = {name, signature, ptr};
-	jep.env()->RegisterNatives(class_, &jnm, 1);
+	return RegisterNativeMethods(&jnm, sizeof(jnm));
 }
 
-void jcGeneric::RegisterNativeMethods(JNINativeMethod* methods_list, size_t sizeof_methods_list)
+bool jcGeneric::RegisterNativeMethods(const JNINativeMethod * methods_list, size_t sizeof_methods_list)
 {
 	JniEnvPtr jep;
-	jep.env()->RegisterNatives(class_, methods_list, sizeof_methods_list/sizeof(JNINativeMethod));
+	jint result = jep.env()->RegisterNatives(class_, methods_list, sizeof_methods_list/sizeof(JNINativeMethod));
+	return result == 0;
 }

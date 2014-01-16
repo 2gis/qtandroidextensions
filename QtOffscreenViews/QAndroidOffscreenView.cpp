@@ -60,7 +60,13 @@ Q_DECL_EXPORT void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv *, jobject, jl
 	qWarning()<<__FUNCTION__<<"Zero param!";
 }
 
-QAndroidOffscreenView::QAndroidOffscreenView(const QString & classname, const QString & objectname, bool waitforcreation, const QSize & defsize, QObject * parent)
+QAndroidOffscreenView::QAndroidOffscreenView(
+	const QString & classname
+	, const QString & objectname
+	, bool create_view
+	, bool waitforcreation
+	, const QSize & defsize
+	, QObject * parent)
 	: QObject(parent)
 	, view_class_name_(classname)
 	, view_object_name_(objectname)
@@ -70,6 +76,7 @@ QAndroidOffscreenView::QAndroidOffscreenView(const QString & classname, const QS
 	, view_painted_(false)
 	, texture_received_(false)
 	, synchronized_texture_update_(true)
+	, view_creation_requested_(false)
 {
 	setObjectName(objectname);
 
@@ -95,7 +102,10 @@ QAndroidOffscreenView::QAndroidOffscreenView(const QString & classname, const QS
 
 		// Invoke creation of the view, so its functions will be available
 		// before initialization of GL part.
-		offscreen_view_->CallVoid("createView");
+		if (create_view)
+		{
+			createView();
+		}
 	}
 	else
 	{
@@ -103,10 +113,18 @@ QAndroidOffscreenView::QAndroidOffscreenView(const QString & classname, const QS
 		offscreen_view_.reset();
 		return;
 	}
-
-	if (waitforcreation)
+	if (waitforcreation && create_view)
 	{
 		waitForViewCreation();
+	}
+}
+
+void QAndroidOffscreenView::createView()
+{
+	if (offscreen_view_ && !view_creation_requested_)
+	{
+		offscreen_view_->CallVoid("createView");
+		view_creation_requested_ = true;
 	}
 }
 
@@ -224,6 +242,11 @@ bool QAndroidOffscreenView::waitForViewCreation()
 	if (!offscreen_view_)
 	{
 		qWarning("QAndroidOffscreenView: will not wait for View creation because OffscreenView is not initialized (yet?)");
+		return false;
+	}
+	if (!view_creation_requested_)
+	{
+		qWarning("QAndroidOffscreenView: will not wait for View creation because the creation was not requested (yet?)");
 		return false;
 	}
 	//! \todo: Use semaphore-based wait?

@@ -55,14 +55,17 @@ class QAndroidOffscreenView: public QObject
 	Q_PROPERTY(QSize size READ size WRITE resize)
 	Q_PROPERTY(QColor fillColor READ fillColor WRITE setFillColor)
 	Q_PROPERTY(bool synchronizedTextureUpdate READ synchronizedTextureUpdate WRITE setSynchronizedTextureUpdate)
-public:
+protected:
 	/*!
 	 * \param waitforcreation - if set, pauses current thread until Android View is actually
 	 * created, so you can safely use View-specific functions. If not set, the function will
 	 * return faster and the View will be created in background, but it will be necessary to call
 	 * waitForViewCreation() before using any functionality which access View.
 	 */
-	QAndroidOffscreenView(const QString & classname, const QString & objectname, bool waitforcreation, const QSize & defsize, QObject * parent = 0);
+	QAndroidOffscreenView(const QString & classname, const QString & objectname, bool create_view, bool waitforcreation, const QSize & defsize, QObject * parent = 0);
+	void createView();
+
+public:
 	virtual ~QAndroidOffscreenView();
 
 	/*!
@@ -171,6 +174,7 @@ private:
 	bool view_painted_;
 	bool texture_received_;
 	bool synchronized_texture_update_;
+	bool view_creation_requested_;
 
 private:
 	Q_DISABLE_COPY(QAndroidOffscreenView)

@@ -169,10 +169,14 @@ public:
 #endif
 
 	//! Register native method in the wrapped class
-	void RegisterNativeMethod(const char* name, const char* signature, void* ptr);
+	bool RegisterNativeMethod(const char* name, const char* signature, void* ptr);
 
-	//! Register native methods in the wrapped class
-	void RegisterNativeMethods(JNINativeMethod* methods_list, size_t sizeof_methods_list);
+	/*!
+	 * Register native methods in the wrapped class.
+	 * \param sizeof_methods_list is the size of the whole array pointed by methods_list,
+	 * not count of the methods to register!
+	 */
+	bool RegisterNativeMethods(const JNINativeMethod * methods_list, size_t sizeof_methods_list);
 
 	//! Get JNI reference to the wrapped Java object
 	jobject jObject() { return instance_; }

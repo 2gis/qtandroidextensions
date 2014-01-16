@@ -61,10 +61,12 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.net.http.SslError;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.os.SystemClock;
 import android.text.method.MetaKeyKeyListener;
 import android.text.InputType;
@@ -85,6 +87,9 @@ import android.view.WindowManager.LayoutParams;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.WebResourceResponse;
+import android.webkit.HttpAuthHandler;
+import android.webkit.SslErrorHandler;
 import android.widget.LinearLayout;
 import android.graphics.Canvas;
 import org.qt.core.QtApplicationBase;
@@ -106,6 +111,37 @@ class OffscreenWebView extends OffscreenView
         private class MyWebViewClient extends WebViewClient
         {
             @Override
+            public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) { OffscreenWebView.this.doUpdateVisitedHistory(getNativePtr(), url, isReload); }
+            @Override
+            public void onFormResubmission(WebView view, Message dontResend, Message resend) { OffscreenWebView.this.onFormResubmission(getNativePtr(), dontResend, resend); }
+            @Override
+            public void onLoadResource(WebView view, String url) { OffscreenWebView.this.onLoadResource(getNativePtr(), url); }
+            @Override
+            public void onPageFinished(WebView view, String url) { OffscreenWebView.this.onPageFinished(getNativePtr(), url); }
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) { OffscreenWebView.this.onPageStarted(getNativePtr(), url, favicon); }
+            @Override
+            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) { OffscreenWebView.this.onReceivedError(getNativePtr(), errorCode, description, failingUrl); }
+            @Override
+            public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host, String realm) { OffscreenWebView.this.onReceivedHttpAuthRequest(getNativePtr(), handler, host, realm); }
+            @Override
+            public void onReceivedLoginRequest(WebView view, String realm, String account, String args) { OffscreenWebView.this.onReceivedLoginRequest(getNativePtr(), realm, account, args); }
+            @Override
+            public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) { OffscreenWebView.this.onReceivedSslError(getNativePtr(), handler, error); }
+            @Override
+            public void onScaleChanged(WebView view, float oldScale, float newScale) { OffscreenWebView.this.onScaleChanged(getNativePtr(), oldScale, newScale); }
+            @Override
+            public void onTooManyRedirects(WebView view, Message cancelMsg, Message continueMsg) { OffscreenWebView.this.onTooManyRedirects(getNativePtr(), cancelMsg, continueMsg); }
+            @Override
+            public void onUnhandledKeyEvent(WebView view, KeyEvent event) { OffscreenWebView.this.onUnhandledKeyEvent(getNativePtr(), event); }
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, String url) { return OffscreenWebView.this.shouldInterceptRequest(getNativePtr(), url); }
+            @Override
+            public boolean shouldOverrideKeyEvent(WebView view, KeyEvent event) { return OffscreenWebView.this.shouldOverrideKeyEvent(getNativePtr(), event); }
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) { return OffscreenWebView.this.shouldOverrideUrlLoading(getNativePtr(), url); }
+
+            /* @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url)
             {
                 // This should always be done for Chrome to avoid opening links in external browser.
@@ -119,21 +155,7 @@ class OffscreenWebView extends OffscreenView
                 Log.i(TAG, "MyWebView.MyWebViewClient.onPageFinished");
                 nativeUpdate(getNativePtr());
                 super.onPageFinished(view, url);
-            }
-
-            @Override
-            public void onLoadResource(WebView view, String url)
-            {
-                /*(if (url.equals("http://redirectexample.com"))
-                {
-                ...
-                }
-                else
-                {
-                    super.onLoadResource(view, url);
-                }*/
-                super.onLoadResource(view, url);
-            }
+            } */
         }
 
         public MyWebView(Context context)
@@ -414,5 +436,22 @@ onTouchEvent(MotionEvent) Called when a touch screen motion event occurs. */
     {
         return nativeGetActivity();
     }
+
+    public native void doUpdateVisitedHistory(long nativeptr, String url, boolean isReload);
+    public native void onFormResubmission(long nativeptr, Message dontResend, Message resend);
+    public native void onLoadResource(long nativeptr, String url);
+    public native void onPageFinished(long nativeptr, String url);
+    public native void onPageStarted(long nativeptr, String url, Bitmap favicon);
+    public native void onReceivedError(long nativeptr, int errorCode, String description, String failingUrl);
+    public native void onReceivedHttpAuthRequest(long nativeptr, HttpAuthHandler handler, String host, String realm);
+    public native void onReceivedLoginRequest(long nativeptr, String realm, String account, String args);
+    public native void onReceivedSslError(long nativeptr, SslErrorHandler handler, SslError error);
+    public native void onScaleChanged(long nativeptr, float oldScale, float newScale);
+    public native void onTooManyRedirects(long nativeptr, Message cancelMsg, Message continueMsg);
+    public native void onUnhandledKeyEvent(long nativeptr, KeyEvent event);
+    public native WebResourceResponse shouldInterceptRequest(long nativeptr, String url);
+    public native boolean shouldOverrideKeyEvent(long nativeptr, KeyEvent event);
+    public native boolean shouldOverrideUrlLoading(long nativeptr, String url);
+
 }
 

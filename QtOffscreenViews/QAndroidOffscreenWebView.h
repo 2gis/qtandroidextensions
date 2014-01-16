@@ -46,4 +46,40 @@ public:
 
 	bool loadUrl(const QString & url);
 	bool loadData(const QString & text, const QString & mime = QLatin1String("text/html"));
+
+protected:
+	// WebViewClient
+	virtual void doUpdateVisitedHistory(JNIEnv *, jobject, jobject url, jboolean isReload);
+	virtual void onFormResubmission(JNIEnv *, jobject, jobject dontResend, jobject resend);
+	virtual void onLoadResource(JNIEnv *, jobject, jobject url);
+	virtual void onPageFinished(JNIEnv *, jobject, jobject url);
+	virtual void onPageStarted(JNIEnv *, jobject, jobject url, jobject favicon);
+	virtual void onReceivedError(JNIEnv *, jobject, int errorCode, jobject description, jobject failingUrl);
+	virtual void onReceivedHttpAuthRequest(JNIEnv *, jobject, jobject handler, jobject host, jobject realm);
+	virtual void onReceivedLoginRequest(JNIEnv *, jobject, jobject realm, jobject account, jobject args);
+	virtual void onReceivedSslError(JNIEnv *, jobject, jobject handler, jobject error);
+	virtual void onScaleChanged(JNIEnv *, jobject, float oldScale, float newScale);
+	virtual void onTooManyRedirects(JNIEnv *, jobject, jobject cancelMsg, jobject continueMsg);
+	virtual void onUnhandledKeyEvent(JNIEnv *, jobject, jobject event);
+	virtual jobject shouldInterceptRequest(JNIEnv *, jobject, jobject url);
+	virtual jboolean shouldOverrideKeyEvent(JNIEnv *, jobject, jobject event);
+	virtual jboolean shouldOverrideUrlLoading(JNIEnv *, jobject, jobject url);
+
+	friend Q_DECL_EXPORT void JNICALL Java_doUpdateVisitedHistory(JNIEnv * env, jobject jo, jlong nativeptr, jobject url, jboolean isReload);
+	friend Q_DECL_EXPORT void JNICALL Java_onFormResubmission(JNIEnv * env, jobject jo, jlong nativeptr, jobject dontResend, jobject resend);
+	friend Q_DECL_EXPORT void JNICALL Java_onLoadResource(JNIEnv * env, jobject jo, jlong nativeptr, jobject url);
+	friend Q_DECL_EXPORT void JNICALL Java_onPageFinished(JNIEnv * env, jobject jo, jlong nativeptr, jobject url);
+	friend Q_DECL_EXPORT void JNICALL Java_onPageStarted(JNIEnv * env, jobject jo, jlong nativeptr, jobject url, jobject favicon);
+	friend Q_DECL_EXPORT void JNICALL Java_onReceivedError(JNIEnv * env, jobject jo, jlong nativeptr, jint errorCode, jobject description, jobject failingUrl);
+	friend Q_DECL_EXPORT void JNICALL Java_onReceivedHttpAuthRequest(JNIEnv * env, jobject jo, jlong nativeptr, jobject handler, jobject host, jobject realm);
+	friend Q_DECL_EXPORT void JNICALL Java_onReceivedLoginRequest(JNIEnv * env, jobject jo, jlong nativeptr, jobject realm, jobject account, jobject args);
+	friend Q_DECL_EXPORT void JNICALL Java_onReceivedSslError(JNIEnv * env, jobject jo, jlong nativeptr, jobject handler, jobject error);
+	friend Q_DECL_EXPORT void JNICALL Java_onScaleChanged(JNIEnv * env, jobject jo, jlong nativeptr, jfloat oldScale, jfloat newScale);
+	friend Q_DECL_EXPORT void JNICALL Java_onTooManyRedirects(JNIEnv * env, jobject jo, jlong nativeptr, jobject cancelMsg, jobject continueMsg);
+	friend Q_DECL_EXPORT void JNICALL Java_onUnhandledKeyEvent(JNIEnv * env, jobject j, jlong nativeptr, jobject event);
+	friend Q_DECL_EXPORT jobject JNICALL Java_shouldInterceptRequest(JNIEnv * env, jobject jo, jlong nativeptr, jobject url);
+	friend Q_DECL_EXPORT jboolean JNICALL Java_shouldOverrideKeyEvent(JNIEnv * env, jobject jo, jlong nativeptr, jobject event);
+	friend Q_DECL_EXPORT jboolean JNICALL Java_shouldOverrideUrlLoading(JNIEnv * env, jobject jo, jlong nativeptr, jobject url);
+
+
 };
