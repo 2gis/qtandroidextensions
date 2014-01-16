@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <array name="qt_sources">
+        <item>https://download.qt-project.org/ministro/android/qt5/latest</item>
+    </array>
+    <string name="repository">default</string>
+    <array name="qt_libs">
+        <item>Qt5Core</item>
+    </array>
+    <array name="bundled_libs"/>
+    <array name="bundled_in_lib" />
+    <array name="bundled_in_assets" />
+</resources>
