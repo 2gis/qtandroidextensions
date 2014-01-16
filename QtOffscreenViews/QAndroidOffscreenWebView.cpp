@@ -238,9 +238,10 @@ QAndroidOffscreenWebView::~QAndroidOffscreenWebView()
 
 bool QAndroidOffscreenWebView::loadUrl(const QString & url)
 {
+	waitForViewCreation();
 	if (!isCreated())
 	{
-		qWarning("QAndroidOffscreenWebView: Attempt to load URL when View is not ready yet.");
+		qWarning("QAndroidOffscreenWebView: Attempt to loadUrl when View is not ready yet.");
 		return false;
 	}
 	jcGeneric * view = offscreenView();
@@ -253,17 +254,62 @@ bool QAndroidOffscreenWebView::loadUrl(const QString & url)
 	return false;
 }
 
-bool QAndroidOffscreenWebView::loadData(const QString & text, const QString & mime)
+bool QAndroidOffscreenWebView::loadUrl(const QString & url, const QMap<QString, QString> & additionalHttpHeaders)
 {
+	waitForViewCreation();
 	if (!isCreated())
 	{
-		qWarning("QAndroidOffscreenWebView: Attempt to insert HTML when View is not ready yet.");
+		qWarning("QAndroidOffscreenWebView: Attempt to loadUrl when View is not ready yet.");
 		return false;
 	}
 	jcGeneric * view = offscreenView();
 	if (view)
 	{
-		view->CallVoid("loadData", text, mime);
+		QString strheaders;
+		for(QMap<QString, QString>::const_iterator it = additionalHttpHeaders.begin(); it != additionalHttpHeaders.end(); ++it)
+		{
+			strheaders += it.key();
+			strheaders += QChar('\n');
+			strheaders += it.value();
+			strheaders += QChar('\n');
+		}
+		view->CallVoid("loadUrl", url, strheaders);
+		return true;
+	}
+	qWarning("QAndroidOffscreenWebView: Attempt to load URL when View is null.");
+	return false;
+}
+
+bool QAndroidOffscreenWebView::loadData(const QString & text, const QString & mime, const QString & encoding)
+{
+	waitForViewCreation();
+	if (!isCreated())
+	{
+		qWarning("QAndroidOffscreenWebView: Attempt to loadData when View is not ready yet.");
+		return false;
+	}
+	jcGeneric * view = offscreenView();
+	if (view)
+	{
+		view->CallVoid("loadData", text, mime, encoding);
+		return true;
+	}
+	qWarning("QAndroidOffscreenWebView: Attempt to insert URL when View is null.");
+	return false;
+}
+
+bool QAndroidOffscreenWebView::loadDataWithBaseURL(const QString & baseUrl, const QString & data, const QString & mimeType, const QString & encoding, const QString & historyUrl)
+{
+	waitForViewCreation();
+	if (!isCreated())
+	{
+		qWarning("QAndroidOffscreenWebView: Attempt to loadDataWithBaseURL when View is not ready yet.");
+		return false;
+	}
+	jcGeneric * view = offscreenView();
+	if (view)
+	{
+		view->CallVoid("loadDataWithBaseURL", baseUrl, data, mimeType, encoding, historyUrl);
 		return true;
 	}
 	qWarning("QAndroidOffscreenWebView: Attempt to insert URL when View is null.");
@@ -271,12 +317,9 @@ bool QAndroidOffscreenWebView::loadData(const QString & text, const QString & mi
 }
 
 
-
-
-
-
-
-
+/////////////////////////////////////////////////////////////////////////////
+// WebViewClient
+/////////////////////////////////////////////////////////////////////////////
 
 void QAndroidOffscreenWebView::doUpdateVisitedHistory(JNIEnv *, jobject, jobject url, jboolean isReload)
 {
@@ -298,13 +341,14 @@ void QAndroidOffscreenWebView::onLoadResource(JNIEnv *, jobject, jobject url)
 void QAndroidOffscreenWebView::onPageFinished(JNIEnv *, jobject, jobject url)
 {
 	Q_UNUSED(url);
-	// nativeUpdate(getNativePtr()); ?
+	emit pageFinished();
 }
 
 void QAndroidOffscreenWebView::onPageStarted(JNIEnv *, jobject, jobject url, jobject favicon)
 {
 	Q_UNUSED(url);
 	Q_UNUSED(favicon);
+	emit pageStarted();
 }
 
 void QAndroidOffscreenWebView::onReceivedError(JNIEnv *, jobject, int errorCode, jobject description, jobject failingUrl)

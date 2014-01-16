@@ -490,6 +490,8 @@ void jcGeneric::CallVoid(const char * method_name, jlong x)
 	CallParamVoid(method_name, "J", x);
 }
 
+#ifdef QT_CORE_LIB
+
 void jcGeneric::CallVoid(const char * method_name, const QString & string)
 {
 	JniEnvPtr jep;
@@ -509,6 +511,53 @@ void jcGeneric::CallVoid(const char * method_name, const QString & string1, cons
 	env->DeleteLocalRef(js1);
 	env->DeleteLocalRef(js2);
 }
+
+void jcGeneric::CallVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3)
+{
+	JniEnvPtr jep;
+	JNIEnv * env = jep.env();
+	jstring js1 = QStringToJstring(env, string1);
+	jstring js2 = QStringToJstring(env, string2);
+	jstring js3 = QStringToJstring(env, string3);
+	CallParamVoid(method_name, "Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;", js1, js2, js3);
+	env->DeleteLocalRef(js1);
+	env->DeleteLocalRef(js2);
+	env->DeleteLocalRef(js3);
+}
+
+void jcGeneric::CallVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3, const QString & string4)
+{
+	JniEnvPtr jep;
+	JNIEnv * env = jep.env();
+	jstring js1 = QStringToJstring(env, string1);
+	jstring js2 = QStringToJstring(env, string2);
+	jstring js3 = QStringToJstring(env, string3);
+	jstring js4 = QStringToJstring(env, string4);
+	CallParamVoid(method_name, "Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;", js1, js2, js3, js4);
+	env->DeleteLocalRef(js1);
+	env->DeleteLocalRef(js2);
+	env->DeleteLocalRef(js3);
+	env->DeleteLocalRef(js4);
+}
+
+void jcGeneric::CallVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3, const QString & string4, const QString & string5)
+{
+	JniEnvPtr jep;
+	JNIEnv * env = jep.env();
+	jstring js1 = QStringToJstring(env, string1);
+	jstring js2 = QStringToJstring(env, string2);
+	jstring js3 = QStringToJstring(env, string3);
+	jstring js4 = QStringToJstring(env, string4);
+	jstring js5 = QStringToJstring(env, string5);
+	CallParamVoid(method_name, "Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;", js1, js2, js3, js4, js5);
+	env->DeleteLocalRef(js1);
+	env->DeleteLocalRef(js2);
+	env->DeleteLocalRef(js3);
+	env->DeleteLocalRef(js4);
+	env->DeleteLocalRef(js5);
+}
+
+#endif
 
 bool jcGeneric::RegisterNativeMethod(const char* name, const char* signature, void* ptr)
 {

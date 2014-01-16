@@ -40,6 +40,8 @@ import java.lang.Thread;
 import java.util.Set;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Arrays;
 import java.util.TreeSet;
 import java.util.Locale;
@@ -376,7 +378,45 @@ class OffscreenWebView extends OffscreenView
     }
 
     // From C++
-    public void loadData(final String text, final String mime)
+    /*!
+     * \param additionalHttpHeaders contains additional HTTP headers in this format:
+     * header1\n
+     * value\1n
+     * header2\n
+     * value2\n
+     * ...
+     */
+    public void loadUrl(final String url, final String additionalHttpHeaders)
+    {
+        Log.i(TAG, "loadUrl: scheduling");
+        Activity ctx = getActivity();
+        if (ctx != null && webview_ != null)
+        {
+            ctx.runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    Log.i(TAG, "loadUrl: doing it");
+                    Map<String, String> ma = new HashMap<String, String>();
+                    String[] parts = additionalHttpHeaders.split("\n");
+                    for (int i = 0, h = 0, v = 1; i < parts.length / 2; i++, h += 2, v += 2)
+                    {
+                        ma.put(parts[h], parts[v]);
+                    }
+                    webview_.loadUrl(url, ma);
+                }
+            });
+        }
+        else
+        {
+            Log.e(TAG, "loadUrl failed because context or view is not available!");
+        }
+    }
+
+
+    // From C++
+    public void loadData(final String text, final String mime, final String encoding)
     {
         Log.i(TAG, "loadData: scheduling");
         Activity ctx = getActivity();
@@ -388,7 +428,7 @@ class OffscreenWebView extends OffscreenView
                 public void run()
                 {
                     Log.i(TAG, "loadData: doing it");
-                    webview_.loadData(text, mime, null);
+                    webview_.loadData(text, mime, encoding);
                 }
             });
         }
@@ -398,6 +438,27 @@ class OffscreenWebView extends OffscreenView
         }
     }
 
+    public void loadDataWithBaseURL(final String baseUrl, final String data, final String mimeType, final String encoding, final String historyUrl)
+    {
+        Log.i(TAG, "loadDataWithBaseURL: scheduling");
+        Activity ctx = getActivity();
+        if (ctx != null && webview_ != null)
+        {
+            ctx.runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    Log.i(TAG, "loadDataWithBaseURL: doing it");
+                    webview_.loadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl);
+                }
+            });
+        }
+        else
+        {
+            Log.e(TAG, "loadDataWithBaseURL failed because context or view is not available!");
+        }
+    }
 
 /*Event processing onKeyDown(int, KeyEvent) Called when a new hardware key event occurs.
 onKeyUp(int, KeyEvent) Called when a hardware key up event occurs.

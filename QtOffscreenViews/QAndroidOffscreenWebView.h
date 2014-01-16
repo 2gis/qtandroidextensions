@@ -34,6 +34,7 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <QMap>
 #include "QAndroidOffscreenView.h"
 
 class QAndroidOffscreenWebView
@@ -44,8 +45,33 @@ public:
 	QAndroidOffscreenWebView(const QString & object_name, bool waitforcreation, const QSize & def_size, QObject * parent = 0);
 	virtual ~QAndroidOffscreenWebView();
 
+	/*!
+	 * Start loading specified URL.
+	 * \note The function will call to waitForViewCreation() to make sure WebView is already available.
+	 */
 	bool loadUrl(const QString & url);
-	bool loadData(const QString & text, const QString & mime = QLatin1String("text/html"));
+
+	/*!
+	 * Start loading specified URL.
+	 * \note The function will call to waitForViewCreation() to make sure WebView is already available.
+	 */
+	bool loadUrl(const QString & url, const QMap<QString, QString> & additionalHttpHeaders);
+
+	/*!
+	 * Load document from a string.
+	 * \note The function will call to waitForViewCreation() to make sure WebView is already available.
+	 */
+	bool loadData(const QString & text, const QString & mime = QLatin1String("text/html"), const QString & encoding = QString::null);
+
+	/*!
+	 * Start loading specified URL.
+	 * \note The function will call to waitForViewCreation() to make sure WebView is already available.
+	 */
+	bool loadDataWithBaseURL(const QString & baseUrl, const QString & data, const QString & mimeType, const QString & encoding, const QString & historyUrl);
+
+signals:
+	void pageStarted();
+	void pageFinished();
 
 protected:
 	//
