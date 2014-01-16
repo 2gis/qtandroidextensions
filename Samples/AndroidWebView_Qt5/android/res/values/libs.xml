@@ -4,10 +4,16 @@
         <item>https://download.qt-project.org/ministro/android/qt5/latest</item>
     </array>
     <string name="repository">default</string>
-    <array name="qt_libs">
-        <item>Qt5Core</item>
-    </array>
     <array name="bundled_libs"/>
-    <array name="bundled_in_lib" />
-    <array name="bundled_in_assets" />
+    <array name="bundled_in_lib"/>
+    <array name="bundled_in_assets"/>
+    <array name="qt_libs">
+        <item>gnustl_shared</item>
+        <item>Qt5Core</item>
+        <item>Qt5V8</item>
+        <item>Qt5Gui</item>
+        <item>Qt5Network</item>
+        <item>Qt5Qml</item>
+        <item>Qt5Quick</item>
+    </array>
 </resources>
