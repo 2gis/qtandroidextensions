@@ -106,7 +106,6 @@ public:
 	String[] 	getHttpAuthUsernamePassword(String host, String realm) // Retrieves HTTP authentication credentials for a given host and realm.
 	String 	getOriginalUrl() // Gets the original URL for the current page.
 	int 	getProgress() // Gets the progress for the current page.
-	float 	getScale() // This method was deprecated in API level 17. This method is prone to inaccuracy due to race conditions between the web rendering and UI threads; prefer onScaleChanged(WebView, float, float).
 	WebSettings getSettings() // Gets the WebSettings object used to control the settings for this WebView.
 	String 	getTitle() // Gets the title for the current page.
 	String 	getUrl() // Gets the URL for the current page.
@@ -161,7 +160,6 @@ public:
 	void 	setMapTrackballToArrowKeys(boolean setMap) // This method was deprecated in API level 17. Only the default case, true, will be supported in a future version.
 	void 	setNetworkAvailable(boolean networkUp) // Informs WebView of the network state.
 	void 	setOverScrollMode(int mode) // Set the over-scroll mode for this view.
-	void 	setPictureListener(WebView.PictureListener listener) // This method was deprecated in API level 12. This method is now obsolete.
 	void 	setScrollBarStyle(int style) // Specify the style of the scrollbars.
 	void 	setVerticalScrollbarOverlay(boolean overlay) // Specifies whether the vertical scrollbar has overlay style.
 	void 	setWebChromeClient(WebChromeClient client) // Sets the chrome handler.
@@ -176,11 +174,11 @@ public:
 
 	/*
 	Unimplemented WebChromeClient callbacks:
+
 	Bitmap 	getDefaultVideoPoster() // When not playing, video elements are represented by a 'poster' image.
 	View 	getVideoLoadingProgressView() // When the user starts to playback a video element, it may take time for enough data to be buffered before the first frames can be rendered.
 	void 	getVisitedHistory(ValueCallback<String[]> callback) // Obtains a list of all visited history items, used for link coloring
 	void 	onCloseWindow(WebView window) // Notify the host application to close the given WebView and remove it from the view system if necessary.
-	void 	onConsoleMessage(String message, int lineNumber, String sourceID) // This method was deprecated in API level 8. Use onConsoleMessage(ConsoleMessage) instead.
 	boolean onConsoleMessage(ConsoleMessage consoleMessage) // Report a JavaScript console message to the host application.
 	boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) // Request the host application to create a new window.
 	void 	onExceededDatabaseQuota(String url, String databaseIdentifier, long quota, long estimatedDatabaseSize, long totalQuota, WebStorage.QuotaUpdater quotaUpdater) // This method was deprecated in API level 19. This method is no longer called; WebView now uses the HTML5 / JavaScript Quota Management API.
@@ -193,7 +191,6 @@ public:
 	boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) // Tell the client to display a prompt dialog to the user.
 	boolean onJsTimeout() // This method was deprecated in API level 17. This method is no longer supported and will not be invoked.
 	void 	onProgressChanged(WebView view, int newProgress) // Tell the host application the current progress of loading a page.
-	void 	onReachedMaxAppCacheSize(long requiredStorage, long quota, WebStorage.QuotaUpdater quotaUpdater) // This method was deprecated in API level 19. This method is no longer called; WebView now uses the HTML5 / JavaScript Quota Management API.
 	void 	onReceivedIcon(WebView view, Bitmap icon) // Notify the host application of a new favicon for the current page.
 	void 	onReceivedTitle(WebView view, String title) // Notify the host application of a change in the document title.
 	void 	onReceivedTouchIconUrl(WebView view, String url, boolean precomposed) // Notify the host application of the url for an apple-touch-icon.
@@ -249,7 +246,7 @@ protected:
 	friend Q_DECL_EXPORT jboolean JNICALL Java_shouldOverrideUrlLoading(JNIEnv * env, jobject jo, jlong nativeptr, jobject url);
 
 	//
-	// Own functions
+	// Own callbacks
 	//
 	virtual void onContentHeightReceived(int height);
 	friend Q_DECL_EXPORT void JNICALL Java_onContentHeightReceived(JNIEnv * env, jobject jo, jlong nativeptr, jint height);
