@@ -48,7 +48,11 @@ public:
 	bool loadData(const QString & text, const QString & mime = QLatin1String("text/html"));
 
 protected:
-	// WebViewClient
+	//
+	// WebViewClient functions.
+	// Please note that all these functions are called in Android UI thread, so they can
+	// safely call WebView's functions.
+	//
 	virtual void doUpdateVisitedHistory(JNIEnv *, jobject, jobject url, jboolean isReload);
 	virtual void onFormResubmission(JNIEnv *, jobject, jobject dontResend, jobject resend);
 	virtual void onLoadResource(JNIEnv *, jobject, jobject url);
@@ -65,6 +69,9 @@ protected:
 	virtual jboolean shouldOverrideKeyEvent(JNIEnv *, jobject, jobject event);
 	virtual jboolean shouldOverrideUrlLoading(JNIEnv *, jobject, jobject url);
 
+	//
+	// WebViewClient JNI wrappers
+	//
 	friend Q_DECL_EXPORT void JNICALL Java_doUpdateVisitedHistory(JNIEnv * env, jobject jo, jlong nativeptr, jobject url, jboolean isReload);
 	friend Q_DECL_EXPORT void JNICALL Java_onFormResubmission(JNIEnv * env, jobject jo, jlong nativeptr, jobject dontResend, jobject resend);
 	friend Q_DECL_EXPORT void JNICALL Java_onLoadResource(JNIEnv * env, jobject jo, jlong nativeptr, jobject url);
@@ -80,6 +87,4 @@ protected:
 	friend Q_DECL_EXPORT jobject JNICALL Java_shouldInterceptRequest(JNIEnv * env, jobject jo, jlong nativeptr, jobject url);
 	friend Q_DECL_EXPORT jboolean JNICALL Java_shouldOverrideKeyEvent(JNIEnv * env, jobject jo, jlong nativeptr, jobject event);
 	friend Q_DECL_EXPORT jboolean JNICALL Java_shouldOverrideUrlLoading(JNIEnv * env, jobject jo, jlong nativeptr, jobject url);
-
-
 };

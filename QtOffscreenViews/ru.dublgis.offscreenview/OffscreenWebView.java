@@ -105,7 +105,6 @@ class OffscreenWebView extends OffscreenView
         //  public void setInitialScale (int scaleInPercent) (0 = default)
 
         int width_ = 0, height_ = 0;
-        MyWebViewClient webviewclient_ = null;
         boolean invalidated_ = true;
 
         private class MyWebViewClient extends WebViewClient
@@ -140,30 +139,13 @@ class OffscreenWebView extends OffscreenView
             public boolean shouldOverrideKeyEvent(WebView view, KeyEvent event) { return OffscreenWebView.this.shouldOverrideKeyEvent(getNativePtr(), event); }
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) { return OffscreenWebView.this.shouldOverrideUrlLoading(getNativePtr(), url); }
-
-            /* @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url)
-            {
-                // This should always be done for Chrome to avoid opening links in external browser.
-                view.loadUrl(url);
-                return true;
-            }
-
-            @Override
-            public void onPageFinished(WebView view, String url)
-            {
-                Log.i(TAG, "MyWebView.MyWebViewClient.onPageFinished");
-                nativeUpdate(getNativePtr());
-                super.onPageFinished(view, url);
-            } */
         }
 
         public MyWebView(Context context)
         {
             super(context);
             Log.i(TAG, "MyWebView constructor");
-            webviewclient_ = new MyWebViewClient();
-            setWebViewClient(webviewclient_);
+            setWebViewClient(new MyWebViewClient());
 
             // Fill in default properties
             setHorizontalScrollBarEnabled(false);
@@ -437,6 +419,7 @@ onTouchEvent(MotionEvent) Called when a touch screen motion event occurs. */
         return nativeGetActivity();
     }
 
+    // WebViewClient
     public native void doUpdateVisitedHistory(long nativeptr, String url, boolean isReload);
     public native void onFormResubmission(long nativeptr, Message dontResend, Message resend);
     public native void onLoadResource(long nativeptr, String url);

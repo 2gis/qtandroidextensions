@@ -162,6 +162,7 @@ private slots:
 protected:
 	bool updateTexture();
 	jcGeneric * offscreenView() { return offscreen_view_.data(); }
+	jcGeneric * getView();
 
 private:
 	QString view_class_name_;

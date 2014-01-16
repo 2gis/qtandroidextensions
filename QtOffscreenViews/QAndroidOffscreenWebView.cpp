@@ -365,9 +365,13 @@ jboolean QAndroidOffscreenWebView::shouldOverrideKeyEvent(JNIEnv *, jobject, job
 
 jboolean QAndroidOffscreenWebView::shouldOverrideUrlLoading(JNIEnv *, jobject, jobject url)
 {
+	// Doing OffscreenWebView.loadUrl(url).
 	// This should always be done for Chrome to avoid opening links in external browser.
-	//! \FIXME
-//	view.loadUrl(url);
+	jcGeneric * aview = QAndroidOffscreenView::getView();
+	if (aview)
+	{
+		aview->CallParamVoid("loadUrl", "Ljava/lang/String;", url);
+	}
 	return 0;
 }
 

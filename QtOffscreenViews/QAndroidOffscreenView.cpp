@@ -331,6 +331,15 @@ bool QAndroidOffscreenView::updateTexture()
 	}
 }
 
+jcGeneric * QAndroidOffscreenView::getView()
+{
+	if (offscreen_view_)
+	{
+		return offscreen_view_->CallObject("getView", "android/view/View");
+	}
+	return 0;
+}
+
 void QAndroidOffscreenView::mouse(int android_action, int x, int y)
 {
 	if (offscreen_view_)
