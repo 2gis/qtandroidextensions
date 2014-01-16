@@ -25,6 +25,8 @@ protected:
 
 private slots:
 	void onOffscreenUpdated();
+	void onPageFinished();
+	void onContentHeightReceived(int height);
 
 private:
 	//void CreateTestTexture(QSize * out_texture_size_);

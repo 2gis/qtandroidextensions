@@ -16,6 +16,8 @@ GrymQtAndroidViewGraphicsProxy::GrymQtAndroidViewGraphicsProxy(QGraphicsItem *pa
 {
 	setAcceptedMouseButtons(Qt::LeftButton);
 	connect(&aview_, SIGNAL(updated()), this, SLOT(onOffscreenUpdated()));
+	connect(&aview_, SIGNAL(pageFinished()), this, SLOT(onPageFinished()));
+	connect(&aview_, SIGNAL(contentHeightReceived(int)), this, SLOT(onContentHeightReceived(int)));
 
 	// Since we created aview_ with "waitforcreation", we can safely start loading
 	// the page right now.
@@ -187,5 +189,16 @@ void GrymQtAndroidViewGraphicsProxy::resizeEvent(QGraphicsSceneResizeEvent *even
 	qDebug()<<__PRETTY_FUNCTION__<<event->newSize().toSize();
 	QGraphicsWidget::resizeEvent(event);
 	aview_.resize(event->newSize().toSize());
+}
+
+void GrymQtAndroidViewGraphicsProxy::onPageFinished()
+{
+	qDebug()<<__PRETTY_FUNCTION__;
+	aview_.requestContentHeight();
+}
+
+void GrymQtAndroidViewGraphicsProxy::onContentHeightReceived(int height)
+{
+	qDebug()<<__PRETTY_FUNCTION__<<"Page height:"<<height;
 }
 

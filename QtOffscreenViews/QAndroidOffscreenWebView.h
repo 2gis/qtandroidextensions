@@ -53,6 +53,7 @@ public:
 
 	/*!
 	 * Start loading specified URL.
+	 * \param additionalHttpHeaders contains the additional headers. The headers should not contain '\n' symbols.
 	 * \note The function will call to waitForViewCreation() to make sure WebView is already available.
 	 */
 	bool loadUrl(const QString & url, const QMap<QString, QString> & additionalHttpHeaders);
@@ -69,9 +70,13 @@ public:
 	 */
 	bool loadDataWithBaseURL(const QString & baseUrl, const QString & data, const QString & mimeType, const QString & encoding, const QString & historyUrl);
 
+	//! Will emit contentHeightReceived(int) after done.
+	bool requestContentHeight();
+
 signals:
 	void pageStarted();
 	void pageFinished();
+	void contentHeightReceived(int height);
 
 protected:
 	//
@@ -113,4 +118,10 @@ protected:
 	friend Q_DECL_EXPORT jobject JNICALL Java_shouldInterceptRequest(JNIEnv * env, jobject jo, jlong nativeptr, jobject url);
 	friend Q_DECL_EXPORT jboolean JNICALL Java_shouldOverrideKeyEvent(JNIEnv * env, jobject jo, jlong nativeptr, jobject event);
 	friend Q_DECL_EXPORT jboolean JNICALL Java_shouldOverrideUrlLoading(JNIEnv * env, jobject jo, jlong nativeptr, jobject url);
+
+	//
+	// Own functions
+	//
+	virtual void onContentHeightReceived(int height);
+	friend Q_DECL_EXPORT void JNICALL Java_onContentHeightReceived(JNIEnv * env, jobject jo, jlong nativeptr, jint height);
 };

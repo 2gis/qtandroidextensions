@@ -358,7 +358,7 @@ class OffscreenWebView extends OffscreenView
     public void loadUrl(final String url)
     {
         Log.i(TAG, "loadUrl: scheduling");
-        Activity ctx = getActivity();
+        final Activity ctx = getActivity();
         if (ctx != null && webview_ != null)
         {
             ctx.runOnUiThread(new Runnable()
@@ -389,7 +389,7 @@ class OffscreenWebView extends OffscreenView
     public void loadUrl(final String url, final String additionalHttpHeaders)
     {
         Log.i(TAG, "loadUrl: scheduling");
-        Activity ctx = getActivity();
+        final Activity ctx = getActivity();
         if (ctx != null && webview_ != null)
         {
             ctx.runOnUiThread(new Runnable()
@@ -419,7 +419,7 @@ class OffscreenWebView extends OffscreenView
     public void loadData(final String text, final String mime, final String encoding)
     {
         Log.i(TAG, "loadData: scheduling");
-        Activity ctx = getActivity();
+        final Activity ctx = getActivity();
         if (ctx != null && webview_ != null)
         {
             ctx.runOnUiThread(new Runnable()
@@ -438,10 +438,11 @@ class OffscreenWebView extends OffscreenView
         }
     }
 
+    // From C++
     public void loadDataWithBaseURL(final String baseUrl, final String data, final String mimeType, final String encoding, final String historyUrl)
     {
         Log.i(TAG, "loadDataWithBaseURL: scheduling");
-        Activity ctx = getActivity();
+        final Activity ctx = getActivity();
         if (ctx != null && webview_ != null)
         {
             ctx.runOnUiThread(new Runnable()
@@ -459,6 +460,25 @@ class OffscreenWebView extends OffscreenView
             Log.e(TAG, "loadDataWithBaseURL failed because context or view is not available!");
         }
     }
+
+    public boolean requestContentHeight()
+    {
+        final Activity ctx = getActivity();
+        if (ctx != null && webview_ != null)
+        {
+            ctx.runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    onContentHeightReceived(getNativePtr(), webview_.getContentHeight());
+                }
+            });
+            return true;
+        }
+        return false;
+    }
+
 
 /*Event processing onKeyDown(int, KeyEvent) Called when a new hardware key event occurs.
 onKeyUp(int, KeyEvent) Called when a hardware key up event occurs.
@@ -496,6 +516,9 @@ onTouchEvent(MotionEvent) Called when a touch screen motion event occurs. */
     public native WebResourceResponse shouldInterceptRequest(long nativeptr, String url);
     public native boolean shouldOverrideKeyEvent(long nativeptr, KeyEvent event);
     public native boolean shouldOverrideUrlLoading(long nativeptr, String url);
+
+    // Own callbacks
+    public native void onContentHeightReceived(long nativeptr, int height);
 
 }
 

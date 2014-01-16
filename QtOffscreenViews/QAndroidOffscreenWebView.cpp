@@ -188,6 +188,14 @@ Q_DECL_EXPORT jboolean JNICALL Java_shouldOverrideUrlLoading(JNIEnv * env, jobje
 	return 0;
 }
 
+Q_DECL_EXPORT void JNICALL Java_onContentHeightReceived(JNIEnv *, jobject, jlong nativeptr, jint height)
+{
+	if (QAndroidOffscreenWebView * wv = AOWW(nativeptr))
+	{
+		wv->onContentHeightReceived(height);
+	}
+}
+
 QAndroidOffscreenWebView::QAndroidOffscreenWebView(const QString & object_name, bool waitforcreation, const QSize & def_size, QObject * parent)
 	: QAndroidOffscreenView(QLatin1String("OffscreenWebView"), object_name, false, false, def_size, parent)
 {
@@ -209,7 +217,12 @@ QAndroidOffscreenWebView::QAndroidOffscreenWebView(const QString & object_name, 
 		{"onUnhandledKeyEvent", "(JLandroid/view/KeyEvent;)V", (void*)Java_onUnhandledKeyEvent},
 		{"shouldInterceptRequest", "(JLjava/lang/String;)Landroid/webkit/WebResourceResponse;", (void*)Java_shouldInterceptRequest},
 		{"shouldOverrideKeyEvent", "(JLandroid/view/KeyEvent;)Z", (void*)Java_shouldOverrideKeyEvent},
-		{"shouldOverrideUrlLoading", "(JLjava/lang/String;)Z", (void*)Java_shouldOverrideUrlLoading}
+		{"shouldOverrideUrlLoading", "(JLjava/lang/String;)Z", (void*)Java_shouldOverrideUrlLoading},
+
+		//
+		// Own callbacks
+		//
+		{"onContentHeightReceived", "(JI)V", (void*)Java_onContentHeightReceived}
 	};
 	if (jcGeneric * ov = offscreenView())
 	{
@@ -312,8 +325,24 @@ bool QAndroidOffscreenWebView::loadDataWithBaseURL(const QString & baseUrl, cons
 		view->CallVoid("loadDataWithBaseURL", baseUrl, data, mimeType, encoding, historyUrl);
 		return true;
 	}
-	qWarning("QAndroidOffscreenWebView: Attempt to insert URL when View is null.");
+	qWarning("QAndroidOffscreenWebView: Attempt to loadDataWithBaseURL when View is null.");
 	return false;
+}
+
+bool QAndroidOffscreenWebView::requestContentHeight()
+{
+	if (!isCreated())
+	{
+		qWarning("QAndroidOffscreenWebView: Attempt to requestContentHeight when View is not ready yet.");
+		return 0;
+	}
+	jcGeneric * view = offscreenView();
+	if (view)
+	{
+		return view->CallBool("requestContentHeight")? true: false;
+	}
+	qWarning("QAndroidOffscreenWebView: Attempt to requestContentHeight when View is null.");
+	return 0;
 }
 
 
@@ -419,3 +448,12 @@ jboolean QAndroidOffscreenWebView::shouldOverrideUrlLoading(JNIEnv *, jobject, j
 	return 0;
 }
 
+
+/////////////////////////////////////////////////////////////////////////////
+// Own callbacks
+/////////////////////////////////////////////////////////////////////////////
+
+void QAndroidOffscreenWebView::onContentHeightReceived(int height)
+{
+	emit contentHeightReceived(height);
+}
