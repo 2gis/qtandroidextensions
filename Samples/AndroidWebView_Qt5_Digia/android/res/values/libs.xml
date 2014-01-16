@@ -8,11 +8,7 @@
     <array name="bundled_libs">
         <!-- %%INSERT_EXTRA_LIBS%% -->
     </array>
-    <array name="bundled_in_lib">
-        <!-- %%INSERT_BUNDLED_IN_LIB%% -->
-    </array>
-    <array name="bundled_in_assets">
-        <!-- %%INSERT_BUNDLED_IN_ASSETS%% -->
-    </array>
     <array name="qt_libs"/>
+    <array name="bundled_in_lib"/>
+    <array name="bundled_in_assets"/>
 </resources>
