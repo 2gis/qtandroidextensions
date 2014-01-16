@@ -19,8 +19,6 @@ QOffscreenWebViewGraphicsWidget::QOffscreenWebViewGraphicsWidget(QGraphicsItem *
 	connect(&aview_, SIGNAL(pageFinished()), this, SLOT(onPageFinished()));
 	connect(&aview_, SIGNAL(contentHeightReceived(int)), this, SLOT(onContentHeightReceived(int)));
 
-	// Since we created aview_ with "waitforcreation", we can safely start loading
-	// the page right now.
 	aview_.loadUrl("http://www.android.com/intl/en/about/");
 }
 
@@ -39,7 +37,8 @@ void QOffscreenWebViewGraphicsWidget::paint(QPainter * painter, const QStyleOpti
 	Q_UNUSED(widget);
 	Q_ASSERT(painter->paintEngine()->type() == QPaintEngine::OpenGL2);
 
-	// Создадим текстуру
+	// We don't have any function like initializeGL in QGraphicsWidget, so let's just
+	// do the initialization during the first paint.
 	if (!aview_.isIntialized())
 	{
 		aview_.initializeGL();
@@ -97,7 +96,7 @@ void QOffscreenWebViewGraphicsWidget::paint(QPainter * painter, const QStyleOpti
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	#endif
 
-	// Теперь можно просто нарисовать нашу текстурку вот в этих вот GL-координатах.
+	// Finally, we can draw the texture using these GL coordinates
 	aview_.paintGL(l, b, w, h);
 
 	#if defined(ANDROIDVIEWGRAPHICSPROXY_CLEARALL)
@@ -105,7 +104,7 @@ void QOffscreenWebViewGraphicsWidget::paint(QPainter * painter, const QStyleOpti
 		glDisable(GL_SCISSOR_TEST);
 	#endif
 
-	// Возвращаем viewport в исходное состояние
+	// Reset viewport (is it necessary?)
 	glViewport(0, 0, static_cast<GLsizei>(device->width()), static_cast<GLsizei>(device->height()));
 	painter->endNativePainting();
 }

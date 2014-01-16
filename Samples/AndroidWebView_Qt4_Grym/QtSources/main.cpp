@@ -114,6 +114,7 @@ protected:
     }
 };
 
+// Could add some debug/testing wrappers here
 class MyGlWidget
 	: public QGLWidget
 {
@@ -122,16 +123,6 @@ public:
 	MyGlWidget(QWidget * parent)
 		: QGLWidget(parent)
 	{
-	}
-
-	virtual void paintGL()
-	{
-		qDebug()<<"Grym"<<__PRETTY_FUNCTION__;
-		// glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//glEnable(GL_SCISSOR_TEST);
-		//glScissor(10, 10, width()-20, height()-20);
-		QGLWidget::paintGL();
 	}
 };
 
@@ -226,13 +217,9 @@ protected:
 
 		scene_.setSceneRect(-newsize.width()/2, -newsize.height()/2, newsize.width(), newsize.height());
 
-#if 1
 		view_->move(0, 0);
 		view_->resize(newsize);
-#else
-		view_->move(20, 20);
-		view_->resize(newsize.width()-40, newsize.height()-40);
-#endif
+
 		if (aview)
 		{
 			aview->setGeometry(
