@@ -5,11 +5,11 @@
 #include <stdlib.h>
 #include <QtOpenGL>
 #include <QGLWidget>
-#include "GrymQtAndroidViewGraphicsProxy.h"
+#include "QOffscreenWebViewGraphicsWidget.h"
 
 // #define ANDROIDVIEWGRAPHICSPROXY_CLEARALL
 
-GrymQtAndroidViewGraphicsProxy::GrymQtAndroidViewGraphicsProxy(QGraphicsItem *parent, Qt::WindowFlags wFlags)
+QOffscreenWebViewGraphicsWidget::QOffscreenWebViewGraphicsWidget(QGraphicsItem *parent, Qt::WindowFlags wFlags)
 	: QGraphicsWidget(parent, wFlags)
 	, aview_("WebView1", true, QSize(512, 512))
 	, mouse_tracking_(false)
@@ -24,16 +24,16 @@ GrymQtAndroidViewGraphicsProxy::GrymQtAndroidViewGraphicsProxy(QGraphicsItem *pa
 	aview_.loadUrl("http://www.android.com/intl/en/about/");
 }
 
-GrymQtAndroidViewGraphicsProxy::~GrymQtAndroidViewGraphicsProxy()
+QOffscreenWebViewGraphicsWidget::~QOffscreenWebViewGraphicsWidget()
 {
 }
 
-void GrymQtAndroidViewGraphicsProxy::onOffscreenUpdated()
+void QOffscreenWebViewGraphicsWidget::onOffscreenUpdated()
 {
 	update();
 }
 
-void GrymQtAndroidViewGraphicsProxy::paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget)
+void QOffscreenWebViewGraphicsWidget::paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget)
 {
 	Q_UNUSED(option);
 	Q_UNUSED(widget);
@@ -81,10 +81,9 @@ void GrymQtAndroidViewGraphicsProxy::paint(QPainter * painter, const QStyleOptio
 			<<"viewpos"<<viewpos.x()<<viewpos.y();
 #endif
 
-	// SGEXP
 	l += widget->pos().x();
 	b += widget->pos().y();
-	//! \todo Учесть положение вьюшки внутри окна!
+	//! \todo Take into account position of the view within the window
 	w++;
 	h++;
 
@@ -111,48 +110,7 @@ void GrymQtAndroidViewGraphicsProxy::paint(QPainter * painter, const QStyleOptio
 	painter->endNativePainting();
 }
 
-
-/*!
- * Тестовая текстура - с котиком.
- */
-/*void GrymQtAndroidViewGraphicsProxy::CreateTestTexture(QSize * out_texture_size_)
-{
-	qDebug()<<__PRETTY_FUNCTION__<<"tid"<<gettid();
-	need_update_texture_ = false;
-	QImage img;
-	if (!img.load(":/images/kotik.png"))
-	{
-		qFatal("Failed to load PNG image for test texture.");
-	}
-	QImage GL_formatted_image = QGLWidget::convertToGLFormat(img);
-	if (GL_formatted_image.isNull())
-	{
-		qFatal("Result of conversion to GL format is null.");
-	}
-	// Создаём текстуру
-	glGenTextures(1, &texture_id_);
-	static const GLenum target = GL_TEXTURE_2D;
-	texture_type_ = target;
-
-	// Выберем эту текстуру для работы
-	glBindTexture(GL_TEXTURE_2D, texture_id_);
-	// Загрузим данные текстуры (собственно картинку)
-	glTexImage2D(
-		target, 0, GL_RGBA
-		, GL_formatted_image.width(), GL_formatted_image.height()
-		, 0, GL_RGBA, GL_UNSIGNED_BYTE, GL_formatted_image.bits());
-	// Параметры текстуры
-	glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glBindTexture(target, 0);
-
-	*out_texture_size_ = GL_formatted_image.size();
-	qDebug()<<"Done"<<__PRETTY_FUNCTION__<<"Texture size:"<<GL_formatted_image.width()<<"x"<<GL_formatted_image.height();
-}*/
-
-// http://developer.android.com/reference/android/view/MotionEvent.htm
-
-void GrymQtAndroidViewGraphicsProxy::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
+void QOffscreenWebViewGraphicsWidget::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
 {
 	if (mouse_tracking_)
 	{
@@ -162,7 +120,7 @@ void GrymQtAndroidViewGraphicsProxy::mouseMoveEvent(QGraphicsSceneMouseEvent * e
 	}
 }
 
-void GrymQtAndroidViewGraphicsProxy::mousePressEvent(QGraphicsSceneMouseEvent * event)
+void QOffscreenWebViewGraphicsWidget::mousePressEvent(QGraphicsSceneMouseEvent * event)
 {
 	if (event->button() == Qt::LeftButton)
 	{
@@ -173,7 +131,7 @@ void GrymQtAndroidViewGraphicsProxy::mousePressEvent(QGraphicsSceneMouseEvent * 
 	}
 }
 
-void GrymQtAndroidViewGraphicsProxy::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
+void QOffscreenWebViewGraphicsWidget::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
 {
 	if (event->button() == Qt::LeftButton)
 	{
@@ -184,20 +142,20 @@ void GrymQtAndroidViewGraphicsProxy::mouseReleaseEvent(QGraphicsSceneMouseEvent 
 	}
 }
 
-void GrymQtAndroidViewGraphicsProxy::resizeEvent(QGraphicsSceneResizeEvent *event)
+void QOffscreenWebViewGraphicsWidget::resizeEvent(QGraphicsSceneResizeEvent *event)
 {
 	qDebug()<<__PRETTY_FUNCTION__<<event->newSize().toSize();
 	QGraphicsWidget::resizeEvent(event);
 	aview_.resize(event->newSize().toSize());
 }
 
-void GrymQtAndroidViewGraphicsProxy::onPageFinished()
+void QOffscreenWebViewGraphicsWidget::onPageFinished()
 {
 	qDebug()<<__PRETTY_FUNCTION__;
 	aview_.requestContentHeight();
 }
 
-void GrymQtAndroidViewGraphicsProxy::onContentHeightReceived(int height)
+void QOffscreenWebViewGraphicsWidget::onContentHeightReceived(int height)
 {
 	qDebug()<<__PRETTY_FUNCTION__<<"Page height:"<<height;
 }

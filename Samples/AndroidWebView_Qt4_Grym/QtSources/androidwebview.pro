@@ -1,11 +1,11 @@
 QT += core gui opengl
 
 HEADERS += \
-    GrymQtAndroidViewGraphicsProxy.h
+    QOffscreenWebViewGraphicsWidget.h
 
 SOURCES += \
 	main.cpp \
-    GrymQtAndroidViewGraphicsProxy.cpp
+    QOffscreenWebViewGraphicsWidget.cpp
 
 #include("../../../QtOffscreenViews/QtOffscreenViews.pri")
 

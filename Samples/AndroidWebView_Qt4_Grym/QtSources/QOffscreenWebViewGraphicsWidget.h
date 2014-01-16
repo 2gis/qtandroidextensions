@@ -8,13 +8,13 @@
 #include <jcGeneric.h>
 #include "QAndroidOffscreenWebView.h"
 
-class GrymQtAndroidViewGraphicsProxy
+class QOffscreenWebViewGraphicsWidget
 	: public QGraphicsWidget
 {
 	Q_OBJECT
 public:
-	GrymQtAndroidViewGraphicsProxy(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
-	virtual ~GrymQtAndroidViewGraphicsProxy();
+	QOffscreenWebViewGraphicsWidget(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
+	virtual ~QOffscreenWebViewGraphicsWidget();
 
 protected:
 	virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);

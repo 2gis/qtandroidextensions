@@ -10,7 +10,7 @@
 #include <QMainWindow>
 #include <QGraphicsView>
 #include <JniEnvPtr.h>
-#include "GrymQtAndroidViewGraphicsProxy.h"
+#include "QOffscreenWebViewGraphicsWidget.h"
 
 class MyAnimatedPixmap : public QObject, public QGraphicsPixmapItem
 {
@@ -186,7 +186,7 @@ public:
 		view_->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 #endif
 
-		aview.reset(new GrymQtAndroidViewGraphicsProxy()); scene_.addItem(aview.data());
+		aview.reset(new QOffscreenWebViewGraphicsWidget()); scene_.addItem(aview.data());
 
 		resize(1000, 1000);
 		doLayout(size());
@@ -247,7 +247,7 @@ private:
 	QGLWidget * gl_layer_;
 	View * view_;
 	QGraphicsScene scene_;
-	QScopedPointer<GrymQtAndroidViewGraphicsProxy> aview;
+	QScopedPointer<QOffscreenWebViewGraphicsWidget> aview;
 	QPixmap bgPix;
 };
 
