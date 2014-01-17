@@ -38,22 +38,38 @@
 **
 ****************************************************************************/
 
-#include <QGuiApplication>
-
-#include <QtQuick/QQuickView>
-
 #include "fboinsgrenderer.h"
+#include "logorenderer.h"
 
-int main(int argc, char **argv)
+#include <QtGui/QOpenGLFramebufferObject>
+
+#include <QtQuick/QQuickWindow>
+#include <qsgsimpletexturenode.h>
+
+class LogoInFboRenderer : public QQuickFramebufferObject::Renderer
 {
-    QGuiApplication app(argc, argv);
+public:
+    LogoInFboRenderer()
+    {
+        logo.initialize();
+    }
 
-    qmlRegisterType<FboInSGRenderer>("SceneGraphRendering", 1, 0, "Renderer");
+    void render() {
+        logo.render();
+        update();
+    }
 
-    QQuickView view;
-    view.setResizeMode(QQuickView::SizeRootObjectToView);
-    view.setSource(QUrl("qrc:///scenegraph/textureinsgnode/main.qml"));
-    view.show();
+    QOpenGLFramebufferObject *createFramebufferObject(const QSize &size) {
+        QOpenGLFramebufferObjectFormat format;
+        format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+        format.setSamples(4);
+        return new QOpenGLFramebufferObject(size, format);
+    }
 
-    return app.exec();
+    LogoRenderer logo;
+};
+
+QQuickFramebufferObject::Renderer *FboInSGRenderer::createRenderer() const
+{
+    return new LogoInFboRenderer();
 }
