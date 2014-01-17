@@ -14,7 +14,9 @@ QML_IMPORT_PATH =
 # MOBILITY +=
 
 # The .cpp file which was generated for your project. Feel free to hack it.
-SOURCES += main.cpp fboinsgrenderer.cpp logorenderer.cpp \
+SOURCES += \
+    main.cpp \
+    fboinsgrenderer.cpp \
     ../../QtOffscreenViews/QAndroidOffscreenView.cpp \
     ../../QtOffscreenViews/QAndroidOffscreenWebView.cpp \
     ../../QtOffscreenViews/QAndroidQPAPluginGap.cpp \
@@ -22,7 +24,9 @@ SOURCES += main.cpp fboinsgrenderer.cpp logorenderer.cpp \
     ../../JNIUtils/jcGeneric.cpp \
     ../../JNIUtils/JclassPtr.cpp \
     ../../JNIUtils/JniEnvPtr.cpp
-HEADERS += fboinsgrenderer.h logorenderer.h \
+HEADERS += \
+    fboinsgrenderer.h \
+    logorenderer.h \
     ../../QtOffscreenViews/QAndroidOffscreenView.h \
     ../../QtOffscreenViews/QAndroidOffscreenWebView.h \
     ../../QtOffscreenViews/QAndroidQPAPluginGap.h \
