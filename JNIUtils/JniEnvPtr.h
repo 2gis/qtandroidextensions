@@ -49,7 +49,9 @@ public:
 	JniEnvPtr();
 	JniEnvPtr(JNIEnv* env);
 	~JniEnvPtr();
-	JNIEnv* env();
+
+	JNIEnv * env() const;
+	JavaVM * getJavaVM() const;
 
 	// preload class by names 
 	// required as Android's JNIEnv->FindClass doesn't work in threads created in native code. 
@@ -72,7 +74,6 @@ public:
 #endif
 	
 public:
-	//static JavaVM* JavaVM();
 	static void SetJavaVM(JavaVM*);
 	static void SetJavaVM(JNIEnv*);
 	//static std::string PackageName();

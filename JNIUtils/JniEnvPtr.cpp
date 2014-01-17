@@ -121,7 +121,7 @@ JniEnvPtr::~JniEnvPtr()
 	}
 }
 
-JNIEnv* JniEnvPtr::env()
+JNIEnv* JniEnvPtr::env() const
 {
 	return env_;
 }
@@ -199,13 +199,14 @@ jclass JniEnvPtr::FindClass(const char * name)
 	return ret;
 }
 
-/*JavaVM* JniEnvPtr::JavaVM()
+JavaVM * JniEnvPtr::getJavaVM() const
 {
 	return g_JavaVm;
-}*/
+}
 
 void JniEnvPtr::SetJavaVM(JavaVM* vm)
 {
+	// qDebug()<<"SetJavaVM"<<vm;
 	g_JavaVm = vm;
 }
 

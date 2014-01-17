@@ -39,13 +39,23 @@
 ****************************************************************************/
 
 #include <QGuiApplication>
-
 #include <QtQuick/QQuickView>
+
+#include <JniEnvPtr.h>
 
 #include "fboinsgrenderer.h"
 
 int main(int argc, char **argv)
 {
+
+	static const char * const classes [] = {
+		"ru/dublgis/offscreenview/OffscreenView",
+		"ru/dublgis/offscreenview/OffscreenWebView",
+		0
+	};
+	JniEnvPtr env;
+	env.PreloadClasses(classes);
+
     QGuiApplication app(argc, argv);
 
     qmlRegisterType<FboInSGRenderer>("SceneGraphRendering", 1, 0, "Renderer");

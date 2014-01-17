@@ -94,7 +94,6 @@ import android.webkit.HttpAuthHandler;
 import android.webkit.SslErrorHandler;
 import android.widget.LinearLayout;
 import android.graphics.Canvas;
-import org.qt.core.QtApplicationBase;
 
 class OffscreenWebView extends OffscreenView
 {

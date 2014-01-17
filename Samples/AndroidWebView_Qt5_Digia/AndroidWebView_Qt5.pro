@@ -1,5 +1,11 @@
 QT += qml quick androidextras opengl
 
+ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android-sources
+ANDROID_PACKAGE = ru.dublgis.offscreenview
+ANDROID_MINIMUM_VERSION = 15
+ANDROID_TARGET_VERSION = 15
+ANDROID_APP_NAME = QML WebView
+
 # Add more folders to ship with the application, here
 folder_01.source = qml/AndroidWebView_Qt5
 folder_01.target = qml
@@ -26,7 +32,6 @@ SOURCES += \
     ../../JNIUtils/JniEnvPtr.cpp
 HEADERS += \
     fboinsgrenderer.h \
-    logorenderer.h \
     ../../QtOffscreenViews/QAndroidOffscreenView.h \
     ../../QtOffscreenViews/QAndroidOffscreenWebView.h \
     ../../QtOffscreenViews/QAndroidQPAPluginGap.h \
@@ -44,7 +49,9 @@ include(qtquick2applicationviewer/qtquick2applicationviewer.pri)
 qtcAddDeployment()
 
 OTHER_FILES += \
-    main.qml
+    main.qml \
+    android-sources/src/ru/dublgis/offscreenview/OffscreenView.java \
+    android-sources/src/ru/dublgis/offscreenview/OffscreenWebView.java
 
 RESOURCES += AndroidWebView.qrc
 

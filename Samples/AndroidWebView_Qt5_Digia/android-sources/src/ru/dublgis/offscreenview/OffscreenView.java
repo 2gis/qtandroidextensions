@@ -1,0 +1,1 @@
+../../../../../../../QtOffscreenViews/ru.dublgis.offscreenview/OffscreenView.java

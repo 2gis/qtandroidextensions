@@ -13,4 +13,5 @@
 #if defined(QT_CORE_LIB)
 	#include <qconfig.h>
 	#include <QString>
+	#include <QDebug>
 #endif
