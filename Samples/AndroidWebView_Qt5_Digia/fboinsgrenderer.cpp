@@ -39,35 +39,44 @@
 ****************************************************************************/
 
 #include "fboinsgrenderer.h"
-#include "logorenderer.h"
 
 #include <QtGui/QOpenGLFramebufferObject>
 
 #include <QtQuick/QQuickWindow>
 #include <qsgsimpletexturenode.h>
 
-class LogoInFboRenderer : public QQuickFramebufferObject::Renderer
+LogoInFboRenderer::LogoInFboRenderer()
+	: aview_("WebViewInQML", true, QSize(512, 512))
 {
-public:
-    LogoInFboRenderer()
-    {
-        logo.initialize();
-    }
+	connect(&aview_, SIGNAL(updated()), this, SLOT(textureUpdated()));
+	aview_.initializeGL();
+	aview_.setFillColor(Qt::red);
+	aview_.loadUrl("http://www.android.com/intl/en/about/");
+}
 
-    void render() {
-        logo.render();
-        update();
-    }
+void LogoInFboRenderer::render()
+{
+	// qDebug()<<"Grym"<<__FUNCTION__<<"Size:"<<aview_.size().height()<<"x"<<aview_.size().width();
+	// logo.render();
+	// aview_.paintGL(QPoint(0, 0));
+	aview_.paintGL(0, 0, aview_.size().height(), aview_.size().width());
+	update();
+}
 
-    QOpenGLFramebufferObject *createFramebufferObject(const QSize &size) {
-        QOpenGLFramebufferObjectFormat format;
-        format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-        format.setSamples(4);
-        return new QOpenGLFramebufferObject(size, format);
-    }
+QOpenGLFramebufferObject * LogoInFboRenderer::createFramebufferObject(const QSize &size)
+{
+	QOpenGLFramebufferObjectFormat format;
+	// format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+	format.setSamples(4);
+	aview_.resize(size);
+	return new QOpenGLFramebufferObject(size, format);
+}
 
-    LogoRenderer logo;
-};
+void LogoInFboRenderer::textureUpdated()
+{
+	invalidateFramebufferObject();
+}
+
 
 QQuickFramebufferObject::Renderer *FboInSGRenderer::createRenderer() const
 {

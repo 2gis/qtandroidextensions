@@ -95,9 +95,6 @@ public:
 	 * If texture is not ready, the rectangle is filled with fillColor.
 	 */
 	virtual void paintGL(int l, int b, int w, int h);
-	void paintGL(const QRect & targetRect) { paintGL(targetRect.left(), targetRect.bottom(), targetRect.width(), targetRect.height()); }
-	void paintGL(const QPoint & point) { paintGL(QRect(point, size_)); }
-	void paintGL(int x, int y) { paintGL(QRect(QPoint(x, y), size_)); }
 
 	//! Check if Android View already exists
 	bool isCreated() const;

@@ -1,4 +1,4 @@
-QT += qml quick
+QT += qml quick androidextras opengl
 
 # Add more folders to ship with the application, here
 folder_01.source = qml/AndroidWebView_Qt5
@@ -14,8 +14,23 @@ QML_IMPORT_PATH =
 # MOBILITY +=
 
 # The .cpp file which was generated for your project. Feel free to hack it.
-SOURCES += main.cpp fboinsgrenderer.cpp logorenderer.cpp
-HEADERS += fboinsgrenderer.h logorenderer.h
+SOURCES += main.cpp fboinsgrenderer.cpp logorenderer.cpp \
+    ../../QtOffscreenViews/QAndroidOffscreenView.cpp \
+    ../../QtOffscreenViews/QAndroidOffscreenWebView.cpp \
+    ../../QtOffscreenViews/QAndroidQPAPluginGap.cpp \
+    ../../QtOffscreenViews/QOpenGLTextureHolder.cpp \
+    ../../JNIUtils/jcGeneric.cpp \
+    ../../JNIUtils/JclassPtr.cpp \
+    ../../JNIUtils/JniEnvPtr.cpp
+HEADERS += fboinsgrenderer.h logorenderer.h \
+    ../../QtOffscreenViews/QAndroidOffscreenView.h \
+    ../../QtOffscreenViews/QAndroidOffscreenWebView.h \
+    ../../QtOffscreenViews/QAndroidQPAPluginGap.h \
+    ../../QtOffscreenViews/QOpenGLTextureHolder.h \
+    ../../JNIUtils/jcGeneric.h \
+    ../../JNIUtils/JclassPtr.h \
+    ../../JNIUtils/JniEnvPtr.h \
+    ../../JNIUtils/stdafx.h
 
 # Installation path
 # target.path =
@@ -28,3 +43,8 @@ OTHER_FILES += \
     main.qml
 
 RESOURCES += AndroidWebView.qrc
+
+INCLUDEPATH += ../../JNIUtils ../../QtOffscreenViews
+LIBS += -L../../QtOffscreenViews -lQtOffscreenViews -L../../JNIUtils -lJNIUtils
+POST_TARGETDEPS += ../../QtOffscreenViews/libQtOffscreenViews.a ../../JNIUtils/libJNIUtils.a
+

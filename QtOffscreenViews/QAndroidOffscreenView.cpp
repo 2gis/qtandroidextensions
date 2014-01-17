@@ -88,7 +88,7 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 
 	qDebug()<<__PRETTY_FUNCTION__<<"Creating object of"<<view_class_name_;
 	offscreen_view_.reset(new jcGeneric(
-		view_class_name_.toAscii()
+		view_class_name_.toLatin1()
 		, true // Keep ownership
 	));
 

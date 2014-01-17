@@ -4,6 +4,7 @@ moc_*
 *.o
 *.so
 *.user
+*.user.*
 bin/*
 gen/*
 Makefile

@@ -42,14 +42,26 @@
 #define FBOINSGRENDERER_H
 
 #include <QtQuick/QQuickFramebufferObject>
-
-class LogoRenderer;
+#include <QAndroidOffscreenWebView.h>
 
 class FboInSGRenderer : public QQuickFramebufferObject
 {
     Q_OBJECT
 public:
     Renderer *createRenderer() const;
+};
+
+class LogoInFboRenderer : public QObject, public QQuickFramebufferObject::Renderer
+{
+	Q_OBJECT
+public:
+	LogoInFboRenderer();
+	void render();
+	QOpenGLFramebufferObject *createFramebufferObject(const QSize &size);
+protected slots:
+	void textureUpdated();
+protected:
+	QAndroidOffscreenWebView aview_;
 };
 
 #endif
