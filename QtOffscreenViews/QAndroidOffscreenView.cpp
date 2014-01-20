@@ -77,8 +77,15 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	, texture_received_(false)
 	, synchronized_texture_update_(true)
 	, view_creation_requested_(false)
+	, view_created_(false)
 {
 	setObjectName(objectname);
+
+	if (!initial_thread_attacher_)
+	{
+		qDebug()<<"QAndroidOffscreenView: making sure object's main thread"<<gettid()<<"is attached to JNI";
+		initial_thread_attacher_.reset(new JniEnvPtr());
+	}
 
 	// Expand OffscreenWebView => ru/dublgis/offscreenview/OffscreenWebView
 	if (!view_class_name_.contains('/'))
@@ -140,6 +147,12 @@ void QAndroidOffscreenView::initializeGL()
 	{
 		qWarning("Attempting to initialize QAndroidOffscreenView second time!");
 		return;
+	}
+
+	if (!jni_gl_thread_attacher_)
+	{
+		qDebug()<<"QAndroidOffscreenView: making sure GL thread"<<gettid()<<"is attached to JNI";
+		jni_gl_thread_attacher_.reset(new JniEnvPtr());
 	}
 
 	tex_.allocateTexture(GL_TEXTURE_EXTERNAL_OES);
@@ -226,9 +239,18 @@ void QAndroidOffscreenView::paintGL(int l, int b, int w, int h)
 
 bool QAndroidOffscreenView::isCreated() const
 {
+	if (view_created_)
+	{
+		return true;
+	}
 	if (offscreen_view_)
 	{
-		return offscreen_view_->CallBool("isViewCreated");
+		bool result = offscreen_view_->CallBool("isViewCreated");
+		if (result)
+		{
+			view_created_ = true;
+		}
+		return result;
 	}
 	return false;
 }
@@ -250,11 +272,14 @@ bool QAndroidOffscreenView::waitForViewCreation()
 		return false;
 	}
 	//! \todo: Use semaphore-based wait?
+	qDebug()<<"QAndroidOffscreenView::waitForViewCreation"<<view_class_name_<<view_object_name_<<">>>>>>";
 	while (!isCreated())
 	{
-		usleep(5000); // 5 ms
+		//usleep(5000); // 5 ms
 		// QThread::yieldCurrentThread();
+usleep(500000); // SGEXP
 	}
+	qDebug()<<"QAndroidOffscreenView::waitForViewCreation"<<view_class_name_<<view_object_name_<<"<<<<<<";
 	return true;
 }
 

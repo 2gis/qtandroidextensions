@@ -42,6 +42,7 @@
 #include <QMutex>
 #include <JclassPtr.h>
 #include <jcGeneric.h>
+#include <JniEnvPtr.h>
 #include "QOpenGLTextureHolder.h"
 
 /*!
@@ -166,6 +167,8 @@ private:
 	QString view_object_name_;
 	QOpenGLTextureHolder tex_;
 	QScopedPointer<jcGeneric> offscreen_view_;
+	QScopedPointer<JniEnvPtr> initial_thread_attacher_;
+	QScopedPointer<JniEnvPtr> jni_gl_thread_attacher_;
 	QSize size_;
 	QColor fill_color_;
 	bool need_update_texture_;
@@ -173,6 +176,8 @@ private:
 	bool texture_received_;
 	bool synchronized_texture_update_;
 	bool view_creation_requested_;
+	//! Cache for isCreated()
+	volatile mutable bool view_created_;
 
 private:
 	Q_DISABLE_COPY(QAndroidOffscreenView)
