@@ -84,7 +84,7 @@ JniEnvPtr::JniEnvPtr()
 		return;
 	}
 	was_already_attached_ = true;
-	int errsv = g_JavaVm->GetEnv((void**)(&env_), JNI_VERSION_1_4);
+	int errsv = g_JavaVm->GetEnv((void**)(&env_), JNI_VERSION_1_6);
 	if(errsv == JNI_EDETACHED)
 	{
 		VERBOSE(qDebug("Current thread %d is not attached, attaching it...", (int)gettid()));
