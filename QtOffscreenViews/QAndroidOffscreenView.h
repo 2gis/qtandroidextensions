@@ -64,7 +64,9 @@ protected:
 	 * waitForViewCreation() before using any functionality which access View.
 	 */
 	QAndroidOffscreenView(const QString & classname, const QString & objectname, bool create_view, bool waitforcreation, const QSize & defsize, QObject * parent = 0);
-	void createView();
+
+	//! \todo Use return result!
+	bool createView();
 
 public:
 	virtual ~QAndroidOffscreenView();
@@ -167,8 +169,6 @@ private:
 	QString view_object_name_;
 	QOpenGLTextureHolder tex_;
 	QScopedPointer<jcGeneric> offscreen_view_;
-	QScopedPointer<JniEnvPtr> initial_thread_attacher_;
-	QScopedPointer<JniEnvPtr> jni_gl_thread_attacher_;
 	QSize size_;
 	QColor fill_color_;
 	bool need_update_texture_;
@@ -176,8 +176,16 @@ private:
 	bool texture_received_;
 	bool synchronized_texture_update_;
 	bool view_creation_requested_;
+
 	//! Cache for isCreated()
 	volatile mutable bool view_created_;
+
+	// Keeping threads attached to Java (peformance issue).
+	/*! \fixme This is not a great solution, as we may have multiple offscreen views
+	 *   created and deleted in different threads and / or on different order.
+	 *   This will cause the attachers to come and go and unneeded re-attachments will happen. */
+	QScopedPointer<JniEnvPtr> initial_thread_attacher_;
+	QScopedPointer<JniEnvPtr> jni_gl_thread_attacher_;
 
 private:
 	Q_DISABLE_COPY(QAndroidOffscreenView)

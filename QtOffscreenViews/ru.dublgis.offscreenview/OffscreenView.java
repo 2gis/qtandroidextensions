@@ -115,21 +115,30 @@ abstract class OffscreenView
     /*!
      * Invokes View creation in Android UI thread.
      */
-    void createView()
+    boolean createView()
     {
         Log.i(TAG, "OffscreenView.createView(name=\""+object_name_+"\")");
         final Activity context = getActivity();
+        if (context == null)
+        {
+            Log.e(TAG, "OffscreenView.createView: cannot create view because of the null context!");
+            return false;
+        }
+        Log.i(TAG, "OffscreenView.createView: scheduling creating of the object...");
         context.runOnUiThread(new Runnable()
         {
             @Override
             public void run()
             {
+                Log.i(TAG, "OffscreenView.createView: run/syncing...");
                 synchronized(this)
                 {
+                    Log.i(TAG, "OffscreenView.createView: creating the view!");
                     doCreateView();
                 }
             }
         });
+        return true;
     }
 
     /*!

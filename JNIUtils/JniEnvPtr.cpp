@@ -104,7 +104,7 @@ JniEnvPtr::JniEnvPtr()
 			qWarning("Error getting Java environment: %d", errsv);
 			return;
 		}
-		VERBOSE(qDebug("Current thread (%d) was already attached.", (int)gettid()));
+		// VERBOSE(qDebug("Current thread (%d) was already attached.", (int)gettid()));
 	}
 }
 

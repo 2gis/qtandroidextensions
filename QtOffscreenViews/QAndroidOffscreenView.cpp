@@ -126,13 +126,23 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	}
 }
 
-void QAndroidOffscreenView::createView()
+bool QAndroidOffscreenView::createView()
 {
 	if (offscreen_view_ && !view_creation_requested_)
 	{
-		offscreen_view_->CallVoid("createView");
-		view_creation_requested_ = true;
+		bool result = offscreen_view_->CallBool("createView");
+		if (result)
+		{
+			view_creation_requested_ = true;
+			return true;
+		}
 	}
+	else
+	{
+		qWarning()<<"Attempted to call QAndroidOffscreenView::createView() with offscreen view:"
+			<<((offscreen_view_)?"not null":"null")<<"and creation_requested ="<<view_creation_requested_;
+	}
+	return false;
 }
 
 QAndroidOffscreenView::~QAndroidOffscreenView()

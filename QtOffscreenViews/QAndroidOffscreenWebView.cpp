@@ -232,6 +232,10 @@ QAndroidOffscreenWebView::QAndroidOffscreenWebView(const QString & object_name, 
 		{
 			qCritical()<<"Failed to register native methods!";
 		}
+		else
+		{
+			qDebug()<<"QAndroidOffscreenWebView successfully registered native methods.";
+		}
 	}
 	else
 	{

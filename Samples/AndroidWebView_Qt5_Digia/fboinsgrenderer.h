@@ -48,7 +48,7 @@ class FboInSGRenderer : public QQuickFramebufferObject
 {
     Q_OBJECT
 public:
-    Renderer *createRenderer() const;
+	Renderer * createRenderer() const;
 };
 
 class LogoInFboRenderer : public QObject, public QQuickFramebufferObject::Renderer
@@ -57,7 +57,7 @@ class LogoInFboRenderer : public QObject, public QQuickFramebufferObject::Render
 public:
 	LogoInFboRenderer();
 	void render();
-	QOpenGLFramebufferObject *createFramebufferObject(const QSize &size);
+	QOpenGLFramebufferObject * createFramebufferObject(const QSize &size);
 protected slots:
 	void textureUpdated();
 protected:
