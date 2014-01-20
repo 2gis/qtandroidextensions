@@ -6,6 +6,8 @@ ANDROID_MINIMUM_VERSION = 15
 ANDROID_TARGET_VERSION = 15
 ANDROID_APP_NAME = QML WebView
 
+DEFINES += JNIUTILS_VERBOSE_LOG
+
 # Add more folders to ship with the application, here
 folder_01.source = qml/AndroidWebView_Qt5
 folder_01.target = qml

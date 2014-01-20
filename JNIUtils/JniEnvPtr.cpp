@@ -53,6 +53,7 @@ static PreloadedClasses g_PreloadedClasses;
 	{
 		if (!g_JavaVm)
 		{
+			VERBOSE(qDebug("Automatically detecting JavaVM (tid=%d)...", (int)gettid()));
 			#if QT_VERSION < 0x050000 && defined(JNIUTILS_GRYM)
 				// Qt 4.x, in Grym port of Qt there's the right exported function in QtAndroidCore
 				JniEnvPtr::SetJavaVM(qt_android_get_java_vm());
@@ -85,18 +86,24 @@ JniEnvPtr::JniEnvPtr()
 	int errsv = g_JavaVm->GetEnv((void**)(&env_), JNI_VERSION_1_4);
 	if(errsv == JNI_EDETACHED)
 	{
-		was_already_attached_ = false;
+		VERBOSE(qDebug("Current thread %d is not attached, attaching it...", (int)gettid()));
 		errsv = g_JavaVm->AttachCurrentThread(&env_, 0);
 		if( errsv != 0 )
 		{
-			qWarning("Error attaching current thread: %d", errsv);
+			qWarning("Error attaching current thread %d: %d", (int)gettid(), errsv);
 			return;
 		}
+		was_already_attached_ = false; // Make a note that we did attach the thread
+		VERBOSE(qDebug("Attached current thread %d successfully.", (int)gettid()));
 	}
-	else if(errsv != 0)
+	else
 	{
-		qWarning("Error getting Java environment: %d", errsv);
-		return;
+		if(errsv != 0)
+		{
+			qWarning("Error getting Java environment: %d", errsv);
+			return;
+		}
+		VERBOSE(qDebug("Current thread (%d) was already attached.", (int)gettid()));
 	}
 }
 
@@ -111,12 +118,13 @@ JniEnvPtr::JniEnvPtr(JNIEnv* env)
 
 JniEnvPtr::~JniEnvPtr()
 {
-	if(!was_already_attached_)
+	if (!was_already_attached_)
 	{
+		VERBOSE(qDebug("I was attaching this thread: %d and I must detach it.", (int)gettid()));
 		int errsv = g_JavaVm->DetachCurrentThread();
 		if(errsv != 0 )
 		{
-			qWarning("thread detach failed: %d", errsv);
+			qWarning("Thread %d detach failed: %d", (int)gettid(), errsv);
 		}
 	}
 }
@@ -132,14 +140,14 @@ int JniEnvPtr::PreloadClass(const char* class_name)
 	jclass clazz = env_->FindClass(class_name);
 	if (env_->ExceptionCheck())
 	{
-		qWarning("...Failed to preload class %s", class_name);
+		qWarning("...Failed to preload class %s (tid %d)", class_name, (int)gettid());
 		env_->ExceptionClear();
 		return -1;
 	}
 	jclass gclazz = (jclass)env_->NewGlobalRef(clazz);
 	env_->DeleteLocalRef(clazz);
 	g_PreloadedClasses.insert(std::pair<std::string,jclass>(std::string(class_name),gclazz));
-	VERBOSE(qDebug("...Preloaded class \"%s\" as %p", class_name, gclazz));
+	VERBOSE(qDebug("...Preloaded class \"%s\" as %p for tid %d", class_name, gclazz, (int)gettid()));
 	return 0;
 }
 
@@ -169,24 +177,27 @@ void JniEnvPtr::UnloadClasses()
 jclass JniEnvPtr::FindClass(const char * name)
 {
 	// first try for preloaded classes
-	VERBOSE(qDebug("Searching for class \"%s\"", name));
+	VERBOSE(qDebug("Searching for class \"%s\" in tid %d", name, (int)gettid()));
     PreloadedClasses::iterator it = g_PreloadedClasses.find(std::string(name));
     if (it != g_PreloadedClasses.end())
 	{
         return (*it).second;
 	}
-#if defined(DEBUG_VERBOSE)
-    LOGV("no class \"%s\" found in preloaded classes, known classes are:", name);
-    for(it = g_PreloadedClasses.begin(); it != g_PreloadedClasses.end(); ++it)
-	{
-        LOGV("\"%s\" -> %p", (*it).first.c_str(), (*it).second);
-	}
-#endif //DEBUG_VERBOSE
+	#if defined(JNIUTILS_VERBOSE_LOG)
+		qDebug("No class \"%s\" found in preloaded classes (tid %d), I have %d known classes",
+			name, (int)gettid(),  (int)g_PreloadedClasses.size());
+		for (it = g_PreloadedClasses.begin(); it != g_PreloadedClasses.end(); ++it)
+		{
+			qDebug("\"%s\" -> %p", (*it).first.c_str(), (*it).second);
+		}
+	#endif
 
 	// if it wasn't preloaded, try to load it in JNI (will fail for custom classes in native-created threads)
+	VERBOSE(qDebug("Trying to construct the class directly: \"%s\" in tid %d", name, (int)gettid()));
 	jclass cls = env_->FindClass(name);
 	if (env_->ExceptionCheck())
 	{
+		qWarning("Failed to find class \"%s\"", name);
 		env_->ExceptionClear();
 		return 0;
 	}
@@ -195,6 +206,7 @@ jclass JniEnvPtr::FindClass(const char * name)
 	jclass ret = (jclass)env_->NewGlobalRef(cls);
 	env_->DeleteLocalRef(cls);
 	g_PreloadedClasses.insert(std::pair<std::string,jclass>(std::string(name),ret));
+	VERBOSE(qDebug("Successfuly found Java class: \"%s\" in tid %d", name, (int)gettid()));
 
 	return ret;
 }

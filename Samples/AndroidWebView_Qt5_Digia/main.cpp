@@ -40,21 +40,40 @@
 
 #include <QGuiApplication>
 #include <QtQuick/QQuickView>
+#include "fboinsgrenderer.h"
+
+// Qt 5.2 bug: this should be included after GUI headers
+#include <QtAndroidExtras>
 
 #include <JniEnvPtr.h>
 
-#include "fboinsgrenderer.h"
+#if defined(Q_OS_ANDROID)
+bool preloadJavaClasses()
+{
+	JavaVM * jvm = QAndroidJniEnvironment::javaVM();
+	JNIEnv * env = 0;
+	if (jvm->AttachCurrentThread(&env, NULL) < 0)
+	{
+		qCritical("AttachCurrentThread failed!");
+		return false;
+	}
+
+	JniEnvPtr jep(env);
+	jep.PreloadClass("ru/dublgis/offscreenview/OffscreenWebView");
+	return true;
+}
+#endif
 
 int main(int argc, char **argv)
 {
+	JniEnvPtr thread_attacher;
 
-	static const char * const classes [] = {
-		"ru/dublgis/offscreenview/OffscreenView",
-		"ru/dublgis/offscreenview/OffscreenWebView",
-		0
-	};
-	JniEnvPtr env;
-	env.PreloadClasses(classes);
+	#if defined(Q_OS_ANDROID)
+		if (!preloadJavaClasses())
+		{
+			return -1;
+		}
+	#endif
 
     QGuiApplication app(argc, argv);
 

@@ -86,7 +86,7 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 		view_class_name_.prepend(c_class_path_);
 	}
 
-	qDebug()<<__PRETTY_FUNCTION__<<"Creating object of"<<view_class_name_;
+	qDebug()<<__PRETTY_FUNCTION__<<"Creating object of"<<view_class_name_<<"tid"<<gettid();
 	offscreen_view_.reset(new jcGeneric(
 		view_class_name_.toLatin1()
 		, true // Keep ownership

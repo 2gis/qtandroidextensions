@@ -3,6 +3,8 @@
 #include <map>
 #include <string>
 #include <jni.h>
+#include <unistd.h>
+#include <sys/types.h>
 
 #if defined(JNIUTILS_VERBOSE_LOG)
 	#define VERBOSE(x) x
