@@ -340,7 +340,6 @@ void jcGeneric::CallStaticVoid(const char* method_name)
 	env->CallStaticVoidMethod(class_, mid);
 }
 
-#ifdef QT_CORE_LIB
 QString jcGeneric::CallString(const char *method_name)
 {
 	VERBOSE(qDebug("QString jcGeneric::CallString(const char* method_name) %p \"%s\"",this,method_name));
@@ -402,7 +401,6 @@ QString jcGeneric::GetString(const char *field_name)
 	env->DeleteLocalRef(jret);
 	return ret;
 }
-#endif // QT_CORE_LIB
 
 jcGeneric* jcGeneric::CallStaticObject(const char *method_name, const char *objname)
 {
@@ -490,8 +488,6 @@ void jcGeneric::CallVoid(const char * method_name, jlong x)
 	CallParamVoid(method_name, "J", x);
 }
 
-#ifdef QT_CORE_LIB
-
 void jcGeneric::CallVoid(const char * method_name, const QString & string)
 {
 	JniEnvPtr jep;
@@ -556,8 +552,6 @@ void jcGeneric::CallVoid(const char * method_name, const QString & string1, cons
 	env->DeleteLocalRef(js4);
 	env->DeleteLocalRef(js5);
 }
-
-#endif
 
 bool jcGeneric::RegisterNativeMethod(const char* name, const char* signature, void* ptr)
 {

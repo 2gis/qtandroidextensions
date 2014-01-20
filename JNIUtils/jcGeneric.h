@@ -131,13 +131,11 @@ public:
 	void CallVoid(const char * method_name, jint x);
 	void CallVoid(const char * method_name, jlong x);
 
-#ifdef QT_CORE_LIB
 	void CallVoid(const char * method_name, const QString & string);
 	void CallVoid(const char * method_name, const QString & string1, const QString & string2);
 	void CallVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3);
 	void CallVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3, const QString & string4);
 	void CallVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3, const QString & string4, const QString & string5);
-#endif
 
 	//! Call void static method of the wrapped Java class
 	void CallStaticVoid(const char* method_name);
@@ -154,7 +152,6 @@ public:
 	//! Get value of int field of the wrapped Java object
 	int GetInt(const char* field_name);
 
-#ifdef QT_CORE_LIB
 	/*!
 	 * Call jstring method of the wrapped Java object and
 	 * return the result as a QString.
@@ -172,7 +169,6 @@ public:
 	 * return the result as a QString.
 	 */
 	QString GetString(const char* field_name);
-#endif
 
 	//! Register native method in the wrapped class
 	bool RegisterNativeMethod(const char* name, const char* signature, void* ptr);

@@ -38,9 +38,7 @@
 #pragma once
 #include <string>
 #include <jni.h>
-#ifdef QT_CORE_LIB
-	#include <QString>
-#endif
+#include <QString>
 
 //! Basic functionality to get JNIEnv valid for current thread and scope.
 class JniEnvPtr
@@ -67,11 +65,9 @@ public:
 	// unload all preloaded classes for them not to leak
 	void UnloadClasses();
 
-#ifdef QT_CORE_LIB
 	// don't forget to DeleteLocalRef it
 	jstring JStringFromQString(const QString&);
 	QString QStringFromJString(jstring);
-#endif
 	
 public:
 	static void SetJavaVM(JavaVM*);

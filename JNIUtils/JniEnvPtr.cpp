@@ -40,6 +40,7 @@
 
 static JavaVM * g_JavaVm = 0;
 typedef std::map<std::string,jclass> PreloadedClasses;
+QMutex g_PreloadedClassesMutex;
 static PreloadedClasses g_PreloadedClasses;
 
 #if defined(Q_OS_ANDROID)
@@ -146,6 +147,7 @@ int JniEnvPtr::PreloadClass(const char* class_name)
 	}
 	jclass gclazz = (jclass)env_->NewGlobalRef(clazz);
 	env_->DeleteLocalRef(clazz);
+	QMutexLocker locker(&g_PreloadedClassesMutex);
 	g_PreloadedClasses.insert(std::pair<std::string,jclass>(std::string(class_name),gclazz));
 	VERBOSE(qDebug("...Preloaded class \"%s\" as %p for tid %d", class_name, gclazz, (int)gettid()));
 	return 0;
@@ -166,6 +168,7 @@ int JniEnvPtr::PreloadClasses(const char* const* class_list)
 
 void JniEnvPtr::UnloadClasses()
 {
+	QMutexLocker locker(&g_PreloadedClassesMutex);
 	PreloadedClasses::iterator it;
 	for(it = g_PreloadedClasses.begin(); it != g_PreloadedClasses.end(); ++it)
 	{
@@ -177,20 +180,23 @@ void JniEnvPtr::UnloadClasses()
 jclass JniEnvPtr::FindClass(const char * name)
 {
 	// first try for preloaded classes
-	VERBOSE(qDebug("Searching for class \"%s\" in tid %d", name, (int)gettid()));
-    PreloadedClasses::iterator it = g_PreloadedClasses.find(std::string(name));
-    if (it != g_PreloadedClasses.end())
 	{
-        return (*it).second;
-	}
-	#if defined(JNIUTILS_VERBOSE_LOG)
-		qDebug("No class \"%s\" found in preloaded classes (tid %d), I have %d known classes",
-			name, (int)gettid(),  (int)g_PreloadedClasses.size());
-		for (it = g_PreloadedClasses.begin(); it != g_PreloadedClasses.end(); ++it)
+		QMutexLocker locker(&g_PreloadedClassesMutex);
+		VERBOSE(qDebug("Searching for class \"%s\" in tid %d", name, (int)gettid()));
+		PreloadedClasses::iterator it = g_PreloadedClasses.find(std::string(name));
+		if (it != g_PreloadedClasses.end())
 		{
-			qDebug("\"%s\" -> %p", (*it).first.c_str(), (*it).second);
+			return (*it).second;
 		}
-	#endif
+		#if defined(JNIUTILS_VERBOSE_LOG)
+			qDebug("No class \"%s\" found in preloaded classes (tid %d), I have %d known classes",
+				name, (int)gettid(),  (int)g_PreloadedClasses.size());
+			for (it = g_PreloadedClasses.begin(); it != g_PreloadedClasses.end(); ++it)
+			{
+				qDebug("\"%s\" -> %p", (*it).first.c_str(), (*it).second);
+			}
+		#endif
+	}
 
 	// if it wasn't preloaded, try to load it in JNI (will fail for custom classes in native-created threads)
 	VERBOSE(qDebug("Trying to construct the class directly: \"%s\" in tid %d", name, (int)gettid()));
@@ -202,10 +208,14 @@ jclass JniEnvPtr::FindClass(const char * name)
 		return 0;
 	}
 
-	// add it to a list of preloaded classes for convenience
+	// We must store class ref in a global ref
 	jclass ret = (jclass)env_->NewGlobalRef(cls);
 	env_->DeleteLocalRef(cls);
+
+	// Add it to a list of preloaded classes for convenience
+	QMutexLocker locker(&g_PreloadedClassesMutex);
 	g_PreloadedClasses.insert(std::pair<std::string,jclass>(std::string(name),ret));
+
 	VERBOSE(qDebug("Successfuly found Java class: \"%s\" in tid %d", name, (int)gettid()));
 
 	return ret;
@@ -238,7 +248,6 @@ std::string JniEnvPtr::PackageName()
 	return g_PackageName;
 }*/
 
-#ifdef QT_CORE_LIB
 jstring JniEnvPtr::JStringFromQString(const QString& str)
 {
 	jstring ret = env_->NewString(str.utf16(), str.length());
@@ -271,4 +280,3 @@ QString JniEnvPtr::QStringFromJString(jstring str)
 	return ret;
 }
 
-#endif //QT_CORE_LIB

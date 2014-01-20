@@ -12,8 +12,8 @@
 	#define VERBOSE(x)
 #endif
 
-#if defined(QT_CORE_LIB)
-	#include <qconfig.h>
-	#include <QString>
-	#include <QDebug>
-#endif
+#include <qconfig.h>
+#include <QString>
+#include <QDebug>
+#include <QMutex>
+#include <QMutexLocker>
