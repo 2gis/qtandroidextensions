@@ -266,9 +266,7 @@ class OffscreenWebView extends OffscreenView
             Log.i(TAG, "MyWebView.requestLayout()");
             if (rendering_surface_ != null)
             {
-               final Activity context = getActivity();
-               context.runOnUiThread(new Runnable()
-               {
+               runOnUiThread(new Runnable() {
                    @Override
                    public void run()
                    {
@@ -357,11 +355,9 @@ class OffscreenWebView extends OffscreenView
     public void loadUrl(final String url)
     {
         Log.i(TAG, "loadUrl: scheduling");
-        final Activity ctx = getActivity();
-        if (ctx != null && webview_ != null)
+        if (webview_ != null)
         {
-            ctx.runOnUiThread(new Runnable()
-            {
+            runOnUiThread(new Runnable() {
                 @Override
                 public void run()
                 {
@@ -388,11 +384,9 @@ class OffscreenWebView extends OffscreenView
     public void loadUrl(final String url, final String additionalHttpHeaders)
     {
         Log.i(TAG, "loadUrl: scheduling");
-        final Activity ctx = getActivity();
-        if (ctx != null && webview_ != null)
+        if (webview_ != null)
         {
-            ctx.runOnUiThread(new Runnable()
-            {
+            runOnUiThread(new Runnable() {
                 @Override
                 public void run()
                 {
@@ -418,11 +412,9 @@ class OffscreenWebView extends OffscreenView
     public void loadData(final String text, final String mime, final String encoding)
     {
         Log.i(TAG, "loadData: scheduling");
-        final Activity ctx = getActivity();
-        if (ctx != null && webview_ != null)
+        if (webview_ != null)
         {
-            ctx.runOnUiThread(new Runnable()
-            {
+            runOnUiThread(new Runnable(){
                 @Override
                 public void run()
                 {
@@ -441,11 +433,9 @@ class OffscreenWebView extends OffscreenView
     public void loadDataWithBaseURL(final String baseUrl, final String data, final String mimeType, final String encoding, final String historyUrl)
     {
         Log.i(TAG, "loadDataWithBaseURL: scheduling");
-        final Activity ctx = getActivity();
-        if (ctx != null && webview_ != null)
+        if (webview_ != null)
         {
-            ctx.runOnUiThread(new Runnable()
-            {
+            runOnUiThread(new Runnable() {
                 @Override
                 public void run()
                 {
@@ -462,11 +452,9 @@ class OffscreenWebView extends OffscreenView
 
     public boolean requestContentHeight()
     {
-        final Activity ctx = getActivity();
-        if (ctx != null && webview_ != null)
+        if (webview_ != null)
         {
-            ctx.runOnUiThread(new Runnable()
-            {
+            runOnUiThread(new Runnable() {
                 @Override
                 public void run()
                 {

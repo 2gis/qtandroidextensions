@@ -102,6 +102,7 @@ abstract class OffscreenView
     private long native_ptr_ = 0;
     private int gl_texture_id_ = 0;
     private Boolean painting_now_ = new Boolean(false);
+    // Handler handler_ = new Handler();
 
     private int initial_width_ = 512;
     private int initial_height_ = 512;
@@ -112,21 +113,26 @@ abstract class OffscreenView
     public void SetInitialHeight(int h) { initial_height_ = h; }
     public void SetNativePtr(long ptr) { native_ptr_ = ptr; }
 
-    /*!
-     * Invokes View creation in Android UI thread.
-     */
-    boolean createView()
+    public boolean runOnUiThread(final Runnable runnable)
     {
-        Log.i(TAG, "OffscreenView.createView(name=\""+object_name_+"\")");
         final Activity context = getActivity();
         if (context == null)
         {
-            Log.e(TAG, "OffscreenView.createView: cannot create view because of the null context!");
+            Log.e(TAG, "OffscreenView.runOnUiThread: cannot schedule task because of the null context!");
             return false;
         }
-        Log.i(TAG, "OffscreenView.createView: scheduling creating of the object...");
-        context.runOnUiThread(new Runnable()
-        {
+        Log.i(TAG, "OffscreenView.runOnUiThread: scheduling creation of the object...");
+        context.runOnUiThread(runnable);
+        return true;
+    }
+
+    /*!
+     * Invokes View creation in Android UI thread.
+     */
+    public boolean createView()
+    {
+        Log.i(TAG, "OffscreenView.createView(name=\""+object_name_+"\")");
+        runOnUiThread(new Runnable() {
             @Override
             public void run()
             {
@@ -147,10 +153,8 @@ abstract class OffscreenView
      */
     void initializeGL()
     {
-        final Activity context = getActivity();
         Log.i(TAG, "OffscreenView.intializeGL(name=\""+object_name_+"\", texture="+gl_texture_id_+")");
-        context.runOnUiThread(new Runnable()
-        {
+        runOnUiThread(new Runnable() {
             @Override
             public void run()
             {
@@ -178,18 +182,14 @@ abstract class OffscreenView
     //! Schedule painting of the view (will be done in Android UI thread).
     protected void drawViewOnTexture()
     {
-        Activity ctx = getActivity();
-        if (ctx != null)
+        runOnUiThread(new Runnable()
         {
-            ctx.runOnUiThread(new Runnable()
+            @Override
+            public void run()
             {
-                @Override
-                public void run()
-                {
-                    doDrawViewOnTexture();
-                }
-            });
-        }
+                doDrawViewOnTexture();
+            }
+        });
     }
 
     //! Performs actual painting of the view. Should be called in Android UI thread.
@@ -323,21 +323,16 @@ abstract class OffscreenView
             }
             Log.i(TAG, "ProcessMouseEvent("+action+", "+x+", "+y+") downt="+downt+", t="+t);
             final MotionEvent event = MotionEvent.obtain(downt /* downTime*/, t /* eventTime */, action, x, y, 0 /*metaState*/);
-            Activity ctx = getActivity();
-            if (ctx != null)
-            {
-                ctx.runOnUiThread(new Runnable()
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run()
                 {
-                    @Override
-                    public void run()
-                    {
-                        view.onTouchEvent(event);
-                        // TODO: If the view has only been scrolled, it won't call invalidate(). So we just force it to repaint for now.
-                        // We should keep a larger piece of rendered HTML in the texture and only scroll the texture if possible.
-                        doDrawViewOnTexture();
-                    }
-                });
-            }
+                    view.onTouchEvent(event);
+                    // TODO: If the view has only been scrolled, it won't call invalidate(). So we just force it to repaint for now.
+                    // We should keep a larger piece of rendered HTML in the texture and only scroll the texture if possible.
+                    doDrawViewOnTexture();
+                }
+            });
         }
     }
 
@@ -347,9 +342,7 @@ abstract class OffscreenView
         Log.i(TAG, "invalidateOffscreenView");
         if (getView() != null)
         {
-            final Activity context = getActivity();
-            context.runOnUiThread(new Runnable()
-            {
+            runOnUiThread(new Runnable() {
                 @Override
                 public void run()
                 {
@@ -373,9 +366,7 @@ abstract class OffscreenView
             View view = getView();
             if (view != null)
             {
-                final Activity context = getActivity();
-                context.runOnUiThread(new Runnable()
-                {
+                runOnUiThread(new Runnable() {
                     @Override
                     public void run()
                     {
