@@ -7,7 +7,7 @@ public class ClassLoader
 {
     public static final String TAG = "Grym/JNIUtils";
 
-    static public void callJNIPreloadClass(final Activity activity, final String classname) throws Exception
+    static public void callJNIPreloadClass(final String classname) throws Exception
     {
         Log.i(TAG, "callJNIPreloadClass ***********************************************************************");
         try

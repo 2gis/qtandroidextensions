@@ -105,24 +105,16 @@ void preloadClassThroughJNI(const char * class_name)
 		return;
 	}
 	qDebug()<<"Pre-loading:"<<class_name;
-	jstring jclassname = jep.JStringFromQString(class_name);
+
 	static const char * const c_class_name = "ru/dublgis/jniutils/ClassLoader";
 	static const char * const c_method_name = "callJNIPreloadClass";
 	#if defined(QPA_QT4GRYM)
-		jcGeneric(c_class_name, false).CallStaticParamVoid(
-			c_method_name,
-			"Landroid/app/Activity;Ljava/lang/string;",
-			QAndroidQPAPluginGap::getActivity(),
-			jclassname);
+		jcGeneric(c_class_name, false).CallStaticVoid(c_method_name, class_name);
 	#elif defined(QPA_QT5)
-		QAndroidJniObject::callStaticMethod<void>(
-			c_class_name,
-			c_method_name,
-			"(Landroid/app/Activity;Ljava/lang/String;)V",
-			QAndroidQPAPluginGap::getActivity(),
-			jclassname);
+		jstring jclassname = jep.JStringFromQString(class_name);
+		QAndroidJniObject::callStaticMethod<void>(c_class_name, c_method_name, "(Ljava/lang/String;)V", jclassname);
+		jep.env()->DeleteLocalRef(jclassname);
 	#endif
-	jep.env()->DeleteLocalRef(jclassname);
 }
 
 // Declaring entry point for nativeJNIPreloadClass so we don't have to register it.
