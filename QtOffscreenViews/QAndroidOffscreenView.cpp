@@ -290,9 +290,8 @@ bool QAndroidOffscreenView::waitForViewCreation()
 	qDebug()<<"QAndroidOffscreenView::waitForViewCreation"<<view_class_name_<<view_object_name_<<">>>>>>";
 	while (!isCreated())
 	{
-		//usleep(5000); // 5 ms
+		usleep(5000); // 5 ms
 		// QThread::yieldCurrentThread();
-usleep(500000); // SGEXP
 	}
 	qDebug()<<"QAndroidOffscreenView::waitForViewCreation"<<view_class_name_<<view_object_name_<<"<<<<<<";
 	return true;
