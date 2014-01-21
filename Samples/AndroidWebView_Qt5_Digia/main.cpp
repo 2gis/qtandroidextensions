@@ -52,7 +52,7 @@ int main(int argc, char **argv)
 	Q_UNUSED(jni_thread_attacher);
 	QAndroidOffscreenWebView::preloadJavaClass();
 
-    QGuiApplication app(argc, argv);
+	QGuiApplication app(argc, argv);
 
     qmlRegisterType<FboInSGRenderer>("SceneGraphRendering", 1, 0, "Renderer");
 
@@ -65,7 +65,9 @@ int main(int argc, char **argv)
 
 	// SGEXP
 	// Workaround for a workaround
-	JniEnvPtr().suppressException();
+	JniEnvPtr().SuppressException();
+
+	JniEnvPtr().UnloadClasses();
 
 	return result;
 }

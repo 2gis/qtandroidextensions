@@ -37,81 +37,79 @@
 
 #include "stdafx.h"
 #include "JniEnvPtr.h"
+#include <QAndroidQPAPluginGap.h>
 
 typedef std::map<std::string, jclass> PreloadedClasses;
+
+class JniEnvPtrThreadDetacher
+{
+public:
+	~JniEnvPtrThreadDetacher();
+};
 
 static JavaVM * g_JavaVm = 0;
 static QMutex g_PreloadedClassesMutex;
 static PreloadedClasses g_PreloadedClasses;
+static QThreadStorage<JniEnvPtrThreadDetacher*> g_JavaThreadDetacher;
+
+JniEnvPtrThreadDetacher::~JniEnvPtrThreadDetacher()
+{
+	if (g_JavaVm)
+	{
+		int errsv = g_JavaVm->DetachCurrentThread();
+		if (errsv != JNI_OK)
+		{
+			qWarning("Thread %d detach failed: %d", (int)gettid(), errsv);
+		}
+	}
+}
 
 #if defined(Q_OS_ANDROID)
-	#if QT_VERSION < 0x050000 && defined(JNIUTILS_GRYM)
-		extern JavaVM * qt_android_get_java_vm();
-	#elif QT_VERSION >= 0x050000
-		#include <QAndroidJniEnvironment>
-	#endif
-
-	static void AutoSetJavaVM()
+	static inline void AutoSetJavaVM()
 	{
 		if (!g_JavaVm)
 		{
-			VERBOSE(qDebug("Automatically detecting JavaVM (tid=%d)...", (int)gettid()));
-			#if QT_VERSION < 0x050000 && defined(JNIUTILS_GRYM)
-				// Qt 4.x, in Grym port of Qt there's the right exported function in QtAndroidCore
-				JniEnvPtr::SetJavaVM(qt_android_get_java_vm());
-				// #pragma message("Using Grym/Lite JVM autodetection")
-			#elif QT_VERSION >= 0x050000
-				// Qt 5.x, assuming that QtAndroidExtras available.
-				JniEnvPtr::SetJavaVM(QAndroidJniEnvironment::javaVM());
-				// #pragma message("Using Qt5 autodetection")
-			#else
-				#warning "AutoSetJavaVM is not implemented for this QT configuration."
-			#endif
+			g_JavaVm = QAndroidQPAPluginGap::detectJavaVM();
 		}
 	}
 #endif
 
 JniEnvPtr::JniEnvPtr()
 	: env_(0)
-	, was_already_attached_(false)
 {
 	#if defined(Q_OS_ANDROID) || defined(ANDROID)
 		AutoSetJavaVM();
 	#endif
-
-	if(g_JavaVm == 0)
+	if (g_JavaVm == 0)
 	{
 		qWarning("Java VM pointer is not set!");
 		return;
 	}
-	was_already_attached_ = true;
 	int errsv = g_JavaVm->GetEnv((void**)(&env_), JNI_VERSION_1_6);
-	if(errsv == JNI_EDETACHED)
+	if (errsv == JNI_EDETACHED)
 	{
 		VERBOSE(qDebug("Current thread %d is not attached, attaching it...", (int)gettid()));
 		errsv = g_JavaVm->AttachCurrentThread(&env_, 0);
-		if( errsv != 0 )
+		if (errsv != 0)
 		{
 			qWarning("Error attaching current thread %d: %d", (int)gettid(), errsv);
 			return;
 		}
-		was_already_attached_ = false; // Make a note that we did attach the thread
+		if (!g_JavaThreadDetacher.hasLocalData())
+		{
+			g_JavaThreadDetacher.setLocalData(new JniEnvPtrThreadDetacher());
+		}
 		VERBOSE(qDebug("Attached current thread %d successfully.", (int)gettid()));
 	}
-	else
+	else if (errsv != JNI_OK)
 	{
-		if(errsv != 0)
-		{
-			qWarning("Error getting Java environment: %d", errsv);
-			return;
-		}
-		// VERBOSE(qDebug("Current thread (%d) was already attached.", (int)gettid()));
+		qWarning("Error getting Java environment: %d", errsv);
+		return;
 	}
 }
 
 JniEnvPtr::JniEnvPtr(JNIEnv* env)
 	: env_(env)
-	, was_already_attached_(true)
 {
 	#if defined(Q_OS_ANDROID) || defined(ANDROID)
 		AutoSetJavaVM();
@@ -120,15 +118,6 @@ JniEnvPtr::JniEnvPtr(JNIEnv* env)
 
 JniEnvPtr::~JniEnvPtr()
 {
-	if (!was_already_attached_)
-	{
-		VERBOSE(qDebug("I was attaching this thread: %d and I must detach it.", (int)gettid()));
-		int errsv = g_JavaVm->DetachCurrentThread();
-		if(errsv != 0 )
-		{
-			qWarning("Thread %d detach failed: %d", (int)gettid(), errsv);
-		}
-	}
 }
 
 JNIEnv* JniEnvPtr::env() const
@@ -140,7 +129,7 @@ bool JniEnvPtr::PreloadClass(const char* class_name)
 {
 	qWarning("Preloading class \"%s\"", class_name);
 	jclass clazz = env_->FindClass(class_name);
-	if (suppressException())
+	if (SuppressException())
 	{
 		qWarning("...Failed to preload class %s (tid %d)", class_name, (int)gettid());
 		return false;
@@ -208,7 +197,7 @@ jclass JniEnvPtr::FindClass(const char * name)
 	// if it wasn't preloaded, try to load it in JNI (will fail for custom classes in native-created threads)
 	VERBOSE(qDebug("Trying to construct the class directly: \"%s\" in tid %d", name, (int)gettid()));
 	jclass cls = env_->FindClass(name);
-	if (suppressException())
+	if (SuppressException())
 	{
 		qWarning("Failed to find class \"%s\"", name);
 		return 0;
@@ -246,7 +235,7 @@ void JniEnvPtr::SetJavaVM(JNIEnv* env)
 jstring JniEnvPtr::JStringFromQString(const QString& str)
 {
 	jstring ret = env_->NewString(str.utf16(), str.length());
-	if (suppressException())
+	if (SuppressException())
 	{
 		qWarning("Failed to convert QString to jstring.");
 		return 0;
@@ -278,7 +267,7 @@ QString JniEnvPtr::QStringFromJString(jstring str)
 	return ret;
 }
 
-bool JniEnvPtr::suppressException(bool describe)
+bool JniEnvPtr::SuppressException(bool describe)
 {
 	if (env_->ExceptionCheck())
 	{

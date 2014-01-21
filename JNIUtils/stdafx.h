@@ -17,3 +17,4 @@
 #include <QDebug>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QThreadStorage>

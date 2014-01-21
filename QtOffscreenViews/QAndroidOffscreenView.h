@@ -183,9 +183,6 @@ private:
 	volatile mutable bool view_created_;
 
 	// Keeping threads attached to Java (peformance issue).
-	/*! \fixme This is not a great solution, as we may have multiple offscreen views
-	 *   created and deleted in different threads and / or on different order.
-	 *   This will cause the attachers to come and go and unneeded re-attachments will happen. */
 	QScopedPointer<JniEnvPtr> initial_thread_attacher_;
 	QScopedPointer<JniEnvPtr> jni_gl_thread_attacher_;
 private:

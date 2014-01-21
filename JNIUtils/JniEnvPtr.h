@@ -105,7 +105,7 @@ public:
 	 * \param describe - if true, will call ExceptionDescribe() to print the exception description into stderr.
 	 * \return Returns false if there was no exceptions.
 	 */
-	bool suppressException(bool describe = true);
+	bool SuppressException(bool describe = true);
 	
 public:
 	static void SetJavaVM(JavaVM*);
@@ -113,7 +113,6 @@ public:
 	//static std::string PackageName();
 
 private:
-	JNIEnv* env_;
-	bool was_already_attached_;
+	JNIEnv * env_;
 };
 

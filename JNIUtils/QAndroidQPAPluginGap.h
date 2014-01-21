@@ -43,6 +43,8 @@
  */
 namespace QAndroidQPAPluginGap {
 
+	JavaVM * detectJavaVM();
+
 	/*!
 	 * Obtain Activity object.
 	 * \param env, jo are not used and only needed so the function could be set as native

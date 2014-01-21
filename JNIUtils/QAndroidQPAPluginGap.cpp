@@ -56,7 +56,26 @@
 
 #if defined(Q_OS_ANDROID)
 
+#if defined(QPA_QT4GRYM)
+	extern JavaVM * qt_android_get_java_vm();
+#elif QT_VERSION >= 0x050000
+	#include <QAndroidJniEnvironment>
+#else
+	#error "Unimplemented QPA case"
+#endif
+
 namespace QAndroidQPAPluginGap {
+
+JavaVM * detectJavaVM()
+{
+	#if defined(QPA_QT4GRYM)
+		return qt_android_get_java_vm();
+	#elif defined(QPA_QT5)
+		return QAndroidJniEnvironment::javaVM();
+	#else
+		#error "Unimplemented QPA case"
+	#endif
+}
 
 jobject JNICALL getActivity(JNIEnv *, jobject)
 {
