@@ -61,6 +61,17 @@ int main(int argc, char **argv)
     view.setSource(QUrl("qrc:///scenegraph/textureinsgnode/main.qml"));
     view.show();
 
-    return app.exec();
+	bool result = app.exec();
+
+	// SGEXP
+	// Workaround for a workaround
+	JniEnvPtr jep;
+	if (jep.env()->ExceptionCheck())
+	{
+		jep.env()->ExceptionDescribe();
+		jep.env()->ExceptionClear();
+	}
+
+	return result;
 }
 
