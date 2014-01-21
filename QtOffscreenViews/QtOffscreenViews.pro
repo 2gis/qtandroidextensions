@@ -7,14 +7,12 @@ INCLUDEPATH += ../JNIUtils
 HEADERS += \
     QOpenGLTextureHolder.h \
     QAndroidOffscreenView.h \
-    QAndroidOffscreenWebView.h \
-    QAndroidQPAPluginGap.h
+    QAndroidOffscreenWebView.h
 
 SOURCES += \
     QOpenGLTextureHolder.cpp \
     QAndroidOffscreenView.cpp \
-    QAndroidOffscreenWebView.cpp \
-    QAndroidQPAPluginGap.cpp
+    QAndroidOffscreenWebView.cpp
 
 OTHER_FILES += \
     ru.dublgis.offscreenview/OffscreenViewFactory.java \

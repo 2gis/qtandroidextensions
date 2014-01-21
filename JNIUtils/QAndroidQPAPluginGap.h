@@ -1,7 +1,7 @@
 /*
-  Offscreen Android Views library for Qt
+  JNIUtils library
 
-  Author:
+  Authors:
   Sergey A. Galin <sergey.galin@gmail.com>
 
   Distrbuted under The BSD License
@@ -33,48 +33,22 @@
   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
   THE POSSIBILITY OF SUCH DAMAGE.
 */
-#include <qconfig.h>
-#include <QScopedPointer>
-#include <JniEnvPtr.h>
-#include <jcGeneric.h>
-#include <JclassPtr.h>
-#include "QAndroidQPAPluginGap.h"
 
+#pragma once
+#include <jni.h>
+
+/*!
+ * This namespace contains some functions which screen differences between various
+ * QPA plugin implementations.
+ */
 namespace QAndroidQPAPluginGap {
 
-jobject JNICALL getActivity(JNIEnv *, jobject)
-{
-	#if QT_VERSION < 0x050000 && defined(QTOFFSCREENVIEWS_GRYM)
-		static const char * const c_class_name = "org/qt/core/QtApplicationBase";
-		static const char * const c_method_name = "getActivityStatic";
-		// It is OK to return QtActivityBase as it's a descendant of Activity and
-		// Java will handle the type casting.
-		static const char * const c_result_name = "org/qt/core/QtActivityBase";
-	#else // QT_VERSION >= 0x050000
-		//! \todo If we make another plugin for Qt 5, this place will need an update!
-		static const char * const c_class_name = "org/qtproject/qt5/android/QtNative";
-		static const char * const c_method_name = "activity";
-		static const char * const c_result_name = "android/app/Activity";
-	#endif
-	jcGeneric theclass(c_class_name, false);
-	if (!theclass.jClass())
-	{
-		qCritical("QAndroid: Activity retriever class could not be accessed.");
-		return 0;
-	}
-	QScopedPointer<jcGeneric> activity(theclass.CallStaticObject(c_method_name, c_result_name));
-	if (!activity)
-	{
-		qCritical("QAndroid: Failed to get create Activity object.");
-		return 0;
-	}
-	if (!activity->jObject())
-	{
-		qCritical("QAndroid: Java instance of the Activity is 0.");
-	}
-	// Take jobject away from 'activity' because otherwise it will destroy
-	// the global reference and it will become invalid when we return to Java.
-	return activity->TakeJobjectOver();
-}
+	/*!
+	 * Obtain Activity object.
+	 * \param env, jo are not used and only needed so the function could be set as native
+	 *  function in Java and called over JNI.
+	 */
+	jobject JNICALL getActivity(JNIEnv * env = 0, jobject jo = 0);
 
 } // namespace QAndroidQPAPluginGap
+

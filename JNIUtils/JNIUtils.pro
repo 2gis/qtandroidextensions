@@ -12,10 +12,12 @@ android-g++ {
         JniEnvPtr.h \
         JclassPtr.h \
         jcGeneric.h \
+        QAndroidQPAPluginGap.h \
         stdafx.h
 
     SOURCES += \
         JniEnvPtr.cpp \
         JclassPtr.cpp \
-        jcGeneric.cpp
+        jcGeneric.cpp \
+        QAndroidQPAPluginGap.cpp
 }

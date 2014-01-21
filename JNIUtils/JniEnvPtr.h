@@ -56,8 +56,11 @@ public:
 	// (no workarounds with custom ClassLoader were found {yet?})
 public:
 	int PreloadClass(const char * class_name);
+
 	// last array element == 0
 	int PreloadClasses(const char * const * class_list);
+
+	bool IsClassPreloaded(const char * class_name);
 
 	// Возвращает глобальную ссылку на класс
 	jclass FindClass(const char * name);

@@ -158,12 +158,18 @@ int JniEnvPtr::PreloadClasses(const char* const* class_list)
 	int loaded = 0;
     for(; *class_list != 0; ++class_list, ++loaded )
 	{
-        if(PreloadClass(*class_list) != 0)
+		if (PreloadClass(*class_list) != 0)
 		{
 			break;
 		}
 	}
 	return loaded;
+}
+
+bool JniEnvPtr::IsClassPreloaded(const char * class_name)
+{
+	QMutexLocker locker(&g_PreloadedClassesMutex);
+	return g_PreloadedClasses.find(class_name) != g_PreloadedClasses.end();
 }
 
 void JniEnvPtr::UnloadClasses()

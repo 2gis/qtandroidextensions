@@ -27,8 +27,8 @@ SOURCES += \
     fboinsgrenderer.cpp \
     ../../QtOffscreenViews/QAndroidOffscreenView.cpp \
     ../../QtOffscreenViews/QAndroidOffscreenWebView.cpp \
-    ../../QtOffscreenViews/QAndroidQPAPluginGap.cpp \
     ../../QtOffscreenViews/QOpenGLTextureHolder.cpp \
+    ../../JNIUtils/QAndroidQPAPluginGap.cpp \
     ../../JNIUtils/jcGeneric.cpp \
     ../../JNIUtils/JclassPtr.cpp \
     ../../JNIUtils/JniEnvPtr.cpp
@@ -36,8 +36,8 @@ HEADERS += \
     fboinsgrenderer.h \
     ../../QtOffscreenViews/QAndroidOffscreenView.h \
     ../../QtOffscreenViews/QAndroidOffscreenWebView.h \
-    ../../QtOffscreenViews/QAndroidQPAPluginGap.h \
     ../../QtOffscreenViews/QOpenGLTextureHolder.h \
+    ../../JNIUtils/QAndroidQPAPluginGap.h \
     ../../JNIUtils/jcGeneric.h \
     ../../JNIUtils/JclassPtr.h \
     ../../JNIUtils/JniEnvPtr.h \

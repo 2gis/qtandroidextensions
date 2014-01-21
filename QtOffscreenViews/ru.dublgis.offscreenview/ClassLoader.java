@@ -7,10 +7,10 @@ public class ClassLoader
 {
     public static final String TAG = "Grym/OffscreenView";
 
-    static public void callJNIPreloadClass(Activity activity)
+    static public void callJNIPreloadClass(final Activity activity, final String classname)
     {
        Log.i(TAG, "callJNIPreloadClass ***********************************************************************");
-       (new ClassLoader()).nativeJNIPreloadClass();
+       (new ClassLoader()).nativeJNIPreloadClass(classname);
 
        activity.runOnUiThread(new Runnable(){
           @Override
@@ -20,6 +20,6 @@ public class ClassLoader
        });
     }
 
-    private native void nativeJNIPreloadClass();
+    private native void nativeJNIPreloadClass(String classname);
 }
 

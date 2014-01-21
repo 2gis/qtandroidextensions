@@ -71,23 +71,39 @@
 // Declaring entry point for nativeJNIPreloadClass so we don't have to register it.
 // It must be "C" because the function name should not be mangled.
 extern "C" {
-	JNIEXPORT void JNICALL Java_ru_dublgis_offscreenview_ClassLoader_nativeJNIPreloadClass(JNIEnv * env, jobject)
+	JNIEXPORT void JNICALL Java_ru_dublgis_offscreenview_ClassLoader_nativeJNIPreloadClass(JNIEnv * env, jobject, jstring classname)
 	{
 		qDebug()<<__FUNCTION__<<"***************************************************";
 		JniEnvPtr jep(env);
-		jep.PreloadClass("ru/dublgis/offscreenview/OffscreenWebView");
+		QString qclassname = jep.QStringFromJString(classname);
+		jep.PreloadClass(qclassname.toLatin1());
+		//jep.PreloadClass("ru/dublgis/offscreenview/OffscreenWebView");
 	}
+}
+
+void PreloadClassThroughJNI(const char * class_name)
+{
+	JniEnvPtr jep;
+	if (jep.IsClassPreloaded(class_name))
+	{
+		qDebug()<<"Class already pre-loaded:"<<class_name;
+		return;
+	}
+	qDebug()<<"Pre-loading:"<<class_name;
+	jstring jclassname = jep.JStringFromQString(class_name);
+	QAndroidJniObject::callStaticMethod<void>(
+		"ru/dublgis/offscreenview/ClassLoader",
+		"callJNIPreloadClass",
+		"(Landroid/app/Activity;Ljava/lang/String;)V",
+		QAndroidQPAPluginGap::getActivity(),
+		jclassname);
+	jep.env()->DeleteLocalRef(jclassname);
 }
 
 int main(int argc, char **argv)
 {
-	// SGEXP - temporary code!
-	QAndroidJniEnvironment jni_thread_attacher; Q_UNUSED(jni_thread_attacher);
-	QAndroidJniObject::callStaticMethod<void>(
-		"ru/dublgis/offscreenview/ClassLoader",
-		"callJNIPreloadClass",
-		"(Landroid/app/Activity;)V",
-		QAndroidQPAPluginGap::getActivity());
+	QAndroidJniEnvironment jni_thread_attacher;
+	PreloadClassThroughJNI("ru/dublgis/offscreenview/OffscreenWebView");
 
 	/*#if defined(Q_OS_ANDROID)
 		if (!preloadJavaClasses())
@@ -105,5 +121,7 @@ int main(int argc, char **argv)
     view.setSource(QUrl("qrc:///scenegraph/textureinsgnode/main.qml"));
     view.show();
 
+	Q_UNUSED(jni_thread_attacher);
     return app.exec();
 }
+
