@@ -90,7 +90,7 @@ public:
 	 * \param targetRect - output coordinates in OpenGL terms.
 	 * \param sourceRect - used to calculate source rectangle in the GL texture.
 	 */
-	void blitTexture(const QRect & targetRect, const QRect & sourceRect);
+	void blitTexture(const QRect & targetRect, const QRect & sourceRect, bool reverse_y = false);
 
 	//! Allocate a texture of the current texture type.
 	void allocateTexture();
@@ -109,7 +109,7 @@ public:
 
 private:
 	//! Helper for blitTexture().
-	void drawTexture(const QRectF & rect, const QRectF & bitmap_rect);
+	void drawTexture(const QRectF & rect, const QRectF & bitmap_rect, bool reverse_y);
 
 	//! Shader programs for drawTexture().
 	static QGLShaderProgram * GetBlitProgram(GLenum target);

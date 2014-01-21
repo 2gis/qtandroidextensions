@@ -431,6 +431,8 @@ abstract class OffscreenView
         synchronized(this)
         {
             Log.i(TAG, "resizeOffscreenView "+w+"x"+h);
+            initial_width_ = w;
+            initial_height_ = h;
             if (rendering_surface_ == null)
             {
                 return;

@@ -63,7 +63,7 @@ void LogoInFboRenderer::render()
 	// qDebug()<<"Grym"<<__FUNCTION__<<"Size:"<<aview_.size().height()<<"x"<<aview_.size().width();
 	// logo.render();
 	// aview_.paintGL(QPoint(0, 0));
-	aview_.paintGL(0, 0, aview_.size().height(), aview_.size().width());
+	aview_.paintGL(0, 0, aview_.size().width(), aview_.size().height(), true);
 	update();
 }
 
@@ -73,9 +73,9 @@ QOpenGLFramebufferObject * LogoInFboRenderer::createFramebufferObject(const QSiz
 	QOpenGLFramebufferObjectFormat format;
 	// format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 	format.setSamples(4);
-	qDebug()<<__FUNCTION__<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<"Resizing...";
+	qDebug()<<__FUNCTION__<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<"Resizing..."<<size;
 	aview_.resize(size);
-	qDebug()<<__FUNCTION__<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<"Creating FBO...";
+	qDebug()<<__FUNCTION__<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<"Creating FBO..."<<size;
 	return new QOpenGLFramebufferObject(size, format);
 }
 

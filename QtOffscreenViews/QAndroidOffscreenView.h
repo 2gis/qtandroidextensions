@@ -97,7 +97,7 @@ public:
 	 * Draw the texture. targetRect is the output rectangle in OpenGL terms.
 	 * If texture is not ready, the rectangle is filled with fillColor.
 	 */
-	virtual void paintGL(int l, int b, int w, int h);
+	virtual void paintGL(int l, int b, int w, int h, bool reverse_y);
 
 	//! Check if Android View already exists
 	bool isCreated() const;

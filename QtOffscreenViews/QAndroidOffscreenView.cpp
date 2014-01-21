@@ -229,7 +229,7 @@ static inline void clearGlRect(int l, int b, int w, int h, const QColor & fill_c
 	glDisable(GL_SCISSOR_TEST);
 }
 
-void QAndroidOffscreenView::paintGL(int l, int b, int w, int h)
+void QAndroidOffscreenView::paintGL(int l, int b, int w, int h, bool reverse_y)
 {
 	glViewport(l, b, w, h);
 	if (tex_.isAllocated() && view_painted_)
@@ -245,7 +245,8 @@ void QAndroidOffscreenView::paintGL(int l, int b, int w, int h)
 		}
 		tex_.blitTexture(
 			QRect(QPoint(0, 0), QSize(w, h)) // target rect (relatively to viewport)
-			, QRect(QPoint(0, 0), QSize(w, h))); // source rect (in texture)
+			, QRect(QPoint(0, 0), QSize(w, h)) // source rect (in texture)
+			, reverse_y);
 		return;
 	}
 	clearGlRect(l, b, w, h, fill_color_);
@@ -391,13 +392,13 @@ void QAndroidOffscreenView::resize(const QSize & size)
 {
 	if (size_ != size)
 	{
-		qDebug()<<__PRETTY_FUNCTION__<<"Old size:"<<size_<<"New size:"<<size_;
+		qDebug()<<__PRETTY_FUNCTION__<<"Old size:"<<size_<<"New size:"<<size;
 		size_ = size;
 		if (offscreen_view_)
 		{
 			offscreen_view_->CallParamVoid("resizeOffscreenView", "II", jint(size.width()), jint(size.height()));
-			tex_.setTextureSize(size);
 		}
+		tex_.setTextureSize(size);
 	}
 }
 

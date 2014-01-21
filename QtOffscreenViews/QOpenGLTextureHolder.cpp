@@ -188,7 +188,7 @@ QGLShaderProgram * QOpenGLTextureHolder::GetBlitProgram(GLenum target)
 	#endif // ES 2.0
 }
 
-void QOpenGLTextureHolder::blitTexture(const QRect & targetRect, const QRect & sourceRect)
+void QOpenGLTextureHolder::blitTexture(const QRect & targetRect, const QRect & sourceRect, bool reverse_y)
 {
 	if (!isAllocated())
 	{
@@ -244,7 +244,7 @@ void QOpenGLTextureHolder::blitTexture(const QRect & targetRect, const QRect & s
 		{
 			r.setTop((targetRect.bottom() / w) * 2.0f - 1.0f);
 		}
-		drawTexture(r, sourceRect);
+		drawTexture(r, sourceRect, reverse_y);
 		blitProgram->release();
 	#else
 		glBindTexture(texture_type_, texture_id_);
@@ -263,11 +263,11 @@ void QOpenGLTextureHolder::blitTexture(const QRect & targetRect, const QRect & s
 			glOrthof(0, targetRect.width(), targetRect.height(), 0, -999999, 999999);
 		#endif
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		drawTexture(targetRect, targetRect.size(), sourceRect);
+		drawTexture(targetRect, targetRect.size(), sourceRect, reverse_y);
 	#endif
 }
 
-void QOpenGLTextureHolder::drawTexture(const QRectF & rect, const QRectF & bitmap_rect)
+void QOpenGLTextureHolder::drawTexture(const QRectF & rect, const QRectF & bitmap_rect, bool reverse_y)
 {
 	if (!isAllocated())
 	{
@@ -302,6 +302,11 @@ void QOpenGLTextureHolder::drawTexture(const QRectF & rect, const QRectF & bitma
 	GLfloat tx2m = a11_ * tx2 + a12_ * ty2 + b1_;
 	GLfloat ty1m = a21_ * tx1 + a22_ * ty1 + b2_;
 	GLfloat ty2m = a21_ * tx2 + a22_ * ty2 + b2_;
+
+	if (reverse_y)
+	{
+		qSwap(ty1m, ty2m);
+	}
 
 	// Put the in-texture coordinates into the array for GL.
 	texCoordArray[0] = tx1m;
