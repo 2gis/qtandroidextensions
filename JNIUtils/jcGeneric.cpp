@@ -52,15 +52,6 @@ const char * jcGeneric::field_not_found_exception::what() const throw()
 	return "Java field not found";
 }
 
-// Be sure to delete the ref via env->DeleteLocalRef(jstring)
-static inline jstring QStringToJstring(JNIEnv *env, const QString& str)
-{
-	jstring ret = env->NewString(str.utf16(), str.length());
-	if (env->ExceptionCheck())
-		env->ExceptionClear();
-	return ret;
-}
-
 jcGeneric::jcGeneric(jobject instance, bool take_ownership)
 	: instance_(0)
 	, class_(0)
@@ -492,7 +483,7 @@ void jcGeneric::CallVoid(const char * method_name, const QString & string)
 {
 	JniEnvPtr jep;
 	JNIEnv * env = jep.env();
-	jstring js = QStringToJstring(env, string);
+	jstring js = jep.JStringFromQString(string);
 	CallParamVoid(method_name, "Ljava/lang/String;", js);
 	env->DeleteLocalRef(js);
 }
@@ -501,8 +492,8 @@ void jcGeneric::CallVoid(const char * method_name, const QString & string1, cons
 {
 	JniEnvPtr jep;
 	JNIEnv * env = jep.env();
-	jstring js1 = QStringToJstring(env, string1);
-	jstring js2 = QStringToJstring(env, string2);
+	jstring js1 = jep.JStringFromQString(string1);
+	jstring js2 = jep.JStringFromQString(string2);
 	CallParamVoid(method_name, "Ljava/lang/String;Ljava/lang/String;", js1, js2);
 	env->DeleteLocalRef(js1);
 	env->DeleteLocalRef(js2);
@@ -512,9 +503,9 @@ void jcGeneric::CallVoid(const char * method_name, const QString & string1, cons
 {
 	JniEnvPtr jep;
 	JNIEnv * env = jep.env();
-	jstring js1 = QStringToJstring(env, string1);
-	jstring js2 = QStringToJstring(env, string2);
-	jstring js3 = QStringToJstring(env, string3);
+	jstring js1 = jep.JStringFromQString(string1);
+	jstring js2 = jep.JStringFromQString(string2);
+	jstring js3 = jep.JStringFromQString(string3);
 	CallParamVoid(method_name, "Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;", js1, js2, js3);
 	env->DeleteLocalRef(js1);
 	env->DeleteLocalRef(js2);
@@ -525,10 +516,10 @@ void jcGeneric::CallVoid(const char * method_name, const QString & string1, cons
 {
 	JniEnvPtr jep;
 	JNIEnv * env = jep.env();
-	jstring js1 = QStringToJstring(env, string1);
-	jstring js2 = QStringToJstring(env, string2);
-	jstring js3 = QStringToJstring(env, string3);
-	jstring js4 = QStringToJstring(env, string4);
+	jstring js1 = jep.JStringFromQString(string1);
+	jstring js2 = jep.JStringFromQString(string2);
+	jstring js3 = jep.JStringFromQString(string3);
+	jstring js4 = jep.JStringFromQString(string4);
 	CallParamVoid(method_name, "Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;", js1, js2, js3, js4);
 	env->DeleteLocalRef(js1);
 	env->DeleteLocalRef(js2);
@@ -540,11 +531,11 @@ void jcGeneric::CallVoid(const char * method_name, const QString & string1, cons
 {
 	JniEnvPtr jep;
 	JNIEnv * env = jep.env();
-	jstring js1 = QStringToJstring(env, string1);
-	jstring js2 = QStringToJstring(env, string2);
-	jstring js3 = QStringToJstring(env, string3);
-	jstring js4 = QStringToJstring(env, string4);
-	jstring js5 = QStringToJstring(env, string5);
+	jstring js1 = jep.JStringFromQString(string1);
+	jstring js2 = jep.JStringFromQString(string2);
+	jstring js3 = jep.JStringFromQString(string3);
+	jstring js4 = jep.JStringFromQString(string4);
+	jstring js5 = jep.JStringFromQString(string5);
 	CallParamVoid(method_name, "Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;", js1, js2, js3, js4, js5);
 	env->DeleteLocalRef(js1);
 	env->DeleteLocalRef(js2);
