@@ -95,7 +95,7 @@ jobject JNICALL getActivity(JNIEnv *, jobject)
 	return activity->TakeJobjectOver();
 }
 
-void preloadClassThroughJNI(const char * class_name)
+void preloadJavaClass(const char * class_name)
 {
 	qDebug()<<__PRETTY_FUNCTION__<<class_name;
 	JniEnvPtr jep;
