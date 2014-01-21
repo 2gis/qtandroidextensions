@@ -104,8 +104,6 @@ abstract class OffscreenView
     private long native_ptr_ = 0;
     private int gl_texture_id_ = 0;
     private Boolean painting_now_ = new Boolean(false);
-    // Timer timer_ = new Timer();
-    Handler handler_ = null;
 
     private int initial_width_ = 512;
     private int initial_height_ = 512;
@@ -113,15 +111,6 @@ abstract class OffscreenView
     OffscreenView()
     {
         Log.i(TAG, "OffscreenView constructor");
-        try
-        {
-            Looper.prepare();
-            handler_ = new Handler(Looper.getMainLooper());
-        }
-        catch (Exception e)
-        {
-            Log.e(TAG, "Exception when creating handler:", e);
-        }
     }
 
     public void SetObjectName(String name) { object_name_ = name; }
@@ -146,50 +135,8 @@ abstract class OffscreenView
                 return false;
             }
             Log.i(TAG, "OffscreenView.runOnUiThread: scheduling runnable...");
-
-            //context.runOnUiThread(runnable);
-            //return true;
-            
-            /*new Thread(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        Log.i(TAG, "OffscreenView.runOnUiThread: thread's run");
-                        Looper.prepare();
-                        context.runOnUiThread(runnable);
-                    }
-                }).start();
-            return true;*/
-
-            /*timer_.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    context.runOnUiThread(runnable);
-                }
-            }, 0);*/
-
-
-            if (handler_ == null)
-            {
-                Log.e(TAG, "OffscreenView.runOnUiThread: null handler!");
-                return false;
-            }
-            // boolean result = handler_.post(new Runnable() {
-            boolean result = (new Handler(context.getMainLooper())).postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    Log.i(TAG, "OffscreenView.runOnUiThread: handler's run...");
-                    context.runOnUiThread(runnable);
-                }
-            }, 1);
-            
-            if (!result)
-            {
-                Log.e(TAG, "Handler failed to post a runnable!");
-            }
-            return result;
-            
+            context.runOnUiThread(runnable);
+            return true;
         }
         catch (Exception e)
         {
