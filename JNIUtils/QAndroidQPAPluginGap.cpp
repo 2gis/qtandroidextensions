@@ -38,23 +38,38 @@
 #include <JniEnvPtr.h>
 #include <jcGeneric.h>
 #include <JclassPtr.h>
+
+#if QT_VERSION < 0x050000 && defined(QTOFFSCREENVIEWS_GRYM)
+	#define QPA_QT4GRYM
+#else
+	#define QPA_QT5
+#endif
+
+#if defined(QPA_QT5)
+	#include <QtAndroidExtras>
+#endif
+
 #include "QAndroidQPAPluginGap.h"
+
+#if defined(Q_OS_ANDROID)
 
 namespace QAndroidQPAPluginGap {
 
 jobject JNICALL getActivity(JNIEnv *, jobject)
 {
-	#if QT_VERSION < 0x050000 && defined(QTOFFSCREENVIEWS_GRYM)
+	#if defined(QPA_QT4GRYM)
 		static const char * const c_class_name = "org/qt/core/QtApplicationBase";
 		static const char * const c_method_name = "getActivityStatic";
 		// It is OK to return QtActivityBase as it's a descendant of Activity and
 		// Java will handle the type casting.
 		static const char * const c_result_name = "org/qt/core/QtActivityBase";
-	#else // QT_VERSION >= 0x050000
+	#elif defined(QPA_QT5)
 		//! \todo If we make another plugin for Qt 5, this place will need an update!
 		static const char * const c_class_name = "org/qtproject/qt5/android/QtNative";
 		static const char * const c_method_name = "activity";
 		static const char * const c_result_name = "android/app/Activity";
+	#else
+		#error "Unimplemented QPA case"
 	#endif
 	jcGeneric theclass(c_class_name, false);
 	if (!theclass.jClass())
@@ -77,4 +92,43 @@ jobject JNICALL getActivity(JNIEnv *, jobject)
 	return activity->TakeJobjectOver();
 }
 
+void preloadClassThroughJNI(const char * class_name)
+{
+	JniEnvPtr jep;
+	if (jep.IsClassPreloaded(class_name))
+	{
+		qDebug()<<"Class already pre-loaded:"<<class_name;
+		return;
+	}
+	qDebug()<<"Pre-loading:"<<class_name;
+	jstring jclassname = jep.JStringFromQString(class_name);
+	#if defined(QPA_QT4GRYM)
+		jcGeneric clz("ru/dublgis/jniutils/ClassLoader", false).CallStaticParamVoid(
+			"callJNIPreloadClass",
+			"Landroid/app/Activity;Ljava/lang/string;",
+			QAndroidQPAPluginGap::getActivity(), jclassname);
+	#elif defined(QPA_QT5)
+		QAndroidJniObject::callStaticMethod<void>(
+			"ru/dublgis/jniutils/ClassLoader",
+			"callJNIPreloadClass",
+			"(Landroid/app/Activity;Ljava/lang/String;)V",
+			QAndroidQPAPluginGap::getActivity(),
+			jclassname);
+	#endif
+	jep.env()->DeleteLocalRef(jclassname);
+}
+
+// Declaring entry point for nativeJNIPreloadClass so we don't have to register it.
+// It must be "C" because the function name should not be mangled.
+extern "C" {
+	JNIEXPORT void JNICALL Java_ru_dublgis_jniutils_ClassLoader_nativeJNIPreloadClass(JNIEnv * env, jobject, jstring classname)
+	{
+		JniEnvPtr jep(env);
+		QString qclassname = jep.QStringFromJString(classname);
+		jep.PreloadClass(qclassname.toLatin1());
+	}
+}
+
 } // namespace QAndroidQPAPluginGap
+
+#endif // #if defined(Q_OS_ANDROID)

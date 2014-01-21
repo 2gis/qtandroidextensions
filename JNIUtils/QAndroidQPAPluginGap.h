@@ -50,5 +50,7 @@ namespace QAndroidQPAPluginGap {
 	 */
 	jobject JNICALL getActivity(JNIEnv * env = 0, jobject jo = 0);
 
+	void preloadClassThroughJNI(const char * class_name);
+
 } // namespace QAndroidQPAPluginGap
 

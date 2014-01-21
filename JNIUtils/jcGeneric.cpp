@@ -331,6 +331,46 @@ void jcGeneric::CallStaticVoid(const char* method_name)
 	env->CallStaticVoidMethod(class_, mid);
 }
 
+void jcGeneric::CallStaticParamVoid(const char* method_name, const char * param_signature, ...)
+{
+	VERBOSE(qDebug("void jcGeneric(%p)::CallParamVoid(\"%s\", \"%s\", ...)", this, method_name, param_signature));
+
+	va_list args;
+	JniEnvPtr jep;
+	JNIEnv* env = jep.env();
+
+	std::string signature = "(";
+	signature += param_signature;
+	signature += ")V";
+	jmethodID mid = env->GetStaticMethodID(class_, method_name, signature.c_str());
+	if (!mid)
+	{
+		qWarning("%s: method not found.", __FUNCTION__);
+		throw method_not_found_exception();
+	}
+
+	va_start(args, param_signature);
+	env->CallStaticVoidMethodV(class_, mid, args);
+	va_end(args);
+
+	if (env->ExceptionCheck())
+	{
+		qWarning("void jcGeneric(%p)::CallParamVoid(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
+		env->ExceptionDescribe();
+		env->ExceptionClear();
+		return;
+	}
+}
+
+void jcGeneric::CallStaticVoid(const char* method_name, const QString & string)
+{
+	JniEnvPtr jep;
+	JNIEnv * env = jep.env();
+	jstring js = jep.JStringFromQString(string);
+	CallStaticParamVoid(method_name, "Ljava/lang/String;", js);
+	env->DeleteLocalRef(js);
+}
+
 QString jcGeneric::CallString(const char *method_name)
 {
 	VERBOSE(qDebug("QString jcGeneric::CallString(const char* method_name) %p \"%s\"",this,method_name));

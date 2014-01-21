@@ -127,10 +127,8 @@ public:
 	 * Java method signature and parameters.
 	 */
 	void CallParamVoid(const char* method_name, const char* param_signature, ...);
-
 	void CallVoid(const char * method_name, jint x);
 	void CallVoid(const char * method_name, jlong x);
-
 	void CallVoid(const char * method_name, const QString & string);
 	void CallVoid(const char * method_name, const QString & string1, const QString & string2);
 	void CallVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3);
@@ -139,6 +137,8 @@ public:
 
 	//! Call void static method of the wrapped Java class
 	void CallStaticVoid(const char* method_name);
+	void CallStaticParamVoid(const char* method_name, const char* param_signature, ...);
+	void CallStaticVoid(const char* method_name, const QString & string);
 
 	/*!
 	 * Call object static method of the wrapped Java class.
