@@ -40,18 +40,17 @@
 
 #include <QGuiApplication>
 #include <QtQuick/QQuickView>
+#include <QAndroidOffscreenWebView.h>
 #include "fboinsgrenderer.h"
 
-// Qt 5.2 bug: this should be included after GUI headers
 #include <QtAndroidExtras>
-#include <QAndroidQPAPluginGap.h>
-
-#include <JniEnvPtr.h>
 
 int main(int argc, char **argv)
 {
+	// Make sure this thread is attached to JVM, and will be until the end of main().
 	QAndroidJniEnvironment jni_thread_attacher;
-	QAndroidQPAPluginGap::preloadClassThroughJNI("ru/dublgis/offscreenview/OffscreenWebView");
+	Q_UNUSED(jni_thread_attacher);
+	QAndroidOffscreenWebView::preloadJavaClass();
 
     QGuiApplication app(argc, argv);
 
@@ -62,7 +61,6 @@ int main(int argc, char **argv)
     view.setSource(QUrl("qrc:///scenegraph/textureinsgnode/main.qml"));
     view.show();
 
-	Q_UNUSED(jni_thread_attacher);
     return app.exec();
 }
 

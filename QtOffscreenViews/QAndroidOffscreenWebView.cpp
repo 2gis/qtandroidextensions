@@ -34,6 +34,7 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <QAndroidQPAPluginGap.h>
 #include "QAndroidOffscreenWebView.h"
 
 static inline QAndroidOffscreenWebView * AOWW(jlong nativeptr)
@@ -254,6 +255,12 @@ QAndroidOffscreenWebView::QAndroidOffscreenWebView(const QString & object_name, 
 QAndroidOffscreenWebView::~QAndroidOffscreenWebView()
 {
 
+}
+
+void QAndroidOffscreenWebView::preloadJavaClass()
+{
+	QString path = getDefaultJavaClassPath() + QLatin1String("OffscreenWebView");
+	QAndroidQPAPluginGap::preloadClassThroughJNI(path.toLatin1());
 }
 
 bool QAndroidOffscreenWebView::loadUrl(const QString & url)

@@ -71,6 +71,8 @@ protected:
 public:
 	virtual ~QAndroidOffscreenView();
 
+	static const QString & getDefaultJavaClassPath();
+
 	/*!
 	 * Initialize Android view. This function should be called within active proper GL context
 	 * as it may want to create OpenGL texture.
@@ -186,7 +188,6 @@ private:
 	 *   This will cause the attachers to come and go and unneeded re-attachments will happen. */
 	QScopedPointer<JniEnvPtr> initial_thread_attacher_;
 	QScopedPointer<JniEnvPtr> jni_gl_thread_attacher_;
-
 private:
 	Q_DISABLE_COPY(QAndroidOffscreenView)
 	friend void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv * env, jobject jo, jlong param);

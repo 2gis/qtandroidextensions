@@ -34,15 +34,18 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 #include <qconfig.h>
+#include <QDebug>
 #include <QScopedPointer>
 #include <JniEnvPtr.h>
 #include <jcGeneric.h>
 #include <JclassPtr.h>
 
-#if QT_VERSION < 0x050000 && defined(QTOFFSCREENVIEWS_GRYM)
+#if QT_VERSION < 0x050000 && defined(JNIUTILS_GRYM)
 	#define QPA_QT4GRYM
-#else
+#elif QT_VERSION >= 0x050000
 	#define QPA_QT5
+#else
+	#error "Unimplemented QPA case"
 #endif
 
 #if defined(QPA_QT5)
@@ -103,10 +106,11 @@ void preloadClassThroughJNI(const char * class_name)
 	qDebug()<<"Pre-loading:"<<class_name;
 	jstring jclassname = jep.JStringFromQString(class_name);
 	#if defined(QPA_QT4GRYM)
-		jcGeneric clz("ru/dublgis/jniutils/ClassLoader", false).CallStaticParamVoid(
+		jcGeneric("ru/dublgis/jniutils/ClassLoader", false).CallStaticParamVoid(
 			"callJNIPreloadClass",
 			"Landroid/app/Activity;Ljava/lang/string;",
-			QAndroidQPAPluginGap::getActivity(), jclassname);
+			QAndroidQPAPluginGap::getActivity(),
+			jclassname);
 	#elif defined(QPA_QT5)
 		QAndroidJniObject::callStaticMethod<void>(
 			"ru/dublgis/jniutils/ClassLoader",

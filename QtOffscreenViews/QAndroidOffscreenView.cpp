@@ -40,7 +40,7 @@
 #include <GLES2/gl2ext.h>
 #include <QThread>
 #include <QMutexLocker>
-#include "QAndroidQPAPluginGap.h"
+#include <QAndroidQPAPluginGap.h>
 #include "QAndroidOffscreenView.h"
 
 static const QString c_class_path_(QLatin1String("ru/dublgis/offscreenview/"));
@@ -87,7 +87,7 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 		initial_thread_attacher_.reset(new JniEnvPtr());
 	}
 
-	// Expand OffscreenWebView => ru/dublgis/offscreenview/OffscreenWebView
+	// Expand like: OffscreenWebView => ru/dublgis/offscreenview/OffscreenWebView
 	if (!view_class_name_.contains('/'))
 	{
 		view_class_name_.prepend(c_class_path_);
@@ -116,7 +116,8 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	}
 	else
 	{
-		qCritical()<<"Failed to create View:"<<view_class_name_<<"/"<<view_object_name_;
+		qCritical()<<"Failed to create View:"<<view_class_name_<<"/"<<view_object_name_
+			<<"Please make sure that all Java classes are present in the project, and also that the Java class is pre-loaded.";
 		offscreen_view_.reset();
 		return;
 	}
@@ -152,6 +153,11 @@ bool QAndroidOffscreenView::createView()
 QAndroidOffscreenView::~QAndroidOffscreenView()
 {
 	deinitialize();
+}
+
+const QString & QAndroidOffscreenView::getDefaultJavaClassPath()
+{
+	return c_class_path_;
 }
 
 void QAndroidOffscreenView::initializeGL()

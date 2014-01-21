@@ -50,19 +50,13 @@ LogoInFboRenderer::LogoInFboRenderer()
 {
 	qDebug()<<__FUNCTION__<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<"Constructing...";
 	connect(&aview_, SIGNAL(updated()), this, SLOT(textureUpdated()));
-	qDebug()<<__FUNCTION__<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<"Initializing GL...";
 	aview_.initializeGL();
-	aview_.setFillColor(Qt::red);
-	qDebug()<<__FUNCTION__<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<"Starting URL load...";
+	// aview_.setFillColor(Qt::red);
 	aview_.loadUrl("http://www.android.com/intl/en/about/");
-	qDebug()<<__FUNCTION__<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<"Done.";
 }
 
 void LogoInFboRenderer::render()
 {
-	// qDebug()<<"Grym"<<__FUNCTION__<<"Size:"<<aview_.size().height()<<"x"<<aview_.size().width();
-	// logo.render();
-	// aview_.paintGL(QPoint(0, 0));
 	aview_.paintGL(0, 0, aview_.size().width(), aview_.size().height(), true);
 	update();
 }
@@ -71,11 +65,8 @@ QOpenGLFramebufferObject * LogoInFboRenderer::createFramebufferObject(const QSiz
 {
 	qDebug()<<__FUNCTION__<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<size;
 	QOpenGLFramebufferObjectFormat format;
-	// format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 	format.setSamples(4);
-	qDebug()<<__FUNCTION__<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<"Resizing..."<<size;
 	aview_.resize(size);
-	qDebug()<<__FUNCTION__<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<"Creating FBO..."<<size;
 	return new QOpenGLFramebufferObject(size, format);
 }
 

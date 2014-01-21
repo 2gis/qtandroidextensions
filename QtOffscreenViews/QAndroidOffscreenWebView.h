@@ -34,6 +34,7 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#pragma once
 #include <QMap>
 #include "QAndroidOffscreenView.h"
 
@@ -44,6 +45,12 @@ class QAndroidOffscreenWebView
 public:
 	QAndroidOffscreenWebView(const QString & object_name, bool waitforcreation, const QSize & def_size, QObject * parent = 0);
 	virtual ~QAndroidOffscreenWebView();
+
+	/*!
+	 * This function should be called from main() to make sure that it all will work from QML threads.
+	 * For Qt4/Grym plugin this is not necessary if you use QAndroidOffscreenView functions from GUI thread.
+	 */
+	static void preloadJavaClass();
 
 	/*!
 	 * Start loading specified URL.
