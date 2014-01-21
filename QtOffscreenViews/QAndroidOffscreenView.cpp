@@ -98,11 +98,12 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 
 	if (offscreen_view_ && offscreen_view_->jObject())
 	{
-		offscreen_view_->CallVoid("SetObjectName", view_object_name_);
-		offscreen_view_->CallParamVoid("SetNativePtr", "J", jlong(reinterpret_cast<void*>(this)));
-
 		offscreen_view_->RegisterNativeMethod("nativeUpdate", "(J)V", (void*)Java_OffscreenView_nativeUpdate);
 		offscreen_view_->RegisterNativeMethod("nativeGetActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity);
+		offscreen_view_->CallVoid("SetObjectName", view_object_name_);
+		offscreen_view_->CallParamVoid("SetNativePtr", "J", jlong(reinterpret_cast<void*>(this)));
+		offscreen_view_->CallParamVoid("setFillColor", "IIII",
+			jint(fill_color_.alpha()), jint(fill_color_.red()), jint(fill_color_.green()), jint(fill_color_.blue()));
 
 		// Invoke creation of the view, so its functions will be available
 		// before initialization of GL part.
@@ -315,6 +316,11 @@ void QAndroidOffscreenView::setFillColor(const QColor & color)
 	if (color != fill_color_)
 	{
 		fill_color_ = color;
+		if (offscreen_view_)
+		{
+			offscreen_view_->CallParamVoid("setFillColor", "IIII",
+				jint(fill_color_.alpha()), jint(fill_color_.red()), jint(fill_color_.green()), jint(fill_color_.blue()));
+		}
 		if (!hasValidImage())
 		{
 			emit updated();

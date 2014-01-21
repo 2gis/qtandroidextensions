@@ -108,6 +108,8 @@ abstract class OffscreenView
     private int initial_width_ = 512;
     private int initial_height_ = 512;
 
+    private int fill_a_ = 255, fill_r_ = 255, fill_g_ = 255, fill_b_ = 255;
+
     OffscreenView()
     {
         Log.i(TAG, "OffscreenView constructor");
@@ -255,7 +257,7 @@ abstract class OffscreenView
                         {
                             //! \todo Add ability to set fill color
                             Log.i(TAG, "doDrawViewOnTexture: View is not available yet, filling with white color....");
-                            canvas.drawARGB(255, 255, 255, 255);
+                            canvas.drawARGB(fill_a_, fill_r_, fill_g_, fill_b_);
                         }
                     }
                     catch(Exception e)
@@ -419,6 +421,14 @@ abstract class OffscreenView
         }
     }
 
+    public void setFillColor(int a, int r, int g, int b)
+    {
+        fill_a_ = a;
+        fill_r_ = r;
+        fill_g_ = g;
+        fill_b_ = b;
+    }
+
     // C++ function called from Java to tell that the texture has new contents.
     // abstract public native void nativeUpdate(long nativeptr);
 
@@ -536,7 +546,6 @@ abstract class OffscreenView
             texture_height_ = h;
             surface_texture_.setDefaultBufferSize(w, h); // API 15
         }
-
     }
 
 }
