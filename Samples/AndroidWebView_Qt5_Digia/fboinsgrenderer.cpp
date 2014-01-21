@@ -81,6 +81,7 @@ QOpenGLFramebufferObject * LogoInFboRenderer::createFramebufferObject(const QSiz
 
 void LogoInFboRenderer::textureUpdated()
 {
+	qDebug()<<__FUNCTION__<<"!!!!!!!!!!!!! ***** !!!!!!!!!!!!! ***** !!!!!!!!!!!!!! **** !!!!!!!!!!!!!!";
 	invalidateFramebufferObject();
 }
 

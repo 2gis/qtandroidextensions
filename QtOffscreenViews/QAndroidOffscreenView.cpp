@@ -136,6 +136,10 @@ bool QAndroidOffscreenView::createView()
 			view_creation_requested_ = true;
 			return true;
 		}
+		else
+		{
+			qCritical()<<"Call to createView failed!";
+		}
 	}
 	else
 	{

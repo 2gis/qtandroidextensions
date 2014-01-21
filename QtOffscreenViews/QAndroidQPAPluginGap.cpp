@@ -65,7 +65,7 @@ jobject JNICALL getActivity(JNIEnv *, jobject)
 	QScopedPointer<jcGeneric> activity(theclass.CallStaticObject(c_method_name, c_result_name));
 	if (!activity)
 	{
-		qCritical("QAndroid: Failed to get Activity object.");
+		qCritical("QAndroid: Failed to get create Activity object.");
 		return 0;
 	}
 	if (!activity->jObject())

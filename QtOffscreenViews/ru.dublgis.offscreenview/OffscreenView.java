@@ -46,6 +46,8 @@ import java.util.TreeSet;
 import java.util.Locale;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.io.File;
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -62,7 +64,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import  android.graphics.SurfaceTexture;
+import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -102,10 +104,25 @@ abstract class OffscreenView
     private long native_ptr_ = 0;
     private int gl_texture_id_ = 0;
     private Boolean painting_now_ = new Boolean(false);
-    // Handler handler_ = new Handler();
+    // Timer timer_ = new Timer();
+    Handler handler_ = null;
 
     private int initial_width_ = 512;
     private int initial_height_ = 512;
+
+    OffscreenView()
+    {
+        Log.i(TAG, "OffscreenView constructor");
+        try
+        {
+            Looper.prepare();
+            handler_ = new Handler(Looper.getMainLooper());
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG, "Exception when creating handler:", e);
+        }
+    }
 
     public void SetObjectName(String name) { object_name_ = name; }
     public void SetTexture(int tex) { gl_texture_id_ = tex; }
@@ -115,15 +132,70 @@ abstract class OffscreenView
 
     public boolean runOnUiThread(final Runnable runnable)
     {
-        final Activity context = getActivity();
-        if (context == null)
+        try
         {
-            Log.e(TAG, "OffscreenView.runOnUiThread: cannot schedule task because of the null context!");
+            if (runnable == null)
+            {
+                Log.e(TAG, "OffscreenView.runOnUiThread: null runnable!");
+                return false;
+            }
+            final Activity context = getActivity();
+            if (context == null)
+            {
+                Log.e(TAG, "OffscreenView.runOnUiThread: cannot schedule task because of the null context!");
+                return false;
+            }
+            Log.i(TAG, "OffscreenView.runOnUiThread: scheduling runnable...");
+
+            //context.runOnUiThread(runnable);
+            //return true;
+            
+            /*new Thread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        Log.i(TAG, "OffscreenView.runOnUiThread: thread's run");
+                        Looper.prepare();
+                        context.runOnUiThread(runnable);
+                    }
+                }).start();
+            return true;*/
+
+            /*timer_.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    context.runOnUiThread(runnable);
+                }
+            }, 0);*/
+
+
+            if (handler_ == null)
+            {
+                Log.e(TAG, "OffscreenView.runOnUiThread: null handler!");
+                return false;
+            }
+            // boolean result = handler_.post(new Runnable() {
+            boolean result = (new Handler(context.getMainLooper())).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Log.i(TAG, "OffscreenView.runOnUiThread: handler's run...");
+                    context.runOnUiThread(runnable);
+                }
+            }, 1);
+            
+            if (!result)
+            {
+                Log.e(TAG, "Handler failed to post a runnable!");
+            }
+            return result;
+            
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG, "Exception when posting a runnable:", e);
             return false;
         }
-        Log.i(TAG, "OffscreenView.runOnUiThread: scheduling creation of the object...");
-        context.runOnUiThread(runnable);
-        return true;
     }
 
     /*!
@@ -131,8 +203,8 @@ abstract class OffscreenView
      */
     public boolean createView()
     {
-        Log.i(TAG, "OffscreenView.createView(name=\""+object_name_+"\")");
-        runOnUiThread(new Runnable() {
+        Log.i(TAG, "OffscreenView.createView(name=\""+object_name_+"\") called");
+        boolean result = runOnUiThread(new Runnable() {
             @Override
             public void run()
             {
@@ -144,7 +216,8 @@ abstract class OffscreenView
                 }
             }
         });
-        return true;
+        Log.i(TAG, "createView result="+result);
+        return result;
     }
 
     /*!

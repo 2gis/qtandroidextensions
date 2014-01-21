@@ -241,7 +241,10 @@ QAndroidOffscreenWebView::QAndroidOffscreenWebView(const QString & object_name, 
 	{
 		qCritical("Failed to register native methods of QAndroidOffscreenWebView because Java object pointer is null.");
 	}
+
+	// Creating the view
 	createView();
+
 	if (waitforcreation)
 	{
 		waitForViewCreation();
@@ -343,7 +346,7 @@ bool QAndroidOffscreenWebView::requestContentHeight()
 	jcGeneric * view = offscreenView();
 	if (view)
 	{
-		return view->CallBool("requestContentHeight")? true: false;
+		return view->CallBool("requestContentHeight");
 	}
 	qWarning("QAndroidOffscreenWebView: Attempt to requestContentHeight when View is null.");
 	return 0;

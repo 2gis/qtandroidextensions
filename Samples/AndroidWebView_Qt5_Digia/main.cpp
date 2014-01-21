@@ -45,6 +45,7 @@
 // Qt 5.2 bug: this should be included after GUI headers
 #include <QtAndroidExtras>
 #include <QAndroidJniObject>
+#include <QAndroidQPAPluginGap.h>
 
 #include <JniEnvPtr.h>
 
@@ -81,8 +82,12 @@ extern "C" {
 int main(int argc, char **argv)
 {
 	// SGEXP - temporary code!
-	JniEnvPtr thread_attacher;
-	QAndroidJniObject::callStaticMethod<void>("ru/dublgis/offscreenview/ClassLoader", "callJNIPreloadClass");
+	QAndroidJniEnvironment jni_thread_attacher; Q_UNUSED(jni_thread_attacher);
+	QAndroidJniObject::callStaticMethod<void>(
+		"ru/dublgis/offscreenview/ClassLoader",
+		"callJNIPreloadClass",
+		"(Landroid/app/Activity;)V",
+		QAndroidQPAPluginGap::getActivity());
 
 	/*#if defined(Q_OS_ANDROID)
 		if (!preloadJavaClasses())
