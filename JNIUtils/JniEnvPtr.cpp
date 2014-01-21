@@ -140,10 +140,9 @@ bool JniEnvPtr::PreloadClass(const char* class_name)
 {
 	qWarning("Preloading class \"%s\"", class_name);
 	jclass clazz = env_->FindClass(class_name);
-	if (env_->ExceptionCheck())
+	if (suppressException())
 	{
 		qWarning("...Failed to preload class %s (tid %d)", class_name, (int)gettid());
-		env_->ExceptionClear();
 		return false;
 	}
 	jclass gclazz = (jclass)env_->NewGlobalRef(clazz);
@@ -209,10 +208,9 @@ jclass JniEnvPtr::FindClass(const char * name)
 	// if it wasn't preloaded, try to load it in JNI (will fail for custom classes in native-created threads)
 	VERBOSE(qDebug("Trying to construct the class directly: \"%s\" in tid %d", name, (int)gettid()));
 	jclass cls = env_->FindClass(name);
-	if (env_->ExceptionCheck())
+	if (suppressException())
 	{
 		qWarning("Failed to find class \"%s\"", name);
-		env_->ExceptionClear();
 		return 0;
 	}
 
@@ -245,22 +243,14 @@ void JniEnvPtr::SetJavaVM(JNIEnv* env)
 	env->GetJavaVM(&g_JavaVm);
 }
 
-/*
-std::string JniEnvPtr::PackageName()
-{
-	if(g_PackageName.empty())
-	{
-		JniEnvPtr jep;
-		jcGeneric
-	}
-	return g_PackageName;
-}*/
-
 jstring JniEnvPtr::JStringFromQString(const QString& str)
 {
 	jstring ret = env_->NewString(str.utf16(), str.length());
-	if (env_->ExceptionCheck())
-		env_->ExceptionClear();
+	if (suppressException())
+	{
+		qWarning("Failed to convert QString to jstring.");
+		return 0;
+	}
 	return ret;
 }
 
