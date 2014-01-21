@@ -48,29 +48,64 @@ public:
 	JniEnvPtr(JNIEnv* env);
 	~JniEnvPtr();
 
+	//! \brief Get current Java environment.
 	JNIEnv * env() const;
+
+	//! \brief Get current JavaVM. Note: JNIUtils supports only one JVM per process.
 	JavaVM * getJavaVM() const;
 
-	// preload class by names 
-	// required as Android's JNIEnv->FindClass doesn't work in threads created in native code. 
-	// (no workarounds with custom ClassLoader were found {yet?})
-public:
-	int PreloadClass(const char * class_name);
+	/*!
+	 * \brief Preload class by name, e.g.: "ru/dublgis/offscreenview/OffscreenWebView".
+	 * Required as Android's JNIEnv->FindClass doesn't work in threads created in native code.
+	 * After preloading, any thread can instantiate classes via JniEnvPtr::FindClass().
+	 */
+	bool PreloadClass(const char * class_name);
 
-	// last array element == 0
+	/*!
+	 * \brief Preload mutliple classes.
+	 * \param class_list - 0-terminated array of pointers to class names.
+	 * \return Number of loaded classes.
+	 */
 	int PreloadClasses(const char * const * class_list);
 
+	/*!
+	 * \brief Check if the class has been pre-loaded (see PreloadClass()).
+	 * \param class_name
+	 * \return
+	 */
 	bool IsClassPreloaded(const char * class_name);
 
-	// Возвращает глобальную ссылку на класс
+	/*!
+	 * \brief Get a global reference to a Java class.
+	 * \param name - full name of the class, e.g.: "ru/dublgis/offscreenview/OffscreenWebView".
+	 * \return
+	 */
 	jclass FindClass(const char * name);
 
-	// unload all preloaded classes for them not to leak
+	/*!
+	 * \brief Unload all preloaded classes to free Java objects.
+	 */
 	void UnloadClasses();
 
-	// don't forget to DeleteLocalRef it
-	jstring JStringFromQString(const QString&);
-	QString QStringFromJString(jstring);
+	/*!
+	 * \brief Convert QString into jstring.
+	 * \return Java String reference. Don't forget to call DeleteLocalRef on the returned reference!
+	 */
+	jstring JStringFromQString(const QString & qstring);
+
+	/*!
+	 * \brief Convert jstring to QString.
+	 * \param javastring - Java reference to String object.
+	 * \return QString.
+	 */
+	QString QStringFromJString(jstring javastring);
+
+	/*!
+	 * \brief Clear Java exception without taking any specific actions.
+	 * \param describe - if true, will call ExceptionDescribe() to print the exception description into stderr.
+	 * \return Returns false if there was no exceptions.
+	 */
+	bool suppressException(bool describe = true);
 	
 public:
 	static void SetJavaVM(JavaVM*);

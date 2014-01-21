@@ -65,12 +65,7 @@ int main(int argc, char **argv)
 
 	// SGEXP
 	// Workaround for a workaround
-	JniEnvPtr jep;
-	if (jep.env()->ExceptionCheck())
-	{
-		jep.env()->ExceptionDescribe();
-		jep.env()->ExceptionClear();
-	}
+	JniEnvPtr().suppressException();
 
 	return result;
 }

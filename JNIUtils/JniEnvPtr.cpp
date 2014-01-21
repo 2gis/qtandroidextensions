@@ -38,9 +38,10 @@
 #include "stdafx.h"
 #include "JniEnvPtr.h"
 
+typedef std::map<std::string, jclass> PreloadedClasses;
+
 static JavaVM * g_JavaVm = 0;
-typedef std::map<std::string,jclass> PreloadedClasses;
-QMutex g_PreloadedClassesMutex;
+static QMutex g_PreloadedClassesMutex;
 static PreloadedClasses g_PreloadedClasses;
 
 #if defined(Q_OS_ANDROID)
@@ -135,7 +136,7 @@ JNIEnv* JniEnvPtr::env() const
 	return env_;
 }
 
-int JniEnvPtr::PreloadClass(const char* class_name)
+bool JniEnvPtr::PreloadClass(const char* class_name)
 {
 	qWarning("Preloading class \"%s\"", class_name);
 	jclass clazz = env_->FindClass(class_name);
@@ -143,25 +144,26 @@ int JniEnvPtr::PreloadClass(const char* class_name)
 	{
 		qWarning("...Failed to preload class %s (tid %d)", class_name, (int)gettid());
 		env_->ExceptionClear();
-		return -1;
+		return false;
 	}
 	jclass gclazz = (jclass)env_->NewGlobalRef(clazz);
 	env_->DeleteLocalRef(clazz);
 	QMutexLocker locker(&g_PreloadedClassesMutex);
 	g_PreloadedClasses.insert(std::pair<std::string,jclass>(std::string(class_name),gclazz));
 	VERBOSE(qDebug("...Preloaded class \"%s\" as %p for tid %d", class_name, gclazz, (int)gettid()));
-	return 0;
+	return true;
 }
 
 int JniEnvPtr::PreloadClasses(const char* const* class_list)
 {
 	int loaded = 0;
-    for(; *class_list != 0; ++class_list, ++loaded )
+	for(; *class_list != 0; ++class_list)
 	{
-		if (PreloadClass(*class_list) != 0)
+		if (!PreloadClass(*class_list))
 		{
 			break;
 		}
+		++loaded;
 	}
 	return loaded;
 }
@@ -286,3 +288,19 @@ QString JniEnvPtr::QStringFromJString(jstring str)
 	return ret;
 }
 
+bool JniEnvPtr::suppressException(bool describe)
+{
+	if (env_->ExceptionCheck())
+	{
+		if (describe)
+		{
+			env_->ExceptionDescribe();
+		}
+		env_->ExceptionClear();
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
