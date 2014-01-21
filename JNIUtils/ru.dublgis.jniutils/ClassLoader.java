@@ -7,18 +7,19 @@ public class ClassLoader
 {
     public static final String TAG = "Grym/JNIUtils";
 
-    static public void callJNIPreloadClass(final Activity activity, final String classname)
+    static public void callJNIPreloadClass(final Activity activity, final String classname) throws Exception
     {
-       Log.i(TAG, "callJNIPreloadClass ***********************************************************************");
-       (new ClassLoader()).nativeJNIPreloadClass(classname);
+        Log.i(TAG, "callJNIPreloadClass ***********************************************************************");
+        try
+        {
+            (new ClassLoader()).nativeJNIPreloadClass(classname);
+        }
+        catch(Exception e)
+        {
+            Log.e(TAG, "callJNIPreloadClass nativeJNIPreloadClass exception:", e);
+        }
 
-       // SGEXP
-       activity.runOnUiThread(new Runnable(){
-          @Override
-          public void run(){
-              Log.i(TAG, "callJNIPreloadClass SUCCESSS +++++++++++++++++++++++++++++++++");
-          }
-       });
+        throw new Exception("This thing makes me crazy!");
     }
 
     private native void nativeJNIPreloadClass(String classname);

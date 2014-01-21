@@ -97,6 +97,7 @@ jobject JNICALL getActivity(JNIEnv *, jobject)
 
 void preloadClassThroughJNI(const char * class_name)
 {
+	qDebug()<<__PRETTY_FUNCTION__<<class_name;
 	JniEnvPtr jep;
 	if (jep.IsClassPreloaded(class_name))
 	{
@@ -105,16 +106,18 @@ void preloadClassThroughJNI(const char * class_name)
 	}
 	qDebug()<<"Pre-loading:"<<class_name;
 	jstring jclassname = jep.JStringFromQString(class_name);
+	static const char * const c_class_name = "ru/dublgis/jniutils/ClassLoader";
+	static const char * const c_method_name = "callJNIPreloadClass";
 	#if defined(QPA_QT4GRYM)
-		jcGeneric("ru/dublgis/jniutils/ClassLoader", false).CallStaticParamVoid(
-			"callJNIPreloadClass",
+		jcGeneric(c_class_name, false).CallStaticParamVoid(
+			c_method_name,
 			"Landroid/app/Activity;Ljava/lang/string;",
 			QAndroidQPAPluginGap::getActivity(),
 			jclassname);
 	#elif defined(QPA_QT5)
 		QAndroidJniObject::callStaticMethod<void>(
-			"ru/dublgis/jniutils/ClassLoader",
-			"callJNIPreloadClass",
+			c_class_name,
+			c_method_name,
 			"(Landroid/app/Activity;Ljava/lang/String;)V",
 			QAndroidQPAPluginGap::getActivity(),
 			jclassname);
