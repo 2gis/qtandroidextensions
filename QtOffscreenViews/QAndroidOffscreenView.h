@@ -212,20 +212,3 @@ private:
 	friend void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv * env, jobject jo, jlong param);
 };
 
-//Q_DECLARE_METATYPE(jobject)
-
-class QAndroidOnUiThreadDispatcher: public QObject
-{
-	Q_OBJECT
-protected:
-	QAndroidOnUiThreadDispatcher();
-public:
-	//! Must be called on UI thread for the first time.
-	static QAndroidOnUiThreadDispatcher * instance();
-
-public slots:
-	void runOnUiThread(jobject runnable);
-	void test(int x);
-};
-
-

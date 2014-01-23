@@ -64,83 +64,6 @@ Q_DECL_EXPORT void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv *, jobject, jl
 	qWarning()<<__FUNCTION__<<"Zero param!";
 }
 
-Q_DECL_EXPORT void JNICALL Java_OffscreenView_runOnUiThread(JNIEnv * env, jobject, jlong param, jobject runnable)
-{
-	qDebug()<<__FUNCTION__<<"tid ="<<gettid();
-#if 0
-	Q_UNUSED(param);
-	jobject jactivity = QAndroidQPAPluginGap::getActivity(env, jo);
-	if (jactivity)
-	{
-		qDebug()<<__FUNCTION__<<"Scheduling runnable...";
-		jcGeneric(jactivity, false).CallParamVoid("runOnUiThread", "Ljava/lang/Runnable;", runnable);
-		JniEnvPtr env;
-		env.SuppressException(true);
-		env.env()->DeleteGlobalRef(jactivity);
-	}
-	else
-	{
-		qCritical()<<__FUNCTION__<<"Activity object is null!";
-	}
-	Q_UNUSED(env);
-#else
-	//QAndroidJniObject::callStaticMethod<jboolean>(
-	//	"org/qtproject/qt5/android/QtNative", "runAction", "(Ljava/lang/Runnable;)Z", runnable);
-	if (param)
-	{
-		void * vp = reinterpret_cast<void*>(param);
-		QAndroidOffscreenView * proxy = reinterpret_cast<QAndroidOffscreenView*>(vp);
-		if (proxy)
-		{
-			jobject grunnable = env->NewGlobalRef(runnable);
-			qDebug()<<__FUNCTION__<<"invoking...";
-			QMetaObject::invokeMethod(QAndroidOnUiThreadDispatcher::instance(), "test", Qt::AutoConnection, Q_ARG(int, 1));
-			bool result = QMetaObject::invokeMethod(
-				QAndroidOnUiThreadDispatcher::instance(),
-				"runOnUiThread",
-				Qt::AutoConnection,
-				Q_ARG(jobject, grunnable));
-			if (!result)
-			{
-				qCritical()<<__FUNCTION__<<"Failed to invoke runOnUiThread!";
-			}
-			return;
-		}
-	}
-	qWarning()<<__FUNCTION__<<"Zero param!";
-#endif
-}
-
-QAndroidOnUiThreadDispatcher::QAndroidOnUiThreadDispatcher()
-{
-	qDebug()<<__PRETTY_FUNCTION__<<"Constructed in tid ="<<gettid();
-	qRegisterMetaType<jobject>("jobject");
-}
-
-QAndroidOnUiThreadDispatcher * QAndroidOnUiThreadDispatcher::instance()
-{
-	static QScopedPointer<QAndroidOnUiThreadDispatcher> ptr_;
-	if (!ptr_)
-	{
-		ptr_.reset(new QAndroidOnUiThreadDispatcher());
-	}
-	return ptr_.data();
-}
-
-void QAndroidOnUiThreadDispatcher::runOnUiThread(jobject runnable)
-{
-	qDebug()<<__PRETTY_FUNCTION__<<"tid ="<<gettid();
-	QAndroidJniObject::callStaticMethod<jboolean>(
-		"org/qtproject/qt5/android/QtNative", "runAction", "(Ljava/lang/Runnable;)Z", runnable);
-	JniEnvPtr jep;
-	jep.env()->DeleteGlobalRef(runnable);
-}
-
-void QAndroidOnUiThreadDispatcher::test(int x)
-{
-	qDebug()<<__PRETTY_FUNCTION__<<"X ="<<x<<"tid ="<<gettid()<<"ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ";
-}
-
 QAndroidOffscreenView::QAndroidOffscreenView(
 	const QString & classname
 	, const QString & objectname
@@ -182,7 +105,6 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	{
 		offscreen_view_->RegisterNativeMethod("nativeUpdate", "(J)V", (void*)Java_OffscreenView_nativeUpdate);
 		offscreen_view_->RegisterNativeMethod("nativeGetActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity);
-		offscreen_view_->RegisterNativeMethod("nativeRunOnUiThread", "(JLjava/lang/Runnable;)V", (void*)Java_OffscreenView_runOnUiThread);
 		offscreen_view_->CallVoid("SetObjectName", view_object_name_);
 		offscreen_view_->CallParamVoid("SetNativePtr", "J", jlong(reinterpret_cast<void*>(this)));
 		offscreen_view_->CallParamVoid("setFillColor", "IIII",

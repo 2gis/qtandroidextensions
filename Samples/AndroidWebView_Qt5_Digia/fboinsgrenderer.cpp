@@ -46,9 +46,6 @@
 LogoInFboRenderer::LogoInFboRenderer()
 	: aview_("WebViewInQML", false, QSize(512, 512))
 {
-	// SGEXP
-	QMetaObject::invokeMethod(QAndroidOnUiThreadDispatcher::instance(), "test", Qt::AutoConnection, Q_ARG(int, 666));
-
 	qDebug()<<__FUNCTION__<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<"Constructing...";
 	connect(&aview_, SIGNAL(updated()), this, SLOT(textureUpdated()));
 #if 0 // SGEXP
