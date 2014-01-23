@@ -39,24 +39,33 @@
 ****************************************************************************/
 
 #include "fboinsgrenderer.h"
-
 #include <QtGui/QOpenGLFramebufferObject>
-
 #include <QtQuick/QQuickWindow>
 #include <qsgsimpletexturenode.h>
 
 LogoInFboRenderer::LogoInFboRenderer()
-	: aview_("WebViewInQML", true, QSize(512, 512))
+	: aview_("WebViewInQML", false, QSize(512, 512))
 {
+	// SGEXP
+	QMetaObject::invokeMethod(QAndroidOnUiThreadDispatcher::instance(), "test", Qt::AutoConnection, Q_ARG(int, 666));
+
 	qDebug()<<__FUNCTION__<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<"Constructing...";
 	connect(&aview_, SIGNAL(updated()), this, SLOT(textureUpdated()));
+#if 0 // SGEXP
+	aview_.waitForViewCreation();
 	aview_.initializeGL();
 	// aview_.setFillColor(Qt::red);
 	aview_.loadUrl("http://www.android.com/intl/en/about/");
+#endif
 }
 
 void LogoInFboRenderer::render()
 {
+	if (aview_.isCreated() && !aview_.isIntialized())
+	{
+		aview_.initializeGL();
+		aview_.loadUrl("http://www.android.com/intl/en/about/");
+	}
 	aview_.paintGL(0, 0, aview_.size().width(), aview_.size().height(), true);
 	update();
 }

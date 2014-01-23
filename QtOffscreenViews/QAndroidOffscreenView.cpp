@@ -40,6 +40,7 @@
 #include <GLES2/gl2ext.h>
 #include <QThread>
 #include <QMutexLocker>
+#include <QCoreApplication>
 #include <QAndroidQPAPluginGap.h>
 #include "QAndroidOffscreenView.h"
 
@@ -65,7 +66,7 @@ Q_DECL_EXPORT void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv *, jobject, jl
 
 Q_DECL_EXPORT void JNICALL Java_OffscreenView_runOnUiThread(JNIEnv * env, jobject, jlong param, jobject runnable)
 {
-	qDebug()<<__FUNCTION__;
+	qDebug()<<__FUNCTION__<<"tid ="<<gettid();
 #if 0
 	Q_UNUSED(param);
 	jobject jactivity = QAndroidQPAPluginGap::getActivity(env, jo);
@@ -92,8 +93,17 @@ Q_DECL_EXPORT void JNICALL Java_OffscreenView_runOnUiThread(JNIEnv * env, jobjec
 		if (proxy)
 		{
 			jobject grunnable = env->NewGlobalRef(runnable);
-			QMetaObject::invokeMethod(QAndroidOnUiThreadDispatcher::instance(),
-					"runOnUiThreadSlot", Qt::AutoConnection, Q_ARG(jobject, grunnable));
+			qDebug()<<__FUNCTION__<<"invoking...";
+			QMetaObject::invokeMethod(QAndroidOnUiThreadDispatcher::instance(), "test", Qt::AutoConnection, Q_ARG(int, 1));
+			bool result = QMetaObject::invokeMethod(
+				QAndroidOnUiThreadDispatcher::instance(),
+				"runOnUiThread",
+				Qt::AutoConnection,
+				Q_ARG(jobject, grunnable));
+			if (!result)
+			{
+				qCritical()<<__FUNCTION__<<"Failed to invoke runOnUiThread!";
+			}
 			return;
 		}
 	}
@@ -103,7 +113,8 @@ Q_DECL_EXPORT void JNICALL Java_OffscreenView_runOnUiThread(JNIEnv * env, jobjec
 
 QAndroidOnUiThreadDispatcher::QAndroidOnUiThreadDispatcher()
 {
-
+	qDebug()<<__PRETTY_FUNCTION__<<"Constructed in tid ="<<gettid();
+	qRegisterMetaType<jobject>("jobject");
 }
 
 QAndroidOnUiThreadDispatcher * QAndroidOnUiThreadDispatcher::instance()
@@ -116,13 +127,18 @@ QAndroidOnUiThreadDispatcher * QAndroidOnUiThreadDispatcher::instance()
 	return ptr_.data();
 }
 
-void QAndroidOnUiThreadDispatcher::runOnUiThreadSlot(jobject runnable)
+void QAndroidOnUiThreadDispatcher::runOnUiThread(jobject runnable)
 {
-	qDebug()<<__PRETTY_FUNCTION__;
+	qDebug()<<__PRETTY_FUNCTION__<<"tid ="<<gettid();
 	QAndroidJniObject::callStaticMethod<jboolean>(
 		"org/qtproject/qt5/android/QtNative", "runAction", "(Ljava/lang/Runnable;)Z", runnable);
 	JniEnvPtr jep;
 	jep.env()->DeleteGlobalRef(runnable);
+}
+
+void QAndroidOnUiThreadDispatcher::test(int x)
+{
+	qDebug()<<__PRETTY_FUNCTION__<<"X ="<<x<<"tid ="<<gettid()<<"ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ";
 }
 
 QAndroidOffscreenView::QAndroidOffscreenView(
@@ -146,8 +162,6 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	, view_created_(false)
 {
 	setObjectName(objectname);
-
-	qRegisterMetaType<jobject>("jobject");
 
 	qDebug()<<"QAndroidOffscreenView: making sure object's main thread"<<gettid()<<"is attached to JNI";
 	initial_thread_attacher_.reset(new JniEnvPtr());
@@ -357,13 +371,14 @@ bool QAndroidOffscreenView::waitForViewCreation()
 		return false;
 	}
 	//! \todo: Use semaphore-based wait?
-	qDebug()<<"QAndroidOffscreenView::waitForViewCreation"<<view_class_name_<<view_object_name_<<">>>>>>";
+	qDebug()<<"QAndroidOffscreenView::waitForViewCreation"<<view_class_name_<<view_object_name_<<"tid ="<<gettid()<<">>>>>>";
 	while (!isCreated())
 	{
+		// QCoreApplication::processEvents();
 		usleep(5000); // 5 ms
-		// QThread::yieldCurrentThread();
+		// QThread::yieldCurrentThread();		
 	}
-	qDebug()<<"QAndroidOffscreenView::waitForViewCreation"<<view_class_name_<<view_object_name_<<"<<<<<<";
+	qDebug()<<"QAndroidOffscreenView::waitForViewCreation"<<view_class_name_<<view_object_name_<<"tid ="<<gettid()<<"<<<<<<";
 	return true;
 }
 

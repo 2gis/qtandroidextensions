@@ -49,12 +49,12 @@ int main(int argc, char **argv)
 {
 	// Make sure this thread is attached to JVM, and will be until the end of main().
 	QAndroidJniEnvironment jni_thread_attacher;
-	Q_UNUSED(jni_thread_attacher);
-	QAndroidOnUiThreadDispatcher::instance();
+	Q_UNUSED(jni_thread_attacher);	
 	QAndroidOffscreenWebView::preloadJavaClass();
 
-
 	QGuiApplication app(argc, argv);
+
+	QAndroidOnUiThreadDispatcher::instance();
 
     qmlRegisterType<FboInSGRenderer>("SceneGraphRendering", 1, 0, "Renderer");
 
@@ -63,11 +63,10 @@ int main(int argc, char **argv)
     view.setSource(QUrl("qrc:///scenegraph/textureinsgnode/main.qml"));
     view.show();
 
-	bool result = app.exec();
-
 	// SGEXP
-	// Workaround for a workaround
-	JniEnvPtr().SuppressException();
+	QMetaObject::invokeMethod(QAndroidOnUiThreadDispatcher::instance(), "test", Qt::AutoConnection, Q_ARG(int, 12345));
+
+	bool result = app.exec();
 
 	JniEnvPtr().UnloadClasses();
 
