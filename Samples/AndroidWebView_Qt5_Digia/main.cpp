@@ -50,7 +50,9 @@ int main(int argc, char **argv)
 	// Make sure this thread is attached to JVM, and will be until the end of main().
 	QAndroidJniEnvironment jni_thread_attacher;
 	Q_UNUSED(jni_thread_attacher);
+	QAndroidOnUiThreadDispatcher::instance();
 	QAndroidOffscreenWebView::preloadJavaClass();
+
 
 	QGuiApplication app(argc, argv);
 

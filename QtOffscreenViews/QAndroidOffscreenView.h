@@ -202,9 +202,7 @@ private:
 	bool synchronized_texture_update_;
 	bool view_creation_requested_;
 	bool is_visible_;
-
-	//! Cache for isCreated()
-	volatile mutable bool view_created_;
+	volatile mutable bool view_created_; //!< Cache for isCreated()
 
 	// Keeping threads attached to Java (peformance issue).
 	QScopedPointer<JniEnvPtr> initial_thread_attacher_;
@@ -212,6 +210,20 @@ private:
 private:
 	Q_DISABLE_COPY(QAndroidOffscreenView)
 	friend void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv * env, jobject jo, jlong param);
+};
+
+class QAndroidOnUiThreadDispatcher: public QObject
+{
+	Q_OBJECT
+protected:
+	QAndroidOnUiThreadDispatcher();
+public:
+	//! Must be called on UI thread for the first time.
+	static QAndroidOnUiThreadDispatcher * instance();
+
+	// void
+public slots:
+	void runOnUiThreadSlot(jobject runnable);
 };
 
 
