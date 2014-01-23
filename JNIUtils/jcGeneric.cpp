@@ -519,6 +519,11 @@ void jcGeneric::CallVoid(const char * method_name, jlong x)
 	CallParamVoid(method_name, "J", x);
 }
 
+void jcGeneric::CallVoid(const char * method_name, jboolean x)
+{
+	CallParamVoid(method_name, "Z", x);
+}
+
 void jcGeneric::CallVoid(const char * method_name, const QString & string)
 {
 	JniEnvPtr jep;

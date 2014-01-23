@@ -56,6 +56,7 @@ class QAndroidOffscreenView: public QObject
 	Q_PROPERTY(QSize size READ size WRITE resize)
 	Q_PROPERTY(QColor fillColor READ fillColor WRITE setFillColor)
 	Q_PROPERTY(bool synchronizedTextureUpdate READ synchronizedTextureUpdate WRITE setSynchronizedTextureUpdate)
+	Q_PROPERTY(bool visible READ visible WRITE setVisible)
 protected:
 	/*!
 	 * \param waitforcreation - if set, pauses current thread until Android View is actually
@@ -133,6 +134,28 @@ public:
 	bool synchronizedTextureUpdate() const { return synchronized_texture_update_; }
 	void setSynchronizedTextureUpdate(bool synced) { synchronized_texture_update_ = synced; }
 
+	/*!
+	 * Does the view thinks it's visible? When view is invisible, the texture may
+	 * contain an empty or outdated image.
+	 */
+	bool visible() const { return is_visible_; }
+
+	/*!
+	 * Set visibility flag. It informs the view if it's visible or not.
+	 * When view is invisible, it may save resources by not doing any timer-based work,
+	 * for example. For simple widgets, it is not necessary to set them invisible
+	 * because it is enough to hide the control displaying the texture. For Wev Views
+	 * with active contents (e.g. JavaScript with timers, GIF images) it is important
+	 * to stop them when content updates are not visible to users to save CPU power
+	 * and battery.
+	 * Warning: unlike for widgets, visibility also should be explicitly set to false
+	 * when application goes to background. Cases when offscreen view should be marked
+	 * hidden are different depending on use-cases, graphical systems and QPA plugins
+	 * so proper reacting to application activation/deactivation cannot be handled
+	 * on this level.
+	 */
+	void setVisible(bool visible);
+
 	//
 	// Handling of user input events
 	//
@@ -178,6 +201,7 @@ private:
 	bool texture_received_;
 	bool synchronized_texture_update_;
 	bool view_creation_requested_;
+	bool is_visible_;
 
 	//! Cache for isCreated()
 	volatile mutable bool view_created_;

@@ -98,6 +98,7 @@ import android.graphics.Canvas;
 class OffscreenWebView extends OffscreenView
 {
     MyWebView webview_ = null;
+    boolean is_visible_ = true;
 
     class MyWebView extends WebView
     {
@@ -157,6 +158,21 @@ class OffscreenWebView extends OffscreenView
             // No positive effect found
             // setPersistentDrawingCache(PERSISTENT_ALL_CACHES);
             // setAlwaysDrawnWithCacheEnabled(true);
+        }
+
+        public void setOffscreenViewVisible(boolean visible)
+        {
+            Log.i(TAG, "MyWebView.setOffscreenViewVisible "+visible);
+            if (visible)
+            {
+                setVisibility(View.VISIBLE);
+                resumeTimers();
+            }
+            else
+            {
+                setVisibility(View.INVISIBLE);
+                pauseTimers();
+            }
         }
 
         // NB: caller should call the invalidation
@@ -318,6 +334,7 @@ class OffscreenWebView extends OffscreenView
     {
         final Activity context = getActivity();
         webview_ = new MyWebView(context);
+        webview_.setOffscreenViewVisible(is_visible_);
     }
 
     @Override
@@ -326,6 +343,7 @@ class OffscreenWebView extends OffscreenView
         return webview_;
     }
 
+    @Override
     public void callViewPaintMethod(Canvas canvas)
     {
         if (webview_ != null)
@@ -334,6 +352,7 @@ class OffscreenWebView extends OffscreenView
         }
     }
 
+    @Override
     public void doInvalidateOffscreenView()
     {
         if (webview_ != null)
@@ -342,6 +361,7 @@ class OffscreenWebView extends OffscreenView
         }
     }
 
+    @Override
     public void doResizeOffscreenView(final int width, final int height)
     {
         if (webview_ != null)
@@ -349,6 +369,36 @@ class OffscreenWebView extends OffscreenView
             webview_.resizeOffscreenView(width, height);
         }
     }
+
+    @Override
+    public boolean isVisible()
+    {
+        return is_visible_;
+    }
+
+    @Override
+    public void setVisible(final boolean visible)
+    {
+        if (visible != is_visible_)
+        {
+            is_visible_ = visible;
+            if (webview_ != null)
+            {
+                runOnUiThread(new Runnable(){
+                    @Override
+                    public void run()
+                    {
+                        webview_.setOffscreenViewVisible(visible);
+                        webview_.invalidateTexture();
+                    }
+                });
+            }
+        }
+    }
+
+
+
+
 
 
     // From C++

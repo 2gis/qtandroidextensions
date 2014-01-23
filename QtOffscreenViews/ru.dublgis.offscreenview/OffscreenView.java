@@ -201,6 +201,12 @@ abstract class OffscreenView
     abstract public void doCreateView();
     abstract public Activity getActivity();
 
+    //! Note: all views are visible by default (after creation).
+    abstract public boolean isVisible();
+
+    //! Note: all views are visible by default.
+    abstract public void setVisible(final boolean visible);
+
     //! Schedule painting of the view (will be done in Android UI thread).
     protected void drawViewOnTexture()
     {

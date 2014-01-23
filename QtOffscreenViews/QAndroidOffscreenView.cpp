@@ -78,6 +78,7 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	, synchronized_texture_update_(true)
 	, view_creation_requested_(false)
 	, view_created_(false)
+	, is_visible_(true)
 {
 	setObjectName(objectname);
 
@@ -324,6 +325,18 @@ void QAndroidOffscreenView::setFillColor(const QColor & color)
 		if (!hasValidImage())
 		{
 			emit updated();
+		}
+	}
+}
+
+void QAndroidOffscreenView::setVisible(bool visible)
+{
+	if (visible != is_visible_)
+	{
+		is_visible_ = visible;
+		if (offscreen_view_)
+		{
+			offscreen_view_->CallVoid("setVisible", is_visible_);
 		}
 	}
 }
