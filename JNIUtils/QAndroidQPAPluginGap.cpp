@@ -136,17 +136,18 @@ void preloadJavaClass(const char * class_name)
 	#endif
 }
 
-// Declaring entry point for nativeJNIPreloadClass so we don't have to register it.
-// It must be "C" because the function name should not be mangled.
+} // namespace QAndroidQPAPluginGap
+
+// JNI entry points. Must be "C" because the function names should not be mangled.
 extern "C" {
-	JNIEXPORT void JNICALL Java_ru_dublgis_jniutils_ClassLoader_nativeJNIPreloadClass(JNIEnv * env, jobject, jstring classname)
-	{
-		JniEnvPtr jep(env);
-		QString qclassname = jep.QStringFromJString(classname);
-		jep.PreloadClass(qclassname.toLatin1());
-	}
+
+JNIEXPORT void JNICALL Java_ru_dublgis_jniutils_ClassLoader_nativeJNIPreloadClass(JNIEnv * env, jobject, jstring classname)
+{
+	JniEnvPtr jep(env);
+	QString qclassname = jep.QStringFromJString(classname);
+	jep.PreloadClass(qclassname.toLatin1());
 }
 
-} // namespace QAndroidQPAPluginGap
+} // extern "C"
 
 #endif // #if defined(Q_OS_ANDROID)

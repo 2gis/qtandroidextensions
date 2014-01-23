@@ -125,7 +125,7 @@ abstract class OffscreenView
     {
         try
         {
-            if (runnable == null)
+            /*if (runnable == null)
             {
                 Log.e(TAG, "OffscreenView.runOnUiThread: null runnable!");
                 return false;
@@ -137,7 +137,8 @@ abstract class OffscreenView
                 return false;
             }
             Log.i(TAG, "OffscreenView.runOnUiThread: scheduling runnable...");
-            context.runOnUiThread(runnable);
+            context.runOnUiThread(runnable);*/
+            doRunOnUiThread(runnable);
             return true;
         }
         catch (Exception e)
@@ -200,6 +201,7 @@ abstract class OffscreenView
     abstract public void doNativeUpdate();
     abstract public void doCreateView();
     abstract public Activity getActivity();
+    abstract public void doRunOnUiThread(final Runnable runnable);
 
     //! Note: all views are visible by default (after creation).
     abstract public boolean isVisible();

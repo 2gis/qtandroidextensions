@@ -524,6 +524,7 @@ onTouchEvent(MotionEvent) Called when a touch screen motion event occurs. */
 
     private native void nativeUpdate(long nativeptr);
     private native Activity nativeGetActivity();
+    private native void nativeRunOnUiThread(Runnable runnable);
 
     @Override
     public void doNativeUpdate()
@@ -534,7 +535,18 @@ onTouchEvent(MotionEvent) Called when a touch screen motion event occurs. */
     @Override
     public Activity getActivity()
     {
-        return nativeGetActivity();
+        Activity a = nativeGetActivity();
+        if (a == null)
+        {
+            Log.w(TAG, "getActivity: NULL ACTIVITY");
+        }
+        return a;
+    }
+
+    @Override
+    public void doRunOnUiThread(final Runnable runnable)
+    {
+        nativeRunOnUiThread(runnable);
     }
 
     // WebViewClient

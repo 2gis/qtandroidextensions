@@ -43,6 +43,9 @@
 #include <QAndroidQPAPluginGap.h>
 #include "QAndroidOffscreenView.h"
 
+// SGEXP
+#include <QAndroidJniObject>
+
 static const QString c_class_path_(QLatin1String("ru/dublgis/offscreenview/"));
 
 Q_DECL_EXPORT void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv *, jobject, jlong param)
@@ -58,6 +61,29 @@ Q_DECL_EXPORT void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv *, jobject, jl
 		}
 	}
 	qWarning()<<__FUNCTION__<<"Zero param!";
+}
+
+Q_DECL_EXPORT void JNICALL Java_OffscreenView_runOnUiThread(JNIEnv *, jobject, jobject runnable)
+{
+	qDebug()<<__FUNCTION__;
+#if 0
+	jobject jactivity = QAndroidQPAPluginGap::getActivity(env, jo);
+	if (jactivity)
+	{
+		qDebug()<<__FUNCTION__<<"Scheduling runnable...";
+		jcGeneric(jactivity, false).CallParamVoid("runOnUiThread", "Ljava/lang/Runnable;", runnable);
+		JniEnvPtr env;
+		env.SuppressException(true);
+		env.env()->DeleteGlobalRef(jactivity);
+	}
+	else
+	{
+		qCritical()<<__FUNCTION__<<"Activity object is null!";
+	}
+#else
+	QAndroidJniObject::callStaticMethod<jboolean>(
+		"org/qtproject/qt5/android/QtNative", "runAction", "(Ljava/lang/Runnable;)Z", runnable);
+#endif
 }
 
 QAndroidOffscreenView::QAndroidOffscreenView(
@@ -77,8 +103,8 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	, texture_received_(false)
 	, synchronized_texture_update_(true)
 	, view_creation_requested_(false)
-	, view_created_(false)
 	, is_visible_(true)
+	, view_created_(false)
 {
 	setObjectName(objectname);
 
@@ -101,6 +127,7 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	{
 		offscreen_view_->RegisterNativeMethod("nativeUpdate", "(J)V", (void*)Java_OffscreenView_nativeUpdate);
 		offscreen_view_->RegisterNativeMethod("nativeGetActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity);
+		offscreen_view_->RegisterNativeMethod("nativeRunOnUiThread", "(Ljava/lang/Runnable;)V", (void*)Java_OffscreenView_runOnUiThread);
 		offscreen_view_->CallVoid("SetObjectName", view_object_name_);
 		offscreen_view_->CallParamVoid("SetNativePtr", "J", jlong(reinterpret_cast<void*>(this)));
 		offscreen_view_->CallParamVoid("setFillColor", "IIII",
