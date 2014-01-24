@@ -19,7 +19,10 @@ QOffscreenWebViewGraphicsWidget::QOffscreenWebViewGraphicsWidget(QGraphicsItem *
 	connect(&aview_, SIGNAL(pageFinished()), this, SLOT(onPageFinished()));
 	connect(&aview_, SIGNAL(contentHeightReceived(int)), this, SLOT(onContentHeightReceived(int)));
 
-	aview_.waitForViewCreation(); //!< \todo: Remove this after action queue is implemented.
+	// This is not necessary anymore, as the view will schedule any actions for execution when the
+	// view is ready:
+	// aview_.waitForViewCreation();
+
 	aview_.loadUrl("http://www.android.com/intl/en/about/");
 }
 

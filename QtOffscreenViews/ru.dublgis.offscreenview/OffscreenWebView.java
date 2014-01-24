@@ -333,14 +333,20 @@ class OffscreenWebView extends OffscreenView
     public void doCreateView()
     {
         final Activity context = getActivity();
-        webview_ = new MyWebView(context);
+        synchronized(view_existence_mutex_)
+        {
+            webview_ = new MyWebView(context);
+        }
         webview_.setOffscreenViewVisible(is_visible_);
     }
 
     @Override
     public View getView()
     {
-        return webview_;
+        synchronized(view_existence_mutex_)
+        {
+            return webview_;
+        }
     }
 
     @Override
@@ -384,7 +390,7 @@ class OffscreenWebView extends OffscreenView
             is_visible_ = visible;
             if (webview_ != null)
             {
-                runOnUiThread(new Runnable(){
+                runViewAction(new Runnable(){
                     @Override
                     public void run()
                     {
@@ -405,21 +411,14 @@ class OffscreenWebView extends OffscreenView
     public void loadUrl(final String url)
     {
         Log.i(TAG, "loadUrl: scheduling");
-        if (webview_ != null)
-        {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run()
-                {
-                    Log.i(TAG, "loadUrl: doing it");
-                    webview_.loadUrl(url);
-                }
-            });
-        }
-        else
-        {
-            Log.e(TAG, "loadUrl failed because context or view is not available!");
-        }
+        runViewAction(new Runnable() {
+            @Override
+            public void run()
+            {
+                Log.i(TAG, "loadUrl: RUN");
+                webview_.loadUrl(url);
+            }
+        });
     }
 
     // From C++
@@ -434,27 +433,20 @@ class OffscreenWebView extends OffscreenView
     public void loadUrl(final String url, final String additionalHttpHeaders)
     {
         Log.i(TAG, "loadUrl: scheduling");
-        if (webview_ != null)
-        {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run()
+        runViewAction(new Runnable() {
+            @Override
+            public void run()
+            {
+                Log.i(TAG, "loadUrl: RUN");
+                Map<String, String> ma = new HashMap<String, String>();
+                String[] parts = additionalHttpHeaders.split("\n");
+                for (int i = 0, h = 0, v = 1; i < parts.length / 2; i++, h += 2, v += 2)
                 {
-                    Log.i(TAG, "loadUrl: doing it");
-                    Map<String, String> ma = new HashMap<String, String>();
-                    String[] parts = additionalHttpHeaders.split("\n");
-                    for (int i = 0, h = 0, v = 1; i < parts.length / 2; i++, h += 2, v += 2)
-                    {
-                        ma.put(parts[h], parts[v]);
-                    }
-                    webview_.loadUrl(url, ma);
+                    ma.put(parts[h], parts[v]);
                 }
-            });
-        }
-        else
-        {
-            Log.e(TAG, "loadUrl failed because context or view is not available!");
-        }
+                webview_.loadUrl(url, ma);
+            }
+        });
     }
 
 
@@ -462,58 +454,41 @@ class OffscreenWebView extends OffscreenView
     public void loadData(final String text, final String mime, final String encoding)
     {
         Log.i(TAG, "loadData: scheduling");
-        if (webview_ != null)
-        {
-            runOnUiThread(new Runnable(){
-                @Override
-                public void run()
-                {
-                    Log.i(TAG, "loadData: doing it");
-                    webview_.loadData(text, mime, encoding);
-                }
-            });
-        }
-        else
-        {
-            Log.e(TAG, "loadData failed because context or view is not available!");
-        }
+        runViewAction(new Runnable(){
+            @Override
+            public void run()
+            {
+                Log.i(TAG, "loadData: RUN");
+                webview_.loadData(text, mime, encoding);
+            }
+        });
     }
 
     // From C++
     public void loadDataWithBaseURL(final String baseUrl, final String data, final String mimeType, final String encoding, final String historyUrl)
     {
         Log.i(TAG, "loadDataWithBaseURL: scheduling");
-        if (webview_ != null)
-        {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run()
-                {
-                    Log.i(TAG, "loadDataWithBaseURL: doing it");
-                    webview_.loadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl);
-                }
-            });
-        }
-        else
-        {
-            Log.e(TAG, "loadDataWithBaseURL failed because context or view is not available!");
-        }
+        runViewAction(new Runnable() {
+            @Override
+            public void run()
+            {
+                Log.i(TAG, "loadDataWithBaseURL: RUN");
+                webview_.loadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl);
+            }
+        });
     }
 
+    // From C++
     public boolean requestContentHeight()
     {
-        if (webview_ != null)
-        {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run()
-                {
-                    onContentHeightReceived(getNativePtr(), webview_.getContentHeight());
-                }
-            });
-            return true;
-        }
-        return false;
+        runViewAction(new Runnable() {
+            @Override
+            public void run()
+            {
+                onContentHeightReceived(getNativePtr(), webview_.getContentHeight());
+            }
+        });
+        return true;
     }
 
 

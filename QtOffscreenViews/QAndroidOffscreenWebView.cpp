@@ -259,11 +259,6 @@ void QAndroidOffscreenWebView::preloadJavaClass()
 
 bool QAndroidOffscreenWebView::loadUrl(const QString & url)
 {
-	if (!isCreated())
-	{
-		qWarning("QAndroidOffscreenWebView: Attempt to loadUrl when View is not ready yet.");
-		return false;
-	}
 	jcGeneric * view = offscreenView();
 	if (view)
 	{
@@ -276,11 +271,6 @@ bool QAndroidOffscreenWebView::loadUrl(const QString & url)
 
 bool QAndroidOffscreenWebView::loadUrl(const QString & url, const QMap<QString, QString> & additionalHttpHeaders)
 {
-	if (!isCreated())
-	{
-		qWarning("QAndroidOffscreenWebView: Attempt to loadUrl when View is not ready yet.");
-		return false;
-	}
 	jcGeneric * view = offscreenView();
 	if (view)
 	{
@@ -301,11 +291,6 @@ bool QAndroidOffscreenWebView::loadUrl(const QString & url, const QMap<QString, 
 
 bool QAndroidOffscreenWebView::loadData(const QString & text, const QString & mime, const QString & encoding)
 {
-	if (!isCreated())
-	{
-		qWarning("QAndroidOffscreenWebView: Attempt to loadData when View is not ready yet.");
-		return false;
-	}
 	jcGeneric * view = offscreenView();
 	if (view)
 	{
@@ -318,11 +303,6 @@ bool QAndroidOffscreenWebView::loadData(const QString & text, const QString & mi
 
 bool QAndroidOffscreenWebView::loadDataWithBaseURL(const QString & baseUrl, const QString & data, const QString & mimeType, const QString & encoding, const QString & historyUrl)
 {
-	if (!isCreated())
-	{
-		qWarning("QAndroidOffscreenWebView: Attempt to loadDataWithBaseURL when View is not ready yet.");
-		return false;
-	}
 	jcGeneric * view = offscreenView();
 	if (view)
 	{
@@ -335,18 +315,13 @@ bool QAndroidOffscreenWebView::loadDataWithBaseURL(const QString & baseUrl, cons
 
 bool QAndroidOffscreenWebView::requestContentHeight()
 {
-	if (!isCreated())
-	{
-		qWarning("QAndroidOffscreenWebView: Attempt to requestContentHeight when View is not ready yet.");
-		return 0;
-	}
 	jcGeneric * view = offscreenView();
 	if (view)
 	{
 		return view->CallBool("requestContentHeight");
 	}
 	qWarning("QAndroidOffscreenWebView: Attempt to requestContentHeight when View is null.");
-	return 0;
+	return false;
 }
 
 

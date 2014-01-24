@@ -42,6 +42,8 @@ import java.util.Set;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.Locale;
 import java.util.List;
@@ -104,6 +106,8 @@ abstract class OffscreenView
     private long native_ptr_ = 0;
     private int gl_texture_id_ = 0;
     private Boolean painting_now_ = new Boolean(false);
+    private ArrayList<Runnable> precreation_actions_ = new ArrayList<Runnable>();
+    protected Object view_existence_mutex_ = new Object();
 
     private int initial_width_ = 512;
     private int initial_height_ = 512;
@@ -147,6 +151,24 @@ abstract class OffscreenView
         }
     }
 
+    public boolean runViewAction(final Runnable runnable)
+    {
+        synchronized(view_existence_mutex_)
+        {
+            if (getView() == null)
+            {
+                Log.i(TAG, "runViewAction: scheduling action "+(precreation_actions_.size()+1)+" for future execution...");
+                precreation_actions_.add(runnable);
+                return false;
+            }
+            else
+            {
+                return runOnUiThread(runnable);
+            }
+        }
+    }
+
+
     /*!
      * Invokes View creation in Android UI thread.
      */
@@ -162,7 +184,23 @@ abstract class OffscreenView
                 {
                     Log.i(TAG, "OffscreenView.createView: creating the view!");
                     doCreateView();
-                    // TODO: process command queue
+
+                    // Process command queue
+                    synchronized(view_existence_mutex_)
+                    {
+                        Log.i(TAG, "createView: processing "+(precreation_actions_.size()+1)+" actions...");
+                        Iterator<Runnable> it = precreation_actions_.iterator();
+                        int i = 0;
+                        while(it.hasNext())
+                        {
+                            Log.i(TAG, "createView: processing action #"+i);
+                            //runOnUiThread(it.next());
+                            it.next().run();
+                            i++;
+                        }
+                        precreation_actions_.clear();
+                    }
+
                     doNativeViewCreated();
                 }
             }
@@ -178,12 +216,13 @@ abstract class OffscreenView
     void initializeGL()
     {
         Log.i(TAG, "OffscreenView.intializeGL(name=\""+object_name_+"\", texture="+gl_texture_id_+")");
-        runOnUiThread(new Runnable() {
+        runViewAction(new Runnable() {
             @Override
             public void run()
             {
                 synchronized(this)
                 {
+                    Log.i(TAG, "OffscreenView.intializeGL(name=\""+object_name_+"\", texture="+gl_texture_id_+") RUN");
                     rendering_surface_ = new OffscreenGLTextureRenderingSurface();
                     doResizeOffscreenView(initial_width_, initial_height_);
                     // Make sure the view will be repainted on the rendering surface, even it did
@@ -399,7 +438,7 @@ abstract class OffscreenView
             View view = getView();
             if (view != null)
             {
-                runOnUiThread(new Runnable() {
+                runViewAction(new Runnable() {
                     @Override
                     public void run()
                     {

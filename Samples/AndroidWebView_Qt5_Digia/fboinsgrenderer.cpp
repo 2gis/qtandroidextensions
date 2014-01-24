@@ -48,14 +48,14 @@ LogoInFboRenderer::LogoInFboRenderer()
 {
 	qDebug()<<__FUNCTION__<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<"Constructing...";
 	connect(&aview_, SIGNAL(updated()), this, SLOT(textureUpdated()));
+	aview_.loadUrl("http://www.android.com/intl/en/about/");
 }
 
 void LogoInFboRenderer::render()
 {
-	if (aview_.isCreated() && !aview_.isIntialized())
+	if (!aview_.isIntialized())
 	{
 		aview_.initializeGL();
-		aview_.loadUrl("http://www.android.com/intl/en/about/");
 	}
 	aview_.paintGL(0, 0, aview_.size().width(), aview_.size().height(), true);
 	update();
