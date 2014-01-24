@@ -188,9 +188,11 @@ signals:
 	 * can be displayed in our Qt app UI (via paintGL()).
 	 */
 	void updated();
+	void viewCreated();
 
 private slots:
 	void javaUpdate();
+	void javaViewCreated();
 
 protected:
 	bool updateTexture();

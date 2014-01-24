@@ -61,6 +61,21 @@ Q_DECL_EXPORT void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv *, jobject, jl
 	qWarning()<<__FUNCTION__<<"Zero param!";
 }
 
+Q_DECL_EXPORT void JNICALL Java_OffscreenView_nativeViewCreated(JNIEnv *, jobject, jlong param)
+{
+	if (param)
+	{
+		void * vp = reinterpret_cast<void*>(param);
+		QAndroidOffscreenView * proxy = reinterpret_cast<QAndroidOffscreenView*>(vp);
+		if (proxy)
+		{
+			QMetaObject::invokeMethod(proxy, "javaViewCreated", Qt::QueuedConnection);
+			return;
+		}
+	}
+	qWarning()<<__FUNCTION__<<"Zero param!";
+}
+
 QAndroidOffscreenView::QAndroidOffscreenView(
 	const QString & classname
 	, const QString & objectname
@@ -100,6 +115,7 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	if (offscreen_view_ && offscreen_view_->jObject())
 	{
 		offscreen_view_->RegisterNativeMethod("nativeUpdate", "(J)V", (void*)Java_OffscreenView_nativeUpdate);
+		offscreen_view_->RegisterNativeMethod("nativeViewCreated", "(J)V", (void*)Java_OffscreenView_nativeViewCreated);
 		offscreen_view_->RegisterNativeMethod("nativeGetActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity);
 		offscreen_view_->CallVoid("SetObjectName", view_object_name_);
 		offscreen_view_->CallParamVoid("SetNativePtr", "J", jlong(reinterpret_cast<void*>(this)));
@@ -341,6 +357,13 @@ void QAndroidOffscreenView::javaUpdate()
 	need_update_texture_ = true;
 	view_painted_ = true;
 	emit updated();
+}
+
+void QAndroidOffscreenView::javaViewCreated()
+{
+	qDebug()<<__PRETTY_FUNCTION__;
+	view_created_ = true;
+	emit viewCreated();
 }
 
 bool QAndroidOffscreenView::updateTexture()

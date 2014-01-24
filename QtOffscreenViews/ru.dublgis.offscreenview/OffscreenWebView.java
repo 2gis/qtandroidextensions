@@ -522,8 +522,9 @@ onKeyUp(int, KeyEvent) Called when a hardware key up event occurs.
 onTrackballEvent(MotionEvent) Called when a trackball motion event occurs.
 onTouchEvent(MotionEvent) Called when a touch screen motion event occurs. */
 
-    private native void nativeUpdate(long nativeptr);
-    private native Activity nativeGetActivity();
+    public native void nativeUpdate(long nativeptr);
+    public native Activity nativeGetActivity();
+    public native void nativeViewCreated(long nativeptr);
 
     @Override
     public void doNativeUpdate()
@@ -540,6 +541,12 @@ onTouchEvent(MotionEvent) Called when a touch screen motion event occurs. */
             Log.w(TAG, "getActivity: NULL ACTIVITY");
         }
         return a;
+    }
+
+    @Override
+    public void doNativeViewCreated()
+    {
+        nativeViewCreated(getNativePtr());
     }
 
     // WebViewClient

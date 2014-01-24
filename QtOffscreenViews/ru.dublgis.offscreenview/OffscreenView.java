@@ -162,6 +162,8 @@ abstract class OffscreenView
                 {
                     Log.i(TAG, "OffscreenView.createView: creating the view!");
                     doCreateView();
+                    // TODO: process command queue
+                    doNativeViewCreated();
                 }
             }
         });
@@ -199,6 +201,7 @@ abstract class OffscreenView
     abstract public void doResizeOffscreenView(final int width, final int height);
     abstract public void doNativeUpdate();
     abstract public void doCreateView();
+    abstract public void doNativeViewCreated();
     abstract public Activity getActivity();
 
     //! Note: all views are visible by default (after creation).
