@@ -44,16 +44,10 @@
 #include <qsgsimpletexturenode.h>
 
 LogoInFboRenderer::LogoInFboRenderer()
-	: aview_("WebViewInQML", false, QSize(512, 512))
+	: aview_("WebViewInQML", QSize(512, 512))
 {
 	qDebug()<<__FUNCTION__<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<"Constructing...";
 	connect(&aview_, SIGNAL(updated()), this, SLOT(textureUpdated()));
-#if 0 // SGEXP
-	aview_.waitForViewCreation();
-	aview_.initializeGL();
-	// aview_.setFillColor(Qt::red);
-	aview_.loadUrl("http://www.android.com/intl/en/about/");
-#endif
 }
 
 void LogoInFboRenderer::render()

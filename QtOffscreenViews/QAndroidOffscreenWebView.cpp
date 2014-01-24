@@ -197,8 +197,8 @@ Q_DECL_EXPORT void JNICALL Java_onContentHeightReceived(JNIEnv *, jobject, jlong
 	}
 }
 
-QAndroidOffscreenWebView::QAndroidOffscreenWebView(const QString & object_name, bool waitforcreation, const QSize & def_size, QObject * parent)
-	: QAndroidOffscreenView(QLatin1String("OffscreenWebView"), object_name, false, false, def_size, parent)
+QAndroidOffscreenWebView::QAndroidOffscreenWebView(const QString & object_name, const QSize & def_size, QObject * parent)
+	: QAndroidOffscreenView(QLatin1String("OffscreenWebView"), object_name, false, def_size, parent)
 {
 	static const JNINativeMethod methods[] = {
 		//
@@ -245,16 +245,10 @@ QAndroidOffscreenWebView::QAndroidOffscreenWebView(const QString & object_name, 
 
 	// Creating the view
 	createView();
-
-	if (waitforcreation)
-	{
-		waitForViewCreation();
-	}
 }
 
 QAndroidOffscreenWebView::~QAndroidOffscreenWebView()
 {
-
 }
 
 void QAndroidOffscreenWebView::preloadJavaClass()
@@ -265,7 +259,6 @@ void QAndroidOffscreenWebView::preloadJavaClass()
 
 bool QAndroidOffscreenWebView::loadUrl(const QString & url)
 {
-	waitForViewCreation();
 	if (!isCreated())
 	{
 		qWarning("QAndroidOffscreenWebView: Attempt to loadUrl when View is not ready yet.");
@@ -283,7 +276,6 @@ bool QAndroidOffscreenWebView::loadUrl(const QString & url)
 
 bool QAndroidOffscreenWebView::loadUrl(const QString & url, const QMap<QString, QString> & additionalHttpHeaders)
 {
-	waitForViewCreation();
 	if (!isCreated())
 	{
 		qWarning("QAndroidOffscreenWebView: Attempt to loadUrl when View is not ready yet.");
@@ -309,7 +301,6 @@ bool QAndroidOffscreenWebView::loadUrl(const QString & url, const QMap<QString, 
 
 bool QAndroidOffscreenWebView::loadData(const QString & text, const QString & mime, const QString & encoding)
 {
-	waitForViewCreation();
 	if (!isCreated())
 	{
 		qWarning("QAndroidOffscreenWebView: Attempt to loadData when View is not ready yet.");
@@ -327,7 +318,6 @@ bool QAndroidOffscreenWebView::loadData(const QString & text, const QString & mi
 
 bool QAndroidOffscreenWebView::loadDataWithBaseURL(const QString & baseUrl, const QString & data, const QString & mimeType, const QString & encoding, const QString & historyUrl)
 {
-	waitForViewCreation();
 	if (!isCreated())
 	{
 		qWarning("QAndroidOffscreenWebView: Attempt to loadDataWithBaseURL when View is not ready yet.");

@@ -44,9 +44,6 @@
 #include <QAndroidQPAPluginGap.h>
 #include "QAndroidOffscreenView.h"
 
-// SGEXP
-#include <QAndroidJniObject>
-
 static const QString c_class_path_(QLatin1String("ru/dublgis/offscreenview/"));
 
 Q_DECL_EXPORT void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv *, jobject, jlong param)
@@ -68,7 +65,6 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	const QString & classname
 	, const QString & objectname
 	, bool create_view
-	, bool waitforcreation
 	, const QSize & defsize
 	, QObject * parent)
 	: QObject(parent)
@@ -123,10 +119,6 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 			<<"Please make sure that all Java classes are present in the project, and also that the Java class is pre-loaded.";
 		offscreen_view_.reset();
 		return;
-	}
-	if (waitforcreation && create_view)
-	{
-		waitForViewCreation();
 	}
 }
 
@@ -201,10 +193,6 @@ void QAndroidOffscreenView::initializeGL()
 
 	size_ = texture_size;
 
-	qDebug()<<"waitForViewCreation >>";
-	waitForViewCreation();
-	qDebug()<<"<< waitForViewCreation";
-
 	offscreen_view_->CallParamVoid("SetTexture", "I", jint(tex_.getTexture()));
 	offscreen_view_->CallParamVoid("SetInitialWidth", "I", jint(size_.width()));
 	offscreen_view_->CallParamVoid("SetInitialHeight", "I", jint(size_.height()));
@@ -276,6 +264,7 @@ bool QAndroidOffscreenView::isCreated() const
 	return false;
 }
 
+#if defined(QANDROIDOFFSCREENVIEW_ALLOWWAIT)
 bool QAndroidOffscreenView::waitForViewCreation()
 {
 	if (isCreated())
@@ -296,13 +285,13 @@ bool QAndroidOffscreenView::waitForViewCreation()
 	qDebug()<<"QAndroidOffscreenView::waitForViewCreation"<<view_class_name_<<view_object_name_<<"tid ="<<gettid()<<">>>>>>";
 	while (!isCreated())
 	{
-		// QCoreApplication::processEvents();
 		usleep(5000); // 5 ms
 		// QThread::yieldCurrentThread();		
 	}
 	qDebug()<<"QAndroidOffscreenView::waitForViewCreation"<<view_class_name_<<view_object_name_<<"tid ="<<gettid()<<"<<<<<<";
 	return true;
 }
+#endif
 
 bool QAndroidOffscreenView::hasValidImage() const
 {

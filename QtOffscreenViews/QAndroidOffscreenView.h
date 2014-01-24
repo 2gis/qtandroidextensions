@@ -45,6 +45,10 @@
 #include <JniEnvPtr.h>
 #include "QOpenGLTextureHolder.h"
 
+#if QT_VERSION < 0x050000
+	#define QANDROIDOFFSCREENVIEW_ALLOWWAIT
+#endif
+
 /*!
  * A general wrapper for Android offscreen views.
  * It can be used to create a QWidget / QGLWidget / QGraphicsWidget / QML component
@@ -59,12 +63,12 @@ class QAndroidOffscreenView: public QObject
 	Q_PROPERTY(bool visible READ visible WRITE setVisible)
 protected:
 	/*!
-	 * \param waitforcreation - if set, pauses current thread until Android View is actually
-	 * created, so you can safely use View-specific functions. If not set, the function will
-	 * return faster and the View will be created in background, but it will be necessary to call
-	 * waitForViewCreation() before using any functionality which access View.
+	 * \param classname - name of Java class of the View wrapper.
+	 * \param objectname - set for QObject and also passed to Java side, to identify the object in logs and etc.
+	 * \param defsize - initial size of the view.
+	 * \param parent - passed to QObject constructor.
 	 */
-	QAndroidOffscreenView(const QString & classname, const QString & objectname, bool create_view, bool waitforcreation, const QSize & defsize, QObject * parent = 0);
+	QAndroidOffscreenView(const QString & classname, const QString & objectname, bool create_view, const QSize & defsize, QObject * parent = 0);
 
 	//! \todo Use return result!
 	bool createView();
@@ -105,13 +109,17 @@ public:
 	//! Check if Android View already exists
 	bool isCreated() const;
 
+#if defined(QANDROIDOFFSCREENVIEW_ALLOWWAIT)
 	/*!
 	 * Wait until Android View will be actually created.
 	 * This function should be called after initializeGL().
 	 * If the View is already created or initializeGL() has not been called the function
 	 * returns immediately.
+	 * \note This function is not made availble for Qt 5 because in typical use cases Java UI thread
+	 *  may be blocked during call for waitForViewCreation() and your application will deadlock.
 	 */
 	bool waitForViewCreation();
+#endif
 
 	//! Check if Android View has already painted something
 	virtual bool hasValidImage() const;

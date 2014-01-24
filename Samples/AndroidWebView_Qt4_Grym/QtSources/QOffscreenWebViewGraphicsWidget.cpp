@@ -11,7 +11,7 @@
 
 QOffscreenWebViewGraphicsWidget::QOffscreenWebViewGraphicsWidget(QGraphicsItem *parent, Qt::WindowFlags wFlags)
 	: QGraphicsWidget(parent, wFlags)
-	, aview_("WebView1", true, QSize(512, 512))
+	, aview_("WebView1", QSize(512, 512))
 	, mouse_tracking_(false)
 {
 	setAcceptedMouseButtons(Qt::LeftButton);
@@ -19,6 +19,7 @@ QOffscreenWebViewGraphicsWidget::QOffscreenWebViewGraphicsWidget(QGraphicsItem *
 	connect(&aview_, SIGNAL(pageFinished()), this, SLOT(onPageFinished()));
 	connect(&aview_, SIGNAL(contentHeightReceived(int)), this, SLOT(onContentHeightReceived(int)));
 
+	aview_.waitForViewCreation(); //!< \todo: Remove this after action queue is implemented.
 	aview_.loadUrl("http://www.android.com/intl/en/about/");
 }
 
@@ -97,7 +98,7 @@ void QOffscreenWebViewGraphicsWidget::paint(QPainter * painter, const QStyleOpti
 	#endif
 
 	// Finally, we can draw the texture using these GL coordinates
-	aview_.paintGL(l, b, w, h);
+	aview_.paintGL(l, b, w, h, false);
 
 	#if defined(ANDROIDVIEWGRAPHICSPROXY_CLEARALL)
 		glScissor(0, 0, static_cast<GLsizei>(device->width()), static_cast<GLsizei>(device->height()));
