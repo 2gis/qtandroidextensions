@@ -43,10 +43,7 @@ void QOffscreenWebViewGraphicsWidget::paint(QPainter * painter, const QStyleOpti
 
 	// We don't have any function like initializeGL in QGraphicsWidget, so let's just
 	// do the initialization during the first paint.
-	if (!aview_.isIntialized())
-	{
-		aview_.initializeGL();
-	}
+	aview_.initializeGL();
 
 	#if defined(ANDROIDVIEWGRAPHICSPROXY_CLEARALL)
 		painter->fillRect(rect(), Qt::green);

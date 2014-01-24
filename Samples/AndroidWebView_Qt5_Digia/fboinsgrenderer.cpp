@@ -53,10 +53,10 @@ LogoInFboRenderer::LogoInFboRenderer()
 
 void LogoInFboRenderer::render()
 {
-	if (!aview_.isIntialized())
-	{
-		aview_.initializeGL();
-	}
+	// We can't use the texture in aview_ directly because it uses GL shader extension
+	// and custom transformation matrix, but we can draw the texture on the FBO texture.
+	// Fortunately, this is an extremely small operation comparing to the everything else
+	// we have to do.
 	aview_.paintGL(0, 0, aview_.size().width(), aview_.size().height(), true);
 	update();
 }
@@ -64,9 +64,12 @@ void LogoInFboRenderer::render()
 QOpenGLFramebufferObject * LogoInFboRenderer::createFramebufferObject(const QSize &size)
 {
 	qDebug()<<__FUNCTION__<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<size;
+
+	aview_.initializeGL();
+	aview_.resize(size);
+
 	QOpenGLFramebufferObjectFormat format;
 	format.setSamples(4);
-	aview_.resize(size);
 	return new QOpenGLFramebufferObject(size, format);
 }
 

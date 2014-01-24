@@ -176,7 +176,7 @@ void QAndroidOffscreenView::initializeGL()
 	qDebug()<<__PRETTY_FUNCTION__;
 	if (tex_.isAllocated())
 	{
-		qWarning("Attempting to initialize QAndroidOffscreenView second time!");
+		qDebug("QAndroidOffscreenView GL is already initialized.");
 		return;
 	}
 
@@ -257,9 +257,12 @@ void QAndroidOffscreenView::paintGL(int l, int b, int w, int h, bool reverse_y)
 			QRect(QPoint(0, 0), QSize(w, h)) // target rect (relatively to viewport)
 			, QRect(QPoint(0, 0), QSize(w, h)) // source rect (in texture)
 			, reverse_y);
-		return;
 	}
-	clearGlRect(l, b, w, h, fill_color_);
+	else
+	{
+		// View is not ready, just fill the area with the fill color.
+		clearGlRect(l, b, w, h, fill_color_);
+	}
 }
 
 bool QAndroidOffscreenView::isCreated() const

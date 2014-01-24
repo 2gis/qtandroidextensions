@@ -79,8 +79,9 @@ public:
 	static const QString & getDefaultJavaClassPath();
 
 	/*!
-	 * Initialize Android view. This function should be called within active proper GL context
-	 * as it may want to create OpenGL texture.
+	 * Initialize OpenGL rendering surface. This function should be called within active
+	 * proper GL context as it will want to create an OpenGL texture.
+	 * It is safe to call this function multiple times. All subsequent calls are ignored.
 	 */
 	virtual void initializeGL();
 
