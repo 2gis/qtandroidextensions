@@ -187,9 +187,17 @@ class OffscreenWebView extends OffscreenView
             setBottom(height-1);
         }
 
+        @Override
+        protected void onDraw(Canvas canvas)
+        {
+            if (isInOffscreenDraw())
+            {
+                super.onDraw(canvas);
+            }
+        }
+
         public void onDrawPublic(Canvas canvas)
         {
-
             // Log.i(TAG, "MyWebView.onDrawPublic "+getWidth()+"x"+getHeight());
             // canvas.drawARGB (255, 255, 255, 255);
 

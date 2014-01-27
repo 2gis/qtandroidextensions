@@ -79,6 +79,7 @@ import android.util.DisplayMetrics;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.KeyEvent;
 import android.view.KeyCharacterMap;
@@ -108,11 +109,30 @@ abstract class OffscreenView
     private Boolean painting_now_ = new Boolean(false);
     private ArrayList<Runnable> precreation_actions_ = new ArrayList<Runnable>();
     protected Object view_existence_mutex_ = new Object();
-
     private int initial_width_ = 512;
     private int initial_height_ = 512;
-
     protected int fill_a_ = 255, fill_r_ = 255, fill_g_ = 255, fill_b_ = 255;
+    private MyLayout layout_ = null;
+    private boolean in_offscreen_draw_ = false;
+
+    private class MyLayout extends LinearLayout
+    {
+        public MyLayout(Activity a)
+        {
+            super(a);
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas)
+        {
+            // We can actually do totally nothing.
+            /*if (isInOffscreenDraw())
+            {
+                super.onDraw(canvas);
+            }*/
+        }
+
+    }
 
     OffscreenView()
     {
@@ -168,7 +188,6 @@ abstract class OffscreenView
         }
     }
 
-
     /*!
      * Invokes View creation in Android UI thread.
      */
@@ -183,7 +202,20 @@ abstract class OffscreenView
                 synchronized(this)
                 {
                     Log.i(TAG, "OffscreenView.createView: creating the view!");
+                    final Activity activity = getActivity();
+
+                    // Call final widget implementation function to handle actual
+                    // construction of the view.
                     doCreateView();
+
+                    // Insert the View into layout.
+                    // Note: functions of many views will crash if they are not inserted into layout.
+                    final View view = getView();
+                    layout_ = new MyLayout(activity);
+                    layout_.setRight(initial_width_-1);
+                    layout_.setBottom(initial_height_-1);
+                    layout_.addView(view);
+                    attachViewToQtScreen();
 
                     // Process command queue
                     synchronized(view_existence_mutex_)
@@ -201,6 +233,7 @@ abstract class OffscreenView
                         precreation_actions_.clear();
                     }
 
+                    // Notify C++ part that the view construction has been completed.
                     doNativeViewCreated();
                 }
             }
@@ -208,6 +241,51 @@ abstract class OffscreenView
         Log.i(TAG, "createView result="+result);
         return result;
     }
+
+    private boolean attachViewToQtScreen()
+    {
+        final Activity activity = getActivity();
+        final View view = layout_;
+        if (activity == null || view == null)
+        {
+            Log.e(TAG, "Failed to insert "+object_name_+" into the ViewGroup because Activity or View is null!");
+        }
+        ViewGroup vg = (ViewGroup)activity.findViewById(android.R.id.content);
+        if (vg != null)
+        {
+            Log.i(TAG, "Inserting "+object_name_+" (view id="+view.getId()+") into the ViewGroup...");
+            vg.addView(view);
+            return true;
+        }
+        else
+        {
+            Log.w(TAG, "Failed to insert "+object_name_+" into the ViewGroup because it was not found!");
+            return false;
+        }
+    }
+
+    private boolean detachViewFromQtScreen()
+    {
+        final Activity activity = getActivity();
+        final View view = layout_;
+        if (activity == null || view == null)
+        {
+            Log.e(TAG, "Failed to insert "+object_name_+" into the ViewGroup because Activity or View is null!");
+        }
+        ViewGroup vg = (ViewGroup)activity.findViewById(android.R.id.content);
+        if (vg != null)
+        {
+            Log.i(TAG, "Removing "+object_name_+" (view id="+view.getId()+") from the ViewGroup...");
+            vg.removeView(view);
+            return true;
+        }
+        else
+        {
+            Log.w(TAG, "Failed to remove "+object_name_+" from the ViewGroup because it was not found!");
+            return false;
+        }
+    }
+
 
     /*!
      * Invokes object initialization based on values passed via SetObjectName(), SetTexture(),
@@ -262,6 +340,11 @@ abstract class OffscreenView
         });
     }
 
+    final public boolean isInOffscreenDraw()
+    {
+        return in_offscreen_draw_;
+    }
+
     //! Performs actual painting of the view. Should be called in Android UI thread.
     protected void doDrawViewOnTexture()
     {
@@ -299,7 +382,9 @@ abstract class OffscreenView
                         if (v != null)
                         {
                             // Log.i(TAG, "doDrawViewOnTexture view size:"+v.getWidth()+"x"+v.getHeight());
+                            in_offscreen_draw_ = true;
                             callViewPaintMethod(canvas);
+                            in_offscreen_draw_ = false;
                         }
                         else
                         {
@@ -442,6 +527,8 @@ abstract class OffscreenView
                     @Override
                     public void run()
                     {
+                        layout_.setRight(w-1);
+                        layout_.setBottom(h-1);
                         doResizeOffscreenView(w, h);
                         doInvalidateOffscreenView();
                     }
@@ -467,6 +554,13 @@ abstract class OffscreenView
         {
             native_ptr_ = 0;
         }
+        runOnUiThread(new Runnable(){
+            @Override
+            public void run()
+            {
+                detachViewFromQtScreen();
+            }
+        });
     }
 
     public void setFillColor(int a, int r, int g, int b)

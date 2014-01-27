@@ -97,9 +97,6 @@ class OffscreenEditText extends OffscreenView
     MyEditText edittext_ = null;
     boolean is_visible_ = true;
 
-    // EditText will crash if not inserted into a layout.
-    LinearLayout layout_;
-
     class MyEditText extends EditText
     {
         int width_ = 0, height_ = 0;
@@ -133,9 +130,6 @@ setText("Hello EditText");
         // NB: caller should call the invalidation
         public void resizeOffscreenView(int width, int height)
         {
-            layout_.setRight(width-1);
-            layout_.setBottom(height-1);
-            
             // TODO:??
             onSizeChanged(width, height, width_, height_);
 
@@ -155,7 +149,7 @@ setText("Hello EditText");
              Log.i(TAG, "SGEXP Somebody called getRootView!");
              return super.getRootView(); //this;
         }
-        
+/*        
         // SGEXP
         @Override
         public boolean onTouchEvent(MotionEvent ev)
@@ -178,8 +172,16 @@ setText("Hello EditText");
                 break;
             }
             return super.onTouchEvent(ev);
-        }
+        }*/
 
+        @Override
+        protected void onDraw(Canvas canvas)
+        {
+            if (isInOffscreenDraw())
+            {
+                super.onDraw(canvas);
+            }
+        }
 
         public void onDrawPublic(Canvas canvas)
         {
@@ -276,20 +278,7 @@ setText("Hello EditText");
         final Activity context = getActivity();
         synchronized(view_existence_mutex_)
         {
-            layout_ = new LinearLayout(context);
             edittext_ = new MyEditText(context);
-            layout_.addView(edittext_);
-
-            ViewGroup vg = (ViewGroup)context.findViewById(android.R.id.content);
-            if (vg != null)
-            {
-                Log.i(TAG, "SGEXP Wassup adding!!");
-                vg.addView(layout_);
-            }
-            else
-            {
-                Log.i(TAG, "SGEXP Wassup NOT FIND");
-            }
         }
         edittext_.setOffscreenViewVisible(is_visible_);
     }
