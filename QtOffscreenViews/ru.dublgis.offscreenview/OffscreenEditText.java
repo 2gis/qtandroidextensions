@@ -77,6 +77,7 @@ import android.util.DisplayMetrics;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.KeyEvent;
 import android.view.KeyCharacterMap;
@@ -146,12 +147,45 @@ setText("Hello EditText");
             setBottom(height-1);
             
         }
+        
+        // SGEXP
+        @Override
+        public View getRootView ()
+        {
+             Log.i(TAG, "SGEXP Somebody called getRootView!");
+             return super.getRootView(); //this;
+        }
+        
+        // SGEXP
+        @Override
+        public boolean onTouchEvent(MotionEvent ev)
+        {
+            switch (ev.getAction())
+            {
+                case MotionEvent.ACTION_DOWN:
+                case MotionEvent.ACTION_UP:
+                    Log.i(TAG, "SGEXP onTouchEvent requests focus isVisible="+isVisible()+", is focusable="+isFocusable()+
+                       ", in touch mode="+isFocusableInTouchMode()+", has focus="+hasFocus()+", isEnabled="+isEnabled());
+                    if (!hasFocus())
+                        requestFocus();
+                    InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if (imm != null){
+                        boolean res = imm.showSoftInput(this, InputMethodManager.SHOW_FORCED, null);
+                        if (!res) {
+                            Log.e(TAG, "SGEXP ShowSoftwareKeyboard: imm.showSoftInput result="+res);
+                        }
+                    }
+                break;
+            }
+            return super.onTouchEvent(ev);
+        }
+
 
         public void onDrawPublic(Canvas canvas)
         {
 
-            Log.i(TAG, "MyEditText.onDrawPublic "+getWidth()+"x"+getHeight());
-            canvas.drawARGB (255, 255, 0, 255);
+            // Log.i(TAG, "MyEditText.onDrawPublic "+getWidth()+"x"+getHeight());
+            canvas.drawARGB (fill_a_, fill_r_, fill_g_, fill_b_);
             // Take View scroll into account. (It converts touch coordinates by itself,
             // but it doesn't draw scrolled).
             canvas.translate(-getScrollX(), -getScrollY());
@@ -166,7 +200,7 @@ setText("Hello EditText");
                 @Override
                 public void run()
                 {
-                    Log.i(TAG, "invalidateTexture: processing with invalidated_="+invalidated_);
+                    // Log.i(TAG, "invalidateTexture: processing with invalidated_="+invalidated_);
                     if (invalidated_)
                     {
                         invalidated_ = false;
@@ -245,6 +279,17 @@ setText("Hello EditText");
             layout_ = new LinearLayout(context);
             edittext_ = new MyEditText(context);
             layout_.addView(edittext_);
+
+            ViewGroup vg = (ViewGroup)context.findViewById(android.R.id.content);
+            if (vg != null)
+            {
+                Log.i(TAG, "SGEXP Wassup adding!!");
+                vg.addView(layout_);
+            }
+            else
+            {
+                Log.i(TAG, "SGEXP Wassup NOT FIND");
+            }
         }
         edittext_.setOffscreenViewVisible(is_visible_);
     }

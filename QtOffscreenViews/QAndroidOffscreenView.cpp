@@ -355,7 +355,7 @@ void QAndroidOffscreenView::setVisible(bool visible)
 
 void QAndroidOffscreenView::javaUpdate()
 {
-	qDebug()<<__PRETTY_FUNCTION__;
+	// qDebug()<<__PRETTY_FUNCTION__;
 	need_update_texture_ = true;
 	view_painted_ = true;
 	emit updated();

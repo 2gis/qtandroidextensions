@@ -190,7 +190,7 @@ class OffscreenWebView extends OffscreenView
         public void onDrawPublic(Canvas canvas)
         {
 
-            Log.i(TAG, "MyWebView.onDrawPublic "+getWidth()+"x"+getHeight());
+            // Log.i(TAG, "MyWebView.onDrawPublic "+getWidth()+"x"+getHeight());
             // canvas.drawARGB (255, 255, 255, 255);
 
             // Take View scroll into account. (It converts touch coordinates by itself,
@@ -220,7 +220,7 @@ class OffscreenWebView extends OffscreenView
                 @Override
                 public void run()
                 {
-                    Log.i(TAG, "invalidateTexture: processing with invalidated_="+invalidated_);
+                    // Log.i(TAG, "invalidateTexture: processing with invalidated_="+invalidated_);
                     if (invalidated_)
                     {
                         invalidated_ = false;

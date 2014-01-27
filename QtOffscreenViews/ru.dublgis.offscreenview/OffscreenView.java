@@ -112,7 +112,7 @@ abstract class OffscreenView
     private int initial_width_ = 512;
     private int initial_height_ = 512;
 
-    private int fill_a_ = 255, fill_r_ = 255, fill_g_ = 255, fill_b_ = 255;
+    protected int fill_a_ = 255, fill_r_ = 255, fill_g_ = 255, fill_b_ = 255;
 
     OffscreenView()
     {
@@ -280,7 +280,7 @@ abstract class OffscreenView
             try
             {
                 // TODO: disable time measurement
-                long t = System.nanoTime();
+                // long t = System.nanoTime();
                 Canvas canvas = rendering_surface_.lockCanvas();
                 if (canvas == null)
                 {
@@ -320,12 +320,12 @@ abstract class OffscreenView
                         painting_now_ = false;
                     }
 
-                    t = System.nanoTime() - t;
+                    // t = System.nanoTime() - t;
 
                     // Tell C++ part that we have a new image
                     doNativeUpdate();
 
-                    Log.i(TAG, "doDrawViewOnTexture: success, t="+t/1000000.0+"ms");
+                    // Log.i(TAG, "doDrawViewOnTexture: success, t="+t/1000000.0+"ms");
                 }
             }
             catch(Exception e)
@@ -557,7 +557,7 @@ abstract class OffscreenView
         @Override
         public boolean updateTexture()
         {
-            Log.i(TAG, "updateTexture tid="+Thread.currentThread().getId()+", tex="+gl_texture_id_);
+            // Log.i(TAG, "updateTexture tid="+Thread.currentThread().getId()+", tex="+gl_texture_id_);
             try
             {
                 if (!has_texture_)

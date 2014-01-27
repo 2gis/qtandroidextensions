@@ -177,7 +177,7 @@ public:
 		view_->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 #endif
 		etview.reset(new QOffscreenEditTextGraphicsWidget());
-		etview->androidOffscreenView()->setFillColor(Qt::red);
+		etview->androidOffscreenView()->setFillColor(Qt::yellow);
 		scene_.addItem(etview.data());
 
 		aview.reset(new QOffscreenWebViewGraphicsWidget());
