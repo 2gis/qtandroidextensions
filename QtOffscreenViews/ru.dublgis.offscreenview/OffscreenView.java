@@ -113,7 +113,6 @@ abstract class OffscreenView
     private int initial_height_ = 512;
     protected int fill_a_ = 255, fill_r_ = 255, fill_g_ = 255, fill_b_ = 255;
     private MyLayout layout_ = null;
-    private boolean in_offscreen_draw_ = false;
 
     private class MyLayout extends LinearLayout
     {
@@ -340,9 +339,9 @@ abstract class OffscreenView
         });
     }
 
-    final public boolean isInOffscreenDraw()
+    final protected boolean isInOffscreenDraw()
     {
-        return in_offscreen_draw_;
+        return painting_now_;
     }
 
     //! Performs actual painting of the view. Should be called in Android UI thread.
@@ -382,9 +381,7 @@ abstract class OffscreenView
                         if (v != null)
                         {
                             // Log.i(TAG, "doDrawViewOnTexture view size:"+v.getWidth()+"x"+v.getHeight());
-                            in_offscreen_draw_ = true;
                             callViewPaintMethod(canvas);
-                            in_offscreen_draw_ = false;
                         }
                         else
                         {
