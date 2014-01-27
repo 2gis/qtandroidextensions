@@ -186,7 +186,7 @@ public:
 	virtual ~MyWindow()
 	{
 		#if defined(Q_OS_ANDROID)
-			gl_layer_->__qpaDetachContext();
+//			gl_layer_->__qpaDetachContext();
 		#endif
 	}
 
