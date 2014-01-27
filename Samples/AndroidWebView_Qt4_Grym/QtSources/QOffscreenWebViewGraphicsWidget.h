@@ -8,13 +8,16 @@
 #include <jcGeneric.h>
 #include "QAndroidOffscreenWebView.h"
 
-class QOffscreenWebViewGraphicsWidget
+class QAndroidOffscreenViewGraphicsWidget
 	: public QGraphicsWidget
 {
 	Q_OBJECT
 public:
-	QOffscreenWebViewGraphicsWidget(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
-	virtual ~QOffscreenWebViewGraphicsWidget();
+	QAndroidOffscreenViewGraphicsWidget(QAndroidOffscreenView * view, QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
+	virtual ~QAndroidOffscreenViewGraphicsWidget();
+
+	QAndroidOffscreenView * androidOffscreenView() { return aview_.data(); }
+	const QAndroidOffscreenView * androidOffscreenView() const { return aview_.data(); }
 
 protected:
 	virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
@@ -25,13 +28,24 @@ protected:
 
 private slots:
 	void onOffscreenUpdated();
+
+private:
+	QScopedPointer<QAndroidOffscreenView> aview_;
+	bool mouse_tracking_;
+};
+
+class QOffscreenWebViewGraphicsWidget
+	: public QAndroidOffscreenViewGraphicsWidget
+{
+	Q_OBJECT
+public:
+	QOffscreenWebViewGraphicsWidget(const QString & objectname = QLatin1String("DefaultWebView"),
+		const QSize & def_size = QSize(512, 512), QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
+
+	QAndroidOffscreenWebView * androidOffscreenWebView() { return static_cast<QAndroidOffscreenWebView*>(androidOffscreenView()); }
+	const QAndroidOffscreenWebView * androidOffscreenWebView() const { return static_cast<const QAndroidOffscreenWebView*>(androidOffscreenView()); }
+
+private slots:
 	void onPageFinished();
 	void onContentHeightReceived(int height);
-
-private:
-	//void CreateTestTexture(QSize * out_texture_size_);
-
-private:
-	QAndroidOffscreenWebView aview_;
-	bool mouse_tracking_;
 };

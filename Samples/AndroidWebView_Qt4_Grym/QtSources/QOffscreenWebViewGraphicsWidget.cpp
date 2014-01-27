@@ -9,33 +9,25 @@
 
 // #define ANDROIDVIEWGRAPHICSPROXY_CLEARALL
 
-QOffscreenWebViewGraphicsWidget::QOffscreenWebViewGraphicsWidget(QGraphicsItem *parent, Qt::WindowFlags wFlags)
+QAndroidOffscreenViewGraphicsWidget::QAndroidOffscreenViewGraphicsWidget(QAndroidOffscreenView * view, QGraphicsItem *parent, Qt::WindowFlags wFlags)
 	: QGraphicsWidget(parent, wFlags)
-	, aview_("WebView1", QSize(512, 512))
+	, aview_(view)
 	, mouse_tracking_(false)
 {
 	setAcceptedMouseButtons(Qt::LeftButton);
-	connect(&aview_, SIGNAL(updated()), this, SLOT(onOffscreenUpdated()));
-	connect(&aview_, SIGNAL(pageFinished()), this, SLOT(onPageFinished()));
-	connect(&aview_, SIGNAL(contentHeightReceived(int)), this, SLOT(onContentHeightReceived(int)));
-
-	// This is not necessary anymore, as the view will schedule any actions for execution when the
-	// view is ready:
-	// aview_.waitForViewCreation();
-
-	aview_.loadUrl("http://www.android.com/intl/en/about/");
+	connect(aview_.data(), SIGNAL(updated()), this, SLOT(onOffscreenUpdated()));
 }
 
-QOffscreenWebViewGraphicsWidget::~QOffscreenWebViewGraphicsWidget()
+QAndroidOffscreenViewGraphicsWidget::~QAndroidOffscreenViewGraphicsWidget()
 {
 }
 
-void QOffscreenWebViewGraphicsWidget::onOffscreenUpdated()
+void QAndroidOffscreenViewGraphicsWidget::onOffscreenUpdated()
 {
 	update();
 }
 
-void QOffscreenWebViewGraphicsWidget::paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget)
+void QAndroidOffscreenViewGraphicsWidget::paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget)
 {
 	Q_UNUSED(option);
 	Q_UNUSED(widget);
@@ -43,7 +35,7 @@ void QOffscreenWebViewGraphicsWidget::paint(QPainter * painter, const QStyleOpti
 
 	// We don't have any function like initializeGL in QGraphicsWidget, so let's just
 	// do the initialization during the first paint.
-	aview_.initializeGL();
+	aview_->initializeGL();
 
 	#if defined(ANDROIDVIEWGRAPHICSPROXY_CLEARALL)
 		painter->fillRect(rect(), Qt::green);
@@ -98,7 +90,7 @@ void QOffscreenWebViewGraphicsWidget::paint(QPainter * painter, const QStyleOpti
 	#endif
 
 	// Finally, we can draw the texture using these GL coordinates
-	aview_.paintGL(l, b, w, h, false);
+	aview_->paintGL(l, b, w, h, false);
 
 	#if defined(ANDROIDVIEWGRAPHICSPROXY_CLEARALL)
 		glScissor(0, 0, static_cast<GLsizei>(device->width()), static_cast<GLsizei>(device->height()));
@@ -110,49 +102,67 @@ void QOffscreenWebViewGraphicsWidget::paint(QPainter * painter, const QStyleOpti
 	painter->endNativePainting();
 }
 
-void QOffscreenWebViewGraphicsWidget::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
+void QAndroidOffscreenViewGraphicsWidget::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
 {
 	if (mouse_tracking_)
 	{
 		QPoint pos = event->pos().toPoint();
-		aview_.mouse(QAndroidOffscreenView::ANDROID_MOTIONEVENT_ACTION_MOVE, pos.x(), pos.y());
+		aview_->mouse(QAndroidOffscreenView::ANDROID_MOTIONEVENT_ACTION_MOVE, pos.x(), pos.y());
 		event->accept();
 	}
 }
 
-void QOffscreenWebViewGraphicsWidget::mousePressEvent(QGraphicsSceneMouseEvent * event)
+void QAndroidOffscreenViewGraphicsWidget::mousePressEvent(QGraphicsSceneMouseEvent * event)
 {
 	if (event->button() == Qt::LeftButton)
 	{
 		QPoint pos = event->pos().toPoint();
-		aview_.mouse(QAndroidOffscreenView::ANDROID_MOTIONEVENT_ACTION_DOWN, pos.x(), pos.y());
+		aview_->mouse(QAndroidOffscreenView::ANDROID_MOTIONEVENT_ACTION_DOWN, pos.x(), pos.y());
 		mouse_tracking_ = true;
 		event->accept();
 	}
 }
 
-void QOffscreenWebViewGraphicsWidget::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
+void QAndroidOffscreenViewGraphicsWidget::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
 {
 	if (event->button() == Qt::LeftButton)
 	{
 		QPoint pos = event->pos().toPoint();
-		aview_.mouse(QAndroidOffscreenView::ANDROID_MOTIONEVENT_ACTION_UP, pos.x(), pos.y());
+		aview_->mouse(QAndroidOffscreenView::ANDROID_MOTIONEVENT_ACTION_UP, pos.x(), pos.y());
 		mouse_tracking_ = false;
 		event->accept();
 	}
 }
 
-void QOffscreenWebViewGraphicsWidget::resizeEvent(QGraphicsSceneResizeEvent *event)
+void QAndroidOffscreenViewGraphicsWidget::resizeEvent(QGraphicsSceneResizeEvent *event)
 {
 	qDebug()<<__PRETTY_FUNCTION__<<event->newSize().toSize();
 	QGraphicsWidget::resizeEvent(event);
-	aview_.resize(event->newSize().toSize());
+	aview_->resize(event->newSize().toSize());
+}
+
+
+
+
+
+
+
+QOffscreenWebViewGraphicsWidget::QOffscreenWebViewGraphicsWidget(const QString & objectname, const QSize & def_size, QGraphicsItem *parent, Qt::WindowFlags wFlags)
+	: QAndroidOffscreenViewGraphicsWidget(new QAndroidOffscreenWebView(objectname, def_size), parent, wFlags)
+
+{
+	connect(androidOffscreenView(), SIGNAL(pageFinished()), this, SLOT(onPageFinished()));
+	connect(androidOffscreenView(), SIGNAL(contentHeightReceived(int)), this, SLOT(onContentHeightReceived(int)));
+	// This is not necessary anymore, as the view will schedule any actions for execution when the
+	// view is ready:
+	// aview_->waitForViewCreation();
+	 androidOffscreenWebView()->loadUrl("http://www.android.com/intl/en/about/");
 }
 
 void QOffscreenWebViewGraphicsWidget::onPageFinished()
 {
 	qDebug()<<__PRETTY_FUNCTION__;
-	aview_.requestContentHeight();
+	androidOffscreenWebView()->requestContentHeight();
 }
 
 void QOffscreenWebViewGraphicsWidget::onContentHeightReceived(int height)

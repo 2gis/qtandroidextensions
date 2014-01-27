@@ -191,7 +191,7 @@ class OffscreenWebView extends OffscreenView
         {
 
             Log.i(TAG, "MyWebView.onDrawPublic "+getWidth()+"x"+getHeight());
-            canvas.drawARGB (255, 255, 255, 255);
+            // canvas.drawARGB (255, 255, 255, 255);
 
             // Take View scroll into account. (It converts touch coordinates by itself,
             // but it doesn't draw scrolled).
