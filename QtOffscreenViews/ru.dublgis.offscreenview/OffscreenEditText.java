@@ -96,6 +96,9 @@ class OffscreenEditText extends OffscreenView
     MyEditText edittext_ = null;
     boolean is_visible_ = true;
 
+    // EditText will crash if not inserted into a layout.
+    LinearLayout layout_;
+
     class MyEditText extends EditText
     {
         int width_ = 0, height_ = 0;
@@ -109,6 +112,8 @@ class OffscreenEditText extends OffscreenView
             resizeOffscreenView(256, 32);
             setFocusable(true);
             setFocusableInTouchMode(true);
+
+setText("Hello EditText");
         }
 
         public void setOffscreenViewVisible(boolean visible)
@@ -127,20 +132,26 @@ class OffscreenEditText extends OffscreenView
         // NB: caller should call the invalidation
         public void resizeOffscreenView(int width, int height)
         {
+            layout_.setRight(width-1);
+            layout_.setBottom(height-1);
+            
+            // TODO:??
             onSizeChanged(width, height, width_, height_);
+
             width_ = width;
             height_ = height;
             setLeft(0);
             setRight(width-1);
             setTop(0);
             setBottom(height-1);
+            
         }
 
         public void onDrawPublic(Canvas canvas)
         {
 
             Log.i(TAG, "MyEditText.onDrawPublic "+getWidth()+"x"+getHeight());
-            // canvas.drawARGB (255, 255, 255, 255);
+            canvas.drawARGB (255, 255, 0, 255);
             // Take View scroll into account. (It converts touch coordinates by itself,
             // but it doesn't draw scrolled).
             canvas.translate(-getScrollX(), -getScrollY());
@@ -231,7 +242,9 @@ class OffscreenEditText extends OffscreenView
         final Activity context = getActivity();
         synchronized(view_existence_mutex_)
         {
+            layout_ = new LinearLayout(context);
             edittext_ = new MyEditText(context);
+            layout_.addView(edittext_);
         }
         edittext_.setOffscreenViewVisible(is_visible_);
     }
