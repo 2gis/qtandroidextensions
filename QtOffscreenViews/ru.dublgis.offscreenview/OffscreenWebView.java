@@ -190,10 +190,7 @@ class OffscreenWebView extends OffscreenView
         @Override
         protected void onDraw(Canvas canvas)
         {
-            /*if (isInOffscreenDraw())
-            {
-                super.onDraw(canvas);
-            }*/
+            // Don't draw when called from layout
         }
 
         public void onDrawPublic(Canvas canvas)

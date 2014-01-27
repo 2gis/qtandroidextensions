@@ -111,7 +111,7 @@ class OffscreenEditText extends OffscreenView
             setFocusable(true);
             setFocusableInTouchMode(true);
 
-setText("Hello EditText");
+            setText("Hello EditText");
         }
 
         public void setOffscreenViewVisible(boolean visible)
@@ -139,48 +139,12 @@ setText("Hello EditText");
             setRight(width-1);
             setTop(0);
             setBottom(height-1);
-            
         }
-        
-        // SGEXP
-        @Override
-        public View getRootView ()
-        {
-             Log.i(TAG, "SGEXP Somebody called getRootView!");
-             return super.getRootView(); //this;
-        }
-/*        
-        // SGEXP
-        @Override
-        public boolean onTouchEvent(MotionEvent ev)
-        {
-            switch (ev.getAction())
-            {
-                case MotionEvent.ACTION_DOWN:
-                case MotionEvent.ACTION_UP:
-                    Log.i(TAG, "SGEXP onTouchEvent requests focus isVisible="+isVisible()+", is focusable="+isFocusable()+
-                       ", in touch mode="+isFocusableInTouchMode()+", has focus="+hasFocus()+", isEnabled="+isEnabled());
-                    if (!hasFocus())
-                        requestFocus();
-                    InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    if (imm != null){
-                        boolean res = imm.showSoftInput(this, InputMethodManager.SHOW_FORCED, null);
-                        if (!res) {
-                            Log.e(TAG, "SGEXP ShowSoftwareKeyboard: imm.showSoftInput result="+res);
-                        }
-                    }
-                break;
-            }
-            return super.onTouchEvent(ev);
-        }*/
 
         @Override
         protected void onDraw(Canvas canvas)
         {
-            /*if (isInOffscreenDraw())
-            {
-                super.onDraw(canvas);
-            }*/
+            // Don't draw when called from layout
         }
 
         public void onDrawPublic(Canvas canvas)
@@ -221,7 +185,6 @@ setText("Hello EditText");
             invalidateTexture();
         }
 
-        // Old WebKit updating
         @Override
         public void invalidate(int l, int t, int r, int b)
         {
@@ -239,7 +202,6 @@ setText("Hello EditText");
             invalidateTexture();
         }
 
-        // Old WebKit updating
         @Override
         public void invalidate()
         {
