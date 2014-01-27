@@ -7,6 +7,7 @@
 #include <JclassPtr.h>
 #include <jcGeneric.h>
 #include "QAndroidOffscreenWebView.h"
+#include "QAndroidOffscreenEditText.h"
 
 class QAndroidOffscreenViewGraphicsWidget
 	: public QGraphicsWidget
@@ -49,3 +50,15 @@ private slots:
 	void onPageFinished();
 	void onContentHeightReceived(int height);
 };
+
+class QOffscreenEditTextGraphicsWidget
+	: public QAndroidOffscreenViewGraphicsWidget
+{
+	Q_OBJECT
+public:
+	QOffscreenEditTextGraphicsWidget(const QString objectname = QLatin1String("DefaultEditText"),
+		const QSize & def_size = QSize(512, 32), QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
+
+};
+
+

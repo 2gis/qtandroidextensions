@@ -176,8 +176,12 @@ public:
 		view_->setCacheMode(QGraphicsView::CacheBackground);
 		view_->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 #endif
+		etview.reset(new QOffscreenEditTextGraphicsWidget());
+		etview->androidOffscreenView()->setFillColor(Qt::red);
+		scene_.addItem(etview.data());
 
-		aview.reset(new QOffscreenWebViewGraphicsWidget()); scene_.addItem(aview.data());
+		aview.reset(new QOffscreenWebViewGraphicsWidget());
+		scene_.addItem(aview.data());
 
 		resize(1000, 1000);
 		doLayout(size());
@@ -220,14 +224,16 @@ protected:
 		view_->move(0, 0);
 		view_->resize(newsize);
 
-		if (aview)
-		{
-			aview->setGeometry(
-				20 + scene_.sceneRect().left()
-				, 150  + scene_.sceneRect().top()
-				, scene_.sceneRect().width() - 50
-				, scene_.sceneRect().height() - 200);
-		}
+		etview->setGeometry(
+			20 + scene_.sceneRect().left()
+			, 150  + scene_.sceneRect().top()
+			, scene_.sceneRect().width() - 50
+			, 145);
+		aview->setGeometry(
+			20 + scene_.sceneRect().left()
+			, 300  + scene_.sceneRect().top()
+			, scene_.sceneRect().width() - 50
+			, scene_.sceneRect().height() - 200);
 	}
 
 private:
@@ -235,6 +241,7 @@ private:
 	View * view_;
 	QGraphicsScene scene_;
 	QScopedPointer<QOffscreenWebViewGraphicsWidget> aview;
+	QScopedPointer<QOffscreenEditTextGraphicsWidget> etview;
 	QPixmap bgPix;
 };
 

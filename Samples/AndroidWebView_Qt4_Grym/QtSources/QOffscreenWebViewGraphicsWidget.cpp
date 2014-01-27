@@ -156,7 +156,7 @@ QOffscreenWebViewGraphicsWidget::QOffscreenWebViewGraphicsWidget(const QString &
 	// This is not necessary anymore, as the view will schedule any actions for execution when the
 	// view is ready:
 	// aview_->waitForViewCreation();
-	 androidOffscreenWebView()->loadUrl("http://www.android.com/intl/en/about/");
+	androidOffscreenWebView()->loadUrl("http://www.android.com/intl/en/about/");
 }
 
 void QOffscreenWebViewGraphicsWidget::onPageFinished()
@@ -170,3 +170,10 @@ void QOffscreenWebViewGraphicsWidget::onContentHeightReceived(int height)
 	qDebug()<<__PRETTY_FUNCTION__<<"Page height:"<<height;
 }
 
+
+
+
+QOffscreenEditTextGraphicsWidget::QOffscreenEditTextGraphicsWidget(const QString objectname, const QSize & def_size, QGraphicsItem *parent, Qt::WindowFlags wFlags)
+	: QAndroidOffscreenViewGraphicsWidget(new QAndroidOffscreenEditText(objectname, def_size), parent, wFlags)
+{
+}
