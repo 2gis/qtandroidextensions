@@ -381,6 +381,11 @@ abstract class OffscreenView
                         if (v != null)
                         {
                             // Log.i(TAG, "doDrawViewOnTexture view size:"+v.getWidth()+"x"+v.getHeight());
+
+                            // Prepare canvas.
+                            // Take View scroll into account.
+                            canvas.translate(-v.getScrollX(), -v.getScrollY());
+
                             callViewPaintMethod(canvas);
                         }
                         else

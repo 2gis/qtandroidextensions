@@ -177,16 +177,16 @@ setText("Hello EditText");
         @Override
         protected void onDraw(Canvas canvas)
         {
-            if (isInOffscreenDraw())
+            /*if (isInOffscreenDraw())
             {
                 super.onDraw(canvas);
-            }
+            }*/
         }
 
         public void onDrawPublic(Canvas canvas)
         {
-
             // Log.i(TAG, "MyEditText.onDrawPublic "+getWidth()+"x"+getHeight());
+            // A text view has transparent background by default, which is not what we expect.
             canvas.drawARGB (fill_a_, fill_r_, fill_g_, fill_b_);
             // Take View scroll into account. (It converts touch coordinates by itself,
             // but it doesn't draw scrolled).

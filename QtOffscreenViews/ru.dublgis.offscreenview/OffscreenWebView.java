@@ -190,34 +190,15 @@ class OffscreenWebView extends OffscreenView
         @Override
         protected void onDraw(Canvas canvas)
         {
-            if (isInOffscreenDraw())
+            /*if (isInOffscreenDraw())
             {
                 super.onDraw(canvas);
-            }
+            }*/
         }
 
         public void onDrawPublic(Canvas canvas)
         {
-            // Log.i(TAG, "MyWebView.onDrawPublic "+getWidth()+"x"+getHeight());
-            // canvas.drawARGB (255, 255, 255, 255);
-
-            // Take View scroll into account. (It converts touch coordinates by itself,
-            // but it doesn't draw scrolled).
-            canvas.translate(-getScrollX(), -getScrollY());
-
             super.onDraw(canvas);
-
-            /*
-            Paint paint = new Paint();
-            paint.setColor(Color.BLUE);
-            canvas.drawLine(0, 0, getWidth()-1, getHeight()-1, paint);
-            canvas.drawLine(getWidth()-1, 0, 0, getHeight()-1, paint);
-            canvas.drawLine(0, 0, getWidth()-1, 0, paint);
-            canvas.drawLine(0, getHeight()-1, getWidth()-1, getHeight()-1, paint);
-            canvas.drawLine(0, 0, 0, getHeight()-1, paint);
-            canvas.drawLine(getWidth()-1, 0, getWidth()-1, getHeight()-1, paint);
-            // CheckBitmap(); if (bitmap_ != null){ canvas.drawBitmap(bitmap_, 200, 2000, paint); }
-            */
         }
 
         public void invalidateTexture()
