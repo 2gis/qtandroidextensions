@@ -173,13 +173,12 @@ const QString & QAndroidOffscreenView::getDefaultJavaClassPath()
 
 void QAndroidOffscreenView::initializeGL()
 {
-	qDebug()<<__PRETTY_FUNCTION__;
 	if (tex_.isAllocated())
 	{
-		qDebug("QAndroidOffscreenView GL is already initialized.");
+		// qDebug("QAndroidOffscreenView GL is already initialized.");
 		return;
 	}
-
+	qDebug()<<__PRETTY_FUNCTION__;
 	qDebug()<<"QAndroidOffscreenView: making sure GL thread"<<gettid()<<"is attached to JNI";
 	jni_gl_thread_attacher_.reset(new JniEnvPtr());
 
