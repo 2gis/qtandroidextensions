@@ -17,7 +17,7 @@ class QAndroidOffscreenViewGraphicsWidget
 {
 	Q_OBJECT
 public:
-	QAndroidOffscreenViewGraphicsWidget(QAndroidOffscreenView * view, QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
+	QAndroidOffscreenViewGraphicsWidget(QAndroidOffscreenView * view, bool interactive, QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
 	virtual ~QAndroidOffscreenViewGraphicsWidget();
 
 	virtual void setVisible(bool visible);
@@ -46,6 +46,8 @@ private:
 	bool mouse_tracking_;
 	QPoint last_updated_position_;
 	bool initial_visibilty_set_;
+private:
+	bool is_interactive_;
 };
 
 class QOffscreenWebViewGraphicsWidget
@@ -53,8 +55,12 @@ class QOffscreenWebViewGraphicsWidget
 {
 	Q_OBJECT
 public:
-	QOffscreenWebViewGraphicsWidget(const QString & objectname = QLatin1String("DefaultWebView"),
-		const QSize & def_size = QSize(512, 512), QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
+	QOffscreenWebViewGraphicsWidget(
+		const QString & objectname = QLatin1String("DefaultWebView"),
+		bool interactive = true,
+		const QSize & def_size = QSize(512, 512),
+		QGraphicsItem *parent = 0,
+		Qt::WindowFlags wFlags = 0);
 
 	QAndroidOffscreenWebView * androidOffscreenWebView() { return static_cast<QAndroidOffscreenWebView*>(androidOffscreenView()); }
 	const QAndroidOffscreenWebView * androidOffscreenWebView() const { return static_cast<const QAndroidOffscreenWebView*>(androidOffscreenView()); }

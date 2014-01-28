@@ -92,8 +92,6 @@ import android.graphics.Canvas;
 
 class OffscreenEditText extends OffscreenView
 {
-    MyEditText edittext_ = null;
-
     class MyEditText extends EditText
     {
         boolean invalidated_ = true;
@@ -177,7 +175,7 @@ class OffscreenEditText extends OffscreenView
         @Override
         public void requestLayout()
         {
-            doInvalidateOffscreenView();
+            invalidateOffscreenView();
             super.requestLayout();
         }
 
@@ -200,38 +198,19 @@ class OffscreenEditText extends OffscreenView
     @Override
     public void doCreateView()
     {
-        final Activity context = getActivity();
-        synchronized(view_existence_mutex_)
-        {
-            edittext_ = new MyEditText(context);
-        }
-    }
-
-    @Override
-    public View getView()
-    {
-        synchronized(view_existence_mutex_)
-        {
-            return edittext_;
-        }
+        setView(new MyEditText(getActivity()));
     }
 
     @Override
     public void callViewPaintMethod(Canvas canvas)
     {
-        if (edittext_ != null)
-        {
-            edittext_.onDrawPublic(canvas);
-        }
+        ((MyEditText)getView()).onDrawPublic(canvas);
     }
 
     @Override
     public void doInvalidateOffscreenView()
     {
-        if (edittext_ != null)
-        {
-            edittext_.invalidateTexture();
-        }
+        ((MyEditText)getView()).invalidateTexture();
     }
 
 /*Event processing onKeyDown(int, KeyEvent) Called when a new hardware key event occurs.

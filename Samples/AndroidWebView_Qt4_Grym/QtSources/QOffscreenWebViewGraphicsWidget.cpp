@@ -9,13 +9,15 @@
 
 // #define ANDROIDVIEWGRAPHICSPROXY_CLEARALL
 
-QAndroidOffscreenViewGraphicsWidget::QAndroidOffscreenViewGraphicsWidget(QAndroidOffscreenView * view, QGraphicsItem *parent, Qt::WindowFlags wFlags)
+QAndroidOffscreenViewGraphicsWidget::QAndroidOffscreenViewGraphicsWidget(QAndroidOffscreenView * view, bool interactive, QGraphicsItem *parent, Qt::WindowFlags wFlags)
 	: QGraphicsWidget(parent, wFlags)
 	, aview_(view)
 	, mouse_tracking_(false)
 	, last_updated_position_(0, 0)
 	, initial_visibilty_set_(false)
+	, is_interactive_(interactive)
 {
+	aview_->setAttachingMode(interactive);
 	setAcceptedMouseButtons(Qt::LeftButton);
 	setFocusPolicy(Qt::StrongFocus);
 	connect(aview_.data(), SIGNAL(updated()), this, SLOT(onOffscreenUpdated()));
@@ -125,7 +127,7 @@ void QAndroidOffscreenViewGraphicsWidget::paint(QPainter * painter, const QStyle
 
 void QAndroidOffscreenViewGraphicsWidget::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
 {
-	if (mouse_tracking_)
+	if (is_interactive_ && mouse_tracking_)
 	{
 		QPoint pos = event->pos().toPoint();
 		aview_->mouse(QAndroidOffscreenView::ANDROID_MOTIONEVENT_ACTION_MOVE, pos.x(), pos.y());
@@ -135,7 +137,7 @@ void QAndroidOffscreenViewGraphicsWidget::mouseMoveEvent(QGraphicsSceneMouseEven
 
 void QAndroidOffscreenViewGraphicsWidget::mousePressEvent(QGraphicsSceneMouseEvent * event)
 {
-	if (event->button() == Qt::LeftButton)
+	if (is_interactive_ && event->button() == Qt::LeftButton)
 	{
 		QPoint pos = event->pos().toPoint();
 		aview_->mouse(QAndroidOffscreenView::ANDROID_MOTIONEVENT_ACTION_DOWN, pos.x(), pos.y());
@@ -146,7 +148,7 @@ void QAndroidOffscreenViewGraphicsWidget::mousePressEvent(QGraphicsSceneMouseEve
 
 void QAndroidOffscreenViewGraphicsWidget::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
 {
-	if (event->button() == Qt::LeftButton)
+	if (is_interactive_ && event->button() == Qt::LeftButton)
 	{
 		QPoint pos = event->pos().toPoint();
 		aview_->mouse(QAndroidOffscreenView::ANDROID_MOTIONEVENT_ACTION_UP, pos.x(), pos.y());
@@ -214,15 +216,12 @@ void QAndroidOffscreenViewGraphicsWidget::focusOutEvent (QFocusEvent * event)
 
 
 
-QOffscreenWebViewGraphicsWidget::QOffscreenWebViewGraphicsWidget(const QString & objectname, const QSize & def_size, QGraphicsItem *parent, Qt::WindowFlags wFlags)
-	: QAndroidOffscreenViewGraphicsWidget(new QAndroidOffscreenWebView(objectname, def_size), parent, wFlags)
+QOffscreenWebViewGraphicsWidget::QOffscreenWebViewGraphicsWidget(const QString & objectname, bool interactive, const QSize & def_size, QGraphicsItem *parent, Qt::WindowFlags wFlags)
+	: QAndroidOffscreenViewGraphicsWidget(new QAndroidOffscreenWebView(objectname, def_size), interactive, parent, wFlags)
 
 {
 	connect(androidOffscreenView(), SIGNAL(pageFinished()), this, SLOT(onPageFinished()));
 	connect(androidOffscreenView(), SIGNAL(contentHeightReceived(int)), this, SLOT(onContentHeightReceived(int)));
-
-	// SGEXP
-	androidOffscreenWebView()->setAttachingMode(false);
 
 	// This is not necessary anymore, as the view will schedule any actions for execution when the
 	// view is ready:
@@ -245,6 +244,6 @@ void QOffscreenWebViewGraphicsWidget::onContentHeightReceived(int height)
 
 
 QOffscreenEditTextGraphicsWidget::QOffscreenEditTextGraphicsWidget(const QString objectname, const QSize & def_size, QGraphicsItem *parent, Qt::WindowFlags wFlags)
-	: QAndroidOffscreenViewGraphicsWidget(new QAndroidOffscreenEditText(objectname, def_size), parent, wFlags)
+	: QAndroidOffscreenViewGraphicsWidget(new QAndroidOffscreenEditText(objectname, def_size), true, parent, wFlags)
 {
 }

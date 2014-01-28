@@ -103,6 +103,7 @@ import android.graphics.Canvas;
 abstract class OffscreenView
 {
     public static final String TAG = "Grym/OffscreenView";
+    private View view_ = null;
     protected OffscreenRenderingSurface rendering_surface_ = null;
     private String object_name_ = "UnnamedView";
     private long native_ptr_ = 0;
@@ -124,7 +125,6 @@ abstract class OffscreenView
     //! Simple one-element absolute layout.
     private class MyLayout extends ViewGroup
     {
-
         public MyLayout(Activity a)
         {
             super(a);
@@ -139,7 +139,7 @@ abstract class OffscreenView
         @Override
         protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
         {
-            Log.i(TAG, "SGEXP onMeasure ws="+widthMeasureSpec+", hs="+heightMeasureSpec);
+            // Log.i(TAG, "onMeasure ws="+widthMeasureSpec+", hs="+heightMeasureSpec);
             if (getChildCount() != 1)
             {
                 throw new IllegalStateException("OffscreenView layout should have 1 child!");
@@ -150,7 +150,7 @@ abstract class OffscreenView
         @Override
         protected void onLayout(boolean changed, int left, int top, int right, int bottom)
         {
-            Log.i(TAG, "SGEXP onLayout changed="+changed+", l="+left+", t="+top+", r="+right+", b="+bottom);
+            // Log.i(TAG, "onLayout changed="+changed+", l="+left+", t="+top+", r="+right+", b="+bottom);
             if (getChildCount() != 1)
             {
                 throw new IllegalStateException("OffscreenView layout should have 1 child!");
@@ -214,6 +214,26 @@ abstract class OffscreenView
         }
     }
 
+    final public View getView()
+    {
+        synchronized(view_existence_mutex_)
+        {
+            return view_;
+        }
+    }
+
+    final protected void setView(View v)
+    {
+        synchronized(view_existence_mutex_)
+        {
+            if (view_ != null)
+            {
+                throw new IllegalStateException("OffscreenView View can be set only once!");
+            }
+            view_ = v;
+        }
+    }
+
     /*!
      * Invokes View creation in Android UI thread.
      */
@@ -232,7 +252,10 @@ abstract class OffscreenView
 
                     // Call final widget implementation function to handle actual
                     // construction of the view.
-                    doCreateView();
+                    synchronized(view_existence_mutex_)
+                    {
+                        doCreateView();
+                    }
 
                     final View view = getView();
 
@@ -424,7 +447,6 @@ abstract class OffscreenView
         });
     }
 
-    abstract public View getView();
     abstract public void callViewPaintMethod(Canvas canvas);
     abstract public void doInvalidateOffscreenView();
     abstract public void doNativeUpdate();
@@ -648,6 +670,7 @@ abstract class OffscreenView
                 @Override
                 public void run()
                 {
+                    // if (getView() != null)... assuming that view cannot be unassigned once created
                     doInvalidateOffscreenView();
                 }
             });

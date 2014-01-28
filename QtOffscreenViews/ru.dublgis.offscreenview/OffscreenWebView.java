@@ -95,8 +95,6 @@ import android.graphics.Canvas;
 
 class OffscreenWebView extends OffscreenView
 {
-    MyWebView webview_ = null;
-
     class MyWebView extends WebView
     {
         // TODO: pauseTimers/ resumeTimers ()
@@ -226,22 +224,21 @@ class OffscreenWebView extends OffscreenView
             invalidateTexture();
         }
 
-        // Old WebKit updating
+        // Old & new WebKit updating
         @Override
         public void invalidate()
         {
-// SGEXP            Log.i(TAG, "MyWebView.invalidate(void)");
+            // SGEXP Log.i(TAG, "MyWebView.invalidate(void)");
             super.invalidate();
             invalidateTexture();
         }
 
-        // Chromium updating
         @Override
         public void requestLayout()
         {
-            // Necessary to call invalidateOffscreenView() to get update after page load
+            // Necessary to call invalidateOffscreenView() to get Chromium update after page load
             // when in non-attached mode.
-            doInvalidateOffscreenView();
+            invalidateOffscreenView();
             super.requestLayout();
         }
 
@@ -304,41 +301,20 @@ class OffscreenWebView extends OffscreenView
     @Override
     public void doCreateView()
     {
-        final Activity context = getActivity();
-        synchronized(view_existence_mutex_)
-        {
-            webview_ = new MyWebView(context);
-        }
-    }
-
-    @Override
-    public View getView()
-    {
-        synchronized(view_existence_mutex_)
-        {
-            return webview_;
-        }
+        setView(new MyWebView(getActivity()));
     }
 
     @Override
     public void callViewPaintMethod(Canvas canvas)
     {
-        if (webview_ != null)
-        {
-            webview_.onDrawPublic(canvas);
-        }
+        ((MyWebView)getView()).onDrawPublic(canvas);
     }
 
     @Override
     public void doInvalidateOffscreenView()
     {
-        if (webview_ != null)
-        {
-            webview_.invalidateTexture();
-        }
+        ((MyWebView)getView()).invalidateTexture();
     }
-
-
 
     // From C++
     public void loadUrl(final String url)
@@ -349,7 +325,7 @@ class OffscreenWebView extends OffscreenView
             public void run()
             {
                 Log.i(TAG, "loadUrl: RUN");
-                webview_.loadUrl(url);
+                ((MyWebView)getView()).loadUrl(url);
             }
         });
     }
@@ -377,7 +353,7 @@ class OffscreenWebView extends OffscreenView
                 {
                     ma.put(parts[h], parts[v]);
                 }
-                webview_.loadUrl(url, ma);
+                ((MyWebView)getView()).loadUrl(url, ma);
             }
         });
     }
@@ -392,7 +368,7 @@ class OffscreenWebView extends OffscreenView
             public void run()
             {
                 Log.i(TAG, "loadData: RUN");
-                webview_.loadData(text, mime, encoding);
+                ((MyWebView)getView()).loadData(text, mime, encoding);
             }
         });
     }
@@ -406,7 +382,7 @@ class OffscreenWebView extends OffscreenView
             public void run()
             {
                 Log.i(TAG, "loadDataWithBaseURL: RUN");
-                webview_.loadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl);
+                ((MyWebView)getView()).loadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl);
             }
         });
     }
@@ -418,7 +394,7 @@ class OffscreenWebView extends OffscreenView
             @Override
             public void run()
             {
-                onContentHeightReceived(getNativePtr(), webview_.getContentHeight());
+                onContentHeightReceived(getNativePtr(), ((MyWebView)getView()).getContentHeight());
             }
         });
         return true;
