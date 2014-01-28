@@ -758,6 +758,10 @@ abstract class OffscreenView
                     }
                 });
             }
+            else
+            {
+                invalidateOffscreenView();
+            }
         }
     }
 
