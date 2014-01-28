@@ -40,6 +40,7 @@
 QAndroidOffscreenEditText::QAndroidOffscreenEditText(const QString & object_name, const QSize & def_size, QObject * parent)
 	: QAndroidOffscreenView(QLatin1String("OffscreenEditText"), object_name, true, def_size, parent)
 {
+	setAttachingMode(true);
 }
 
 QAndroidOffscreenEditText::~QAndroidOffscreenEditText()

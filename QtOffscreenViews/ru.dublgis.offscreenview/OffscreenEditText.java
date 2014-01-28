@@ -175,6 +175,13 @@ class OffscreenEditText extends OffscreenView
         }
 
         @Override
+        public void requestLayout()
+        {
+            doInvalidateOffscreenView();
+            super.requestLayout();
+        }
+
+        @Override
         public boolean onTouchEvent(MotionEvent event)
         {
             if (isOffscreenTouch())

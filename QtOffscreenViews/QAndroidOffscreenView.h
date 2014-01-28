@@ -167,6 +167,14 @@ public:
 	void setVisible(bool visible);
 
 	/*!
+	 * Control attaching View to the main activity View.
+	 * It is typically called one time after constructing QAndroidOffscreenView.
+	 * Unattached views will not receive keyboard events when focused and
+	 * can't use SIP and popup menus.
+	 */
+	void setAttachingMode(bool attaching);
+
+	/*!
 	 * Returns true if View is currently focused. Please note that this View takes and
 	 * and releases focus in another thread so this function may e.g. return false if
 	 * called immediately after setFocused(true).

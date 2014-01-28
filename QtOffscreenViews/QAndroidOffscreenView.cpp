@@ -353,6 +353,14 @@ void QAndroidOffscreenView::setVisible(bool visible)
 	}
 }
 
+void QAndroidOffscreenView::setAttachingMode(bool attaching)
+{
+	if (offscreen_view_)
+	{
+		offscreen_view_->CallVoid("setAttachingMode", jboolean(attaching));
+	}
+}
+
 bool QAndroidOffscreenView::isFocused() const
 {
 	if (offscreen_view_)

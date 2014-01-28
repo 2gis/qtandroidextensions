@@ -220,6 +220,10 @@ QOffscreenWebViewGraphicsWidget::QOffscreenWebViewGraphicsWidget(const QString &
 {
 	connect(androidOffscreenView(), SIGNAL(pageFinished()), this, SLOT(onPageFinished()));
 	connect(androidOffscreenView(), SIGNAL(contentHeightReceived(int)), this, SLOT(onContentHeightReceived(int)));
+
+	// SGEXP
+	androidOffscreenWebView()->setAttachingMode(false);
+
 	// This is not necessary anymore, as the view will schedule any actions for execution when the
 	// view is ready:
 	// aview_->waitForViewCreation();

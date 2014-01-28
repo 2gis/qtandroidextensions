@@ -242,6 +242,10 @@ abstract class OffscreenView
                     view.setFocusable(false);
                     view.setFocusableInTouchMode(false);
                     view.setVisibility(last_visibility_? View.VISIBLE: View.INVISIBLE);
+                    view.setLeft(0);
+                    view.setTop(0);
+                    view.setRight(view_width_-1);
+                    view.setBottom(view_height_-1);
 
                     // Insert the View into layout.
                     // Note: functions of many views will crash if they are not inserted into layout.
@@ -250,7 +254,6 @@ abstract class OffscreenView
                     layout_.setBottom(view_height_-1);
                     layout_.addView(view);
                     attachViewToQtScreen();
-
 
                     // Process command queue
                     synchronized(view_existence_mutex_)
@@ -295,80 +298,101 @@ abstract class OffscreenView
 
     private boolean attachViewToQtScreen()
     {
-        if (!attaching_mode_ || is_attached_)
+        try
         {
-            return false;
+            if (!attaching_mode_ || is_attached_)
+            {
+                return false;
+            }
+            final View view = layout_;
+            if (view == null)
+            {
+                Log.e(TAG, "Failed to insert "+object_name_+" into the ViewGroup because View is null!");
+                return false;
+            }
+            ViewGroup vg = getMainLayout();
+            if (vg != null)
+            {
+                Log.i(TAG, "Inserting "+object_name_+" (view id="+view.getId()+") into the ViewGroup...");
+                vg.addView(view);
+                is_attached_ = true;
+                return true;
+            }
+            else
+            {
+                Log.w(TAG, "Failed to insert "+object_name_+" into the ViewGroup because it was not found!");
+                return false;
+            }
         }
-        final View view = layout_;
-        if (view == null)
+        catch(Exception e)
         {
-            Log.e(TAG, "Failed to insert "+object_name_+" into the ViewGroup because View is null!");
-            return false;
-        }
-        ViewGroup vg = getMainLayout();
-        if (vg != null)
-        {
-            Log.i(TAG, "Inserting "+object_name_+" (view id="+view.getId()+") into the ViewGroup...");
-            vg.addView(view);
-            is_attached_ = true;
-            return true;
-        }
-        else
-        {
-            Log.w(TAG, "Failed to insert "+object_name_+" into the ViewGroup because it was not found!");
+            Log.e(TAG, "Exception in attachViewToQtScreen:", e);
             return false;
         }
     }
 
+    /*!
+     * \note This function doesn't check attaching_mode_/is_attached_.
+     */
     private boolean detachViewFromQtScreen()
     {
-        if (!attaching_mode_ || !is_attached_)
+        try
         {
-            return false;
+            final Activity activity = getActivity();
+            final View view = layout_;
+            if (activity == null || view == null)
+            {
+                Log.e(TAG, "Failed to insert "+object_name_+" into the ViewGroup because Activity or View is null!");
+            }
+            ViewGroup vg = (ViewGroup)activity.findViewById(android.R.id.content);
+            if (vg != null)
+            {
+                Log.i(TAG, "Removing "+object_name_+" (view id="+view.getId()+") from the ViewGroup...");
+                vg.removeView(view);
+                is_attached_ = false;
+                return true;
+            }
+            else
+            {
+                Log.w(TAG, "Failed to remove "+object_name_+" from the ViewGroup because it was not found!");
+                return false;
+            }
         }
-        final Activity activity = getActivity();
-        final View view = layout_;
-        if (activity == null || view == null)
+        catch(Exception e)
         {
-            Log.e(TAG, "Failed to insert "+object_name_+" into the ViewGroup because Activity or View is null!");
-        }
-        ViewGroup vg = (ViewGroup)activity.findViewById(android.R.id.content);
-        if (vg != null)
-        {
-            Log.i(TAG, "Removing "+object_name_+" (view id="+view.getId()+") from the ViewGroup...");
-            vg.removeView(view);
-            is_attached_ = false;
-            return true;
-        }
-        else
-        {
-            Log.w(TAG, "Failed to remove "+object_name_+" from the ViewGroup because it was not found!");
+            Log.e(TAG, "Exception in detachViewFromQtScreen:", e);
             return false;
         }
     }
 
-    private void setAttachingMode(final boolean attaching)
+    final public boolean isInAttachingMode()
+    {
+        return attaching_mode_;
+    }
+
+    //! Called from C++ to control attaching mode.
+    public void setAttachingMode(final boolean attaching)
     {
         if (attaching_mode_ != attaching)
         {
+            attaching_mode_ = attaching;
             runOnUiThread(new Runnable(){
                 @Override
                 public void run()
                 {
                     if (getView() != null)
                     {
-                        if (attaching)
+                        if (attaching && !is_attached_)
                         {
                             attachViewToQtScreen();
                         }
-                        else
+                        else if (!attaching && is_attached_)
                         {
                             detachViewFromQtScreen();
                         }
                     }
                 }
             });
-            attaching_mode_ = attaching;
         }
     }
 
@@ -389,7 +413,7 @@ abstract class OffscreenView
                     rendering_surface_ = new OffscreenGLTextureRenderingSurface();
                     if (layout_ != null)
                     {
-                       layout_.postInvalidate();
+                        layout_.postInvalidate();
                     }
                     // Make sure the view will be repainted on the rendering surface, even it did
                     // finish its updates before the surface is available and its size didn't change
@@ -716,6 +740,24 @@ abstract class OffscreenView
             {
                 layout_.postInvalidate();
             }
+            if (!attaching_mode_)
+            {
+                runViewAction(new Runnable(){
+                    @Override
+                    public void run()
+                    {
+                        final View v = getView();
+                        if (v != null && !attaching_mode_)
+                        {
+                            v.setLeft(0);
+                            v.setTop(0);
+                            v.setRight(w-1);
+                            v.setBottom(h-1);
+                            doInvalidateOffscreenView();
+                        }
+                    }
+                });
+            }
         }
     }
 
@@ -760,7 +802,10 @@ abstract class OffscreenView
             @Override
             public void run()
             {
-                detachViewFromQtScreen();
+                if (is_attached_)
+                {
+                    detachViewFromQtScreen();
+                }
             }
         });
     }

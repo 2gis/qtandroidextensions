@@ -235,6 +235,17 @@ class OffscreenWebView extends OffscreenView
             invalidateTexture();
         }
 
+        // Chromium updating
+        @Override
+        public void requestLayout()
+        {
+            // Necessary to call invalidateOffscreenView() to get update after page load
+            // when in non-attached mode.
+            doInvalidateOffscreenView();
+            super.requestLayout();
+        }
+
+
         /*// ????
         @Override
         public ViewParent invalidateChildInParent(int[] location, Rect r)
