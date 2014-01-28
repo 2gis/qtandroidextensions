@@ -20,6 +20,8 @@ public:
 	QAndroidOffscreenViewGraphicsWidget(QAndroidOffscreenView * view, QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
 	virtual ~QAndroidOffscreenViewGraphicsWidget();
 
+	virtual void setVisible(bool visible);
+
 	QAndroidOffscreenView * androidOffscreenView() { return aview_.data(); }
 	const QAndroidOffscreenView * androidOffscreenView() const { return aview_.data(); }
 
@@ -43,6 +45,7 @@ private:
 	QScopedPointer<QAndroidOffscreenView> aview_;
 	bool mouse_tracking_;
 	QPoint last_updated_position_;
+	bool initial_visibilty_set_;
 };
 
 class QOffscreenWebViewGraphicsWidget

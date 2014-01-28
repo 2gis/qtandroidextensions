@@ -116,6 +116,7 @@ abstract class OffscreenView
     private int view_top_ = 0;
     protected int fill_a_ = 255, fill_r_ = 255, fill_g_ = 255, fill_b_ = 255;
     private MyLayout layout_ = null;
+    private boolean last_visibility_ = false;
 
     //! Simple one-element absolute layout.
     private class MyLayout extends ViewGroup
@@ -230,20 +231,23 @@ abstract class OffscreenView
                     // construction of the view.
                     doCreateView();
 
-                    // Insert the View into layout.
-                    // Note: functions of many views will crash if they are not inserted into layout.
                     final View view = getView();
-                    layout_ = new MyLayout(activity);
-                    layout_.setRight(view_width_-1);
-                    layout_.setBottom(view_height_-1);
-                    layout_.addView(view);
-                    attachViewToQtScreen();
 
                     // Set initial view properties
                     // View becomes focusable only when Qt requests that. It should not
                     // be focused from Android side.
                     view.setFocusable(false);
                     view.setFocusableInTouchMode(false);
+                    view.setVisibility(last_visibility_? View.VISIBLE: View.INVISIBLE);
+
+                    // Insert the View into layout.
+                    // Note: functions of many views will crash if they are not inserted into layout.
+                    layout_ = new MyLayout(activity);
+                    layout_.setRight(view_width_-1);
+                    layout_.setBottom(view_height_-1);
+                    layout_.addView(view);
+                    attachViewToQtScreen();
+
 
                     // Process command queue
                     synchronized(view_existence_mutex_)
@@ -367,11 +371,32 @@ abstract class OffscreenView
     abstract public void doNativeViewCreated();
     abstract public Activity getActivity();
 
-    //! Note: all views are visible by default (after creation).
-    abstract public boolean isVisible();
+    //! Note: all views are hidden by default (after creation).
+    public boolean isVisible()
+    {
+        return last_visibility_;
+    }
 
-    //! Note: all views are visible by default.
-    abstract public void setVisible(final boolean visible);
+    //! Note: all views are hidden by default.
+    public void setVisible(final boolean visible)
+    {
+        if (visible != last_visibility_)
+        {
+            last_visibility_ = visible;
+            runViewAction(new Runnable(){
+                @Override
+                public void run()
+                {
+                    View v = getView();
+                    int vis = last_visibility_? View.VISIBLE: View.INVISIBLE;
+                    if (v != null && v.getVisibility() != vis)
+                    {
+                        v.setVisibility(vis);
+                    }
+                }
+            });
+        }
+    }
 
     //! Schedule painting of the view (will be done in Android UI thread).
     protected void drawViewOnTexture()

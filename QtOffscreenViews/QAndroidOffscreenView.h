@@ -145,12 +145,13 @@ public:
 
 	/*!
 	 * Does the view thinks it's visible? When view is invisible, the texture may
-	 * contain an empty or outdated image.
+	 * contain an empty or outdated image. Also it stops all animations and etc.
 	 */
 	bool visible() const { return is_visible_; }
 
 	/*!
 	 * Set visibility flag. It informs the view if it's visible or not.
+	 * By default, view is invisible.
 	 * When view is invisible, it may save resources by not doing any timer-based work,
 	 * for example. For simple widgets, it is not necessary to set them invisible
 	 * because it is enough to hide the control displaying the texture. For Wev Views

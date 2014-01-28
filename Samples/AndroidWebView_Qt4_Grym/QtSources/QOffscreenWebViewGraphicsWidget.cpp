@@ -14,6 +14,7 @@ QAndroidOffscreenViewGraphicsWidget::QAndroidOffscreenViewGraphicsWidget(QAndroi
 	, aview_(view)
 	, mouse_tracking_(false)
 	, last_updated_position_(0, 0)
+	, initial_visibilty_set_(false)
 {
 	setAcceptedMouseButtons(Qt::LeftButton);
 	setFocusPolicy(Qt::StrongFocus);
@@ -22,6 +23,12 @@ QAndroidOffscreenViewGraphicsWidget::QAndroidOffscreenViewGraphicsWidget(QAndroi
 
 QAndroidOffscreenViewGraphicsWidget::~QAndroidOffscreenViewGraphicsWidget()
 {
+}
+
+void QAndroidOffscreenViewGraphicsWidget::setVisible(bool visible)
+{
+	//! \todo Also take into account if the app is minimized or not
+	aview_->setVisible(visible);
 }
 
 void QAndroidOffscreenViewGraphicsWidget::onOffscreenUpdated()
@@ -38,6 +45,13 @@ void QAndroidOffscreenViewGraphicsWidget::paint(QPainter * painter, const QStyle
 	// We don't have any function like initializeGL in QGraphicsWidget, so let's just
 	// do the initialization during the first paint.
 	aview_->initializeGL();
+
+	if (!initial_visibilty_set_)
+	{
+		//! \todo Also take into account if the app is minimized or not
+		aview_->setVisible(isVisible());
+		initial_visibilty_set_ = true;
+	}
 
 	#if defined(ANDROIDVIEWGRAPHICSPROXY_CLEARALL)
 		painter->fillRect(rect(), Qt::green);

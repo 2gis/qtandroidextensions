@@ -96,7 +96,6 @@ import android.graphics.Canvas;
 class OffscreenWebView extends OffscreenView
 {
     MyWebView webview_ = null;
-    boolean is_visible_ = true;
 
     class MyWebView extends WebView
     {
@@ -288,7 +287,6 @@ class OffscreenWebView extends OffscreenView
         {
             webview_ = new MyWebView(context);
         }
-        webview_.setOffscreenViewVisible(is_visible_);
     }
 
     @Override
@@ -317,35 +315,6 @@ class OffscreenWebView extends OffscreenView
             webview_.invalidateTexture();
         }
     }
-
-    @Override
-    public boolean isVisible()
-    {
-        return is_visible_;
-    }
-
-    @Override
-    public void setVisible(final boolean visible)
-    {
-        if (visible != is_visible_)
-        {
-            is_visible_ = visible;
-            if (webview_ != null)
-            {
-                runViewAction(new Runnable(){
-                    @Override
-                    public void run()
-                    {
-                        webview_.setOffscreenViewVisible(visible);
-                        webview_.invalidateTexture();
-                    }
-                });
-            }
-        }
-    }
-
-
-
 
 
 

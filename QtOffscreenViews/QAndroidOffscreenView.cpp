@@ -92,7 +92,7 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	, texture_received_(false)
 	, synchronized_texture_update_(true)
 	, view_creation_requested_(false)
-	, is_visible_(true)
+	, is_visible_(false)
 	, view_created_(false)
 {
 	setObjectName(objectname);
@@ -348,7 +348,7 @@ void QAndroidOffscreenView::setVisible(bool visible)
 		is_visible_ = visible;
 		if (offscreen_view_)
 		{
-			offscreen_view_->CallVoid("setVisible", is_visible_);
+			offscreen_view_->CallVoid("setVisible", jboolean(is_visible_));
 		}
 	}
 }

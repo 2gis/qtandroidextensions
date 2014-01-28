@@ -93,7 +93,6 @@ import android.graphics.Canvas;
 class OffscreenEditText extends OffscreenView
 {
     MyEditText edittext_ = null;
-    boolean is_visible_ = true;
 
     class MyEditText extends EditText
     {
@@ -105,19 +104,6 @@ class OffscreenEditText extends OffscreenView
             Log.i(TAG, "MyEditText constructor");
             // Fill in default properties
             setText("Hello EditText");
-        }
-
-        public void setOffscreenViewVisible(boolean visible)
-        {
-            Log.i(TAG, "MyEditText.setOffscreenViewVisible "+visible);
-            if (visible)
-            {
-                setVisibility(View.VISIBLE);
-            }
-            else
-            {
-                setVisibility(View.INVISIBLE);
-            }
         }
 
         @Override
@@ -203,7 +189,6 @@ class OffscreenEditText extends OffscreenView
         {
             edittext_ = new MyEditText(context);
         }
-        edittext_.setOffscreenViewVisible(is_visible_);
     }
 
     @Override
@@ -230,32 +215,6 @@ class OffscreenEditText extends OffscreenView
         if (edittext_ != null)
         {
             edittext_.invalidateTexture();
-        }
-    }
-
-    @Override
-    public boolean isVisible()
-    {
-        return is_visible_;
-    }
-
-    @Override
-    public void setVisible(final boolean visible)
-    {
-        if (visible != is_visible_)
-        {
-            is_visible_ = visible;
-            if (edittext_ != null)
-            {
-                runViewAction(new Runnable(){
-                    @Override
-                    public void run()
-                    {
-                        edittext_.setOffscreenViewVisible(visible);
-                        edittext_.invalidateTexture();
-                    }
-                });
-            }
         }
     }
 
