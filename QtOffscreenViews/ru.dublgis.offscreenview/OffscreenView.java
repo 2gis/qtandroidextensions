@@ -346,7 +346,10 @@ abstract class OffscreenView
                 {
                     Log.i(TAG, "OffscreenView.intializeGL(name=\""+object_name_+"\", texture="+gl_texture_id_+") RUN");
                     rendering_surface_ = new OffscreenGLTextureRenderingSurface();
-                    doResizeOffscreenView(view_width_, view_height_);
+                    if (layout_ != null)
+                    {
+                       layout_.postInvalidate();
+                    }
                     // Make sure the view will be repainted on the rendering surface, even it did
                     // finish its updates before the surface is available and its size didn't change
                     // and/or not triggered update by the resize call.
@@ -359,7 +362,6 @@ abstract class OffscreenView
     abstract public View getView();
     abstract public void callViewPaintMethod(Canvas canvas);
     abstract public void doInvalidateOffscreenView();
-    abstract public void doResizeOffscreenView(final int width, final int height);
     abstract public void doNativeUpdate();
     abstract public void doCreateView();
     abstract public void doNativeViewCreated();
@@ -586,26 +588,9 @@ abstract class OffscreenView
                     {
                         v.setFocusable(false);
                         v.setFocusableInTouchMode(false);
+                        // Simply passing focus to someone else or calling ClearFocus()
+                        // does not hide SIP for some unknown reason. We have to do it expliciltly.
                         uiHideKeyboardFromView();
-                        /*
-                        // Giving focus to someone else.
-                        // We assume that we're in Qt app and the only focusable view
-                        // is the Qt view at this moment.
-                        ViewGroup vg = getMainLayout();
-                        if (vg != null)
-                        {
-                            Log.i(TAG, "Searching for another view to give focus to...");
-                            for (int i = 0; i < vg.getChildCount(); i++)
-                            {
-                                View child = vg.getChildAt(i);
-                                if(child != v && child.isFocusable())
-                                {
-                                    Log.i(TAG, "Giving focus to another view...");
-                                    child.requestFocus();
-                                    break;
-                                }
-                            }
-                        }*/
                     }
                 }
             }

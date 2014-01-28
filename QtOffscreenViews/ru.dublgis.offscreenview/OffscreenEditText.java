@@ -97,7 +97,6 @@ class OffscreenEditText extends OffscreenView
 
     class MyEditText extends EditText
     {
-        int width_ = 0, height_ = 0;
         boolean invalidated_ = true;
 
         public MyEditText(Context context)
@@ -120,20 +119,6 @@ class OffscreenEditText extends OffscreenView
             {
                 setVisibility(View.INVISIBLE);
             }
-        }
-
-        // NB: caller should call the invalidation
-        public void resizeOffscreenView(int width, int height)
-        {
-            // TODO:??
-            onSizeChanged(width, height, width_, height_);
-
-            width_ = width;
-            height_ = height;
-            setLeft(0);
-            setRight(width-1);
-            setTop(0);
-            setBottom(height-1);
         }
 
         @Override
@@ -186,8 +171,8 @@ class OffscreenEditText extends OffscreenView
             // Log.i(TAG, "MyEditText.invalidate(int l, int t, int r, int b) "+l+", "+t+", "+r+", "+b+
             //    "; width="+width_+", height="+height_+"; scrollX="+getScrollX()+", scrollY="+getScrollY());
             super.invalidate(l, t, r, b);
-            int my_r = getScrollX() + width_;
-            int my_b = getScrollY() + height_;
+            int my_r = getScrollX() + getWidth();
+            int my_b = getScrollY() + getHeight();
             // Check that the invalidated rectangle actually visible
             if (l > my_r || t > my_b)
             {
@@ -203,24 +188,6 @@ class OffscreenEditText extends OffscreenView
             Log.i(TAG, "MyEditText.invalidate()");
             super.invalidate();
             invalidateTexture();
-        }
-
-        @Override
-        public void requestLayout()
-        {
-            Log.i(TAG, "MyEditText.requestLayout()");
-            if (rendering_surface_ != null)
-            {
-               runOnUiThread(new Runnable() {
-                   @Override
-                   public void run()
-                   {
-                       onLayout(true, 0, 0, width_, height_);
-                       invalidateTexture();
-                   }
-               });
-            }
-            super.requestLayout();
         }
     }
 
@@ -264,15 +231,6 @@ class OffscreenEditText extends OffscreenView
         if (edittext_ != null)
         {
             edittext_.invalidateTexture();
-        }
-    }
-
-    @Override
-    public void doResizeOffscreenView(final int width, final int height)
-    {
-        if (edittext_ != null)
-        {
-            edittext_.resizeOffscreenView(width, height);
         }
     }
 
