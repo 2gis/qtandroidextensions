@@ -118,6 +118,8 @@ abstract class OffscreenView
     private MyLayout layout_ = null;
     private boolean last_visibility_ = false;
     private boolean offscreen_touch_ = false;
+    private boolean is_attached_ = false;
+    private boolean attaching_mode_ = true;
 
     //! Simple one-element absolute layout.
     private class MyLayout extends ViewGroup
@@ -293,6 +295,10 @@ abstract class OffscreenView
 
     private boolean attachViewToQtScreen()
     {
+        if (!attaching_mode_ || is_attached_)
+        {
+            return false;
+        }
         final View view = layout_;
         if (view == null)
         {
@@ -304,6 +310,7 @@ abstract class OffscreenView
         {
             Log.i(TAG, "Inserting "+object_name_+" (view id="+view.getId()+") into the ViewGroup...");
             vg.addView(view);
+            is_attached_ = true;
             return true;
         }
         else
@@ -315,6 +322,10 @@ abstract class OffscreenView
 
     private boolean detachViewFromQtScreen()
     {
+        if (!attaching_mode_ || !is_attached_)
+        {
+            return false;
+        }
         final Activity activity = getActivity();
         final View view = layout_;
         if (activity == null || view == null)
@@ -326,6 +337,7 @@ abstract class OffscreenView
         {
             Log.i(TAG, "Removing "+object_name_+" (view id="+view.getId()+") from the ViewGroup...");
             vg.removeView(view);
+            is_attached_ = false;
             return true;
         }
         else
@@ -335,6 +347,30 @@ abstract class OffscreenView
         }
     }
 
+    private void setAttachingMode(final boolean attaching)
+    {
+        if (attaching_mode_ != attaching)
+        {
+            runOnUiThread(new Runnable(){
+                @Override
+                public void run()
+                {
+                    if (getView() != null)
+                    {
+                        if (attaching)
+                        {
+                            attachViewToQtScreen();
+                        }
+                        else
+                        {
+                            detachViewFromQtScreen();
+                        }
+                    }
+                }
+            });
+            attaching_mode_ = attaching;
+        }
+    }
 
     /*!
      * Invokes object initialization based on values passed via SetObjectName(), SetTexture(),
@@ -568,9 +604,11 @@ abstract class OffscreenView
                     offscreen_touch_ = true;
                     view.onTouchEvent(event);
                     offscreen_touch_ = false;
-                    // TODO: If the view has only been scrolled, it won't call invalidate(). So we just force it to repaint for now.
-                    // We should keep a larger piece of rendered HTML in the texture and only scroll the texture if possible.
-                    doDrawViewOnTexture();
+                    if (!attaching_mode_)
+                    {
+                        // If the view has only been scrolled, it won't call invalidate(). So we just force it to repaint for now.
+                        doDrawViewOnTexture();
+                    }
                 }
             });
         }
