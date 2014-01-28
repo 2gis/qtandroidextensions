@@ -149,7 +149,6 @@ class OffscreenWebView extends OffscreenView
             // Fill in default properties
             setHorizontalScrollBarEnabled(false);
             setVerticalScrollBarEnabled(true);
-            resizeOffscreenView(256, 256);
             getSettings().setJavaScriptEnabled(true);
 
             // No positive effect found

@@ -104,7 +104,6 @@ class OffscreenEditText extends OffscreenView
             super(context);
             Log.i(TAG, "MyEditText constructor");
             // Fill in default properties
-            resizeOffscreenView(256, 32);
             setText("Hello EditText");
         }
 
