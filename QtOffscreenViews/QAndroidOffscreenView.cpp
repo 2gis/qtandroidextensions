@@ -370,6 +370,14 @@ void QAndroidOffscreenView::setFocused(bool focused)
 	}
 }
 
+void QAndroidOffscreenView::setPosition(int left, int top)
+{
+	if (offscreen_view_)
+	{
+		return offscreen_view_->CallParamVoid("setPosition", "II", jint(left), jint(top));
+	}
+}
+
 void QAndroidOffscreenView::javaUpdate()
 {
 	// qDebug()<<__PRETTY_FUNCTION__;

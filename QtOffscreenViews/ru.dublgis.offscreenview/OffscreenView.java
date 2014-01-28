@@ -112,8 +112,8 @@ abstract class OffscreenView
     protected Object view_existence_mutex_ = new Object();
     private int view_width_ = 512;
     private int view_height_ = 512;
-    private int view_left_ = 200;
-    private int view_top_ = 200;
+    private int view_left_ = 0;
+    private int view_top_ = 0;
     protected int fill_a_ = 255, fill_r_ = 255, fill_g_ = 255, fill_b_ = 255;
     private MyLayout layout_ = null;
 
@@ -649,24 +649,33 @@ abstract class OffscreenView
             Log.i(TAG, "resizeOffscreenView "+w+"x"+h);
             view_width_ = w;
             view_height_ = h;
-            if (rendering_surface_ == null)
+            if (rendering_surface_ != null)
             {
-                return;
+                rendering_surface_.setNewSize(w, h);
             }
-            rendering_surface_.setNewSize(w, h);
-            View view = getView();
-            if (view != null)
+            if (layout_ != null)
             {
-                runViewAction(new Runnable() {
-                    @Override
-                    public void run()
-                    {
-  //                      layout_.setRight(w-1);
-    //                    layout_.setBottom(h-1);
-//                        doResizeOffscreenView(w, h);
-                        doInvalidateOffscreenView();
-                    }
-                });
+                layout_.postInvalidate();
+            }
+        }
+    }
+
+    /*!
+     * Called from C++ to inform Android about real position of the view.
+     * This is necessary for text editors as it affects position of text selection markers.
+     */
+    public void setPosition(final int left, final int top)
+    {
+        synchronized(this)
+        {
+            if (view_left_ != left || view_top_ != top)
+            {
+                view_left_ = left;
+                view_top_ = top;
+                if (layout_ != null)
+                {
+                    layout_.postInvalidate();
+                }
             }
         }
     }

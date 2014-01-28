@@ -178,6 +178,15 @@ public:
 	 */
 	void setFocused(bool focused = true);
 
+	/*!
+	 * Inform Android about real screen coordinates of the View.
+	 * This is important only if the View works with SIP (e.g.: EditText, interactive WebView)
+	 * because input method may want to display selection markers and need to know the
+	 * real position of the view. For non-interactive views calling this function is
+	 * not necessary.
+	 */
+	void setPosition(int left, int top);
+
 	//
 	// Handling of user input events
 	//

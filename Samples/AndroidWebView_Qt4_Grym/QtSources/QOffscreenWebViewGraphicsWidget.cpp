@@ -13,6 +13,7 @@ QAndroidOffscreenViewGraphicsWidget::QAndroidOffscreenViewGraphicsWidget(QAndroi
 	: QGraphicsWidget(parent, wFlags)
 	, aview_(view)
 	, mouse_tracking_(false)
+	, last_updated_position_(0, 0)
 {
 	setAcceptedMouseButtons(Qt::LeftButton);
 	setFocusPolicy(Qt::StrongFocus);
@@ -101,6 +102,11 @@ void QAndroidOffscreenViewGraphicsWidget::paint(QPainter * painter, const QStyle
 	// Reset viewport (is it necessary?)
 	glViewport(0, 0, static_cast<GLsizei>(device->width()), static_cast<GLsizei>(device->height()));
 	painter->endNativePainting();
+
+	if (last_updated_position_ != absolutePosition())
+	{
+		updateViewPosition();
+	}
 }
 
 void QAndroidOffscreenViewGraphicsWidget::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
@@ -140,6 +146,39 @@ void QAndroidOffscreenViewGraphicsWidget::resizeEvent(QGraphicsSceneResizeEvent 
 	qDebug()<<__PRETTY_FUNCTION__<<event->newSize().toSize();
 	QGraphicsWidget::resizeEvent(event);
 	aview_->resize(event->newSize().toSize());
+}
+
+void QAndroidOffscreenViewGraphicsWidget::moveEvent(QGraphicsSceneMoveEvent * event)
+{
+	qDebug()<<__PRETTY_FUNCTION__<<event->newPos();
+	QGraphicsWidget::moveEvent(event);
+	updateViewPosition();
+}
+
+QPoint QAndroidOffscreenViewGraphicsWidget::absolutePosition() const
+{
+	QList<QGraphicsView*> views = scene()->views();
+	if (views.size() >= 1)
+	{
+		if (views.size() > 1)
+		{
+			qWarning()<<__PRETTY_FUNCTION__<<"The scene has multiple views, the View may be positioned improperly!";
+		}
+		QGraphicsView * view = views.at(0);
+		QPointF scenepos = this->pos();
+		QPointF inviewpos = view->mapFromScene(scenepos);
+		QPoint abspos = view->mapToGlobal(inviewpos.toPoint());
+		qDebug()<<__PRETTY_FUNCTION__<<"ScenePos:"<<scenepos<<"InViewPos:"<<inviewpos<<"AbsPos:"<<abspos;
+		return abspos;
+	}
+	return last_updated_position_;
+}
+
+void QAndroidOffscreenViewGraphicsWidget::updateViewPosition()
+{
+	QPoint abspos = absolutePosition();
+	aview_->setPosition(abspos.x(), abspos.y());
+	last_updated_position_ = abspos;
 }
 
 void QAndroidOffscreenViewGraphicsWidget::focusInEvent (QFocusEvent * event)

@@ -9,6 +9,9 @@
 #include "QAndroidOffscreenWebView.h"
 #include "QAndroidOffscreenEditText.h"
 
+/*!
+ * Base class for any QGraphicsWidget-based view at Android View.
+ */
 class QAndroidOffscreenViewGraphicsWidget
 	: public QGraphicsWidget
 {
@@ -26,8 +29,12 @@ protected:
 	virtual void mousePressEvent(QGraphicsSceneMouseEvent * event);
 	virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent * event);
 	virtual void resizeEvent(QGraphicsSceneResizeEvent *event);
+	virtual void moveEvent(QGraphicsSceneMoveEvent * event);
 	virtual void focusInEvent (QFocusEvent * event);
 	virtual void focusOutEvent (QFocusEvent * event);
+
+	QPoint absolutePosition() const;
+	void updateViewPosition();
 
 private slots:
 	void onOffscreenUpdated();
@@ -35,6 +42,7 @@ private slots:
 private:
 	QScopedPointer<QAndroidOffscreenView> aview_;
 	bool mouse_tracking_;
+	QPoint last_updated_position_;
 };
 
 class QOffscreenWebViewGraphicsWidget
