@@ -93,7 +93,7 @@ import android.view.WindowManager.LayoutParams;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.LinearLayout;
+//import android.widget.FrameLayout;
 import android.graphics.Canvas;
 
 /*!
@@ -109,13 +109,17 @@ abstract class OffscreenView
     private Boolean painting_now_ = new Boolean(false);
     private ArrayList<Runnable> precreation_actions_ = new ArrayList<Runnable>();
     protected Object view_existence_mutex_ = new Object();
-    private int initial_width_ = 512;
-    private int initial_height_ = 512;
+    private int view_width_ = 512;
+    private int view_height_ = 512;
+    private int view_left_ = 200;
+    private int view_top_ = 200;
     protected int fill_a_ = 255, fill_r_ = 255, fill_g_ = 255, fill_b_ = 255;
     private MyLayout layout_ = null;
 
-    private class MyLayout extends LinearLayout
+    //! Simple one-element absolute layout.
+    private class MyLayout extends ViewGroup
     {
+
         public MyLayout(Activity a)
         {
             super(a);
@@ -125,12 +129,30 @@ abstract class OffscreenView
         protected void onDraw(Canvas canvas)
         {
             // We can actually do totally nothing.
-            /*if (isInOffscreenDraw())
-            {
-                super.onDraw(canvas);
-            }*/
         }
 
+        @Override
+        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
+        {
+            Log.i(TAG, "SGEXP onMeasure ws="+widthMeasureSpec+", hs="+heightMeasureSpec);
+            if (getChildCount() != 1)
+            {
+                throw new IllegalStateException("OffscreenView layout should have 1 child!");
+            }
+            setMeasuredDimension(view_left_+view_width_-1, view_top_+view_height_-1);
+        }
+
+        @Override
+        protected void onLayout(boolean changed, int left, int top, int right, int bottom)
+        {
+            Log.i(TAG, "SGEXP onLayout changed="+changed+", l="+left+", t="+top+", r="+right+", b="+bottom);
+            if (getChildCount() != 1)
+            {
+                throw new IllegalStateException("OffscreenView layout should have 1 child!");
+            }
+            View child = getChildAt(0);
+            child.layout(view_left_, view_top_, view_left_+view_width_-1, view_top_+view_height_-1);
+        }
     }
 
     OffscreenView()
@@ -140,8 +162,8 @@ abstract class OffscreenView
 
     public void SetObjectName(String name) { object_name_ = name; }
     public void SetTexture(int tex) { gl_texture_id_ = tex; }
-    public void SetInitialWidth(int w) { initial_width_ = w; }
-    public void SetInitialHeight(int h) { initial_height_ = h; }
+    public void SetInitialWidth(int w) { view_width_ = w; }
+    public void SetInitialHeight(int h) { view_height_ = h; }
     public void SetNativePtr(long ptr) { native_ptr_ = ptr; }
 
     public boolean runOnUiThread(final Runnable runnable)
@@ -211,8 +233,8 @@ abstract class OffscreenView
                     // Note: functions of many views will crash if they are not inserted into layout.
                     final View view = getView();
                     layout_ = new MyLayout(activity);
-                    layout_.setRight(initial_width_-1);
-                    layout_.setBottom(initial_height_-1);
+                    layout_.setRight(view_width_-1);
+                    layout_.setBottom(view_height_-1);
                     layout_.addView(view);
                     attachViewToQtScreen();
 
@@ -301,7 +323,7 @@ abstract class OffscreenView
                 {
                     Log.i(TAG, "OffscreenView.intializeGL(name=\""+object_name_+"\", texture="+gl_texture_id_+") RUN");
                     rendering_surface_ = new OffscreenGLTextureRenderingSurface();
-                    doResizeOffscreenView(initial_width_, initial_height_);
+                    doResizeOffscreenView(view_width_, view_height_);
                     // Make sure the view will be repainted on the rendering surface, even it did
                     // finish its updates before the surface is available and its size didn't change
                     // and/or not triggered update by the resize call.
@@ -515,8 +537,8 @@ abstract class OffscreenView
         synchronized(this)
         {
             Log.i(TAG, "resizeOffscreenView "+w+"x"+h);
-            initial_width_ = w;
-            initial_height_ = h;
+            view_width_ = w;
+            view_height_ = h;
             if (rendering_surface_ == null)
             {
                 return;
@@ -529,9 +551,9 @@ abstract class OffscreenView
                     @Override
                     public void run()
                     {
-                        layout_.setRight(w-1);
-                        layout_.setBottom(h-1);
-                        doResizeOffscreenView(w, h);
+  //                      layout_.setRight(w-1);
+    //                    layout_.setBottom(h-1);
+//                        doResizeOffscreenView(w, h);
                         doInvalidateOffscreenView();
                     }
                 });
@@ -602,10 +624,10 @@ abstract class OffscreenView
         public OffscreenGLTextureRenderingSurface()
         {
             Log.i(TAG, "OffscreenGLTextureRenderingSurface(obj=\""+object_name_+"\", texture="+gl_texture_id_
-                +", w="+initial_width_+", h="+initial_height_+") tid="+Thread.currentThread().getId());
+                +", w="+view_width_+", h="+view_height_+") tid="+Thread.currentThread().getId());
             surface_texture_ = new SurfaceTexture(gl_texture_id_);
             surface_ = new Surface(surface_texture_);
-            setNewSize(initial_width_, initial_height_);
+            setNewSize(view_width_, view_height_);
         }
 
         @Override

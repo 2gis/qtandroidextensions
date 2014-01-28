@@ -85,14 +85,12 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.WindowManager.LayoutParams;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.WebResourceResponse;
 import android.webkit.HttpAuthHandler;
 import android.webkit.SslErrorHandler;
-import android.widget.LinearLayout;
 import android.graphics.Canvas;
 
 class OffscreenWebView extends OffscreenView
