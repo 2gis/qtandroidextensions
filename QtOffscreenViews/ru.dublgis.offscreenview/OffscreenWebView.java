@@ -272,6 +272,17 @@ class OffscreenWebView extends OffscreenView
         */
 
         //  public boolean isDirty () 
+
+        @Override
+        public boolean onTouchEvent(MotionEvent event)
+        {
+            if (isOffscreenTouch())
+            {
+                return super.onTouchEvent(event);
+            }
+            return false;
+        }
+
     }
 
     OffscreenWebView()

@@ -141,7 +141,6 @@ class OffscreenEditText extends OffscreenView
             });
         }
 
-        // Old WebKit updating
         @Override
         public void invalidate(Rect dirty)
         {
@@ -173,6 +172,16 @@ class OffscreenEditText extends OffscreenView
             Log.i(TAG, "MyEditText.invalidate()");
             super.invalidate();
             invalidateTexture();
+        }
+
+        @Override
+        public boolean onTouchEvent(MotionEvent event)
+        {
+            if (isOffscreenTouch())
+            {
+                return super.onTouchEvent(event);
+            }
+            return false;
         }
     }
 

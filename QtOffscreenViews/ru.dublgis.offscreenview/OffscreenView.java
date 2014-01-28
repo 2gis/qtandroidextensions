@@ -117,6 +117,7 @@ abstract class OffscreenView
     protected int fill_a_ = 255, fill_r_ = 255, fill_g_ = 255, fill_b_ = 255;
     private MyLayout layout_ = null;
     private boolean last_visibility_ = false;
+    private boolean offscreen_touch_ = false;
 
     //! Simple one-element absolute layout.
     private class MyLayout extends ViewGroup
@@ -531,6 +532,14 @@ abstract class OffscreenView
         }
     }
 
+    /*!
+     * This function should be called in view's onTouchEvent to check if the touch should be processed.
+     */
+    final public boolean isOffscreenTouch()
+    {
+        return offscreen_touch_;
+    }
+
     // TODO: refactor downt
     private long downt = 0;
     public void ProcessMouseEvent(final int action, final int x, final int y)
@@ -556,7 +565,9 @@ abstract class OffscreenView
                 @Override
                 public void run()
                 {
+                    offscreen_touch_ = true;
                     view.onTouchEvent(event);
+                    offscreen_touch_ = false;
                     // TODO: If the view has only been scrolled, it won't call invalidate(). So we just force it to repaint for now.
                     // We should keep a larger piece of rendered HTML in the texture and only scroll the texture if possible.
                     doDrawViewOnTexture();
