@@ -584,10 +584,10 @@ abstract class OffscreenView
                     }
                     else
                     {
-                        v.clearFocus();
                         v.setFocusable(false);
                         v.setFocusableInTouchMode(false);
                         uiHideKeyboardFromView();
+                        /*
                         // Giving focus to someone else.
                         // We assume that we're in Qt app and the only focusable view
                         // is the Qt view at this moment.
@@ -605,7 +605,7 @@ abstract class OffscreenView
                                     break;
                                 }
                             }
-                        }
+                        }*/
                     }
                 }
             }
