@@ -15,6 +15,7 @@ QAndroidOffscreenViewGraphicsWidget::QAndroidOffscreenViewGraphicsWidget(QAndroi
 	, mouse_tracking_(false)
 {
 	setAcceptedMouseButtons(Qt::LeftButton);
+	setFocusPolicy(Qt::StrongFocus);
 	connect(aview_.data(), SIGNAL(updated()), this, SLOT(onOffscreenUpdated()));
 }
 
@@ -141,6 +142,19 @@ void QAndroidOffscreenViewGraphicsWidget::resizeEvent(QGraphicsSceneResizeEvent 
 	aview_->resize(event->newSize().toSize());
 }
 
+void QAndroidOffscreenViewGraphicsWidget::focusInEvent (QFocusEvent * event)
+{
+	qDebug()<<__PRETTY_FUNCTION__;
+	aview_->setFocused(true);
+	QGraphicsWidget::focusInEvent(event);
+}
+
+void QAndroidOffscreenViewGraphicsWidget::focusOutEvent (QFocusEvent * event)
+{
+	qDebug()<<__PRETTY_FUNCTION__;
+	aview_->setFocused(false);
+	QGraphicsWidget::focusOutEvent(event);
+}
 
 
 

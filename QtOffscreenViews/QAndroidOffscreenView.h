@@ -165,6 +165,19 @@ public:
 	 */
 	void setVisible(bool visible);
 
+	/*!
+	 * Returns true if View is currently focused. Please note that this View takes and
+	 * and releases focus in another thread so this function may e.g. return false if
+	 * called immediately after setFocused(true).
+	 */
+	bool isFocused() const;
+
+	/*!
+	 * Set or remove focusing from the View. This should be called to keep Qt focus
+	 * in sync with Android focus.
+	 */
+	void setFocused(bool focused = true);
+
 	//
 	// Handling of user input events
 	//

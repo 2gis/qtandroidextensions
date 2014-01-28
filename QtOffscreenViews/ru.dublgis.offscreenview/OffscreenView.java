@@ -70,6 +70,7 @@ import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.text.method.MetaKeyKeyListener;
@@ -238,6 +239,12 @@ abstract class OffscreenView
                     layout_.addView(view);
                     attachViewToQtScreen();
 
+                    // Set initial view properties
+                    // View becomes focusable only when Qt requests that. It should not
+                    // be focused from Android side.
+                    view.setFocusable(false);
+                    view.setFocusableInTouchMode(false);
+
                     // Process command queue
                     synchronized(view_existence_mutex_)
                     {
@@ -263,15 +270,31 @@ abstract class OffscreenView
         return result;
     }
 
-    private boolean attachViewToQtScreen()
+    private ViewGroup getMainLayout()
     {
         final Activity activity = getActivity();
-        final View view = layout_;
-        if (activity == null || view == null)
+        if (activity == null)
         {
-            Log.e(TAG, "Failed to insert "+object_name_+" into the ViewGroup because Activity or View is null!");
+            Log.e(TAG, "Failed find main layout because the activity is null!");
+            return null;
         }
         ViewGroup vg = (ViewGroup)activity.findViewById(android.R.id.content);
+        if (vg == null)
+        {
+            Log.e(TAG, "findViewById failed to find content!");
+        }
+        return vg;
+    }
+
+    private boolean attachViewToQtScreen()
+    {
+        final View view = layout_;
+        if (view == null)
+        {
+            Log.e(TAG, "Failed to insert "+object_name_+" into the ViewGroup because View is null!");
+            return false;
+        }
+        ViewGroup vg = getMainLayout();
         if (vg != null)
         {
             Log.i(TAG, "Inserting "+object_name_+" (view id="+view.getId()+") into the ViewGroup...");
@@ -528,6 +551,93 @@ abstract class OffscreenView
                     doInvalidateOffscreenView();
                 }
             });
+        }
+    }
+
+    //! Called from C++
+    public boolean isFocused()
+    {
+        final View v = getView();
+        if (v != null)
+        {
+            return v.isFocused();
+        }
+        return false;
+    }
+
+    //! Called from C++
+    public void setFocused(final boolean focused)
+    {
+        runViewAction(new Runnable() {
+            @Override
+            public void run()
+            {
+                Log.i(TAG, "setFocused("+focused+"): run");
+                final View v = getView();
+                if (v != null)
+                {
+                    if (focused)
+                    {
+                        v.setFocusable(true);
+                        v.setFocusableInTouchMode(true);
+                        v.requestFocus();
+                    }
+                    else
+                    {
+                        v.clearFocus();
+                        v.setFocusable(false);
+                        v.setFocusableInTouchMode(false);
+                        uiHideKeyboardFromView();
+                        // Giving focus to someone else.
+                        // We assume that we're in Qt app and the only focusable view
+                        // is the Qt view at this moment.
+                        ViewGroup vg = getMainLayout();
+                        if (vg != null)
+                        {
+                            Log.i(TAG, "Searching for another view to give focus to...");
+                            for (int i = 0; i < vg.getChildCount(); i++)
+                            {
+                                View child = vg.getChildAt(i);
+                                if(child != v && child.isFocusable())
+                                {
+                                    Log.i(TAG, "Giving focus to another view...");
+                                    child.requestFocus();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /*!
+     * We need to workaround a problem: when View is defocused it doesn't hide SIP (weird but no ideas how to fix it another way).
+     */
+    protected void uiHideKeyboardFromView()
+    {
+        final View v = getView();
+        if (v == null)
+        {
+            Log.e(TAG, "uiHideKeyboardFromView: View is null");
+            return;
+        }
+        InputMethodManager imm = (InputMethodManager)v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm == null)
+        {
+            Log.w(TAG, "uiHideKeyboardFromView: InputMethodManager is null");
+            return;
+        }
+        // imm.restartInput(v);
+        IBinder token = v.getWindowToken();
+        if( token != null )
+        {
+            imm.hideSoftInputFromWindow(token, 0);
+        }
+        else
+        {
+            Log.i(TAG, "uiHideKeyboardFromView: Window token is null");
         }
     }
 

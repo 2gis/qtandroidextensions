@@ -95,6 +95,7 @@ public:
 	View(QGraphicsScene * scene, QWidget * parent)
 		: QGraphicsView(scene, parent)
 		, quitButton(this)
+		// , focusButton(this)
     {
 		setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 		setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -103,10 +104,28 @@ public:
 		quitButton.resize(150, 100);
 		quitButton.move(20, 20);
         quitButton.setText("Quit");
+		quitButton.setFocusPolicy(Qt::StrongFocus);
         connect(&quitButton, SIGNAL(clicked()), QCoreApplication::instance(), SLOT(quit()));
+
+		/*focusButton.resize(150, 100);
+		focusButton.move(190, 20);
+		focusButton.setText("Defocus");
+		focusButton.setFocusPolicy(Qt::StrongFocus);
+		connect(&focusButton, SIGNAL(clicked()), this, SLOT(onDefocus()));*/
+
+		setFocusPolicy(Qt::StrongFocus);
     }
+
+/*protected slots:
+	void onDefocus()
+	{
+		qDebug()<<__PRETTY_FUNCTION__;
+		focusButton.setFocus();
+	}*/
+
 protected:
     QPushButton quitButton;
+	//QPushButton focusButton;
     void resizeEvent(QResizeEvent *event)
     {
         QGraphicsView::resizeEvent(event);
@@ -228,7 +247,7 @@ protected:
 			20 + scene_.sceneRect().left()
 			, 150  + scene_.sceneRect().top()
 			, scene_.sceneRect().width() - 50
-			, 145);
+			, 100); // 145
 		aview->setGeometry(
 			20 + scene_.sceneRect().left()
 			, 300  + scene_.sceneRect().top()

@@ -353,6 +353,23 @@ void QAndroidOffscreenView::setVisible(bool visible)
 	}
 }
 
+bool QAndroidOffscreenView::isFocused() const
+{
+	if (offscreen_view_)
+	{
+		return offscreen_view_->CallBool("isFocused");
+	}
+	return false;
+}
+
+void QAndroidOffscreenView::setFocused(bool focused)
+{
+	if (offscreen_view_)
+	{
+		return offscreen_view_->CallVoid("setFocused", jboolean(focused));
+	}
+}
+
 void QAndroidOffscreenView::javaUpdate()
 {
 	// qDebug()<<__PRETTY_FUNCTION__;

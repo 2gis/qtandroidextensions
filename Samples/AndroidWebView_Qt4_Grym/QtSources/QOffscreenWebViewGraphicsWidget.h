@@ -26,6 +26,8 @@ protected:
 	virtual void mousePressEvent(QGraphicsSceneMouseEvent * event);
 	virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent * event);
 	virtual void resizeEvent(QGraphicsSceneResizeEvent *event);
+	virtual void focusInEvent (QFocusEvent * event);
+	virtual void focusOutEvent (QFocusEvent * event);
 
 private slots:
 	void onOffscreenUpdated();

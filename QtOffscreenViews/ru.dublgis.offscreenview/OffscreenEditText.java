@@ -106,9 +106,6 @@ class OffscreenEditText extends OffscreenView
             Log.i(TAG, "MyEditText constructor");
             // Fill in default properties
             resizeOffscreenView(256, 32);
-            setFocusable(true);
-            setFocusableInTouchMode(true);
-
             setText("Hello EditText");
         }
 
