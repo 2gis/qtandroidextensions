@@ -17,8 +17,6 @@ public:
 	QQuickAndroidOffscreenView(QAndroidOffscreenView * aview);
 	Renderer * createRenderer() const;
 
-	virtual void setVisibe(bool visible);
-
 protected:
 	QAndroidOffscreenView * androidView() { return aview_.data(); }
 	const QAndroidOffscreenView * androidView() const { return aview_.data(); }
@@ -31,6 +29,7 @@ protected:
 
 public slots:
 	void updateAndroidViewVisibility();
+	void updateAndroidViewPosition();
 
 signals:
 	void textureUpdated();

@@ -78,15 +78,15 @@ Item {
 		x: 20
 		y: 20
 		width: parent.width - 40
-		height: 100
+		height: 200
 	}
 
 	OffscreenWebView {
 		id: webview
 		x: 20
-		y: 140
+		y: 240
 		width: parent.width - 40
-		height: parent.height - 160
+		height: parent.height - 260
 
         // The transform is just to show something interesting..
 		/*transform: [

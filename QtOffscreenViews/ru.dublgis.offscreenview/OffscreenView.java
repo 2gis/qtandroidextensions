@@ -186,7 +186,7 @@ abstract class OffscreenView
                 Log.e(TAG, "OffscreenView.runOnUiThread: cannot schedule task because of the null context!");
                 return false;
             }
-            Log.i(TAG, "OffscreenView.runOnUiThread: scheduling runnable...");
+            // Log.i(TAG, "OffscreenView.runOnUiThread: scheduling runnable...");
             context.runOnUiThread(runnable);
             return true;
         }

@@ -8,6 +8,10 @@ QQuickAndroidOffscreenView::QQuickAndroidOffscreenView(QAndroidOffscreenView * a
 	, mouse_tracking_(false)
 {
 	connect(aview_.data(), SIGNAL(updated()), this, SLOT(onTextureUpdated()));
+	connect(this, SIGNAL(xChanged()), this, SLOT(updateAndroidViewPosition()));
+	connect(this, SIGNAL(yChanged()), this, SLOT(updateAndroidViewPosition()));
+	connect(this, SIGNAL(visibleChanged()), this, SLOT(updateAndroidViewVisibility()));
+
 	setAcceptedMouseButtons(Qt::LeftButton);
 
 	aview_->setAttachingMode(is_interactive_);
@@ -28,12 +32,6 @@ void QQuickAndroidOffscreenView::onTextureUpdated()
 	emit textureUpdated();
 }
 
-void QQuickAndroidOffscreenView::setVisibe(bool visible)
-{
-	QQuickFramebufferObject::setVisible(visible);
-	updateAndroidViewVisibility();
-}
-
 void QQuickAndroidOffscreenView::focusInEvent(QFocusEvent * event)
 {
 	QQuickFramebufferObject::focusInEvent(event);
@@ -48,7 +46,6 @@ void QQuickAndroidOffscreenView::focusOutEvent(QFocusEvent * event)
 
 void QQuickAndroidOffscreenView::mouseMoveEvent(QMouseEvent * event)
 {
-	qDebug()<<__PRETTY_FUNCTION__<<"***************************************";
 	if (is_interactive_ && mouse_tracking_)
 	{
 		QPoint pos = event->pos();
@@ -59,6 +56,7 @@ void QQuickAndroidOffscreenView::mouseMoveEvent(QMouseEvent * event)
 
 void QQuickAndroidOffscreenView::mousePressEvent(QMouseEvent * event)
 {
+	qDebug()<<__FUNCTION__<<aview_->objectName();
 	if (is_interactive_ && event->button() == Qt::LeftButton)
 	{
 		QPoint pos = event->pos();
@@ -81,8 +79,18 @@ void QQuickAndroidOffscreenView::mouseReleaseEvent(QMouseEvent * event)
 
 void QQuickAndroidOffscreenView::updateAndroidViewVisibility()
 {
-	aview_->setVisible(isVisible() && opacity() > 0);
+	bool vis = isVisible() && opacity() > 0;
+	qDebug()<<__PRETTY_FUNCTION__<<"Visible:"<<vis<<"***************************************";
+	aview_->setVisible(vis);
 }
+
+void QQuickAndroidOffscreenView::updateAndroidViewPosition()
+{
+	qDebug()<<__PRETTY_FUNCTION__<<x()<<y();
+	aview_->setPosition(qRound(x()), qRound(y()));
+}
+
+
 
 
 
