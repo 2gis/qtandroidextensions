@@ -247,7 +247,7 @@ protected:
 			20 + scene_.sceneRect().left()
 			, 150  + scene_.sceneRect().top()
 			, scene_.sceneRect().width() - 50
-			, 100); // 145
+			, 140); // 145
 		aview->setGeometry(
 			20 + scene_.sceneRect().left()
 			, 300  + scene_.sceneRect().top()
