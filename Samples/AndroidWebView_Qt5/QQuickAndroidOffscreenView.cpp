@@ -60,9 +60,14 @@ void QQuickAndroidOffscreenView::mousePressEvent(QMouseEvent * event)
 	if (is_interactive_ && event->button() == Qt::LeftButton)
 	{
 		QPoint pos = event->pos();
+		qDebug()<<__FUNCTION__<<aview_->objectName()<<"sending, pos ="<<pos;
 		aview_->mouse(QAndroidOffscreenView::ANDROID_MOTIONEVENT_ACTION_DOWN, pos.x(), pos.y());
 		mouse_tracking_ = true;
 		event->accept();
+	}
+	else
+	{
+		qDebug()<<__FUNCTION__<<aview_->objectName()<<"IGNORING; interactive ="<<is_interactive_<<", button ="<<event->button();
 	}
 }
 
