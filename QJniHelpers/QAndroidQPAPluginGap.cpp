@@ -91,13 +91,13 @@ jobject JNICALL getActivity(JNIEnv *, jobject)
 	#else
 		#error "Unimplemented QPA case"
 	#endif
-	jcGeneric theclass(c_class_name, false);
+	QJniObject theclass(c_class_name, false);
 	if (!theclass.jClass())
 	{
 		qCritical("QAndroid: Activity retriever class could not be accessed.");
 		return 0;
 	}
-	QScopedPointer<jcGeneric> activity(theclass.CallStaticObject(c_method_name, c_result_name));
+	QScopedPointer<QJniObject> activity(theclass.callStaticObject(c_method_name, c_result_name));
 	if (!activity)
 	{
 		qCritical("QAndroid: Failed to get create Activity object.");
@@ -109,14 +109,14 @@ jobject JNICALL getActivity(JNIEnv *, jobject)
 	}
 	// Take jobject away from 'activity' because otherwise it will destroy
 	// the global reference and it will become invalid when we return to Java.
-	return activity->TakeJobjectOver();
+	return activity->takeJobjectOver();
 }
 
 void preloadJavaClass(const char * class_name)
 {
 	qDebug()<<__PRETTY_FUNCTION__<<class_name;
-	JniEnvPtr jep;
-	if (jep.IsClassPreloaded(class_name))
+	QJniEnvPtr jep;
+	if (jep.isClassPreloaded(class_name))
 	{
 		qDebug()<<"Class already pre-loaded:"<<class_name;
 		return;
@@ -126,7 +126,7 @@ void preloadJavaClass(const char * class_name)
 	static const char * const c_class_name = "ru/dublgis/qjnihelpers/ClassLoader";
 	static const char * const c_method_name = "callJNIPreloadClass";
 	#if defined(QPA_QT4GRYM)
-		jcGeneric(c_class_name, false).CallStaticVoid(c_method_name, class_name);
+		QJniObject(c_class_name, false).callStaticVoid(c_method_name, class_name);
 	#elif defined(QPA_QT5)
 		jstring jclassname = jep.JStringFromQString(class_name);
 		QAndroidJniObject::callStaticMethod<void>(c_class_name, c_method_name, "(Ljava/lang/String;)V", jclassname);
@@ -141,9 +141,9 @@ extern "C" {
 
 JNIEXPORT void JNICALL Java_ru_dublgis_qjnihelpers_ClassLoader_nativeJNIPreloadClass(JNIEnv * env, jobject, jstring classname)
 {
-	JniEnvPtr jep(env);
+	QJniEnvPtr jep(env);
 	QString qclassname = jep.QStringFromJString(classname);
-	jep.PreloadClass(qclassname.toLatin1());
+	jep.preloadClass(qclassname.toLatin1());
 }
 
 } // extern "C"

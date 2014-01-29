@@ -46,18 +46,18 @@
 
 typedef std::map<std::string, jclass> PreloadedClasses;
 
-class JniEnvPtrThreadDetacher
+class QJniEnvPtrThreadDetacher
 {
 public:
-	~JniEnvPtrThreadDetacher();
+	~QJniEnvPtrThreadDetacher();
 };
 
 static JavaVM * g_JavaVm = 0;
 static QMutex g_PreloadedClassesMutex;
 static PreloadedClasses g_PreloadedClasses;
-static QThreadStorage<JniEnvPtrThreadDetacher*> g_JavaThreadDetacher;
+static QThreadStorage<QJniEnvPtrThreadDetacher*> g_JavaThreadDetacher;
 
-JniEnvPtrThreadDetacher::~JniEnvPtrThreadDetacher()
+QJniEnvPtrThreadDetacher::~QJniEnvPtrThreadDetacher()
 {
 	if (g_JavaVm)
 	{
@@ -79,7 +79,7 @@ JniEnvPtrThreadDetacher::~JniEnvPtrThreadDetacher()
 	}
 #endif
 
-JniEnvPtr::JniEnvPtr()
+QJniEnvPtr::QJniEnvPtr()
 	: env_(0)
 {
 	#if defined(Q_OS_ANDROID) || defined(ANDROID)
@@ -102,7 +102,7 @@ JniEnvPtr::JniEnvPtr()
 		}
 		if (!g_JavaThreadDetacher.hasLocalData())
 		{
-			g_JavaThreadDetacher.setLocalData(new JniEnvPtrThreadDetacher());
+			g_JavaThreadDetacher.setLocalData(new QJniEnvPtrThreadDetacher());
 		}
 		VERBOSE(qDebug("Attached current thread %d successfully.", (int)gettid()));
 	}
@@ -113,7 +113,7 @@ JniEnvPtr::JniEnvPtr()
 	}
 }
 
-JniEnvPtr::JniEnvPtr(JNIEnv* env)
+QJniEnvPtr::QJniEnvPtr(JNIEnv* env)
 	: env_(env)
 {
 	#if defined(Q_OS_ANDROID) || defined(ANDROID)
@@ -121,20 +121,20 @@ JniEnvPtr::JniEnvPtr(JNIEnv* env)
 	#endif
 }
 
-JniEnvPtr::~JniEnvPtr()
+QJniEnvPtr::~QJniEnvPtr()
 {
 }
 
-JNIEnv* JniEnvPtr::env() const
+JNIEnv* QJniEnvPtr::env() const
 {
 	return env_;
 }
 
-bool JniEnvPtr::PreloadClass(const char* class_name)
+bool QJniEnvPtr::preloadClass(const char* class_name)
 {
 	qWarning("Preloading class \"%s\"", class_name);
 	jclass clazz = env_->FindClass(class_name);
-	if (SuppressException())
+	if (clearException())
 	{
 		qWarning("...Failed to preload class %s (tid %d)", class_name, (int)gettid());
 		return false;
@@ -147,12 +147,12 @@ bool JniEnvPtr::PreloadClass(const char* class_name)
 	return true;
 }
 
-int JniEnvPtr::PreloadClasses(const char* const* class_list)
+int QJniEnvPtr::preloadClasses(const char* const* class_list)
 {
 	int loaded = 0;
 	for(; *class_list != 0; ++class_list)
 	{
-		if (!PreloadClass(*class_list))
+		if (!preloadClass(*class_list))
 		{
 			break;
 		}
@@ -161,13 +161,13 @@ int JniEnvPtr::PreloadClasses(const char* const* class_list)
 	return loaded;
 }
 
-bool JniEnvPtr::IsClassPreloaded(const char * class_name)
+bool QJniEnvPtr::isClassPreloaded(const char * class_name)
 {
 	QMutexLocker locker(&g_PreloadedClassesMutex);
 	return g_PreloadedClasses.find(class_name) != g_PreloadedClasses.end();
 }
 
-void JniEnvPtr::UnloadClasses()
+void QJniEnvPtr::unloadAllClasses()
 {
 	QMutexLocker locker(&g_PreloadedClassesMutex);
 	PreloadedClasses::iterator it;
@@ -178,7 +178,7 @@ void JniEnvPtr::UnloadClasses()
 	g_PreloadedClasses.clear();
 }
 
-jclass JniEnvPtr::FindClass(const char * name)
+jclass QJniEnvPtr::findClass(const char * name)
 {
 	// first try for preloaded classes
 	{
@@ -202,7 +202,7 @@ jclass JniEnvPtr::FindClass(const char * name)
 	// if it wasn't preloaded, try to load it in JNI (will fail for custom classes in native-created threads)
 	VERBOSE(qDebug("Trying to construct the class directly: \"%s\" in tid %d", name, (int)gettid()));
 	jclass cls = env_->FindClass(name);
-	if (SuppressException())
+	if (clearException())
 	{
 		qWarning("Failed to find class \"%s\"", name);
 		return 0;
@@ -221,26 +221,26 @@ jclass JniEnvPtr::FindClass(const char * name)
 	return ret;
 }
 
-JavaVM * JniEnvPtr::getJavaVM() const
+JavaVM * QJniEnvPtr::getJavaVM() const
 {
 	return g_JavaVm;
 }
 
-void JniEnvPtr::SetJavaVM(JavaVM* vm)
+void QJniEnvPtr::setJavaVM(JavaVM* vm)
 {
 	// qDebug()<<"SetJavaVM"<<vm;
 	g_JavaVm = vm;
 }
 
-void JniEnvPtr::SetJavaVM(JNIEnv* env)
+void QJniEnvPtr::setJavaVM(JNIEnv* env)
 {
 	env->GetJavaVM(&g_JavaVm);
 }
 
-jstring JniEnvPtr::JStringFromQString(const QString& str)
+jstring QJniEnvPtr::JStringFromQString(const QString& str)
 {
 	jstring ret = env_->NewString(str.utf16(), str.length());
-	if (SuppressException())
+	if (clearException())
 	{
 		qWarning("Failed to convert QString to jstring.");
 		return 0;
@@ -248,7 +248,7 @@ jstring JniEnvPtr::JStringFromQString(const QString& str)
 	return ret;
 }
 
-QString JniEnvPtr::QStringFromJString(jstring str)
+QString QJniEnvPtr::QStringFromJString(jstring str)
 {
 	if (str == NULL)
 	{
@@ -272,7 +272,7 @@ QString JniEnvPtr::QStringFromJString(jstring str)
 	return ret;
 }
 
-bool JniEnvPtr::SuppressException(bool describe)
+bool QJniEnvPtr::clearException(bool describe)
 {
 	if (env_->ExceptionCheck())
 	{
@@ -296,21 +296,21 @@ bool JniEnvPtr::SuppressException(bool describe)
 
 
 
-const char * jcGeneric::method_not_found_exception::what() const throw()
+const char * QJniObject::MethodNotFoundException::what() const throw()
 {
 	return "Java method not found";
 }
 
-const char * jcGeneric::field_not_found_exception::what() const throw()
+const char * QJniObject::FieldNotFoundException::what() const throw()
 {
 	return "Java field not found";
 }
 
-jcGeneric::jcGeneric(jobject instance, bool take_ownership)
+QJniObject::QJniObject(jobject instance, bool take_ownership)
 	: instance_(0)
 	, class_(0)
 {
-	JniEnvPtr jep;
+	QJniEnvPtr jep;
 	// Создаёт глобальную ссылку
 	init(jep.env(), instance);
 	if (take_ownership)
@@ -319,35 +319,35 @@ jcGeneric::jcGeneric(jobject instance, bool take_ownership)
 	}
 }
 
-jcGeneric::jcGeneric(jclass clazz, bool create)
+QJniObject::QJniObject(jclass clazz, bool create)
 	: instance_(0)
 	, class_(0)
 {
-	JniEnvPtr jep;
+	QJniEnvPtr jep;
 	init(jep.env(), clazz, create);
 }
 
-jcGeneric::jcGeneric(const char* full_class_name, bool create)
+QJniObject::QJniObject(const char* full_class_name, bool create)
 	: instance_(0)
 	, class_(0)
 {
 	VERBOSE(qDebug()<<"Grym"<<__FILE__<<__LINE__);
-	JniEnvPtr jep;
+	QJniEnvPtr jep;
 	VERBOSE(qDebug()<<"Grym"<<__FILE__<<__LINE__);
 	init(jep.env(), full_class_name, create);
 	VERBOSE(qDebug()<<"Grym"<<__FILE__<<__LINE__);
 }
 
-jcGeneric::jcGeneric()
+QJniObject::QJniObject()
 	: instance_(0)
 	, class_(0)
 {
 }
 
-jcGeneric::~jcGeneric()
+QJniObject::~QJniObject()
 {
-	VERBOSE(qDebug("jcGeneric::~jcGeneric() %p",this));
-	JniEnvPtr jep;
+	VERBOSE(qDebug("QJniObject::~QJniObject() %p",this));
+	QJniEnvPtr jep;
 	if (instance_ != NULL)
 	{
 		jep.env()->DeleteGlobalRef(instance_);
@@ -358,16 +358,16 @@ jcGeneric::~jcGeneric()
 	}
 }
 
-jobject jcGeneric::TakeJobjectOver()
+jobject QJniObject::takeJobjectOver()
 {
 	jobject ret = instance_;
 	instance_ = 0;
 	return ret;
 }
 
-void jcGeneric::init(JNIEnv* env, jobject instance)
+void QJniObject::init(JNIEnv* env, jobject instance)
 {
-	VERBOSE(qDebug("jcGeneric::init(JNIEnv* env, jobject instance) %p", this));
+	VERBOSE(qDebug("QJniObject::init(JNIEnv* env, jobject instance) %p", this));
 	// FIXME: exceptions
 	instance_ = env->NewGlobalRef(instance);
 
@@ -383,9 +383,9 @@ void jcGeneric::init(JNIEnv* env, jobject instance)
 	// VERBOSE(qDebug()<<QString("DeleteLocalRef: 0x%1 <<<<").arg((unsigned long)clazz, 0, 16)<<__LINE__);
 }
 
-void jcGeneric::init(JNIEnv* env, jclass class_to_instantiate, bool create)
+void QJniObject::init(JNIEnv* env, jclass class_to_instantiate, bool create)
 {
-	VERBOSE(qDebug("jcGeneric::init(JNIEnv* env, jclass class_to_instantiate, %d) %p", (int)create, this));
+	VERBOSE(qDebug("QJniObject::init(JNIEnv* env, jclass class_to_instantiate, %d) %p", (int)create, this));
 
 	if( create )
 	{
@@ -394,7 +394,7 @@ void jcGeneric::init(JNIEnv* env, jclass class_to_instantiate, bool create)
 		if (!mid_init)
 		{
 			qWarning("%s: method not found.", __FUNCTION__);
-			throw method_not_found_exception();
+			throw MethodNotFoundException();
 		}
 
 		// create class instance; FIXME: exceptions
@@ -411,12 +411,12 @@ void jcGeneric::init(JNIEnv* env, jclass class_to_instantiate, bool create)
 	}
 }
 
-void jcGeneric::init(JNIEnv* env, const char * full_class_name, bool create)
+void QJniObject::init(JNIEnv* env, const char * full_class_name, bool create)
 {
-	VERBOSE(qDebug("jcGeneric::init(JNIEnv* env, const char* full_class_name) %p: %s, create: %d", this, full_class_name, (int)create));
+	VERBOSE(qDebug("QJniObject::init(JNIEnv* env, const char* full_class_name) %p: %s, create: %d", this, full_class_name, (int)create));
 	// FIXME: exceptions
-	JniEnvPtr jep(env);
-	jclass cls = jep.FindClass(full_class_name); // this is a preloaded global ref, we don't need to delete it as a local ref
+	QJniEnvPtr jep(env);
+	jclass cls = jep.findClass(full_class_name); // this is a preloaded global ref, we don't need to delete it as a local ref
 	if(cls == NULL)
 	{
 		qWarning("Could not find class %s", full_class_name);
@@ -439,158 +439,158 @@ void jcGeneric::init(JNIEnv* env, const char * full_class_name, bool create)
 	VERBOSE(qDebug()<<QString("DeleteLocalRef: 0x%1 <<<").arg((unsigned long)cls, 0, 16)<<__LINE__); */
 }
 
-void jcGeneric::CallVoid(const char* method_name)
+void QJniObject::callVoid(const char* method_name)
 {
-	VERBOSE(qDebug("void jcGeneric::CallVoid(const char* method_name) %p \"%s\"",this,method_name));
-	JniEnvPtr jep;
+	VERBOSE(qDebug("void QJniObject::CallVoid(const char* method_name) %p \"%s\"",this,method_name));
+	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 	jmethodID mid = env->GetMethodID(class_, method_name, "()V");
 	if (!mid)
 	{
 		qWarning("%s: method not found.", __FUNCTION__);
-		throw method_not_found_exception();
+		throw MethodNotFoundException();
 	}
 	env->CallVoidMethod(instance_, mid);
 }
 
-bool jcGeneric::CallBool(const char* method_name)
+bool QJniObject::callBool(const char* method_name)
 {
-	VERBOSE(qDebug("bool jcGeneric::CallBool(const char* method_name) %p \"%s\"",this,method_name));
-	JniEnvPtr jep;
+	VERBOSE(qDebug("bool QJniObject::CallBool(const char* method_name) %p \"%s\"",this,method_name));
+	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 	jmethodID mid = env->GetMethodID(class_, method_name, "()Z");
 	if (!mid)
 	{
 		qWarning("%s: method not found.", __FUNCTION__);
-		throw method_not_found_exception();
+		throw MethodNotFoundException();
 	}
 	return (JNI_TRUE==env->CallBooleanMethod(instance_, mid));
 }
 
-bool jcGeneric::CallBool(const char* method_name, bool param)
+bool QJniObject::callBool(const char* method_name, bool param)
 {
-	VERBOSE(qDebug("bool jcGeneric::CallBool(const char* method_name, bool param) %p \"%s\"",this,method_name));
-	JniEnvPtr jep;
+	VERBOSE(qDebug("bool QJniObject::CallBool(const char* method_name, bool param) %p \"%s\"",this,method_name));
+	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 	jmethodID mid = env->GetMethodID(class_, method_name, "(Z)Z");
 	if (!mid)
 	{
 		qWarning("%s: method not found.", __FUNCTION__);
-		throw method_not_found_exception();
+		throw MethodNotFoundException();
 	}
 	return (JNI_TRUE==env->CallBooleanMethod(instance_, mid, jboolean(param)));
 }
 
-int jcGeneric::CallInt(const char* method_name)
+int QJniObject::callInt(const char* method_name)
 {
-	VERBOSE(qDebug("int jcGeneric::CallInt(const char* method_name) %p \"%s\"",this,method_name));
-	JniEnvPtr jep;
+	VERBOSE(qDebug("int QJniObject::CallInt(const char* method_name) %p \"%s\"",this,method_name));
+	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 	jmethodID mid = env->GetMethodID(class_, method_name, "()I");
 	if (!mid)
 	{
 		qWarning("%s: method not found.", __FUNCTION__);
-		throw method_not_found_exception();
+		throw MethodNotFoundException();
 	}
 	return (int)env->CallIntMethod(instance_, mid);
 }
 
-long long jcGeneric::CallLong(const char* method_name)
+long long QJniObject::callLong(const char* method_name)
 {
-	VERBOSE(qDebug("int jcGeneric::CallLong(const char* method_name) %p \"%s\"",this,method_name));
-	JniEnvPtr jep;
+	VERBOSE(qDebug("int QJniObject::CallLong(const char* method_name) %p \"%s\"",this,method_name));
+	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 	jmethodID mid = env->GetMethodID(class_, method_name, "()J");
 	if (!mid)
 	{
 		qWarning("%s: method not found.", __FUNCTION__);
-		throw method_not_found_exception();
+		throw MethodNotFoundException();
 	}
 	return (long long)env->CallLongMethod(instance_, mid);
 }
 
-float jcGeneric::CallFloat(const char* method_name)
+float QJniObject::callFloat(const char* method_name)
 {
-	VERBOSE(qDebug("float jcGeneric::CallFloat(const char* method_name) %p \"%s\"",this,method_name));
-	JniEnvPtr jep;
+	VERBOSE(qDebug("float QJniObject::CallFloat(const char* method_name) %p \"%s\"",this,method_name));
+	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 	jmethodID mid = env->GetMethodID(class_, method_name, "()F");
 	if (!mid)
 	{
 		qWarning("%s: method not found.", __FUNCTION__);
-		throw method_not_found_exception();
+		throw MethodNotFoundException();
 	}
 	return (float)env->CallFloatMethod(instance_, mid);
 }
 
-float jcGeneric::CallFloat(const char* method_name, int param)
+float QJniObject::callFloat(const char* method_name, int param)
 {
-	VERBOSE(qDebug("float jcGeneric::CallFloat(const char* method_name) %p \"%s\" (%d)",this,method_name, param));
-	JniEnvPtr jep;
+	VERBOSE(qDebug("float QJniObject::CallFloat(const char* method_name) %p \"%s\" (%d)",this,method_name, param));
+	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 	jmethodID mid = env->GetMethodID(class_, method_name, "(I)F");
 	if (!mid)
 	{
 		qWarning("%s: method not found.", __FUNCTION__);
-		throw method_not_found_exception();
+		throw MethodNotFoundException();
 	}
 	return (float)env->CallFloatMethod(instance_, mid, jint(param));
 }
 
-double jcGeneric::CallDouble(const char* method_name)
+double QJniObject::callDouble(const char* method_name)
 {
-	VERBOSE(qDebug("float jcGeneric::CallDouble(const char* method_name) %p \"%s\"",this,method_name));
-	JniEnvPtr jep;
+	VERBOSE(qDebug("float QJniObject::CallDouble(const char* method_name) %p \"%s\"",this,method_name));
+	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 	jmethodID mid = env->GetMethodID(class_, method_name, "()D");
 	if (!mid)
 	{
 		qWarning("%s: method not found.", __FUNCTION__);
-		throw method_not_found_exception();
+		throw MethodNotFoundException();
 	}
 	return (double)env->CallDoubleMethod(instance_, mid);
 }
 
-jcGeneric* jcGeneric::CallObject(const char* method_name, const char* objname)
+QJniObject* QJniObject::callObject(const char* method_name, const char* objname)
 {
 	std::string signature = "()L";
 	signature += objname;
 	signature += ";";
 
-	VERBOSE(qDebug("jcGeneric::CallObject: \"%s\", \"%s\"", method_name, signature.c_str()));
-	JniEnvPtr jep;
+	VERBOSE(qDebug("QJniObject::CallObject: \"%s\", \"%s\"", method_name, signature.c_str()));
+	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 	jmethodID mid = env->GetMethodID(class_, method_name, signature.c_str());
 	if (!mid)
 	{
 		qWarning("%s: method not found.", __FUNCTION__);
-		throw method_not_found_exception();
+		throw MethodNotFoundException();
 	}
 	jobject object = env->CallObjectMethod(instance_,mid);
-	jcGeneric* result = new jcGeneric(object, true);
+	QJniObject* result = new QJniObject(object, true);
 	return result;
 }
 
-void jcGeneric::CallStaticVoid(const char* method_name)
+void QJniObject::callStaticVoid(const char* method_name)
 {
-	VERBOSE(qDebug("void jcGeneric::CallStaticVoid(const char* method_name) %p \"%s\"", this, method_name));
-	JniEnvPtr jep;
+	VERBOSE(qDebug("void QJniObject::CallStaticVoid(const char* method_name) %p \"%s\"", this, method_name));
+	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 	jmethodID mid = env->GetStaticMethodID(class_, method_name, "()V");
 	if (!mid)
 	{
 		qWarning("%s: method not found.", __FUNCTION__);
-		throw method_not_found_exception();
+		throw MethodNotFoundException();
 	}
 	env->CallStaticVoidMethod(class_, mid);
 }
 
-void jcGeneric::CallStaticParamVoid(const char* method_name, const char * param_signature, ...)
+void QJniObject::callStaticParamVoid(const char* method_name, const char * param_signature, ...)
 {
-	VERBOSE(qDebug("void jcGeneric(%p)::CallParamVoid(\"%s\", \"%s\", ...)", this, method_name, param_signature));
+	VERBOSE(qDebug("void QJniObject(%p)::CallParamVoid(\"%s\", \"%s\", ...)", this, method_name, param_signature));
 
 	va_list args;
-	JniEnvPtr jep;
+	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 
 	std::string signature = "(";
@@ -600,7 +600,7 @@ void jcGeneric::CallStaticParamVoid(const char* method_name, const char * param_
 	if (!mid)
 	{
 		qWarning("%s: method not found.", __FUNCTION__);
-		throw method_not_found_exception();
+		throw MethodNotFoundException();
 	}
 
 	va_start(args, param_signature);
@@ -609,32 +609,32 @@ void jcGeneric::CallStaticParamVoid(const char* method_name, const char * param_
 
 	if (env->ExceptionCheck())
 	{
-		qWarning("void jcGeneric(%p)::CallParamVoid(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
+		qWarning("void QJniObject(%p)::CallParamVoid(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
 		env->ExceptionDescribe();
 		env->ExceptionClear();
 		return;
 	}
 }
 
-void jcGeneric::CallStaticVoid(const char* method_name, const QString & string)
+void QJniObject::callStaticVoid(const char* method_name, const QString & string)
 {
-	JniEnvPtr jep;
+	QJniEnvPtr jep;
 	JNIEnv * env = jep.env();
 	jstring js = jep.JStringFromQString(string);
-	CallStaticParamVoid(method_name, "Ljava/lang/String;", js);
+	callStaticParamVoid(method_name, "Ljava/lang/String;", js);
 	env->DeleteLocalRef(js);
 }
 
-QString jcGeneric::CallString(const char *method_name)
+QString QJniObject::callString(const char *method_name)
 {
-	VERBOSE(qDebug("QString jcGeneric::CallString(const char* method_name) %p \"%s\"",this,method_name));
-	JniEnvPtr jep;
+	VERBOSE(qDebug("QString QJniObject::CallString(const char* method_name) %p \"%s\"",this,method_name));
+	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 	jmethodID mid = env->GetMethodID(class_, method_name, "()Ljava/lang/String;");
 	if (!mid)
 	{
 		qWarning("%s: method not found.", __FUNCTION__);
-		throw method_not_found_exception();
+		throw MethodNotFoundException();
 	}
 	jstring jret = (jstring)env->CallObjectMethod(instance_, mid);
 	if (jret == 0)
@@ -646,16 +646,16 @@ QString jcGeneric::CallString(const char *method_name)
 	return ret;
 }
 
-QString jcGeneric::CallStaticString(const char *method_name)
+QString QJniObject::callStaticString(const char *method_name)
 {
-	VERBOSE(qDebug("QString jcGeneric::CallStaticString(const char* method_name) %p \"%s\"",this,method_name));
-	JniEnvPtr jep;
+	VERBOSE(qDebug("QString QJniObject::CallStaticString(const char* method_name) %p \"%s\"",this,method_name));
+	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 	jmethodID mid = env->GetStaticMethodID(class_, method_name, "()Ljava/lang/String;");
 	if (!mid)
 	{
 		qWarning("%s: method not found.", __FUNCTION__);
-		throw method_not_found_exception();
+		throw MethodNotFoundException();
 	}
 	jstring jret = (jstring)env->CallStaticObjectMethod(class_, mid);
 	if (jret == 0)
@@ -667,15 +667,15 @@ QString jcGeneric::CallStaticString(const char *method_name)
 	return ret;
 }
 
-QString jcGeneric::GetString(const char *field_name)
+QString QJniObject::getString(const char *field_name)
 {
-	JniEnvPtr jep;
+	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 	jfieldID fid = env->GetFieldID(class_, field_name, "Ljava/lang/String;");
 	if (!fid)
 	{
 		qWarning("%s: method not found.", __FUNCTION__);
-		throw field_not_found_exception();
+		throw FieldNotFoundException();
 	}
 	jstring jret = (jstring)env->GetObjectField(instance_, fid);
 	if (jret == 0)
@@ -687,15 +687,15 @@ QString jcGeneric::GetString(const char *field_name)
 	return ret;
 }
 
-jcGeneric* jcGeneric::CallStaticObject(const char *method_name, const char *objname)
+QJniObject* QJniObject::callStaticObject(const char *method_name, const char *objname)
 {
-	VERBOSE(qDebug("jcGeneric::CallStaticObject(\"%s\",\"%s\")", method_name, objname));
+	VERBOSE(qDebug("QJniObject::CallStaticObject(\"%s\",\"%s\")", method_name, objname));
 	std::string signature = "()L";
 	signature += objname;
 	signature += ";";
 
-	VERBOSE(qDebug("jcGeneric::CallStaticObject signature: %s", signature.c_str()));
-	JniEnvPtr jep;
+	VERBOSE(qDebug("QJniObject::CallStaticObject signature: %s", signature.c_str()));
+	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 
 	VERBOSE(qDebug("env->GetStaticMethodID"));
@@ -703,28 +703,28 @@ jcGeneric* jcGeneric::CallStaticObject(const char *method_name, const char *objn
 	if (!mid)
 	{
 		qWarning("%s: method not found.", __FUNCTION__);
-		throw method_not_found_exception();
+		throw MethodNotFoundException();
 	}
 
-	VERBOSE(qDebug("new jcGeneric(env->CallStaticObjectMethod(class_,mid), true);"));
+	VERBOSE(qDebug("new QJniObject(env->CallStaticObjectMethod(class_,mid), true);"));
 	jobject jret = env->CallStaticObjectMethod(class_, mid);
 	if (jret == 0)
 	{
 		return NULL;
 	}
-	return new jcGeneric(jret, true);
+	return new QJniObject(jret, true);
 }
 
-int jcGeneric::GetInt(const char* field_name)
+int QJniObject::getIntField(const char* field_name)
 {
-	VERBOSE(qDebug("int jcGeneric::GetInt(const char* fieldd_name) %p \"%s\"",this,field_name));
-	JniEnvPtr jep;
+	VERBOSE(qDebug("int QJniObject::GetInt(const char* fieldd_name) %p \"%s\"",this,field_name));
+	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 	jfieldID fid = env->GetFieldID(class_, field_name, "I");
 	if (!fid)
 	{
 		qWarning("%s: method not found.", __FUNCTION__);
-		throw field_not_found_exception();
+		throw FieldNotFoundException();
 	}
 	return (int)env->GetIntField(instance_, fid);
 }
@@ -732,12 +732,12 @@ int jcGeneric::GetInt(const char* field_name)
 // TODO: add something like what they do in jni.h:
 //	#define CALL_TYPE_METHOD(_jtype, _jname)
 //	_jtype Call##_jname##Method(jobject obj, jmethodID methodID, ...)
-void jcGeneric::CallParamVoid(const char* method_name, const char* param_signature, ...)
+void QJniObject::callParamVoid(const char* method_name, const char* param_signature, ...)
 {
-	VERBOSE(qDebug("void jcGeneric(%p)::CallParamVoid(\"%s\", \"%s\", ...)", this, method_name, param_signature));
+	VERBOSE(qDebug("void QJniObject(%p)::CallParamVoid(\"%s\", \"%s\", ...)", this, method_name, param_signature));
 
 	va_list args;
-	JniEnvPtr jep;
+	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 
 	std::string signature = "(";
@@ -747,7 +747,7 @@ void jcGeneric::CallParamVoid(const char* method_name, const char* param_signatu
 	if (!mid)
 	{
 		qWarning("%s: method not found.", __FUNCTION__);
-		throw method_not_found_exception();
+		throw MethodNotFoundException();
 	}
 
 	va_start(args, param_signature);
@@ -756,86 +756,86 @@ void jcGeneric::CallParamVoid(const char* method_name, const char* param_signatu
 
 	if (env->ExceptionCheck())
 	{
-		qWarning("void jcGeneric(%p)::CallParamVoid(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
+		qWarning("void QJniObject(%p)::CallParamVoid(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
 		env->ExceptionDescribe();
 		env->ExceptionClear();
 		return;
 	}
 }
 
-void jcGeneric::CallVoid(const char * method_name, jint x)
+void QJniObject::callVoid(const char * method_name, jint x)
 {
-	CallParamVoid(method_name, "I", x);
+	callParamVoid(method_name, "I", x);
 }
 
-void jcGeneric::CallVoid(const char * method_name, jlong x)
+void QJniObject::callVoid(const char * method_name, jlong x)
 {
-	CallParamVoid(method_name, "J", x);
+	callParamVoid(method_name, "J", x);
 }
 
-void jcGeneric::CallVoid(const char * method_name, jboolean x)
+void QJniObject::callVoid(const char * method_name, jboolean x)
 {
-	CallParamVoid(method_name, "Z", x);
+	callParamVoid(method_name, "Z", x);
 }
 
-void jcGeneric::CallVoid(const char * method_name, const QString & string)
+void QJniObject::callVoid(const char * method_name, const QString & string)
 {
-	JniEnvPtr jep;
+	QJniEnvPtr jep;
 	JNIEnv * env = jep.env();
 	jstring js = jep.JStringFromQString(string);
-	CallParamVoid(method_name, "Ljava/lang/String;", js);
+	callParamVoid(method_name, "Ljava/lang/String;", js);
 	env->DeleteLocalRef(js);
 }
 
-void jcGeneric::CallVoid(const char * method_name, const QString & string1, const QString & string2)
+void QJniObject::callVoid(const char * method_name, const QString & string1, const QString & string2)
 {
-	JniEnvPtr jep;
+	QJniEnvPtr jep;
 	JNIEnv * env = jep.env();
 	jstring js1 = jep.JStringFromQString(string1);
 	jstring js2 = jep.JStringFromQString(string2);
-	CallParamVoid(method_name, "Ljava/lang/String;Ljava/lang/String;", js1, js2);
+	callParamVoid(method_name, "Ljava/lang/String;Ljava/lang/String;", js1, js2);
 	env->DeleteLocalRef(js1);
 	env->DeleteLocalRef(js2);
 }
 
-void jcGeneric::CallVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3)
+void QJniObject::callVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3)
 {
-	JniEnvPtr jep;
+	QJniEnvPtr jep;
 	JNIEnv * env = jep.env();
 	jstring js1 = jep.JStringFromQString(string1);
 	jstring js2 = jep.JStringFromQString(string2);
 	jstring js3 = jep.JStringFromQString(string3);
-	CallParamVoid(method_name, "Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;", js1, js2, js3);
+	callParamVoid(method_name, "Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;", js1, js2, js3);
 	env->DeleteLocalRef(js1);
 	env->DeleteLocalRef(js2);
 	env->DeleteLocalRef(js3);
 }
 
-void jcGeneric::CallVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3, const QString & string4)
+void QJniObject::callVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3, const QString & string4)
 {
-	JniEnvPtr jep;
+	QJniEnvPtr jep;
 	JNIEnv * env = jep.env();
 	jstring js1 = jep.JStringFromQString(string1);
 	jstring js2 = jep.JStringFromQString(string2);
 	jstring js3 = jep.JStringFromQString(string3);
 	jstring js4 = jep.JStringFromQString(string4);
-	CallParamVoid(method_name, "Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;", js1, js2, js3, js4);
+	callParamVoid(method_name, "Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;", js1, js2, js3, js4);
 	env->DeleteLocalRef(js1);
 	env->DeleteLocalRef(js2);
 	env->DeleteLocalRef(js3);
 	env->DeleteLocalRef(js4);
 }
 
-void jcGeneric::CallVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3, const QString & string4, const QString & string5)
+void QJniObject::callVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3, const QString & string4, const QString & string5)
 {
-	JniEnvPtr jep;
+	QJniEnvPtr jep;
 	JNIEnv * env = jep.env();
 	jstring js1 = jep.JStringFromQString(string1);
 	jstring js2 = jep.JStringFromQString(string2);
 	jstring js3 = jep.JStringFromQString(string3);
 	jstring js4 = jep.JStringFromQString(string4);
 	jstring js5 = jep.JStringFromQString(string5);
-	CallParamVoid(method_name, "Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;", js1, js2, js3, js4, js5);
+	callParamVoid(method_name, "Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;", js1, js2, js3, js4, js5);
 	env->DeleteLocalRef(js1);
 	env->DeleteLocalRef(js2);
 	env->DeleteLocalRef(js3);
@@ -843,15 +843,15 @@ void jcGeneric::CallVoid(const char * method_name, const QString & string1, cons
 	env->DeleteLocalRef(js5);
 }
 
-bool jcGeneric::RegisterNativeMethod(const char* name, const char* signature, void* ptr)
+bool QJniObject::registerNativeMethod(const char* name, const char* signature, void* ptr)
 {
 	JNINativeMethod jnm = {name, signature, ptr};
-	return RegisterNativeMethods(&jnm, sizeof(jnm));
+	return registerNativeMethods(&jnm, sizeof(jnm));
 }
 
-bool jcGeneric::RegisterNativeMethods(const JNINativeMethod * methods_list, size_t sizeof_methods_list)
+bool QJniObject::registerNativeMethods(const JNINativeMethod * methods_list, size_t sizeof_methods_list)
 {
-	JniEnvPtr jep;
+	QJniEnvPtr jep;
 	jint result = jep.env()->RegisterNatives(class_, methods_list, sizeof_methods_list/sizeof(JNINativeMethod));
 	return result == 0;
 }

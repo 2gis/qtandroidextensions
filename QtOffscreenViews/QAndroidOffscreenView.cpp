@@ -98,7 +98,7 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	setObjectName(objectname);
 
 	qDebug()<<"QAndroidOffscreenView: making sure object's main thread"<<gettid()<<"is attached to JNI";
-	initial_thread_attacher_.reset(new JniEnvPtr());
+	initial_thread_attacher_.reset(new QJniEnvPtr());
 
 	// Expand like: OffscreenWebView => ru/dublgis/offscreenview/OffscreenWebView
 	if (!view_class_name_.contains('/'))
@@ -107,19 +107,19 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	}
 
 	qDebug()<<__PRETTY_FUNCTION__<<"Creating object of"<<view_class_name_<<"tid"<<gettid();
-	offscreen_view_.reset(new jcGeneric(
+	offscreen_view_.reset(new QJniObject(
 		view_class_name_.toLatin1()
 		, true // Keep ownership
 	));
 
 	if (offscreen_view_ && offscreen_view_->jObject())
 	{
-		offscreen_view_->RegisterNativeMethod("nativeUpdate", "(J)V", (void*)Java_OffscreenView_nativeUpdate);
-		offscreen_view_->RegisterNativeMethod("nativeViewCreated", "(J)V", (void*)Java_OffscreenView_nativeViewCreated);
-		offscreen_view_->RegisterNativeMethod("nativeGetActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity);
-		offscreen_view_->CallVoid("SetObjectName", view_object_name_);
-		offscreen_view_->CallParamVoid("SetNativePtr", "J", jlong(reinterpret_cast<void*>(this)));
-		offscreen_view_->CallParamVoid("setFillColor", "IIII",
+		offscreen_view_->registerNativeMethod("nativeUpdate", "(J)V", (void*)Java_OffscreenView_nativeUpdate);
+		offscreen_view_->registerNativeMethod("nativeViewCreated", "(J)V", (void*)Java_OffscreenView_nativeViewCreated);
+		offscreen_view_->registerNativeMethod("nativeGetActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity);
+		offscreen_view_->callVoid("SetObjectName", view_object_name_);
+		offscreen_view_->callParamVoid("SetNativePtr", "J", jlong(reinterpret_cast<void*>(this)));
+		offscreen_view_->callParamVoid("setFillColor", "IIII",
 			jint(fill_color_.alpha()), jint(fill_color_.red()), jint(fill_color_.green()), jint(fill_color_.blue()));
 
 		// Invoke creation of the view, so its functions will be available
@@ -142,7 +142,7 @@ bool QAndroidOffscreenView::createView()
 {
 	if (offscreen_view_ && !view_creation_requested_)
 	{
-		bool result = offscreen_view_->CallBool("createView");
+		bool result = offscreen_view_->callBool("createView");
 		if (result)
 		{
 			view_creation_requested_ = true;
@@ -180,7 +180,7 @@ void QAndroidOffscreenView::initializeGL()
 	}
 	qDebug()<<__PRETTY_FUNCTION__;
 	qDebug()<<"QAndroidOffscreenView: making sure GL thread"<<gettid()<<"is attached to JNI";
-	jni_gl_thread_attacher_.reset(new JniEnvPtr());
+	jni_gl_thread_attacher_.reset(new QJniEnvPtr());
 
 	tex_.allocateTexture(GL_TEXTURE_EXTERNAL_OES);
 
@@ -208,17 +208,17 @@ void QAndroidOffscreenView::initializeGL()
 
 	size_ = texture_size;
 
-	offscreen_view_->CallParamVoid("SetTexture", "I", jint(tex_.getTexture()));
-	offscreen_view_->CallParamVoid("SetInitialWidth", "I", jint(size_.width()));
-	offscreen_view_->CallParamVoid("SetInitialHeight", "I", jint(size_.height()));
-	offscreen_view_->CallVoid("initializeGL");
+	offscreen_view_->callParamVoid("SetTexture", "I", jint(tex_.getTexture()));
+	offscreen_view_->callParamVoid("SetInitialWidth", "I", jint(size_.width()));
+	offscreen_view_->callParamVoid("SetInitialHeight", "I", jint(size_.height()));
+	offscreen_view_->callVoid("initializeGL");
 }
 
 void QAndroidOffscreenView::deleteAndroidView()
 {
 	if (offscreen_view_)
 	{
-		offscreen_view_->CallVoid("cppDestroyed");
+		offscreen_view_->callVoid("cppDestroyed");
 		offscreen_view_.reset();
 	}
 }
@@ -272,7 +272,7 @@ bool QAndroidOffscreenView::isCreated() const
 	}
 	if (offscreen_view_)
 	{
-		bool result = offscreen_view_->CallBool("isViewCreated");
+		bool result = offscreen_view_->callBool("isViewCreated");
 		if (result)
 		{
 			view_created_ = true;
@@ -320,7 +320,7 @@ void QAndroidOffscreenView::invalidate()
 {
 	if (offscreen_view_)
 	{
-		offscreen_view_->CallVoid("invalidateOffscreenView");
+		offscreen_view_->callVoid("invalidateOffscreenView");
 	}
 }
 
@@ -331,7 +331,7 @@ void QAndroidOffscreenView::setFillColor(const QColor & color)
 		fill_color_ = color;
 		if (offscreen_view_)
 		{
-			offscreen_view_->CallParamVoid("setFillColor", "IIII",
+			offscreen_view_->callParamVoid("setFillColor", "IIII",
 				jint(fill_color_.alpha()), jint(fill_color_.red()), jint(fill_color_.green()), jint(fill_color_.blue()));
 		}
 		if (!hasValidImage())
@@ -348,7 +348,7 @@ void QAndroidOffscreenView::setVisible(bool visible)
 		is_visible_ = visible;
 		if (offscreen_view_)
 		{
-			offscreen_view_->CallVoid("setVisible", jboolean(is_visible_));
+			offscreen_view_->callVoid("setVisible", jboolean(is_visible_));
 		}
 	}
 }
@@ -357,7 +357,7 @@ void QAndroidOffscreenView::setAttachingMode(bool attaching)
 {
 	if (offscreen_view_)
 	{
-		offscreen_view_->CallVoid("setAttachingMode", jboolean(attaching));
+		offscreen_view_->callVoid("setAttachingMode", jboolean(attaching));
 	}
 }
 
@@ -365,7 +365,7 @@ bool QAndroidOffscreenView::isFocused() const
 {
 	if (offscreen_view_)
 	{
-		return offscreen_view_->CallBool("isFocused");
+		return offscreen_view_->callBool("isFocused");
 	}
 	return false;
 }
@@ -374,7 +374,7 @@ void QAndroidOffscreenView::setFocused(bool focused)
 {
 	if (offscreen_view_)
 	{
-		return offscreen_view_->CallVoid("setFocused", jboolean(focused));
+		return offscreen_view_->callVoid("setFocused", jboolean(focused));
 	}
 }
 
@@ -382,7 +382,7 @@ void QAndroidOffscreenView::setPosition(int left, int top)
 {
 	if (offscreen_view_)
 	{
-		return offscreen_view_->CallParamVoid("setPosition", "II", jint(left), jint(top));
+		return offscreen_view_->callParamVoid("setPosition", "II", jint(left), jint(top));
 	}
 }
 
@@ -409,19 +409,19 @@ bool QAndroidOffscreenView::updateTexture()
 		// If synchronized_texture_update_ is set, this will cause a wait on mutex if the view
 		// is being painted. If synchronized_texture_update_ is false, then the texture update
 		// will be skipped (we'll receive an update from Java later, after the frame is painted).
-		bool success = offscreen_view_->CallBool("updateTexture", synchronized_texture_update_);
+		bool success = offscreen_view_->callBool("updateTexture", synchronized_texture_update_);
 		if (!success)
 		{
 			return false;
 		}
 
 		// Transform matrix
-		float a11 = offscreen_view_->CallFloat("getTextureTransformMatrix", 0);
-		float a21 = offscreen_view_->CallFloat("getTextureTransformMatrix", 1);
-		float a12 = offscreen_view_->CallFloat("getTextureTransformMatrix", 4);
-		float a22 = offscreen_view_->CallFloat("getTextureTransformMatrix", 5);
-		float b1 = offscreen_view_->CallFloat("getTextureTransformMatrix", 12);
-		float b2 = offscreen_view_->CallFloat("getTextureTransformMatrix", 13);
+		float a11 = offscreen_view_->callFloat("getTextureTransformMatrix", 0);
+		float a21 = offscreen_view_->callFloat("getTextureTransformMatrix", 1);
+		float a12 = offscreen_view_->callFloat("getTextureTransformMatrix", 4);
+		float a22 = offscreen_view_->callFloat("getTextureTransformMatrix", 5);
+		float b1 = offscreen_view_->callFloat("getTextureTransformMatrix", 12);
+		float b2 = offscreen_view_->callFloat("getTextureTransformMatrix", 13);
 		tex_.setTransformation(a11, a12, a21, a22, b1, b2);
 
 		/*
@@ -441,11 +441,11 @@ bool QAndroidOffscreenView::updateTexture()
 	}
 }
 
-jcGeneric * QAndroidOffscreenView::getView()
+QJniObject * QAndroidOffscreenView::getView()
 {
 	if (offscreen_view_)
 	{
-		return offscreen_view_->CallObject("getView", "android/view/View");
+		return offscreen_view_->callObject("getView", "android/view/View");
 	}
 	return 0;
 }
@@ -454,7 +454,7 @@ void QAndroidOffscreenView::mouse(int android_action, int x, int y)
 {
 	if (offscreen_view_)
 	{
-		offscreen_view_->CallParamVoid("ProcessMouseEvent", "III", jint(android_action), jint(x), jint(y));
+		offscreen_view_->callParamVoid("ProcessMouseEvent", "III", jint(android_action), jint(x), jint(y));
 	}
 }
 
@@ -466,7 +466,7 @@ void QAndroidOffscreenView::resize(const QSize & size)
 		size_ = size;
 		if (offscreen_view_)
 		{
-			offscreen_view_->CallParamVoid("resizeOffscreenView", "II", jint(size.width()), jint(size.height()));
+			offscreen_view_->callParamVoid("resizeOffscreenView", "II", jint(size.width()), jint(size.height()));
 		}
 		tex_.setTextureSize(size);
 	}

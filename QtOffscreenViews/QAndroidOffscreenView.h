@@ -226,14 +226,14 @@ private slots:
 
 protected:
 	bool updateTexture();
-	jcGeneric * offscreenView() { return offscreen_view_.data(); }
-	jcGeneric * getView();
+	QJniObject * offscreenView() { return offscreen_view_.data(); }
+	QJniObject * getView();
 
 private:
 	QString view_class_name_;
 	QString view_object_name_;
 	QOpenGLTextureHolder tex_;
-	QScopedPointer<jcGeneric> offscreen_view_;
+	QScopedPointer<QJniObject> offscreen_view_;
 	QSize size_;
 	QColor fill_color_;
 	bool need_update_texture_;
@@ -245,8 +245,8 @@ private:
 	volatile mutable bool view_created_; //!< Cache for isCreated()
 
 	// Keeping threads attached to Java (peformance issue).
-	QScopedPointer<JniEnvPtr> initial_thread_attacher_;
-	QScopedPointer<JniEnvPtr> jni_gl_thread_attacher_;
+	QScopedPointer<QJniEnvPtr> initial_thread_attacher_;
+	QScopedPointer<QJniEnvPtr> jni_gl_thread_attacher_;
 private:
 	Q_DISABLE_COPY(QAndroidOffscreenView)
 	friend void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv * env, jobject jo, jlong param);

@@ -22,7 +22,7 @@ int main(int argc, char **argv)
 
 	bool result = app.exec();
 
-	JniEnvPtr().UnloadClasses();
+	QJniEnvPtr().unloadAllClasses();
 
 	return result;
 }
