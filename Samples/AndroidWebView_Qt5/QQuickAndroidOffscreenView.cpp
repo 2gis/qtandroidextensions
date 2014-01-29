@@ -64,6 +64,9 @@ void QQuickAndroidOffscreenView::mousePressEvent(QMouseEvent * event)
 		aview_->mouse(QAndroidOffscreenView::ANDROID_MOTIONEVENT_ACTION_DOWN, pos.x(), pos.y());
 		mouse_tracking_ = true;
 		event->accept();
+
+		//! \todo Is this a correct way to focus?
+		setFocus(true);	// SGEXP
 	}
 	else
 	{
