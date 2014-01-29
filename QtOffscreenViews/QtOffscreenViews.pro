@@ -2,7 +2,7 @@ TEMPLATE = lib
 CONFIG += staticlib
 QT += core gui opengl
 
-INCLUDEPATH += ../JNIUtils
+INCLUDEPATH += ../QJniHelpers
 
 HEADERS += \
     QOpenGLTextureHolder.h \
