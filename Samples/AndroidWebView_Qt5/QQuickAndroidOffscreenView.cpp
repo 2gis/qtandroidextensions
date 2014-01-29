@@ -56,21 +56,15 @@ void QQuickAndroidOffscreenView::mouseMoveEvent(QMouseEvent * event)
 
 void QQuickAndroidOffscreenView::mousePressEvent(QMouseEvent * event)
 {
-	qDebug()<<__FUNCTION__<<aview_->objectName();
 	if (is_interactive_ && event->button() == Qt::LeftButton)
 	{
 		QPoint pos = event->pos();
-		qDebug()<<__FUNCTION__<<aview_->objectName()<<"sending, pos ="<<pos;
 		aview_->mouse(QAndroidOffscreenView::ANDROID_MOTIONEVENT_ACTION_DOWN, pos.x(), pos.y());
 		mouse_tracking_ = true;
+		// We must take focus here, or interactive View will not work properly.
+		// Note that this happens only if the Quick item is interactive.
+		setFocus(true);
 		event->accept();
-
-		//! \todo Is this a correct way to focus?
-		setFocus(true);	// SGEXP
-	}
-	else
-	{
-		qDebug()<<__FUNCTION__<<aview_->objectName()<<"IGNORING; interactive ="<<is_interactive_<<", button ="<<event->button();
 	}
 }
 
