@@ -48,7 +48,7 @@
 #endif
 
 /*!
- * A general wrapper for Android offscreen views.
+ * A general wrapper for Android offscreen views.f
  * It can be used to create a QWidget / QGLWidget / QGraphicsWidget / QML component
  * which displays Android view.
  */

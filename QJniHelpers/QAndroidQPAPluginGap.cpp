@@ -139,7 +139,7 @@ void preloadJavaClass(const char * class_name)
 // JNI entry points. Must be "C" because the function names should not be mangled.
 extern "C" {
 
-JNIEXPORT void JNICALL Java_ru_dublgis_jniutils_ClassLoader_nativeJNIPreloadClass(JNIEnv * env, jobject, jstring classname)
+JNIEXPORT void JNICALL Java_ru_dublgis_qjnihelpers_ClassLoader_nativeJNIPreloadClass(JNIEnv * env, jobject, jstring classname)
 {
 	JniEnvPtr jep(env);
 	QString qclassname = jep.QStringFromJString(classname);
