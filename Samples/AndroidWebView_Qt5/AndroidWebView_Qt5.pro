@@ -24,16 +24,16 @@ QML_IMPORT_PATH =
 # The .cpp file which was generated for your project. Feel free to hack it.
 SOURCES += \
     main.cpp \
-    fboinsgrenderer.cpp \
     ../../QtOffscreenViews/QAndroidOffscreenView.cpp \
     ../../QtOffscreenViews/QAndroidOffscreenWebView.cpp \
     ../../QtOffscreenViews/QOpenGLTextureHolder.cpp \
     ../../JNIUtils/QAndroidQPAPluginGap.cpp \
     ../../JNIUtils/jcGeneric.cpp \
     ../../JNIUtils/JclassPtr.cpp \
-    ../../JNIUtils/JniEnvPtr.cpp
+    ../../JNIUtils/JniEnvPtr.cpp \
+    QQuickAndroidOffscreenView.cpp \
+    ../../QtOffscreenViews/QAndroidOffscreenEditText.cpp
 HEADERS += \
-    fboinsgrenderer.h \
     ../../QtOffscreenViews/QAndroidOffscreenView.h \
     ../../QtOffscreenViews/QAndroidOffscreenWebView.h \
     ../../QtOffscreenViews/QOpenGLTextureHolder.h \
@@ -41,7 +41,9 @@ HEADERS += \
     ../../JNIUtils/jcGeneric.h \
     ../../JNIUtils/JclassPtr.h \
     ../../JNIUtils/JniEnvPtr.h \
-    ../../JNIUtils/stdafx.h
+    ../../JNIUtils/stdafx.h \
+    QQuickAndroidOffscreenView.h \
+    ../../QtOffscreenViews/QAndroidOffscreenEditText.h
 
 # Installation path
 # target.path =

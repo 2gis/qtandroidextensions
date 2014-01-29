@@ -38,48 +38,31 @@
 **
 ****************************************************************************/
 
-#include "fboinsgrenderer.h"
-#include <QtGui/QOpenGLFramebufferObject>
-#include <QtQuick/QQuickWindow>
-#include <qsgsimpletexturenode.h>
+#include <QGuiApplication>
+#include <QtQuick/QQuickView>
+#include <QAndroidOffscreenWebView.h>
+#include <QAndroidOffscreenEditText.h>
+#include "QQuickAndroidOffscreenView.h"
+#include <QtAndroidExtras>
 
-LogoInFboRenderer::LogoInFboRenderer()
-	: aview_("WebViewInQML", QSize(512, 512))
+int main(int argc, char **argv)
 {
-	qDebug()<<__FUNCTION__<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<"Constructing...";
-	connect(&aview_, SIGNAL(updated()), this, SLOT(textureUpdated()));
-	aview_.loadUrl("http://www.android.com/intl/en/about/");
+	QAndroidOffscreenWebView::preloadJavaClass();
+	QAndroidOffscreenEditText::preloadJavaClass();
+
+	QGuiApplication app(argc, argv);
+
+	qmlRegisterType<QQuickAndroidOffscreenView>("SceneGraphRendering", 1, 0, "Renderer");
+
+    QQuickView view;
+    view.setResizeMode(QQuickView::SizeRootObjectToView);
+    view.setSource(QUrl("qrc:///scenegraph/textureinsgnode/main.qml"));
+    view.show();
+
+	bool result = app.exec();
+
+	JniEnvPtr().UnloadClasses();
+
+	return result;
 }
 
-void LogoInFboRenderer::render()
-{
-	// We can't use the texture in aview_ directly because it uses GL shader extension
-	// and custom transformation matrix, but we can draw the texture on the FBO texture.
-	// Fortunately, this is an extremely small operation comparing to the everything else
-	// we have to do.
-	aview_.paintGL(0, 0, aview_.size().width(), aview_.size().height(), true);
-	update();
-}
-
-QOpenGLFramebufferObject * LogoInFboRenderer::createFramebufferObject(const QSize &size)
-{
-	qDebug()<<__FUNCTION__<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<size;
-
-	aview_.initializeGL();
-	aview_.resize(size);
-
-	QOpenGLFramebufferObjectFormat format;
-	format.setSamples(4);
-	return new QOpenGLFramebufferObject(size, format);
-}
-
-void LogoInFboRenderer::textureUpdated()
-{
-	qDebug()<<__FUNCTION__<<"!!!!!!!!!!!!! ***** !!!!!!!!!!!!! ***** !!!!!!!!!!!!!! **** !!!!!!!!!!!!!!";
-	invalidateFramebufferObject();
-}
-
-QQuickFramebufferObject::Renderer *FboInSGRenderer::createRenderer() const
-{
-    return new LogoInFboRenderer();
-}
