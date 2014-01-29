@@ -2,8 +2,8 @@
 #include <QtQuick/QQuickWindow>
 #include "QQuickAndroidOffscreenView.h"
 
-QQuickAndroidOffscreenView::QQuickAndroidOffscreenView()
-	: aview_(new QAndroidOffscreenWebView("WebViewInQML", QSize(512, 512)))
+QQuickAndroidOffscreenView::QQuickAndroidOffscreenView(QAndroidOffscreenView * aview)
+	: aview_(aview)
 	, is_interactive_(true) // TODO
 	, mouse_tracking_(false)
 {
@@ -11,9 +11,6 @@ QQuickAndroidOffscreenView::QQuickAndroidOffscreenView()
 	setAcceptedMouseButtons(Qt::LeftButton);
 
 	aview_->setAttachingMode(is_interactive_);
-
-	// SGEXP
-	aview_->loadUrl("http://www.android.com/intl/en/about/");
 }
 
 QQuickFramebufferObject::Renderer * QQuickAndroidOffscreenView::createRenderer() const
@@ -89,7 +86,7 @@ void QQuickAndroidOffscreenView::updateAndroidViewVisibility()
 
 
 
-QAndroidOffscreenViewRenderer::QAndroidOffscreenViewRenderer(QSharedPointer<QAndroidOffscreenWebView> aview)
+QAndroidOffscreenViewRenderer::QAndroidOffscreenViewRenderer(QSharedPointer<QAndroidOffscreenView> aview)
 	: aview_(aview)
 {
 }
@@ -118,3 +115,32 @@ void QAndroidOffscreenViewRenderer::onTextureUpdated()
 	// qDebug()<<__FUNCTION__<<"!!!!!!!!!!!!! ***** !!!!!!!!!!!!! ***** !!!!!!!!!!!!!! **** !!!!!!!!!!!!!!";
 	invalidateFramebufferObject();
 }
+
+
+
+
+
+
+
+QQuickAndroidOffscreenWebView::QQuickAndroidOffscreenWebView()
+	: QQuickAndroidOffscreenView(new QAndroidOffscreenWebView("WebViewInQuick", QSize(512, 512)))
+{
+	// SGEXP
+	androidWebView()->loadUrl("http://www.android.com/intl/en/about/");
+}
+
+
+QQuickAndroidOffscreenEditText::QQuickAndroidOffscreenEditText()
+	: QQuickAndroidOffscreenView(new QAndroidOffscreenEditText("EditTextInQuick", QSize(512, 64)))
+{
+	// SGEXP
+	androidView()->setFillColor(Qt::yellow);
+}
+
+
+
+
+
+
+
+

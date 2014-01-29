@@ -73,10 +73,20 @@ Item {
             "
     }
 
-    Renderer {
-        id: renderer
-        anchors.fill: parent
-        anchors.margins: 10
+	OffscreenEditText {
+		id: edittext
+		x: 20
+		y: 20
+		width: parent.width - 40
+		height: 100
+	}
+
+	OffscreenWebView {
+		id: webview
+		x: 20
+		y: 140
+		width: parent.width - 40
+		height: parent.height - 160
 
         // The transform is just to show something interesting..
 		/*transform: [
@@ -121,9 +131,9 @@ Item {
 
     Text {
         id: label
-        anchors.bottom: renderer.bottom
-        anchors.left: renderer.left
-        anchors.right: renderer.right
+		anchors.bottom: webview.bottom
+		anchors.left: webview.left
+		anchors.right: webview.right
         anchors.margins: 20
         wrapMode: Text.WordWrap
 		text: "This is an example of Android WebView rendered into texture and then into FBO in Quick 2.0 scene."

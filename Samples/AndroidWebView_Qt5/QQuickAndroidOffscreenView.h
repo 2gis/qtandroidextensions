@@ -2,7 +2,9 @@
 #include <QSharedPointer>
 #include <QFocusEvent>
 #include <QtQuick/QQuickFramebufferObject>
+
 #include <QAndroidOffscreenWebView.h>
+#include <QAndroidOffscreenEditText.h>
 
 /*!
  * Base class for any Android offscreen view.
@@ -12,12 +14,15 @@ class QQuickAndroidOffscreenView : public QQuickFramebufferObject
     Q_OBJECT
 public:
 	//!\ todo pass QAndroidOffscreenView
-	QQuickAndroidOffscreenView();
+	QQuickAndroidOffscreenView(QAndroidOffscreenView * aview);
 	Renderer * createRenderer() const;
 
 	virtual void setVisibe(bool visible);
 
 protected:
+	QAndroidOffscreenView * androidView() { return aview_.data(); }
+	const QAndroidOffscreenView * androidView() const { return aview_.data(); }
+
 	virtual void focusInEvent(QFocusEvent * event);
 	virtual void focusOutEvent(QFocusEvent * event);
 	virtual void mouseMoveEvent(QMouseEvent * event);
@@ -33,9 +38,8 @@ signals:
 protected slots:
 	void onTextureUpdated();
 
-protected:
-	//!\ todo pointer to QAndroidOffscreenView!
-	QSharedPointer<QAndroidOffscreenWebView> aview_;
+private:
+	QSharedPointer<QAndroidOffscreenView> aview_;
 	bool is_interactive_;
 	bool mouse_tracking_;
 };
@@ -47,12 +51,35 @@ class QAndroidOffscreenViewRenderer : public QObject, public QQuickFramebufferOb
 {
 	Q_OBJECT
 public:
-	QAndroidOffscreenViewRenderer(QSharedPointer<QAndroidOffscreenWebView> aview);
+	QAndroidOffscreenViewRenderer(QSharedPointer<QAndroidOffscreenView> aview);
 	void render();
 	QOpenGLFramebufferObject * createFramebufferObject(const QSize &size);
 protected slots:
 	void onTextureUpdated();
 protected:
-	QSharedPointer<QAndroidOffscreenWebView> aview_;
+	QSharedPointer<QAndroidOffscreenView> aview_;
+};
+
+
+
+class QQuickAndroidOffscreenWebView: public QQuickAndroidOffscreenView
+{
+	Q_OBJECT
+public:
+	QQuickAndroidOffscreenWebView();
+
+	QAndroidOffscreenWebView * androidWebView() { return static_cast<QAndroidOffscreenWebView*>(androidView()); }
+	const QAndroidOffscreenWebView * androidWebView() const { return static_cast<const QAndroidOffscreenWebView*>(androidView()); }
+};
+
+
+class QQuickAndroidOffscreenEditText: public QQuickAndroidOffscreenView
+{
+	Q_OBJECT
+public:
+	QQuickAndroidOffscreenEditText();
+
+	QAndroidOffscreenEditText * androidEditText() { return static_cast<QAndroidOffscreenEditText*>(androidView()); }
+	const QAndroidOffscreenEditText * androidEditText() const { return static_cast<const QAndroidOffscreenEditText*>(androidView()); }
 };
 

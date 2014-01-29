@@ -52,7 +52,8 @@ int main(int argc, char **argv)
 
 	QGuiApplication app(argc, argv);
 
-	qmlRegisterType<QQuickAndroidOffscreenView>("SceneGraphRendering", 1, 0, "Renderer");
+	qmlRegisterType<QQuickAndroidOffscreenEditText>("SceneGraphRendering", 1, 0, "OffscreenEditText");
+	qmlRegisterType<QQuickAndroidOffscreenWebView>("SceneGraphRendering", 1, 0, "OffscreenWebView");
 
     QQuickView view;
     view.setResizeMode(QQuickView::SizeRootObjectToView);
