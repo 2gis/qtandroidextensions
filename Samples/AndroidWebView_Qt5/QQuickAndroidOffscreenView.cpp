@@ -4,8 +4,15 @@
 
 QQuickAndroidOffscreenView::QQuickAndroidOffscreenView()
 	: aview_(new QAndroidOffscreenWebView("WebViewInQML", QSize(512, 512)))
+	, is_interactive_(true) // TODO
+	, mouse_tracking_(false)
 {
 	connect(aview_.data(), SIGNAL(updated()), this, SLOT(onTextureUpdated()));
+	setAcceptedMouseButtons(Qt::LeftButton);
+
+	aview_->setAttachingMode(is_interactive_);
+
+	// SGEXP
 	aview_->loadUrl("http://www.android.com/intl/en/about/");
 }
 
@@ -40,6 +47,39 @@ void QQuickAndroidOffscreenView::focusOutEvent(QFocusEvent * event)
 {
 	QQuickFramebufferObject::focusOutEvent(event);
 	aview_->setFocused(false);
+}
+
+void QQuickAndroidOffscreenView::mouseMoveEvent(QMouseEvent * event)
+{
+	qDebug()<<__PRETTY_FUNCTION__<<"***************************************";
+	if (is_interactive_ && mouse_tracking_)
+	{
+		QPoint pos = event->pos();
+		aview_->mouse(QAndroidOffscreenView::ANDROID_MOTIONEVENT_ACTION_MOVE, pos.x(), pos.y());
+		event->accept();
+	}
+}
+
+void QQuickAndroidOffscreenView::mousePressEvent(QMouseEvent * event)
+{
+	if (is_interactive_ && event->button() == Qt::LeftButton)
+	{
+		QPoint pos = event->pos();
+		aview_->mouse(QAndroidOffscreenView::ANDROID_MOTIONEVENT_ACTION_DOWN, pos.x(), pos.y());
+		mouse_tracking_ = true;
+		event->accept();
+	}
+}
+
+void QQuickAndroidOffscreenView::mouseReleaseEvent(QMouseEvent * event)
+{
+	if (is_interactive_ && event->button() == Qt::LeftButton)
+	{
+		QPoint pos = event->pos();
+		aview_->mouse(QAndroidOffscreenView::ANDROID_MOTIONEVENT_ACTION_UP, pos.x(), pos.y());
+		mouse_tracking_ = false;
+		event->accept();
+	}
 }
 
 void QQuickAndroidOffscreenView::updateAndroidViewVisibility()

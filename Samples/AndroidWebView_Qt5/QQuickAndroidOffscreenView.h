@@ -20,6 +20,9 @@ public:
 protected:
 	virtual void focusInEvent(QFocusEvent * event);
 	virtual void focusOutEvent(QFocusEvent * event);
+	virtual void mouseMoveEvent(QMouseEvent * event);
+	virtual void mousePressEvent(QMouseEvent * event);
+	virtual void mouseReleaseEvent(QMouseEvent * event);
 
 public slots:
 	void updateAndroidViewVisibility();
@@ -33,6 +36,8 @@ protected slots:
 protected:
 	//!\ todo pointer to QAndroidOffscreenView!
 	QSharedPointer<QAndroidOffscreenWebView> aview_;
+	bool is_interactive_;
+	bool mouse_tracking_;
 };
 
 /*!
