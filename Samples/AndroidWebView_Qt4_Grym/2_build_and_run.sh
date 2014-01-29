@@ -8,7 +8,7 @@
 
 MYDIR="$PWD"
 
-cd "../../JNIUtils" || exit 1
+cd "../../QJniHelpers" || exit 1
 qmake || exit 1
 make || exit 1
 cd "$MYDIR" || exit 1

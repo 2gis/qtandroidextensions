@@ -11,9 +11,9 @@ SOURCES += \
 
 RESOURCES = resources.qrc
 
-INCLUDEPATH += ../../../JNIUtils ../../../QtOffscreenViews
-LIBS += -L../../../QtOffscreenViews -lQtOffscreenViews -L../../../JNIUtils -lJNIUtils
-POST_TARGETDEPS += ../../../QtOffscreenViews/libQtOffscreenViews.a ../../../JNIUtils/libJNIUtils.a
+INCLUDEPATH += ../../../QJniHelpers ../../../QtOffscreenViews
+LIBS += -L../../../QtOffscreenViews -lQtOffscreenViews -L../../../QJniHelpers -lQJniHelpers
+POST_TARGETDEPS += ../../../QtOffscreenViews/libQtOffscreenViews.a ../../../QJniHelpers/libQJniHelpers.a
 
 android-g++ {
     # Reduce binary size by not exporting all symbols by default.
@@ -23,8 +23,6 @@ android-g++ {
     CONFIG += dll
     TARGET = /../../libs/armeabi/libandroidwebviewdemo
 }
-
-include("JNIUtils/JNIUtils.pri")
 
 OTHER_FILES += \
     images/Time-For-Lunch-2.jpg \

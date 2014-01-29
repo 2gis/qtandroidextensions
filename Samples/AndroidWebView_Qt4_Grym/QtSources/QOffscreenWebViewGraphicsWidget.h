@@ -4,8 +4,7 @@
 #include <QtGui/QGraphicsWidget>
 #include <QPaintEvent>
 #include <EGL/egl.h>
-#include <JclassPtr.h>
-#include <jcGeneric.h>
+#include <QJniHelpers.h>
 #include "QAndroidOffscreenWebView.h"
 #include "QAndroidOffscreenEditText.h"
 

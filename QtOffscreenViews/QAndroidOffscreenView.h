@@ -40,9 +40,7 @@
 #include <QRect>
 #include <QScopedPointer>
 #include <QMutex>
-#include <JclassPtr.h>
-#include <jcGeneric.h>
-#include <JniEnvPtr.h>
+#include <QJniHelpers.h>
 #include "QOpenGLTextureHolder.h"
 
 #if QT_VERSION < 0x050000

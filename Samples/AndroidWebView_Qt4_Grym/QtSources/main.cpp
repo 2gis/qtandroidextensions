@@ -9,7 +9,6 @@
 #include <QWidget>
 #include <QMainWindow>
 #include <QGraphicsView>
-#include <JniEnvPtr.h>
 #include "QOffscreenWebViewGraphicsWidget.h"
 
 class MyAnimatedPixmap : public QObject, public QGraphicsPixmapItem

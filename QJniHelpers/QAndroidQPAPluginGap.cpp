@@ -1,5 +1,5 @@
 /*
-  JNIUtils library
+  QJniHelpers library
 
   Authors:
   Sergey A. Galin <sergey.galin@gmail.com>
@@ -36,11 +36,9 @@
 #include <qconfig.h>
 #include <QDebug>
 #include <QScopedPointer>
-#include <JniEnvPtr.h>
-#include <jcGeneric.h>
-#include <JclassPtr.h>
+#include <QJniHelpers.h>
 
-#if QT_VERSION < 0x050000 && defined(JNIUTILS_GRYM)
+#if QT_VERSION < 0x050000 && defined(QJNIHELPERS_GRYM)
 	#define QPA_QT4GRYM
 #elif QT_VERSION >= 0x050000
 	#define QPA_QT5
@@ -125,7 +123,7 @@ void preloadJavaClass(const char * class_name)
 	}
 	qDebug()<<"Pre-loading:"<<class_name;
 
-	static const char * const c_class_name = "ru/dublgis/jniutils/ClassLoader";
+	static const char * const c_class_name = "ru/dublgis/qjnihelpers/ClassLoader";
 	static const char * const c_method_name = "callJNIPreloadClass";
 	#if defined(QPA_QT4GRYM)
 		jcGeneric(c_class_name, false).CallStaticVoid(c_method_name, class_name);

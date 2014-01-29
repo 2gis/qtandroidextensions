@@ -1,8 +1,7 @@
 /*
-  JNIUtils library
+  QJniHelpers library
 
   Authors:
-  Ivan Avdeev <marflon@gmail.com>
   Sergey A. Galin <sergey.galin@gmail.com>
 
   Distrbuted under The BSD License
@@ -14,13 +13,13 @@
   modification, are permitted provided that the following conditions are met:
 
   * Redistributions of source code must retain the above copyright notice,
-    this list of conditions and the following disclaimer.
+	this list of conditions and the following disclaimer.
   * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
   * Neither the name of the DoubleGIS, LLC nor the names of its contributors
-    may be used to endorse or promote products derived from this software
-    without specific prior written permission.
+	may be used to endorse or promote products derived from this software
+	without specific prior written permission.
 
   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -35,62 +34,25 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "stdafx.h"
-#include "JclassPtr.h"
-#include "JniEnvPtr.h"
+#pragma once
+#include <jni.h>
 
-namespace jni_utils {
+/*!
+ * This namespace contains some functions which screen differences between various
+ * QPA plugin implementations.
+ */
+namespace QAndroidQPAPluginGap {
 
-JclassPtr::JclassPtr()
-	: env_(0)
-	, instance_(0)
-{
-}
+	JavaVM * detectJavaVM();
 
-JclassPtr::JclassPtr(const jclass & instance)
-	: env_(0)
-	, instance_(0)
-{
-	setInstance(instance);
-}
+	/*!
+	 * Obtain Activity object.
+	 * \param env, jo are not used and only needed so the function could be set as native
+	 *  function in Java and called over JNI.
+	 */
+	jobject JNICALL getActivity(JNIEnv * env = 0, jobject jo = 0);
 
-JclassPtr::~JclassPtr()
-{
-	freeInstance();
-}
+	void preloadJavaClass(const char * class_name);
 
-JclassPtr& JclassPtr::operator= (const jclass & instance)
-{
-	freeInstance();
-	setInstance(instance);
-
-	return *this;
-}
-
-void JclassPtr::setInstance(const jclass & instance)
-{
-	if (instance)
-	{
-		Q_ASSERT(!env_ && !instance_);
-
-		JniEnvPtr jep;
-		env_ = jep.env();
-		Q_ASSERT(env_);
-
-		instance_ = static_cast<jclass>(env_->NewGlobalRef(instance));
-		Q_ASSERT(instance_);
-	}
-}
-
-void JclassPtr::freeInstance()
-{
-	if (env_ && instance_)
-	{
-		env_->DeleteGlobalRef(instance_);
-		env_ = 0;
-		instance_ = 0;
-	}
-}
-
-} // namespace jni_utils
+} // namespace QAndroidQPAPluginGap
 

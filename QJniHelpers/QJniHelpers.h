@@ -1,5 +1,5 @@
 /*
-  JNIUtils library
+  QJniHelpers library
 
   Authors:
   Ivan Avdeev <marflon@gmail.com>
@@ -35,11 +35,96 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// a simple class for convenient access to java classes
-
 #pragma once
+#include <string>
 #include <jni.h>
+#include <map>
+#include <string>
+#include <unistd.h>
+#include <sys/types.h>
 #include <QString>
+#include <QDebug>
+#include <QMutex>
+#include <QMutexLocker>
+#include <QThreadStorage>
+
+//! Basic functionality to get JNIEnv valid for current thread and scope.
+class JniEnvPtr
+{	
+public:
+	JniEnvPtr();
+	JniEnvPtr(JNIEnv* env);
+	~JniEnvPtr();
+
+	//! \brief Get current Java environment.
+	JNIEnv * env() const;
+
+	//! \brief Get current JavaVM. Note: QJniHelpers supports only one JVM per process.
+	JavaVM * getJavaVM() const;
+
+	/*!
+	 * \brief Preload class by name, e.g.: "ru/dublgis/offscreenview/OffscreenWebView".
+	 * Required as Android's JNIEnv->FindClass doesn't work in threads created in native code.
+	 * After preloading, any thread can instantiate classes via JniEnvPtr::FindClass().
+	 */
+	bool PreloadClass(const char * class_name);
+
+	/*!
+	 * \brief Preload mutliple classes.
+	 * \param class_list - 0-terminated array of pointers to class names.
+	 * \return Number of loaded classes.
+	 */
+	int PreloadClasses(const char * const * class_list);
+
+	/*!
+	 * \brief Check if the class has been pre-loaded (see PreloadClass()).
+	 * \param class_name
+	 * \return
+	 */
+	bool IsClassPreloaded(const char * class_name);
+
+	/*!
+	 * \brief Get a global reference to a Java class.
+	 * \param name - full name of the class, e.g.: "ru/dublgis/offscreenview/OffscreenWebView".
+	 * \return
+	 */
+	jclass FindClass(const char * name);
+
+	/*!
+	 * \brief Unload all preloaded classes to free Java objects.
+	 */
+	void UnloadClasses();
+
+	/*!
+	 * \brief Convert QString into jstring.
+	 * \return Java String reference. Don't forget to call DeleteLocalRef on the returned reference!
+	 */
+	jstring JStringFromQString(const QString & qstring);
+
+	/*!
+	 * \brief Convert jstring to QString.
+	 * \param javastring - Java reference to String object.
+	 * \return QString.
+	 */
+	QString QStringFromJString(jstring javastring);
+
+	/*!
+	 * \brief Clear Java exception without taking any specific actions.
+	 * \param describe - if true, will call ExceptionDescribe() to print the exception description into stderr.
+	 * \return Returns false if there was no exceptions.
+	 */
+	bool SuppressException(bool describe = true);
+	
+public:
+	static void SetJavaVM(JavaVM*);
+	static void SetJavaVM(JNIEnv*);
+	//static std::string PackageName();
+
+private:
+	JNIEnv * env_;
+
+	Q_DISABLE_COPY(JniEnvPtr)
+};
 
 /*!
  * Convenience wrapper for Java objects (and classes)
