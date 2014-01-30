@@ -115,8 +115,8 @@ const char * QJniJavaCallException::what() const throw()
 
 
 
-QJniEnvPtr::QJniEnvPtr()
-	: env_(0)
+QJniEnvPtr::QJniEnvPtr(JNIEnv * env)
+	: env_(env)
 {
 	#if defined(Q_OS_ANDROID) || defined(ANDROID)
 		AutoSetJavaVM();
@@ -126,35 +126,30 @@ QJniEnvPtr::QJniEnvPtr()
 		qWarning("Java VM pointer is not set!");
 		throw QJniThreadAttachException();
 	}
-	int errsv = g_JavaVm->GetEnv((void**)(&env_), JNI_VERSION_1_6);
-	if (errsv == JNI_EDETACHED)
+	if (!env_)
 	{
-		VERBOSE(qDebug("Current thread %d is not attached, attaching it...", (int)gettid()));
-		errsv = g_JavaVm->AttachCurrentThread(&env_, 0);
-		if (errsv != 0)
+		int errsv = g_JavaVm->GetEnv((void**)(&env_), JNI_VERSION_1_6);
+		if (errsv == JNI_EDETACHED)
 		{
-			qWarning("Error attaching current thread %d: %d", (int)gettid(), errsv);
+			VERBOSE(qDebug("Current thread %d is not attached, attaching it...", (int)gettid()));
+			errsv = g_JavaVm->AttachCurrentThread(&env_, 0);
+			if (errsv != 0)
+			{
+				qWarning("Error attaching current thread %d: %d", (int)gettid(), errsv);
+				throw QJniThreadAttachException();
+			}
+			if (!g_JavaThreadDetacher.hasLocalData())
+			{
+				g_JavaThreadDetacher.setLocalData(new QJniEnvPtrThreadDetacher());
+			}
+			VERBOSE(qDebug("Attached current thread %d successfully.", (int)gettid()));
+		}
+		else if (errsv != JNI_OK)
+		{
+			qWarning("Error getting Java environment: %d", errsv);
 			throw QJniThreadAttachException();
 		}
-		if (!g_JavaThreadDetacher.hasLocalData())
-		{
-			g_JavaThreadDetacher.setLocalData(new QJniEnvPtrThreadDetacher());
-		}
-		VERBOSE(qDebug("Attached current thread %d successfully.", (int)gettid()));
 	}
-	else if (errsv != JNI_OK)
-	{
-		qWarning("Error getting Java environment: %d", errsv);
-		throw QJniThreadAttachException();
-	}
-}
-
-QJniEnvPtr::QJniEnvPtr(JNIEnv* env)
-	: env_(env)
-{
-	#if defined(Q_OS_ANDROID) || defined(ANDROID)
-		AutoSetJavaVM();
-	#endif
 }
 
 QJniEnvPtr::~QJniEnvPtr()
@@ -708,12 +703,12 @@ QString QJniObject::callString(const char *method_name)
 		qWarning("%s: method not found.", __FUNCTION__);
 		throw QJniMethodNotFoundException();
 	}
-	QJniLocalRef jret(env, env->CallObjectMethod(instance_, mid)); // jstring
+	QString ret = QJniLocalRef(env, env->CallObjectMethod(instance_, mid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException();
 	}
-	return jep.QStringFromJString(jret);
+	return ret;
 }
 
 QString QJniObject::callStaticString(const char *method_name)
@@ -727,12 +722,12 @@ QString QJniObject::callStaticString(const char *method_name)
 		qWarning("%s: method not found.", __FUNCTION__);
 		throw QJniMethodNotFoundException();
 	}
-	QJniLocalRef jret(env, env->CallStaticObjectMethod(class_, mid)); // jstring
+	QString ret = QJniLocalRef(env, env->CallStaticObjectMethod(class_, mid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException();
 	}
-	return jep.QStringFromJString(jret);
+	return ret;
 }
 
 QString QJniObject::getString(const char *field_name)
@@ -745,12 +740,12 @@ QString QJniObject::getString(const char *field_name)
 		qWarning("%s: method not found.", __FUNCTION__);
 		throw QJniFieldNotFoundException();
 	}
-	QJniLocalRef jret(env, env->GetObjectField(instance_, fid)); // jstring
+	QString ret = QJniLocalRef(env, env->GetObjectField(instance_, fid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException();
 	}
-	return jep.QStringFromJString(jret);
+	return ret;
 }
 
 QJniObject* QJniObject::callStaticObject(const char *method_name, const char *objname)

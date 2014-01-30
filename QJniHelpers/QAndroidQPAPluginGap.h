@@ -48,7 +48,7 @@ namespace QAndroidQPAPluginGap {
 	/*!
 	 * Obtain Activity object.
 	 * \param env, jo are not used and only needed so the function could be set as native
-	 *  function in Java and called over JNI.
+	 *  method in Java object and called from there over JNI.
 	 */
 	jobject JNICALL getActivity(JNIEnv * env = 0, jobject jo = 0);
 

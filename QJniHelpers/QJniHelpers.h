@@ -97,8 +97,7 @@ public:
 class QJniEnvPtr
 {	
 public:
-	QJniEnvPtr();
-	QJniEnvPtr(JNIEnv* env);
+	QJniEnvPtr(JNIEnv * env = 0);
 	~QJniEnvPtr();
 
 	//! \brief Get current Java environment.
@@ -321,6 +320,8 @@ private:
  * A helper class which keeps and automatically deletes local JNI references.
  * Global references are handled by QJniObject or inside of QJniEnvPtr, but we also
  * need a cleaner way to handle local ones.
+ * Also this class can handle QString <=> jstring conversion in a shorter manner
+ * than QJniEnvPtr.
  */
 class QJniLocalRef
 {
@@ -349,6 +350,7 @@ public:
 	operator jstring() { return (jstring)local_; }
 	operator jclass() { return (jclass)local_; }
 	jobject jObject() { return local_; }
+	operator QString() { return QJniEnvPtr(env_).JStringToQString(jstring()); }
 
 private:
 	jobject local_;
