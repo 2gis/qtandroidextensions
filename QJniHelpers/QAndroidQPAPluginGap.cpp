@@ -128,9 +128,8 @@ void preloadJavaClass(const char * class_name)
 	#if defined(QPA_QT4GRYM)
 		QJniObject(c_class_name, false).callStaticVoid(c_method_name, class_name);
 	#elif defined(QPA_QT5)
-		jstring jclassname = jep.JStringFromQString(class_name);
-		QAndroidJniObject::callStaticMethod<void>(c_class_name, c_method_name, "(Ljava/lang/String;)V", jclassname);
-		jep.env()->DeleteLocalRef(jclassname);
+		QAndroidJniObject::callStaticMethod<void>(c_class_name, c_method_name, "(Ljava/lang/String;)V",
+			QJniLocalRef(jep, class_name).jObject());
 	#endif
 }
 

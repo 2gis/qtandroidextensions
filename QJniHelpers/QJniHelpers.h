@@ -92,6 +92,7 @@ public:
 
 
 
+
 //! Basic functionality to get JNIEnv valid for current thread and scope.
 class QJniEnvPtr
 {	
@@ -184,7 +185,7 @@ public:
 	 * Note that this implies the instance is a valid local ref,
 	 * not global one or whatever.
 	 */
-	QJniObject(jobject instance, bool take_ownership=false);
+	QJniObject(jobject instance, bool take_ownership = false);
 
 	/*!
 	 * Create a wrapper for a new instance of class 'clazz'.
@@ -314,3 +315,46 @@ protected:
 private:
 	Q_DISABLE_COPY(QJniObject)
 };
+
+
+/*!
+ * A helper class which keeps and automatically deletes local JNI references.
+ * Global references are handled by QJniObject or inside of QJniEnvPtr, but we also
+ * need a cleaner way to handle local ones.
+ */
+class QJniLocalRef
+{
+public:
+	/*!
+	 * Create without JNIEnv pointer. The object will use QJniEnvPtr to find it.
+	 * The object takes ownership over the existing local reference.
+	 */
+	explicit QJniLocalRef(jobject local): local_(local), env_(0) {}
+
+	//! The object takes ownership over the existing local reference.
+	explicit QJniLocalRef(JNIEnv * env, jobject local): local_(local), env_(env) {}
+
+	//! The object takes ownership over the existing local reference.
+	explicit QJniLocalRef(QJniEnvPtr & env, jobject local): local_(local), env_(env.env()) {}
+
+	//! Converts QString to jstring and keeps the reference.
+	explicit QJniLocalRef(const QString & string);
+
+	//! Converts QString to jstring and keeps the reference.
+	explicit QJniLocalRef(QJniEnvPtr & env, const QString & string);
+
+	~QJniLocalRef();
+
+	operator jobject() { return local_; }
+	operator jstring() { return (jstring)local_; }
+	operator jclass() { return (jclass)local_; }
+	jobject jObject() { return local_; }
+
+private:
+	jobject local_;
+	JNIEnv * env_;
+	Q_DISABLE_COPY(QJniLocalRef)
+};
+
+
+
