@@ -180,6 +180,18 @@ class OffscreenEditText extends OffscreenView
         }
 
         @Override
+        protected void onLayout(boolean changed, int left, int top, int right, int bottom)
+        {
+            super.onLayout(changed, left, top, right, bottom);
+            /*! \todo Here's an evil workaround: TextView does not recalculate word wrap
+                 on relayout. */
+            if (changed)
+            {
+                setText(getText());
+            }
+        }
+
+        @Override
         public boolean onTouchEvent(MotionEvent event)
         {
             if (isOffscreenTouch())
