@@ -542,16 +542,19 @@ abstract class OffscreenView
     //! Performs actual painting of the view. Should be called in Android UI thread.
     protected void doDrawViewOnTexture()
     {
+        synchronized(painting_now_)
+        {
+            painting_now_ = true;
+        }
         synchronized(this)
         {
-            if (rendering_surface_ == null)
+            if (rendering_surface_ == null || getNativePtr() == 0)
             {
-                Log.i(TAG, "doDrawViewOnTexture: helper is not initialized yet.");
-                return;
-            }
-            if (getNativePtr() == 0)
-            {
-                Log.i(TAG, "doDrawViewOnTexture: zero native ptr, will not draw!");
+                Log.i(TAG, "doDrawViewOnTexture: surface or native ptr is null.");
+                synchronized(painting_now_)
+                {
+                     painting_now_ = false;
+                }
                 return;
             }
             try
@@ -565,11 +568,6 @@ abstract class OffscreenView
                 }
                 else
                 {
-                    synchronized(painting_now_)
-                    {
-                        painting_now_ = true;
-                    }
-
                     try
                     {
                         View v = getView();
@@ -588,8 +586,6 @@ abstract class OffscreenView
                         }
                         else
                         {
-                            //! \todo Add ability to set fill color
-                            Log.i(TAG, "doDrawViewOnTexture: View is not available yet, filling with white color....");
                             canvas.drawARGB(fill_a_, fill_r_, fill_g_, fill_b_);
                         }
                     }
@@ -600,13 +596,7 @@ abstract class OffscreenView
 
                     rendering_surface_.unlockCanvas(canvas);
 
-                    synchronized(painting_now_)
-                    {
-                        painting_now_ = false;
-                    }
-
                     // t = System.nanoTime() - t;
-
                     // Tell C++ part that we have a new image
                     doNativeUpdate();
 
@@ -618,6 +608,10 @@ abstract class OffscreenView
                 Log.e(TAG, "doDrawViewOnTexture exception:", e);
             }
         }
+        synchronized(painting_now_)
+        {
+            painting_now_ = false;
+        }
     }
 
     //! Called from C++ to get current texture.
@@ -627,9 +621,17 @@ abstract class OffscreenView
         {
             synchronized(this)
             {
-                return updateTexture(false);
+                return unsyncedUpdateTexture();
             }
         }
+        else
+        {
+            return unsyncedUpdateTexture();
+        }
+    }
+
+    private boolean unsyncedUpdateTexture()
+    {
         // Async (non-blocking) update, or already blocked painting
         if (rendering_surface_ == null)
         {
@@ -648,6 +650,7 @@ abstract class OffscreenView
         // in parallel to painting, it will simply leave the previous texture.
         return rendering_surface_.updateTexture();
     }
+
 
     //! Called from C++ to get texture coordinate transformation matrix (filled in updateTexture()).
     public float getTextureTransformMatrix(int index)
