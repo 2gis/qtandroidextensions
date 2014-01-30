@@ -257,6 +257,7 @@ private:
 	bool is_visible_;
 	bool is_enabled_;
 	volatile mutable bool view_created_; //!< Cache for isCreated()
+	int last_texture_width_, last_texture_height_;
 private:
 	Q_DISABLE_COPY(QAndroidOffscreenView)
 	friend void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv * env, jobject jo, jlong param);

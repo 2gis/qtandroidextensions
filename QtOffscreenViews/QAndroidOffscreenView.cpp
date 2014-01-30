@@ -95,6 +95,8 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	, is_visible_(false)
 	, is_enabled_(true)
 	, view_created_(false)
+	, last_texture_width_(0)
+	, last_texture_height_(0)
 {
 	setObjectName(objectname);
 
@@ -256,6 +258,13 @@ void QAndroidOffscreenView::paintGL(int l, int b, int w, int h, bool reverse_y)
 				clearGlRect(l, b, w, h, fill_color_);
 				return;
 			}
+		}
+		if (tex_.getTextureSize().width() != last_texture_width_
+			|| tex_.getTextureSize().height() != last_texture_height_)
+		{
+			// qDebug()<<__FUNCTION__<<"Last painted texture size doesn't match expected texture size.";
+			clearGlRect(l, b, w, h, fill_color_);
+			return;
 		}
 		tex_.blitTexture(
 			QRect(QPoint(0, 0), QSize(w, h)) // target rect (relatively to viewport)
@@ -440,6 +449,10 @@ bool QAndroidOffscreenView::updateTexture()
 		float b1 = offscreen_view_->callFloat("getTextureTransformMatrix", 12);
 		float b2 = offscreen_view_->callFloat("getTextureTransformMatrix", 13);
 		tex_.setTransformation(a11, a12, a21, a22, b1, b2);
+
+		// Last texture size
+		last_texture_width_ = offscreen_view_->callInt("getLastTextureWidth");
+		last_texture_height_ = offscreen_view_->callInt("getLastTextureHeight");
 
 		/*
 		qDebug()<<__PRETTY_FUNCTION__<<"Transform Matrix:\n"<<

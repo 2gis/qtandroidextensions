@@ -123,6 +123,12 @@ abstract class OffscreenView
     private boolean is_attached_ = false;
     private boolean attaching_mode_ = true;
 
+    // Variables to inform C++ about last painted texture / control size
+    private int last_painted_width_ = 0;
+    private int last_painted_height_ = 0;
+    private int last_texture_width_ = 0;
+    private int last_texture_height_ = 0;
+
     //! Simple one-element absolute layout.
     private class MyLayout extends ViewGroup
     {
@@ -576,6 +582,9 @@ abstract class OffscreenView
                             canvas.translate(-v.getScrollX(), -v.getScrollY());
 
                             callViewPaintMethod(canvas);
+
+                            last_painted_width_ = v.getWidth();
+                            last_painted_height_ = v.getHeight();
                         }
                         else
                         {
@@ -621,10 +630,12 @@ abstract class OffscreenView
                 return updateTexture(false);
             }
         }
+        // Async (non-blocking) update, or already blocked painting
         if (rendering_surface_ == null)
         {
             return false;
         }
+        // If the view is being currently painted, just back off
         synchronized(painting_now_)
         {
             if (painting_now_)
@@ -632,6 +643,9 @@ abstract class OffscreenView
                 return false;
             }
         }
+        // Note: the painting may sometimes start right here.
+        // We assume that it's safe to call rendering surfaces's updateTexture()
+        // in parallel to painting, it will simply leave the previous texture.
         return rendering_surface_.updateTexture();
     }
 
@@ -646,6 +660,18 @@ abstract class OffscreenView
             }
             return rendering_surface_.getTextureTransformMatrix(index);
         }
+    }
+
+    //! Called from C++.
+    public int getLastTextureWidth()
+    {
+        return last_texture_width_;
+    }
+
+    //! Called from C++.
+    public int getLastTextureHeight()
+    {
+        return last_texture_height_;
     }
 
     /*!
@@ -878,7 +904,7 @@ abstract class OffscreenView
     // C++ function called from Java to tell that the texture has new contents.
     // abstract public native void nativeUpdate(long nativeptr);
 
-    //! Imagine we'll have another type of rendering surface one day (e.g. Bitmap)
+    //! Imagine we'll have another type of rendering surface one day (e.g. Bitmap).
     protected interface OffscreenRenderingSurface
     {
         abstract Canvas lockCanvas();
@@ -958,12 +984,14 @@ abstract class OffscreenView
             // Log.i(TAG, "updateTexture tid="+Thread.currentThread().getId()+", tex="+gl_texture_id_);
             try
             {
-                if (!has_texture_)
+                if (!has_texture_) // Nothing ever has been painted in the texture yet
                 {
                     return false;
                 }
                 surface_texture_.updateTexImage();
                 surface_texture_.getTransformMatrix(mtx_);
+                last_texture_width_ = last_painted_width_;
+                last_texture_height_ = last_painted_height_;
                 return true;
             }
             catch(Exception e)

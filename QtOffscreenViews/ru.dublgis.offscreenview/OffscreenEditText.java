@@ -142,7 +142,6 @@ class OffscreenEditText extends OffscreenView
         @Override
         public void invalidate(Rect dirty)
         {
-            Log.i(TAG, "MyEditText.invalidate(Rect dirty)");
             super.invalidate(dirty);
             invalidateTexture();
         }
@@ -167,7 +166,6 @@ class OffscreenEditText extends OffscreenView
         @Override
         public void invalidate()
         {
-            Log.i(TAG, "MyEditText.invalidate()");
             super.invalidate();
             invalidateTexture();
         }
