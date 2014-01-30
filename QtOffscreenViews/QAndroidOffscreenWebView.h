@@ -50,7 +50,7 @@ public:
 	 * This function should be called from main() to make sure that it all will work from QML threads.
 	 * For Qt4/Grym plugin this is not necessary if you use QAndroidOffscreenView functions from GUI thread.
 	 */
-	static void preloadJavaClass();
+	static void preloadJavaClasses();
 
 	/*!
 	 * Start loading specified URL.

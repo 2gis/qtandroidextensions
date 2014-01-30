@@ -47,8 +47,9 @@ QAndroidOffscreenEditText::~QAndroidOffscreenEditText()
 {
 }
 
-void QAndroidOffscreenEditText::preloadJavaClass()
+void QAndroidOffscreenEditText::preloadJavaClasses()
 {
+	QAndroidOffscreenView::preloadJavaClasses();
 	QString path = getDefaultJavaClassPath() + QLatin1String("OffscreenEditText");
 	QAndroidQPAPluginGap::preloadJavaClass(path.toLatin1());
 }

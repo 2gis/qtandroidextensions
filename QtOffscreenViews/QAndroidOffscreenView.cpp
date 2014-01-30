@@ -104,6 +104,9 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 		view_class_name_.prepend(c_class_path_);
 	}
 
+	// qDebug()<<__PRETTY_FUNCTION__<<"Connecting to java.lang.System...";
+	// system_class_.reset(new QJniObject("java/lang/System", false));
+
 	qDebug()<<__PRETTY_FUNCTION__<<"Creating object of"<<view_class_name_<<"tid"<<gettid();
 	offscreen_view_.reset(new QJniObject(
 		view_class_name_.toLatin1()
@@ -168,6 +171,12 @@ const QString & QAndroidOffscreenView::getDefaultJavaClassPath()
 {
 	return c_class_path_;
 }
+
+void QAndroidOffscreenView::preloadJavaClasses()
+{
+	// QAndroidQPAPluginGap::preloadJavaClass("java/lang/System");
+}
+
 
 void QAndroidOffscreenView::initializeGL()
 {
@@ -458,11 +467,11 @@ QJniObject * QAndroidOffscreenView::getView()
 	return 0;
 }
 
-void QAndroidOffscreenView::mouse(int android_action, int x, int y)
+void QAndroidOffscreenView::mouse(int android_action, int x, int y, long long timestamp_uptime_millis)
 {
 	if (offscreen_view_)
 	{
-		offscreen_view_->callParamVoid("ProcessMouseEvent", "III", jint(android_action), jint(x), jint(y));
+		offscreen_view_->callParamVoid("ProcessMouseEvent", "IIIJ", jint(android_action), jint(x), jint(y), jlong(timestamp_uptime_millis));
 	}
 }
 

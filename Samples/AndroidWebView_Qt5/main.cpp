@@ -7,8 +7,8 @@
 
 int main(int argc, char **argv)
 {
-	QAndroidOffscreenWebView::preloadJavaClass();
-	QAndroidOffscreenEditText::preloadJavaClass();
+	QAndroidOffscreenWebView::preloadJavaClasses();
+	QAndroidOffscreenEditText::preloadJavaClasses();
 
 	QGuiApplication app(argc, argv);
 

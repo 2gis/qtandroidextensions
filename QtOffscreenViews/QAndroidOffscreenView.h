@@ -76,6 +76,7 @@ public:
 	virtual ~QAndroidOffscreenView();
 
 	static const QString & getDefaultJavaClassPath();
+	static void preloadJavaClasses();
 
 	/*!
 	 * Initialize OpenGL rendering surface. This function should be called within active
@@ -212,10 +213,16 @@ public:
 	 * Typically, this function is called from Qt mouse event handlers.
 	 * \param android_action can be ANDROID_MOTIONEVENT_ACTION_DOWN, ANDROID_MOTIONEVENT_ACTION_UP,
 	 *  ANDROID_MOTIONEVENT_ACTION_MOVE.
+	 * \param timestamp_uptime_mills - this should be set either as a System.uptimeMillis() of the
+	 *  time when the event has been initially generated or 0. Unfortunately, stock Qt currently
+	 *  doesn't pass the right timestamp in mouse events. So we can pass 0 here and the Java side
+	 *  will enable a workaround of getting the current timestamp. It will cause errors in determination
+	 *  of the movement speed because the initial Andoid UI event queue and the Qt UI queue run at
+	 *  uneven speed. So movement animations will not work good (e.g. WebView scrolling).
 	 */
-	void mouse(int android_action, int x, int y);
+	void mouse(int android_action, int x, int y, long long timestamp_uptime_millis = 0);
 
-	//! \todo Add keyboard and multi-touch support
+	//! \todo Add multi-touch support!
 
 signals:
 	/*!
@@ -238,6 +245,7 @@ private:
 	QString view_class_name_;
 	QString view_object_name_;
 	QOpenGLTextureHolder tex_;
+	// QScopedPointer<QJniObject> system_class_;
 	QScopedPointer<QJniObject> offscreen_view_;
 	QSize size_;
 	QColor fill_color_;

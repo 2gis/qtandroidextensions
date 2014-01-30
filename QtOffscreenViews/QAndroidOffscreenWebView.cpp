@@ -251,8 +251,9 @@ QAndroidOffscreenWebView::~QAndroidOffscreenWebView()
 {
 }
 
-void QAndroidOffscreenWebView::preloadJavaClass()
+void QAndroidOffscreenWebView::preloadJavaClasses()
 {
+	QAndroidOffscreenView::preloadJavaClasses();
 	QString path = getDefaultJavaClassPath() + QLatin1String("OffscreenWebView");
 	QAndroidQPAPluginGap::preloadJavaClass(path.toLatin1());
 }

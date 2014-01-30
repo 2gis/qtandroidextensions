@@ -655,27 +655,26 @@ abstract class OffscreenView
         return offscreen_touch_;
     }
 
-    // TODO: refactor downt
-    private long downt = 0;
-    public void ProcessMouseEvent(final int action, final int x, final int y)
+    private long mouse_time_of_press_ = 0;
+
+    public void ProcessMouseEvent(final int action, final int x, final int y, final long timestamp)
     {
         if (getNativePtr() == 0)
         {
             Log.i(TAG, "ProcessMouseEvent: zero native ptr, ignoring.");
             return;
         }
-
         final View view = getView();
         if (view != null)
         {
-            final long t = SystemClock.uptimeMillis();
-            if (action == MotionEvent.ACTION_DOWN || downt == 0)
+            final long t = (timestamp == 0)? SystemClock.uptimeMillis(): timestamp;
+            // Log.i(TAG, "MILLIS="+SystemClock.uptimeMillis()+" TS="+timestamp);
+            if (action == MotionEvent.ACTION_DOWN || mouse_time_of_press_ == 0)
             {
-
-                downt = t;
+                mouse_time_of_press_ = t;
             }
-            Log.i(TAG, "ProcessMouseEvent("+action+", "+x+", "+y+") downt="+downt+", t="+t);
-            final MotionEvent event = MotionEvent.obtain(downt /* downTime*/, t /* eventTime */, action, x, y, 0 /*metaState*/);
+            // Log.i(TAG, "ProcessMouseEvent("+action+", "+x+", "+y+") time of press = "+mouse_time_of_press_+", t="+t);
+            final MotionEvent event = MotionEvent.obtain(mouse_time_of_press_ /* downTime*/, t /* eventTime */, action, x, y, 0 /*metaState*/);
             runOnUiThread(new Runnable() {
                 @Override
                 public void run()
