@@ -48,6 +48,50 @@
 #include <QMutexLocker>
 #include <QThreadStorage>
 
+class QJniBaseException: public std::exception
+{
+public:
+	QJniBaseException(){}
+	virtual const char * what() const throw();
+};
+
+class QJniThreadAttachException: public std::exception
+{
+public:
+	QJniThreadAttachException(){}
+	virtual const char * what() const throw();
+};
+
+class QJniClassNotFoundException: public QJniBaseException
+{
+public:
+	QJniClassNotFoundException(){}
+	virtual const char * what() const throw();
+};
+
+class QJniMethodNotFoundException: public QJniBaseException
+{
+public:
+	QJniMethodNotFoundException(){}
+	virtual const char * what() const throw();
+};
+
+class QJniFieldNotFoundException: public QJniBaseException
+{
+public:
+	QJniFieldNotFoundException(){}
+	virtual const char * what() const throw();
+};
+
+class QJniJavaCallException: public QJniBaseException
+{
+public:
+	QJniJavaCallException(){}
+	virtual const char * what() const throw();
+};
+
+
+
 //! Basic functionality to get JNIEnv valid for current thread and scope.
 class QJniEnvPtr
 {	
@@ -133,20 +177,6 @@ private:
 class QJniObject
 {
 public:
-	class MethodNotFoundException: public std::exception
-	{
-	public:
-		MethodNotFoundException(){}
-		virtual const char * what() const throw();
-	};
-
-	class FieldNotFoundException: public std::exception
-	{
-	public:
-		FieldNotFoundException(){}
-		virtual const char * what() const throw();
-	};
-
 	/*!
 	 * Create QJniObject wrapper around specified jobject.
 	 * \param  take_ownership means "delete local ref of this object
