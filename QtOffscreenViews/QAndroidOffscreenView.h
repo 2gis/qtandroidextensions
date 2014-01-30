@@ -59,6 +59,7 @@ class QAndroidOffscreenView: public QObject
 	Q_PROPERTY(QColor fillColor READ fillColor WRITE setFillColor)
 	Q_PROPERTY(bool synchronizedTextureUpdate READ synchronizedTextureUpdate WRITE setSynchronizedTextureUpdate)
 	Q_PROPERTY(bool visible READ visible WRITE setVisible)
+	Q_PROPERTY(bool enabled READ enabled WRITE setEnabled)
 protected:
 	/*!
 	 * \param classname - name of Java class of the View wrapper.
@@ -164,6 +165,10 @@ public:
 	 */
 	void setVisible(bool visible);
 
+	bool enabled() const { return is_enabled_; }
+
+	void setEnabled(bool enabled);
+
 	/*!
 	 * Control attaching View to the main activity View.
 	 * It is typically called one time after constructing QAndroidOffscreenView.
@@ -242,6 +247,7 @@ private:
 	bool synchronized_texture_update_;
 	bool view_creation_requested_;
 	bool is_visible_;
+	bool is_enabled_;
 	volatile mutable bool view_created_; //!< Cache for isCreated()
 private:
 	Q_DISABLE_COPY(QAndroidOffscreenView)

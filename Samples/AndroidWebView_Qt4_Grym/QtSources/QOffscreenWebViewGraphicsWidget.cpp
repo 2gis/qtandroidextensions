@@ -31,6 +31,13 @@ void QAndroidOffscreenViewGraphicsWidget::setVisible(bool visible)
 {
 	//! \todo Also take into account if the app is minimized or not
 	aview_->setVisible(visible);
+	QGraphicsWidget::setVisible(visible);
+}
+
+void QAndroidOffscreenViewGraphicsWidget::setEnabled(bool enabled)
+{
+	aview_->setEnabled(enabled);
+	QGraphicsWidget::setEnabled(enabled);
 }
 
 void QAndroidOffscreenViewGraphicsWidget::onOffscreenUpdated()

@@ -30,6 +30,7 @@ protected:
 public slots:
 	void updateAndroidViewVisibility();
 	void updateAndroidViewPosition();
+	void updateAndroidEnabled();
 
 signals:
 	void textureUpdated();

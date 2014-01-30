@@ -10,6 +10,7 @@ QQuickAndroidOffscreenView::QQuickAndroidOffscreenView(QAndroidOffscreenView * a
 	connect(aview_.data(), SIGNAL(updated()), this, SLOT(onTextureUpdated()));
 	connect(this, SIGNAL(xChanged()), this, SLOT(updateAndroidViewPosition()));
 	connect(this, SIGNAL(yChanged()), this, SLOT(updateAndroidViewPosition()));
+	connect(this, SIGNAL(enabledChanged()), this, SLOT(updateAndroidEnabled()));
 	connect(this, SIGNAL(visibleChanged()), this, SLOT(updateAndroidViewVisibility()));
 
 	setAcceptedMouseButtons(Qt::LeftButton);
@@ -92,7 +93,11 @@ void QQuickAndroidOffscreenView::updateAndroidViewPosition()
 	aview_->setPosition(qRound(x()), qRound(y()));
 }
 
-
+void QQuickAndroidOffscreenView::updateAndroidEnabled()
+{
+	qDebug()<<__PRETTY_FUNCTION__<<isEnabled();
+	aview_->setEnabled(isEnabled());
+}
 
 
 

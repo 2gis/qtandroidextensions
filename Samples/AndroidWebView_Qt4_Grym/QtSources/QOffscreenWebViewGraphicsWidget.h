@@ -20,6 +20,7 @@ public:
 	virtual ~QAndroidOffscreenViewGraphicsWidget();
 
 	virtual void setVisible(bool visible);
+	virtual void setEnabled(bool enabled);
 
 	QAndroidOffscreenView * androidOffscreenView() { return aview_.data(); }
 	const QAndroidOffscreenView * androidOffscreenView() const { return aview_.data(); }

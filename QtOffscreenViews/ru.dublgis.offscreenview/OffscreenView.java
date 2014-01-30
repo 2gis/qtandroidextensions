@@ -118,6 +118,7 @@ abstract class OffscreenView
     protected int fill_a_ = 255, fill_r_ = 255, fill_g_ = 255, fill_b_ = 255;
     private MyLayout layout_ = null;
     private boolean last_visibility_ = false;
+    private boolean last_enabled_ = true;
     private boolean offscreen_touch_ = false;
     private boolean is_attached_ = false;
     private boolean attaching_mode_ = true;
@@ -474,7 +475,39 @@ abstract class OffscreenView
                     int vis = last_visibility_? View.VISIBLE: View.INVISIBLE;
                     if (v != null && v.getVisibility() != vis)
                     {
+                        if (!visible)
+                        {
+                            uiHideKeyboardFromView();
+                        }
                         v.setVisibility(vis);
+                    }
+                }
+            });
+        }
+    }
+
+    public boolean isEnabled()
+    {
+        return last_enabled_;
+    }
+
+    public void setEnabled(final boolean enabled)
+    {
+        if (enabled != last_enabled_)
+        {
+            last_enabled_ = enabled;
+            runViewAction(new Runnable(){
+                @Override
+                public void run()
+                {
+                    View v = getView();
+                    if (v != null && v.isEnabled() != enabled)
+                    {
+                        if (!enabled)
+                        {
+                            uiHideKeyboardFromView();
+                        }
+                        v.setEnabled(enabled);
                     }
                 }
             });
