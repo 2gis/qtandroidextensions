@@ -243,10 +243,6 @@ private:
 	bool view_creation_requested_;
 	bool is_visible_;
 	volatile mutable bool view_created_; //!< Cache for isCreated()
-
-	// Keeping threads attached to Java (peformance issue).
-	QScopedPointer<QJniEnvPtr> initial_thread_attacher_;
-	QScopedPointer<QJniEnvPtr> jni_gl_thread_attacher_;
 private:
 	Q_DISABLE_COPY(QAndroidOffscreenView)
 	friend void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv * env, jobject jo, jlong param);

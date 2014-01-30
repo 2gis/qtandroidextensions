@@ -97,9 +97,6 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 {
 	setObjectName(objectname);
 
-	qDebug()<<"QAndroidOffscreenView: making sure object's main thread"<<gettid()<<"is attached to JNI";
-	initial_thread_attacher_.reset(new QJniEnvPtr());
-
 	// Expand like: OffscreenWebView => ru/dublgis/offscreenview/OffscreenWebView
 	if (!view_class_name_.contains('/'))
 	{
@@ -179,8 +176,6 @@ void QAndroidOffscreenView::initializeGL()
 		return;
 	}
 	qDebug()<<__PRETTY_FUNCTION__;
-	qDebug()<<"QAndroidOffscreenView: making sure GL thread"<<gettid()<<"is attached to JNI";
-	jni_gl_thread_attacher_.reset(new QJniEnvPtr());
 
 	tex_.allocateTexture(GL_TEXTURE_EXTERNAL_OES);
 
