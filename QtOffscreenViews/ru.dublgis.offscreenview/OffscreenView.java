@@ -145,7 +145,7 @@ abstract class OffscreenView
             {
                 throw new IllegalStateException("OffscreenView layout should have 1 child!");
             }
-            setMeasuredDimension(view_left_+view_width_-1, view_top_+view_height_-1);
+            setMeasuredDimension(view_left_+view_width_, view_top_+view_height_);
         }
 
         @Override
@@ -158,7 +158,7 @@ abstract class OffscreenView
                 throw new IllegalStateException("OffscreenView layout should have 1 child!");
             }
             View child = getChildAt(0);
-            child.layout(view_left_, view_top_, view_left_+view_width_-1, view_top_+view_height_-1);
+            child.layout(view_left_, view_top_, view_left_+view_width_, view_top_+view_height_);
         }
     }
 
@@ -269,14 +269,14 @@ abstract class OffscreenView
                     view.setVisibility(last_visibility_? View.VISIBLE: View.INVISIBLE);
                     view.setLeft(0);
                     view.setTop(0);
-                    view.setRight(view_width_-1);
-                    view.setBottom(view_height_-1);
+                    view.setRight(view_width_);
+                    view.setBottom(view_height_);
 
                     // Insert the View into layout.
                     // Note: functions of many views will crash if they are not inserted into layout.
                     layout_ = new MyLayout(activity);
-                    layout_.setRight(view_width_-1);
-                    layout_.setBottom(view_height_-1);
+                    layout_.setRight(view_width_);
+                    layout_.setBottom(view_height_);
                     layout_.addView(view);
                     attachViewToQtScreen();
 
@@ -803,8 +803,8 @@ abstract class OffscreenView
                         {
                             v.setLeft(0);
                             v.setTop(0);
-                            v.setRight(w-1);
-                            v.setBottom(h-1);
+                            v.setRight(w);
+                            v.setBottom(h);
                             doInvalidateOffscreenView();
                         }
                         else
@@ -915,7 +915,7 @@ abstract class OffscreenView
         {
             try
             {
-                return surface_.lockCanvas(new Rect(0, 0, texture_width_-1, texture_height_-1));
+                return surface_.lockCanvas(new Rect(0, 0, texture_width_, texture_height_));
             }
             catch(Exception e)
             {
