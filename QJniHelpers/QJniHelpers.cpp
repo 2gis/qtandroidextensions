@@ -35,6 +35,8 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <unistd.h>
+#include <sys/types.h>
 #include <QJniHelpers.h>
 #include <QAndroidQPAPluginGap.h>
 
@@ -44,7 +46,7 @@
 	#define VERBOSE(x)
 #endif
 
-typedef std::map<std::string, jclass> PreloadedClasses;
+typedef QMap<QString, jclass> PreloadedClasses;
 
 class QJniEnvPtrThreadDetacher
 {
@@ -161,7 +163,7 @@ JNIEnv* QJniEnvPtr::env() const
 	return env_;
 }
 
-bool QJniEnvPtr::preloadClass(const char* class_name)
+bool QJniEnvPtr::preloadClass(const char * class_name)
 {
 	qWarning("Preloading class \"%s\"", class_name);
 	QJniLocalRef clazz(env_, env_->FindClass(class_name)); // jclass
@@ -172,12 +174,12 @@ bool QJniEnvPtr::preloadClass(const char* class_name)
 	}
 	jclass gclazz = (jclass)env_->NewGlobalRef(clazz);
 	QMutexLocker locker(&g_PreloadedClassesMutex);
-	g_PreloadedClasses.insert(std::pair<std::string,jclass>(std::string(class_name),gclazz));
+	g_PreloadedClasses.insert(QLatin1String(class_name), gclazz);
 	VERBOSE(qDebug("...Preloaded class \"%s\" as %p for tid %d", class_name, gclazz, (int)gettid()));
 	return true;
 }
 
-int QJniEnvPtr::preloadClasses(const char* const* class_list)
+int QJniEnvPtr::preloadClasses(const char * const * class_list)
 {
 	int loaded = 0;
 	for(; *class_list != 0; ++class_list)
@@ -194,42 +196,33 @@ int QJniEnvPtr::preloadClasses(const char* const* class_list)
 bool QJniEnvPtr::isClassPreloaded(const char * class_name)
 {
 	QMutexLocker locker(&g_PreloadedClassesMutex);
-	return g_PreloadedClasses.find(class_name) != g_PreloadedClasses.end();
+	return g_PreloadedClasses.contains(QLatin1String(class_name));
 }
 
 void QJniEnvPtr::unloadAllClasses()
 {
 	QMutexLocker locker(&g_PreloadedClassesMutex);
-	PreloadedClasses::iterator it;
-	for(it = g_PreloadedClasses.begin(); it != g_PreloadedClasses.end(); ++it)
+	for (PreloadedClasses::iterator it = g_PreloadedClasses.begin(); it != g_PreloadedClasses.end(); ++it)
 	{
-		env_->DeleteGlobalRef((*it).second);
+		env_->DeleteGlobalRef(it.value());
 	}
 	g_PreloadedClasses.clear();
 }
 
 jclass QJniEnvPtr::findClass(const char * name)
 {
-	// first try for preloaded classes
+	// First try find a preloaded class
 	{
 		QMutexLocker locker(&g_PreloadedClassesMutex);
 		VERBOSE(qDebug("Searching for class \"%s\" in tid %d", name, (int)gettid()));
-		PreloadedClasses::iterator it = g_PreloadedClasses.find(std::string(name));
+		PreloadedClasses::iterator it = g_PreloadedClasses.find(QLatin1String(name));
 		if (it != g_PreloadedClasses.end())
 		{
-			return (*it).second;
+			return it.value();
 		}
-		#if defined(QJNIHELPERS_VERBOSE_LOG)
-			qDebug("No class \"%s\" found in preloaded classes (tid %d), I have %d known classes",
-				name, (int)gettid(),  (int)g_PreloadedClasses.size());
-			for (it = g_PreloadedClasses.begin(); it != g_PreloadedClasses.end(); ++it)
-			{
-				qDebug("\"%s\" -> %p", (*it).first.c_str(), (*it).second);
-			}
-		#endif
 	}
 
-	// if it wasn't preloaded, try to load it in JNI (will fail for custom classes in native-created threads)
+	// If it wasn't preloaded, try to load it in JNI (will fail for custom classes in native-created threads)
 	VERBOSE(qDebug("Trying to construct the class directly: \"%s\" in tid %d", name, (int)gettid()));
 	QJniLocalRef cls(env_, env_->FindClass(name)); // jclass
 	if (clearException())
@@ -243,7 +236,7 @@ jclass QJniEnvPtr::findClass(const char * name)
 
 	// Add it to a list of preloaded classes for convenience
 	QMutexLocker locker(&g_PreloadedClassesMutex);
-	g_PreloadedClasses.insert(std::pair<std::string,jclass>(std::string(name),ret));
+	g_PreloadedClasses.insert(QLatin1String(name), ret);
 
 	VERBOSE(qDebug("Successfuly found Java class: \"%s\" in tid %d", name, (int)gettid()));
 
@@ -618,15 +611,15 @@ double QJniObject::callDouble(const char* method_name)
 	return result;
 }
 
-QJniObject * QJniObject::callObject(const char* method_name, const char* objname)
+QJniObject * QJniObject::callObject(const char * method_name, const char * objname)
 {
-	std::string signature = "()L";
+	QByteArray signature("()L");
 	signature += objname;
 	signature += ";";
-	VERBOSE(qDebug("QJniObject::CallObject: \"%s\", \"%s\"", method_name, signature.c_str()));
+	VERBOSE(qDebug("QJniObject::CallObject: \"%s\", \"%s\"", method_name, signature.data()));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
-	jmethodID mid = env->GetMethodID(class_, method_name, signature.c_str());
+	jmethodID mid = env->GetMethodID(class_, method_name, signature.data());
 	if (!mid)
 	{
 		qWarning("%s: method not found.", __FUNCTION__);
@@ -659,7 +652,7 @@ void QJniObject::callStaticVoid(const char* method_name)
 	}
 }
 
-void QJniObject::callStaticParamVoid(const char* method_name, const char * param_signature, ...)
+void QJniObject::callStaticParamVoid(const char * method_name, const char * param_signature, ...)
 {
 	VERBOSE(qDebug("void QJniObject(%p)::CallParamVoid(\"%s\", \"%s\", ...)", this, method_name, param_signature));
 
@@ -667,10 +660,10 @@ void QJniObject::callStaticParamVoid(const char* method_name, const char * param
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 
-	std::string signature = "(";
+	QByteArray signature("(");
 	signature += param_signature;
 	signature += ")V";
-	jmethodID mid = env->GetStaticMethodID(class_, method_name, signature.c_str());
+	jmethodID mid = env->GetStaticMethodID(class_, method_name, signature.data());
 	if (!mid)
 	{
 		qWarning("%s: method not found.", __FUNCTION__);
@@ -748,19 +741,19 @@ QString QJniObject::getString(const char *field_name)
 	return ret;
 }
 
-QJniObject* QJniObject::callStaticObject(const char *method_name, const char *objname)
+QJniObject* QJniObject::callStaticObject(const char * method_name, const char * objname)
 {
 	VERBOSE(qDebug("QJniObject::CallStaticObject(\"%s\",\"%s\")", method_name, objname));
-	std::string signature = "()L";
+	QByteArray signature("()L");
 	signature += objname;
 	signature += ";";
 
-	VERBOSE(qDebug("QJniObject::CallStaticObject signature: %s", signature.c_str()));
+	VERBOSE(qDebug("QJniObject::CallStaticObject signature: %s", signature.data()));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 
 	VERBOSE(qDebug("env->GetStaticMethodID"));
-	jmethodID mid = env->GetStaticMethodID(class_, method_name, signature.c_str());
+	jmethodID mid = env->GetStaticMethodID(class_, method_name, signature.data());
 	if (!mid)
 	{
 		qWarning("%s: method not found.", __FUNCTION__);
@@ -802,7 +795,7 @@ int QJniObject::getIntField(const char* field_name)
 // TODO: add something like what they do in jni.h:
 //	#define CALL_TYPE_METHOD(_jtype, _jname)
 //	_jtype Call##_jname##Method(jobject obj, jmethodID methodID, ...)
-void QJniObject::callParamVoid(const char* method_name, const char* param_signature, ...)
+void QJniObject::callParamVoid(const char * method_name, const char * param_signature, ...)
 {
 	VERBOSE(qDebug("void QJniObject(%p)::CallParamVoid(\"%s\", \"%s\", ...)", this, method_name, param_signature));
 
@@ -810,10 +803,10 @@ void QJniObject::callParamVoid(const char* method_name, const char* param_signat
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 
-	std::string signature = "(";
+	QByteArray signature("(");
 	signature += param_signature;
 	signature += ")V";
-	jmethodID mid = env->GetMethodID(class_, method_name, signature.c_str());
+	jmethodID mid = env->GetMethodID(class_, method_name, signature.data());
 	if (!mid)
 	{
 		qWarning("%s: method not found.", __FUNCTION__);

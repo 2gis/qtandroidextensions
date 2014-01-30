@@ -36,12 +36,7 @@
 */
 
 #pragma once
-#include <string>
 #include <jni.h>
-#include <map>
-#include <string>
-#include <unistd.h>
-#include <sys/types.h>
 #include <QString>
 #include <QDebug>
 #include <QMutex>
