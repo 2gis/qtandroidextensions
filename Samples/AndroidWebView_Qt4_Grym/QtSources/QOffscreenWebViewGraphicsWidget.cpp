@@ -191,7 +191,7 @@ QPoint QAndroidOffscreenViewGraphicsWidget::absolutePosition() const
 		QPointF scenepos = this->pos();
 		QPointF inviewpos = view->mapFromScene(scenepos);
 		QPoint abspos = view->mapToGlobal(inviewpos.toPoint());
-		qDebug()<<__PRETTY_FUNCTION__<<"ScenePos:"<<scenepos<<"InViewPos:"<<inviewpos<<"AbsPos:"<<abspos;
+		// qDebug()<<__PRETTY_FUNCTION__<<"ScenePos:"<<scenepos<<"InViewPos:"<<inviewpos<<"AbsPos:"<<abspos;
 		return abspos;
 	}
 	return last_updated_position_;

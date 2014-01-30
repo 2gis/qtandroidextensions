@@ -116,8 +116,9 @@ void QAndroidOffscreenViewRenderer::render()
 	update();
 }
 
-QOpenGLFramebufferObject * QAndroidOffscreenViewRenderer::createFramebufferObject(const QSize &size)
+QOpenGLFramebufferObject * QAndroidOffscreenViewRenderer::createFramebufferObject(const QSize & size)
 {
+	qDebug()<<__FUNCTION__<<"Creating new surface, size ="<<size;
 	aview_->initializeGL();
 	aview_->resize(size);
 	QOpenGLFramebufferObjectFormat format;

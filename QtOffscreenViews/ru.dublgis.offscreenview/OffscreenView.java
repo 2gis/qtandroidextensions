@@ -151,7 +151,8 @@ abstract class OffscreenView
         @Override
         protected void onLayout(boolean changed, int left, int top, int right, int bottom)
         {
-            // Log.i(TAG, "onLayout changed="+changed+", l="+left+", t="+top+", r="+right+", b="+bottom);
+            // Log.i(TAG, "onLayout changed="+changed+", l="+left+", t="+top+", r="+right+", b="+bottom+
+            //     ", view l="+view_left_+", t="+view_top_+", sz="+view_width_+"x"+view_height_);
             if (getChildCount() != 1)
             {
                 throw new IllegalStateException("OffscreenView layout should have 1 child!");
@@ -791,18 +792,14 @@ abstract class OffscreenView
             {
                 rendering_surface_.setNewSize(w, h);
             }
-            if (layout_ != null)
-            {
-                layout_.postInvalidate();
-            }
-            if (!attaching_mode_)
-            {
-                runViewAction(new Runnable(){
-                    @Override
-                    public void run()
+            runViewAction(new Runnable(){
+                @Override
+                public void run()
+                {
+                    final View v = getView();
+                    if (v != null)
                     {
-                        final View v = getView();
-                        if (v != null && !attaching_mode_)
+                        if (!attaching_mode_)
                         {
                             v.setLeft(0);
                             v.setTop(0);
@@ -810,13 +807,14 @@ abstract class OffscreenView
                             v.setBottom(h-1);
                             doInvalidateOffscreenView();
                         }
+                        else
+                        {
+                            v.forceLayout();
+                            v.requestLayout();
+                        }
                     }
-                });
-            }
-            else
-            {
-                invalidateOffscreenView();
-            }
+                }
+            });
         }
     }
 

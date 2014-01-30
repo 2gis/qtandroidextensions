@@ -228,7 +228,7 @@ class OffscreenWebView extends OffscreenView
         @Override
         public void invalidate()
         {
-            // SGEXP Log.i(TAG, "MyWebView.invalidate(void)");
+			// Log.i(TAG, "MyWebView.invalidate(void)");
             super.invalidate();
             invalidateTexture();
         }

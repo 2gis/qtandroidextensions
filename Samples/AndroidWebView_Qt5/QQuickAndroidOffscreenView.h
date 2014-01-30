@@ -53,7 +53,7 @@ class QAndroidOffscreenViewRenderer : public QObject, public QQuickFramebufferOb
 public:
 	QAndroidOffscreenViewRenderer(QSharedPointer<QAndroidOffscreenView> aview);
 	void render();
-	QOpenGLFramebufferObject * createFramebufferObject(const QSize &size);
+	QOpenGLFramebufferObject * createFramebufferObject(const QSize & size);
 protected slots:
 	void onTextureUpdated();
 protected:
