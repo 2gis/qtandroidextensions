@@ -94,8 +94,6 @@ class OffscreenEditText extends OffscreenView
 {
     class MyEditText extends EditText
     {
-        boolean invalidated_ = true;
-
         public MyEditText(Context context)
         {
             super(context);
@@ -119,24 +117,6 @@ class OffscreenEditText extends OffscreenView
             // but it doesn't draw scrolled).
             canvas.translate(-getScrollX(), -getScrollY());
             super.onDraw(canvas);
-        }
-
-        public void invalidateTexture()
-        {
-            invalidated_ = true;
-            // A little dance with a tambourine to filter out subsequent invalidations happened before a single paint
-            new Handler().post(new Runnable(){
-                @Override
-                public void run()
-                {
-                    // Log.i(TAG, "invalidateTexture: processing with invalidated_="+invalidated_);
-                    if (invalidated_)
-                    {
-                        invalidated_ = false;
-                        doDrawViewOnTexture();
-                    }
-                }
-            });
         }
 
         @Override
@@ -216,17 +196,6 @@ class OffscreenEditText extends OffscreenView
     {
         ((MyEditText)getView()).onDrawPublic(canvas);
     }
-
-    @Override
-    public void doInvalidateOffscreenView()
-    {
-        ((MyEditText)getView()).invalidateTexture();
-    }
-
-/*Event processing onKeyDown(int, KeyEvent) Called when a new hardware key event occurs.
-onKeyUp(int, KeyEvent) Called when a hardware key up event occurs.
-onTrackballEvent(MotionEvent) Called when a trackball motion event occurs.
-onTouchEvent(MotionEvent) Called when a touch screen motion event occurs. */
 
     public native void nativeUpdate(long nativeptr);
     public native Activity nativeGetActivity();

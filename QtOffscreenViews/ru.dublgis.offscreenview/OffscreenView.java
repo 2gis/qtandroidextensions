@@ -122,6 +122,8 @@ abstract class OffscreenView
     private boolean offscreen_touch_ = false;
     private boolean is_attached_ = false;
     private boolean attaching_mode_ = true;
+    private boolean invalidated_ = true;
+
 
     // Variables to inform C++ about last painted texture / control size
     private int last_painted_width_ = 0;
@@ -456,7 +458,6 @@ abstract class OffscreenView
     }
 
     abstract public void callViewPaintMethod(Canvas canvas);
-    abstract public void doInvalidateOffscreenView();
     abstract public void doNativeUpdate();
     abstract public void doCreateView();
     abstract public void doNativeViewCreated();
@@ -519,6 +520,25 @@ abstract class OffscreenView
                 }
             });
         }
+    }
+
+    //! Schedules doDrawViewOnTexture() with filtering out subsequent calls.
+    protected void invalidateTexture()
+    {
+        invalidated_ = true;
+        // A little dance with a tambourine to filter out subsequent invalidations happened before a single paint
+        new Handler().post(new Runnable(){
+            @Override
+            public void run()
+            {
+                // Log.i(TAG, "invalidateTexture: processing with invalidated_="+invalidated_);
+                if (invalidated_)
+                {
+                    invalidated_ = false;
+                    doDrawViewOnTexture();
+                }
+            }
+        });
     }
 
     //! Schedule painting of the view (will be done in Android UI thread).
@@ -733,7 +753,7 @@ abstract class OffscreenView
                 public void run()
                 {
                     // if (getView() != null)... assuming that view cannot be unassigned once created
-                    doInvalidateOffscreenView();
+                    invalidateTexture();
                 }
             });
         }
@@ -834,7 +854,7 @@ abstract class OffscreenView
                             v.setTop(0);
                             v.setRight(w);
                             v.setBottom(h);
-                            doInvalidateOffscreenView();
+                            invalidateTexture();
                         }
                         else
                         {

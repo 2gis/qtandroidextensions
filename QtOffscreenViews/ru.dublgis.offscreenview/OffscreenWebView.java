@@ -179,25 +179,7 @@ class OffscreenWebView extends OffscreenView
             super.onDraw(canvas);
         }
 
-        public void invalidateTexture()
-        {
-            invalidated_ = true;
-            // A little dance with a tambourine to filter out subsequent invalidations happened before a single paint
-            new Handler().post(new Runnable(){
-                @Override
-                public void run()
-                {
-                    // Log.i(TAG, "invalidateTexture: processing with invalidated_="+invalidated_);
-                    if (invalidated_)
-                    {
-                        invalidated_ = false;
-                        doDrawViewOnTexture();
-                    }
-                }
-            });
-        }
-
-        // Old WebKit updating
+        // Old WebKit updating here
         @Override
         public void invalidate(Rect dirty)
         {
@@ -206,7 +188,7 @@ class OffscreenWebView extends OffscreenView
             invalidateTexture();
         }
 
-        // Old WebKit updating
+        // Old WebKit updating here
         @Override
         public void invalidate(int l, int t, int r, int b)
         {
@@ -228,7 +210,7 @@ class OffscreenWebView extends OffscreenView
         @Override
         public void invalidate()
         {
-			// Log.i(TAG, "MyWebView.invalidate(void)");
+            // Log.i(TAG, "MyWebView.invalidate(void)");
             super.invalidate();
             invalidateTexture();
         }
@@ -310,12 +292,6 @@ class OffscreenWebView extends OffscreenView
         ((MyWebView)getView()).onDrawPublic(canvas);
     }
 
-    @Override
-    public void doInvalidateOffscreenView()
-    {
-        ((MyWebView)getView()).invalidateTexture();
-    }
-
     // From C++
     public void loadUrl(final String url)
     {
@@ -358,7 +334,6 @@ class OffscreenWebView extends OffscreenView
         });
     }
 
-
     // From C++
     public void loadData(final String text, final String mime, final String encoding)
     {
@@ -399,12 +374,6 @@ class OffscreenWebView extends OffscreenView
         });
         return true;
     }
-
-
-/*Event processing onKeyDown(int, KeyEvent) Called when a new hardware key event occurs.
-onKeyUp(int, KeyEvent) Called when a hardware key up event occurs.
-onTrackballEvent(MotionEvent) Called when a trackball motion event occurs.
-onTouchEvent(MotionEvent) Called when a touch screen motion event occurs. */
 
     public native void nativeUpdate(long nativeptr);
     public native Activity nativeGetActivity();
