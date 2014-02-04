@@ -78,7 +78,6 @@ QAndroidJniImagePair::QAndroidJniImagePair(int bitness)
 
 QAndroidJniImagePair::~QAndroidJniImagePair()
 {
-    deallocate();
 }
 
 void QAndroidJniImagePair::preloadJavaClasses()
@@ -98,7 +97,7 @@ void QAndroidJniImagePair::dummy()
 
 void QAndroidJniImagePair::deallocate()
 {
-    mImageOnBitmap = QImage(); // In case deallocate() is called not from destructor...
+	mImageOnBitmap = QImage();
 	mBitmap.reset();
 }
 
@@ -146,10 +145,7 @@ bool QAndroidJniImagePair::resize(const QSize & size)
     // We'll need a new bitmap for the new size
 	QImage::Format format = qtImageFormatForBitness(bitness_);
 
-    //
-    // Create Android bitmap object by calling appropriate Java function over JNI
-    //
-
+	// Create new Android bitmap
 	QScopedPointer<QJniObject> newBitmap(createBitmap(size));
 	if (!newBitmap || !newBitmap->jObject() == 0)
     {
@@ -158,37 +154,18 @@ bool QAndroidJniImagePair::resize(const QSize & size)
         return false;
     }
 
-    //
     // Request image format for the bitmap created
-    //
-    // AndroidBitmap_getInfo() does not work on Android 1.6, so
-    // on API4 we are using a stub.
-    // On newer systems, we honestly ask Android bitmap for its
-    // actual dimensions, format and stride.
     uint32_t bwidth, bheight, bstride;
-	// Android > 1.6
 	AndroidBitmapInfo binfo;
 	memset(&binfo, 0, sizeof(binfo)); // Important!
-	int getinforesult = AndroidBitmap_getInfo(jep.env(), newBitmap->jObject(), &binfo);
-	if (getinforesult != 0)
+	int get_info_result = AndroidBitmap_getInfo(jep.env(), newBitmap->jObject(), &binfo);
+	if (get_info_result != 0)
 	{
-		#if 1
-			// On some bogus devices call to AndroidBitmap_getInfo()
-			// may return error code. Zeroing binfo will cause the code below
-			// to fall back to calculating it here.
-			qWarning()<<"Could not get new surface info, error:"<<getinforesult;
-			memset(&binfo, 0, sizeof(binfo));
-		#else
-			qCritical()<<"Could not get new surface info, error:"<<getinforesult;
-			env->DeleteLocalRef(newBitmap);
-			if (bitmap != 0)
-			{
-				env->DeleteGlobalRef(bitmap);
-				bitmap = 0;
-			}
-			imageOnBitmap = QImage();
-			return false;
-		#endif
+		// On some bogus devices call to AndroidBitmap_getInfo()
+		// may return error code. Zeroing binfo will cause the code below
+		// to fall back to calculating it here.
+		qWarning()<<"Could not get new surface info, error:"<<get_info_result;
+		memset(&binfo, 0, sizeof(binfo));
 	}
 	bwidth = binfo.width;
 	bheight = binfo.height;
@@ -232,10 +209,10 @@ bool QAndroidJniImagePair::resize(const QSize & size)
     // Lock Android bitmap's pixels so we could create a QImage over it
     //
 	void * ptr = 0;
-	int lockpixelsresult = AndroidBitmap_lockPixels(jep.env(), newBitmap->jObject(), &ptr);
-	if (lockpixelsresult != 0)
+	int lock_pixels_result = AndroidBitmap_lockPixels(jep.env(), newBitmap->jObject(), &ptr);
+	if (lock_pixels_result != 0)
 	{
-		qCritical()<<"Could not get new surface pointer, error:"<<lockpixelsresult;
+		qCritical()<<"Could not get new surface pointer, error:"<<lock_pixels_result;
 		dummy();
         return false;
     }
