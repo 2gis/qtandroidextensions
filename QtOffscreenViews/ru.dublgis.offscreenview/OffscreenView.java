@@ -111,7 +111,9 @@ abstract class OffscreenView
     private Boolean painting_now_ = new Boolean(false);
     private ArrayList<Runnable> precreation_actions_ = new ArrayList<Runnable>();
 
+    private Object native_ptr_mutex_ = new Object();
     private Object view_existence_mutex_ = new Object();
+    private Object view_variables_mutex_ = new Object();
     private Object texture_mutex_ = new Object();
     private Object texture_transform_mutex_ = new Object();
 
@@ -179,11 +181,49 @@ abstract class OffscreenView
         Log.i(TAG, "OffscreenView constructor");
     }
 
-    public void SetObjectName(String name) { object_name_ = name; }
-    public void SetTexture(int tex) { gl_texture_id_ = tex; }
-    public void SetInitialWidth(int w) { view_width_ = w; }
-    public void SetInitialHeight(int h) { view_height_ = h; }
-    public void SetNativePtr(long ptr) { native_ptr_ = ptr; }
+    public void SetObjectName(String name)
+    {
+        synchronized(view_variables_mutex_)
+        {
+            object_name_ = name;
+        }
+    }
+
+    public void SetTexture(int tex)
+    {
+        synchronized(texture_mutex_)
+        {
+            if (gl_texture_id_ != 0 && gl_texture_id_ != tex)
+            {
+                throw new IllegalStateException("OpenGL texture can be assigned only once!");
+            }
+            gl_texture_id_ = tex;
+        }
+    }
+
+    public void SetInitialWidth(int w)
+    {
+        synchronized(view_variables_mutex_)
+        {
+            view_width_ = w;
+        }
+    }
+
+    public void SetInitialHeight(int h)
+    {
+        synchronized(view_variables_mutex_)
+        {
+            view_height_ = h;
+        }
+    }
+
+    public void SetNativePtr(long ptr)
+    {
+        synchronized(native_ptr_mutex_)
+        {
+            native_ptr_ = ptr;
+        }
+    }
 
     public boolean runOnUiThread(final Runnable runnable)
     {
@@ -259,7 +299,7 @@ abstract class OffscreenView
             public void run()
             {
                 Log.i(TAG, "OffscreenView.createView: run/syncing...");
-                synchronized(this)
+                synchronized(view_variables_mutex_) // Using these variables
                 {
                     Log.i(TAG, "OffscreenView.createView: creating the view!");
                     final Activity activity = getActivity();
@@ -612,7 +652,10 @@ abstract class OffscreenView
                         }
                         else
                         {
-                            canvas.drawARGB(fill_a_, fill_r_, fill_g_, fill_b_);
+                            synchronized(view_variables_mutex_)
+                            {
+                                canvas.drawARGB(fill_a_, fill_r_, fill_g_, fill_b_);
+                            }
                         }
                     }
                     catch(Exception e)
@@ -842,7 +885,7 @@ abstract class OffscreenView
     //! Called from C++ to change size of the view.
     public void resizeOffscreenView(final int w, final int h)
     {
-        synchronized(this)
+        synchronized(view_variables_mutex_)
         {
             Log.i(TAG, "resizeOffscreenView "+w+"x"+h);
             view_width_ = w;
@@ -883,7 +926,7 @@ abstract class OffscreenView
      */
     public void setPosition(final int left, final int top)
     {
-        synchronized(this)
+        synchronized(view_variables_mutex_)
         {
             if (view_left_ != left || view_top_ != top)
             {
@@ -904,13 +947,16 @@ abstract class OffscreenView
 
     final long getNativePtr()
     {
-        return native_ptr_;
+        synchronized(native_ptr_mutex_)
+        {
+            return native_ptr_;
+        }
     }
 
     //! Called from C++ to notify us that the associated C++ object is being destroyed.
     public void cppDestroyed()
     {
-        synchronized(this)
+        synchronized(native_ptr_mutex_)
         {
             native_ptr_ = 0;
         }
@@ -928,10 +974,13 @@ abstract class OffscreenView
 
     public void setFillColor(int a, int r, int g, int b)
     {
-        fill_a_ = a;
-        fill_r_ = r;
-        fill_g_ = g;
-        fill_b_ = b;
+        synchronized(view_variables_mutex_)
+        {
+            fill_a_ = a;
+            fill_r_ = r;
+            fill_g_ = g;
+            fill_b_ = b;
+        }
     }
 
     // C++ function called from Java to tell that the texture has new contents.
@@ -962,11 +1011,14 @@ abstract class OffscreenView
 
         public OffscreenGLTextureRenderingSurface()
         {
-            Log.i(TAG, "OffscreenGLTextureRenderingSurface(obj=\""+object_name_+"\", texture="+gl_texture_id_
-                +", w="+view_width_+", h="+view_height_+") tid="+Thread.currentThread().getId());
-            surface_texture_ = new SurfaceTexture(gl_texture_id_);
-            surface_ = new Surface(surface_texture_);
-            setNewSize(view_width_, view_height_);
+            synchronized(texture_mutex_)
+            {
+                Log.i(TAG, "OffscreenGLTextureRenderingSurface(obj=\""+object_name_+"\", texture="+gl_texture_id_
+                    +", w="+view_width_+", h="+view_height_+") tid="+Thread.currentThread().getId());
+                surface_texture_ = new SurfaceTexture(gl_texture_id_);
+                surface_ = new Surface(surface_texture_);
+                setNewSize(view_width_, view_height_);
+            }
         }
 
         @Override
@@ -1017,6 +1069,7 @@ abstract class OffscreenView
             // Log.i(TAG, "updateTexture tid="+Thread.currentThread().getId()+", tex="+gl_texture_id_);
             try
             {
+                // Note: with this check we don't seem to need to sync to texture_mutex_.
                 if (!has_texture_) // Nothing ever has been painted in the texture yet
                 {
                     return false;
