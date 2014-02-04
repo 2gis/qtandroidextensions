@@ -174,7 +174,7 @@ class QJniObject
 public:
 	/*!
 	 * Create QJniObject wrapper around specified jobject.
-	 * \param  take_ownership means "delete local ref of this object
+	 * \param take_ownership means "delete local ref of this object
 	 * and only keep the global one here"
 	 * Note that this implies the instance is a valid local ref,
 	 * not global one or whatever.
@@ -191,7 +191,7 @@ public:
 	 * Same as QJniObject(jclass clazz, bool create) but
 	 * the class is specified by its name.
 	 */
-	QJniObject(const char* full_class_name, bool create=true);
+	QJniObject(const char * full_class_name, bool create=true);
 
 	//! Create fully uninitialized QJniObject.
 	QJniObject();

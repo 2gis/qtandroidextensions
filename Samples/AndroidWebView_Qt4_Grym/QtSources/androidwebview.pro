@@ -7,7 +7,8 @@ SOURCES += \
 	main.cpp \
     QOffscreenWebViewGraphicsWidget.cpp
 
-#include("../../../QtOffscreenViews/QtOffscreenViews.pri")
+# Necessary for Bitmap-based mode of the offscreen views
+include("../../../QtOffscreenViews/androidjnigraphics.pri")
 
 RESOURCES = resources.qrc
 

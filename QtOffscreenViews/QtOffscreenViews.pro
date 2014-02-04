@@ -2,19 +2,23 @@ TEMPLATE = lib
 CONFIG += staticlib
 QT += core gui opengl
 
+include("androidjnigraphics.pri")
+
 INCLUDEPATH += ../QJniHelpers
 
 HEADERS += \
     QOpenGLTextureHolder.h \
     QAndroidOffscreenView.h \
     QAndroidOffscreenWebView.h \
-    QAndroidOffscreenEditText.h
+    QAndroidOffscreenEditText.h \
+    QAndroidJniImagePair.h
 
 SOURCES += \
     QOpenGLTextureHolder.cpp \
     QAndroidOffscreenView.cpp \
     QAndroidOffscreenWebView.cpp \
-    QAndroidOffscreenEditText.cpp
+    QAndroidOffscreenEditText.cpp \
+    QAndroidJniImagePair.cpp
 
 OTHER_FILES += \
     ru.dublgis.offscreenview/OffscreenViewFactory.java \
