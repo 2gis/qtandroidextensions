@@ -43,6 +43,12 @@
 #include <QAndroidQPAPluginGap.h>
 #include <QJniHelpers.h>
 
+/*!
+ * This class holds QImage and Android Bitmap sharing the same pixel buffer.
+ * For 16 bit, the image can be used in Android and in Qt at the same time.
+ * For 32 bit, it is necessary to call convert32BitImageFromQtToAndroid() /
+ * convert32BitImageFromAndroidToQt() to fix color plane order.
+ */
 class QAndroidJniImagePair
 	: public QObject
 {
@@ -69,30 +75,16 @@ public:
 	QImage & qimage(){ return mImageOnBitmap; }
 	const QImage & qimage() const { return mImageOnBitmap; }
 
-	bool isOk() const { return mBitmap && mBitmap->jObject() != 0 && !mImageOnBitmap.isNull(); }
+	//! Swap color planes so Qt image starts to look correct on Android.
+	void convert32BitImageFromQtToAndroid();
 
-    bool hasSize(int w, int h) const
-    {
-		return isOk() && mImageOnBitmap.width() == w && mImageOnBitmap.height() == h;
-    }
+	//! Swap color planes so Android image starts to look correct on Qt.
+	void convert32BitImageFromAndroidToQt();
 
-    bool ensureSize(int w, int h)
-    {
-		if (hasSize(w, h))
-		{
-            return true;
-		}
-        return resize(QSize(w, h));
-    }
-
-    bool ensureSize(const QSize& sz)
-    {
-		if (hasSize(sz.width(), sz.height()))
-		{
-            return true;
-		}
-        return resize(sz);
-    }
+	bool isAllocated() const;
+	bool hasSize(int w, int h) const;
+	bool ensureSize(int w, int h);
+	bool ensureSize(const QSize& sz);
 protected:
 	QJniObject * createBitmap(const QSize & size);
 

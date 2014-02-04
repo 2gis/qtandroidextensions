@@ -754,6 +754,15 @@ abstract class OffscreenView
         }
     }
 
+    //! Called from C++
+    public void setBitmap(final Bitmap bitmap)
+    {
+        if (rendering_surface_ != null)
+        {
+            rendering_surface_.setBitmap(bitmap);
+        }
+    }
+
     /*!
      * This function should be called in view's onTouchEvent to check if the touch should be processed.
      */
@@ -989,7 +998,6 @@ abstract class OffscreenView
     // C++ function called from Java to tell that the texture has new contents.
     // abstract public native void nativeUpdate(long nativeptr);
 
-    //! Imagine we'll have another type of rendering surface one day (e.g. Bitmap).
     protected interface OffscreenRenderingSurface
     {
         abstract Canvas lockCanvas();
@@ -998,11 +1006,73 @@ abstract class OffscreenView
         //! In non-GL mode, this should not be used and can return 0 for any index.
         abstract float getTextureTransformMatrix(final int index);
         abstract public boolean hasTexture();
-        abstract public void setNewSize(int w, int h);
+        abstract public void setNewSize(final int w, final int h);
+        abstract public void setBitmap(final Bitmap bitmap);
+    }
+
+    protected class OffscreenRasterRenderingSurface implements OffscreenRenderingSurface
+    {
+        Bitmap bitmap_ = null;
+        boolean has_texture_ = false;
+
+        public OffscreenRasterRenderingSurface()
+        {
+        }
+
+        @Override
+        public Canvas lockCanvas()
+        {
+            synchronized(texture_mutex_)
+            {
+                if (bitmap_ == null)
+                {
+                    return null;
+                }
+                return new Canvas(bitmap_);
+            }
+        }
+
+        @Override
+        public void unlockCanvas(Canvas canvas)
+        {
+            has_texture_ = true;
+        }
+
+        @Override
+        public boolean updateTexture()
+        {
+            return false;
+        }
+
+        @Override
+        public float getTextureTransformMatrix(final int index)
+        {
+            return 0;
+        }
+
+        @Override
+        public boolean hasTexture()
+        {
+            return has_texture_ && bitmap_ != null;
+        }
+
+        @Override
+        public void setNewSize(final int w, final int h)
+        {
+        }
+
+        @Override
+        public void setBitmap(final Bitmap bitmap)
+        {
+            synchronized(texture_mutex_)
+            {
+                bitmap_ = bitmap;
+            }
+        }
     }
 
     /*!
-     * This is a class which keeps the rendering infrastructure.
+     * This is a class which keeps the rendering infrastructure for GL mode.
      */
     protected class OffscreenGLTextureRenderingSurface implements OffscreenRenderingSurface
     {
@@ -1109,11 +1179,16 @@ abstract class OffscreenView
         }
 
         @Override
-        public void setNewSize(int w, int h)
+        public void setNewSize(final int w, final int h)
         {
             texture_width_ = w;
             texture_height_ = h;
             surface_texture_.setDefaultBufferSize(w, h); // API 15
+        }
+
+        @Override
+        public void setBitmap(final Bitmap bitmap)
+        {
         }
     }
 
