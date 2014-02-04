@@ -111,12 +111,8 @@ class OffscreenEditText extends OffscreenView
 
         public void onDrawPublic(Canvas canvas)
         {
-            // Log.i(TAG, "MyEditText.onDrawPublic "+getWidth()+"x"+getHeight());
             // A text view has transparent background by default, which is not what we expect.
             canvas.drawARGB (fill_a_, fill_r_, fill_g_, fill_b_);
-            // Take View scroll into account. (It converts touch coordinates by itself,
-            // but it doesn't draw scrolled).
-            canvas.translate(-getScrollX(), -getScrollY());
             super.onDraw(canvas);
         }
 
@@ -161,9 +157,11 @@ class OffscreenEditText extends OffscreenView
         @Override
         protected void onLayout(boolean changed, int left, int top, int right, int bottom)
         {
-            super.onLayout(changed, left, top, right, bottom);
             /*! \todo Here's an evil workaround: TextView does not recalculate word wrap
                  on relayout. */
+
+            super.onLayout(changed, left, top, right, bottom);
+
             if (changed)
             {
                 setText(getText());

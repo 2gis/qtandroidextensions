@@ -643,7 +643,6 @@ abstract class OffscreenView
 
                             // Prepare canvas.
                             // Take View scroll into account.
-                            //! \todo FIXME this is not needed for EditText!
                             canvas.translate(-v.getScrollX(), -v.getScrollY());
 
                             callViewPaintMethod(canvas);
