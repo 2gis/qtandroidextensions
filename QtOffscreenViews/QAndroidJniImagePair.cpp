@@ -46,20 +46,8 @@ static QImage::Format AndroidBitmapFormat_to_QImageFormat(uint32_t abf)
 	{
 	case ANDROID_BITMAP_FORMAT_RGB_565:
 		return QImage::Format_RGB16;
-
 	case ANDROID_BITMAP_FORMAT_RGBA_8888:
-		// "Note: Do not render into ARGB32 images using QPainter.
-		// Using QImage::Format_ARGB32_Premultiplied is significantly faster." - Qt docs
 		return QImage::Format_ARGB32_Premultiplied;
-
-	case ANDROID_BITMAP_FORMAT_RGBA_4444:
-		qWarning()<<"Warning: untested screen format RGBA 4444!";
-		return QImage::Format_ARGB4444_Premultiplied;
-
-	case ANDROID_BITMAP_FORMAT_A_8:
-		qCritical()<<"Warning: grayscale video mode is not supported yet!";
-		return QImage::Format_Invalid;
-
 	default:
 		qCritical()<<"ERROR: Invalid Android bitmap format:"<<abf;
 		return QImage::Format_Invalid;
@@ -74,7 +62,6 @@ static QImage::Format qtImageFormatForBitness(int bitness)
 	{
 		case 32: return AndroidBitmapFormat_to_QImageFormat(ANDROID_BITMAP_FORMAT_RGBA_8888);
 		case 16: return AndroidBitmapFormat_to_QImageFormat(ANDROID_BITMAP_FORMAT_RGB_565);
-		case 8:  return AndroidBitmapFormat_to_QImageFormat(ANDROID_BITMAP_FORMAT_A_8);
 		default:
 			qCritical()<<"Invalid image bitness:"<<bitness;
 			return AndroidBitmapFormat_to_QImageFormat(ANDROID_BITMAP_FORMAT_RGBA_8888);
@@ -82,7 +69,8 @@ static QImage::Format qtImageFormatForBitness(int bitness)
 }
 
 QAndroidJniImagePair::QAndroidJniImagePair(int bitness)
-	: mBitmap()
+	: qjniimagepairclass_("ru/dublgis/offscreenview/QJniImagePair", false)
+	, mBitmap()
     , mImageOnBitmap()
 	, bitness_(bitness)
 {
@@ -91,6 +79,11 @@ QAndroidJniImagePair::QAndroidJniImagePair(int bitness)
 QAndroidJniImagePair::~QAndroidJniImagePair()
 {
     deallocate();
+}
+
+void QAndroidJniImagePair::preloadJavaClasses()
+{
+	QAndroidQPAPluginGap::preloadJavaClass("ru/dublgis/offscreenview/QJniImagePair");
 }
 
 void QAndroidJniImagePair::dummy()
@@ -107,6 +100,35 @@ void QAndroidJniImagePair::deallocate()
 {
     mImageOnBitmap = QImage(); // In case deallocate() is called not from destructor...
 	mBitmap.reset();
+}
+
+QJniObject * QAndroidJniImagePair::createBitmap(const QSize & size)
+{
+	if (qjniimagepairclass_.jClass() == 0)
+	{
+		qCritical()<<"QJniImagePair class is null!";
+		return 0;
+	}
+	try
+	{
+		QJniObject * bitmap = qjniimagepairclass_.callStaticParamObject(
+			"createBitmap", "android/graphics/Bitmap", "III",
+			jint(size.width()), jint(size.height()), jint(bitness_));
+		if (!bitmap)
+		{
+			qCritical()<<"Failed to create bitmap (null pointer returned).";
+			return 0;
+		}
+		else
+		{
+			return bitmap;
+		}
+	}
+	catch(QJniBaseException & e)
+	{
+		qCritical()<<"Failed to create bitmap:"<<e.what();
+		return 0;
+	}
 }
 
 bool QAndroidJniImagePair::resize(const QSize & size)
@@ -128,10 +150,8 @@ bool QAndroidJniImagePair::resize(const QSize & size)
     // Create Android bitmap object by calling appropriate Java function over JNI
     //
 
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SGEXP
-//	aint->surfaceCreate(format, size)
-	QJniLocalRef newBitmap(0);
-	if (newBitmap.jObject() == 0)
+	QScopedPointer<QJniObject> newBitmap(createBitmap(size));
+	if (!newBitmap || !newBitmap->jObject() == 0)
     {
         qCritical("Could not create %dx%d surface", size.width(), size.height());
 		dummy();
@@ -149,7 +169,7 @@ bool QAndroidJniImagePair::resize(const QSize & size)
 	// Android > 1.6
 	AndroidBitmapInfo binfo;
 	memset(&binfo, 0, sizeof(binfo)); // Important!
-	int getinforesult = AndroidBitmap_getInfo(jep.env(), newBitmap, &binfo);
+	int getinforesult = AndroidBitmap_getInfo(jep.env(), newBitmap->jObject(), &binfo);
 	if (getinforesult != 0)
 	{
 		#if 1
@@ -212,7 +232,7 @@ bool QAndroidJniImagePair::resize(const QSize & size)
     // Lock Android bitmap's pixels so we could create a QImage over it
     //
 	void * ptr = 0;
-	int lockpixelsresult = AndroidBitmap_lockPixels(jep.env(), newBitmap, &ptr);
+	int lockpixelsresult = AndroidBitmap_lockPixels(jep.env(), newBitmap->jObject(), &ptr);
 	if (lockpixelsresult != 0)
 	{
 		qCritical()<<"Could not get new surface pointer, error:"<<lockpixelsresult;
@@ -249,7 +269,7 @@ bool QAndroidJniImagePair::resize(const QSize & size)
 		return false;
 	}
 
-	mBitmap.reset(new QJniObject(newBitmap.jObject(), false));
+	mBitmap.reset(newBitmap.take());
     return true;
 }
 

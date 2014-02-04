@@ -50,6 +50,7 @@ class QAndroidJniImagePair
 public:
 	QAndroidJniImagePair(int bitness = 32);
 	virtual ~QAndroidJniImagePair();
+	static void preloadJavaClasses();
 
     // Create a dummy object with 1x1 px QImage and no jbitmap.
     // jbitmap is released, if necessary.
@@ -94,8 +95,10 @@ public:
     }
 protected:
 	void deallocate();
+	QJniObject * createBitmap(const QSize & size);
 
 private:
+	QJniObject qjniimagepairclass_;
 	mutable QScopedPointer<QJniObject> mBitmap;
     QImage mImageOnBitmap;
 	int bitness_;

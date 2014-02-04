@@ -42,6 +42,7 @@
 #include <QMutexLocker>
 #include <QCoreApplication>
 #include <QAndroidQPAPluginGap.h>
+#include <QAndroidJniImagePair.h>
 #include "QAndroidOffscreenView.h"
 
 static const QString c_class_path_(QLatin1String("ru/dublgis/offscreenview/"));
@@ -177,6 +178,7 @@ const QString & QAndroidOffscreenView::getDefaultJavaClassPath()
 void QAndroidOffscreenView::preloadJavaClasses()
 {
 	// QAndroidQPAPluginGap::preloadJavaClass("java/lang/System");
+	QAndroidJniImagePair::preloadJavaClasses();
 }
 
 

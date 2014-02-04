@@ -248,9 +248,9 @@ public:
 	void callVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3, const QString & string4, const QString & string5);
 
 	//! Call void static method of the wrapped Java class
-	void callStaticVoid(const char* method_name);
-	void callStaticParamVoid(const char* method_name, const char* param_signature, ...);
-	void callStaticVoid(const char* method_name, const QString & string);
+	void callStaticVoid(const char * method_name);
+	void callStaticParamVoid(const char * method_name, const char * param_signature, ...);
+	void callStaticVoid(const char * method_name, const QString & string);
 
 	/*!
 	 * Call object static method of the wrapped Java class.
@@ -259,7 +259,8 @@ public:
 	 * \return Pointer to a wrapper for the object returned by the call.
 	 * The wrapper should be deleted after use via 'delete'.
 	 */
-	QJniObject* callStaticObject(const char* method_name, const char* objname);
+	QJniObject * callStaticObject(const char* method_name, const char* objname);
+	QJniObject * callStaticParamObject(const char * method_name, const char * objname, const char * param_signature, ...);
 
 	//! Get value of int field of the wrapped Java object
 	int getIntField(const char* field_name);
