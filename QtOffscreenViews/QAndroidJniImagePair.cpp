@@ -40,9 +40,6 @@
 #include <QDebug>
 #include "QAndroidJniImagePair.h"
 
-//! \fixme
-static int qt_android_get_api_level() { return 9; }
-
 static QImage::Format AndroidBitmapFormat_to_QImageFormat(uint32_t abf)
 {
 	switch(abf)
@@ -69,7 +66,7 @@ static QImage::Format AndroidBitmapFormat_to_QImageFormat(uint32_t abf)
 	}
 }
 
-static QImage::Format defaultImageFormatFor(int bitness)
+static QImage::Format qtImageFormatForBitness(int bitness)
 {
 	// Now, everything is rewritten so the format mapping happens inside of
 	// AndroidBitmapFormat_to_QImageFormat().
@@ -80,13 +77,8 @@ static QImage::Format defaultImageFormatFor(int bitness)
 		case 8:  return AndroidBitmapFormat_to_QImageFormat(ANDROID_BITMAP_FORMAT_A_8);
 		default:
 			qCritical()<<"Invalid image bitness:"<<bitness;
-			return AndroidBitmapFormat_to_QImageFormat(ANDROID_BITMAP_FORMAT_RGB_565);
+			return AndroidBitmapFormat_to_QImageFormat(ANDROID_BITMAP_FORMAT_RGBA_8888);
 	}
-}
-
-static inline QImage::Format defaultImageFormat()
-{
-	return defaultImageFormatFor(32);
 }
 
 QAndroidJniImagePair::QAndroidJniImagePair(int bitness)
@@ -108,7 +100,7 @@ void QAndroidJniImagePair::dummy()
         return; // Already a dummy
 	}
     deallocate();
-	mImageOnBitmap = QImage(1, 1, defaultImageFormat());
+	mImageOnBitmap = QImage(1, 1, qtImageFormatForBitness(bitness_));
 }
 
 void QAndroidJniImagePair::deallocate()
@@ -130,7 +122,7 @@ bool QAndroidJniImagePair::resize(const QSize & size)
 	QJniEnvPtr jep;
 
     // We'll need a new bitmap for the new size
-	QImage::Format format = defaultImageFormatFor(bitness_);
+	QImage::Format format = qtImageFormatForBitness(bitness_);
 
     //
     // Create Android bitmap object by calling appropriate Java function over JNI
@@ -154,74 +146,64 @@ bool QAndroidJniImagePair::resize(const QSize & size)
     // On newer systems, we honestly ask Android bitmap for its
     // actual dimensions, format and stride.
     uint32_t bwidth, bheight, bstride;
-	if (qt_android_get_api_level() > 4)
+	// Android > 1.6
+	AndroidBitmapInfo binfo;
+	memset(&binfo, 0, sizeof(binfo)); // Important!
+	int getinforesult = AndroidBitmap_getInfo(jep.env(), newBitmap, &binfo);
+	if (getinforesult != 0)
 	{
-        // Android > 1.6
-        AndroidBitmapInfo binfo;
-        memset(&binfo, 0, sizeof(binfo)); // Important!
-		int errsv = AndroidBitmap_getInfo(jep.env(), newBitmap, &binfo);
-		if (errsv != 0)
-		{
-            #if 1
-                // On some bogus devices call to AndroidBitmap_getInfo()
-                // may return error code. Zeroing binfo will cause the code below
-                // to fall back to calculating it here.
-                qWarning()<<"Could not get new surface info, error:"<<errsv;
-                memset(&binfo, 0, sizeof(binfo));
-            #else
-                qCritical()<<"Could not get new surface info, error:"<<errsv;
-                env->DeleteLocalRef(newBitmap);
-                if (bitmap != 0)
-                {
-                    env->DeleteGlobalRef(bitmap);
-                    bitmap = 0;
-                }
-                imageOnBitmap = QImage();
-                return false;
-            #endif
-        }
-        bwidth = binfo.width;
-        bheight = binfo.height;
-        bstride = binfo.stride;
-        // binfo.flags is typically 0 and is not used.
-
-        // Here, we have to make a workaround for some sorry devices.
-        // For example, Huawei MediaPad returns: stride instead of width, width instead of height,
-        // zero instead of stride. In such case we just try to assume that the image format is
-        // standard. Worked good so far.
-		if (binfo.format == 0 || bstride == 0 || bwidth == 0 || bheight == 0 || bstride < bwidth)
-		{
-            qCritical()<<"Invalid AndroidBitmapInfo. Will fall back to standard bitmap properties: "
-                         "width:"<<bwidth<<"height:"<<bheight
-                       <<"stride:"<<bstride<<"format:"<<binfo.format<<"flags:"<<binfo.flags;
-            bwidth = size.width();
-            bheight = size.height();
-			bstride = size.width() * ((bitness_ == 32)? 4: 2);
-			format = defaultImageFormatFor(bitness_);
-		}
-		else
-		{
-			format = AndroidBitmapFormat_to_QImageFormat(binfo.format);
-			if (format == QImage::Format_Invalid)
+		#if 1
+			// On some bogus devices call to AndroidBitmap_getInfo()
+			// may return error code. Zeroing binfo will cause the code below
+			// to fall back to calculating it here.
+			qWarning()<<"Could not get new surface info, error:"<<getinforesult;
+			memset(&binfo, 0, sizeof(binfo));
+		#else
+			qCritical()<<"Could not get new surface info, error:"<<getinforesult;
+			env->DeleteLocalRef(newBitmap);
+			if (bitmap != 0)
 			{
-                qCritical()<<"Don't know how to create bitmap of this Android bitmap format:"<<binfo.format;
-				dummy();
-                return false;
-            }
-        }
-        if (uint32_t(size.width()) != bwidth || uint32_t(size.height()) != bheight)
+				env->DeleteGlobalRef(bitmap);
+				bitmap = 0;
+			}
+			imageOnBitmap = QImage();
+			return false;
+		#endif
+	}
+	bwidth = binfo.width;
+	bheight = binfo.height;
+	bstride = binfo.stride;
+	// binfo.flags is typically 0 and is not used.
+
+	// Here, we have to make a workaround for some sorry devices.
+	// For example, Huawei MediaPad returns: stride instead of width, width instead of height,
+	// zero instead of stride. In such case we just try to assume that the image format is
+	// standard. Worked good so far.
+	if (binfo.format == 0 || bstride == 0 || bwidth == 0 || bheight == 0 || bstride < bwidth)
+	{
+		qCritical()<<"Invalid AndroidBitmapInfo. Will fall back to standard bitmap properties: "
+					 "width:"<<bwidth<<"height:"<<bheight
+				   <<"stride:"<<bstride<<"format:"<<binfo.format<<"flags:"<<binfo.flags;
+		bwidth = size.width();
+		bheight = size.height();
+		bstride = size.width() * ((bitness_ == 32)? 4: 2);
+		format = qtImageFormatForBitness(bitness_);
+	}
+	else
+	{
+		format = AndroidBitmapFormat_to_QImageFormat(binfo.format);
+		if (format == QImage::Format_Invalid)
 		{
-            qWarning()<<"Android bitmap size:"<<bwidth<<"x"<<bheight
-					  <<"is different than the requested size:"<<size.width()<<"x"<<size.height();
+			qCritical()<<"Don't know how to create bitmap of this Android bitmap format:"<<binfo.format;
+			dummy();
+			return false;
 		}
-    } else {
-        // Android 1.6 / API4
-        // Supporting only 16 bit modes.
-        bwidth = size.width();
-        bheight = size.height();
-        bstride = size.width() * 2;
-		format = defaultImageFormatFor(16);
-    }
+	}
+	if (uint32_t(size.width()) != bwidth || uint32_t(size.height()) != bheight)
+	{
+		qWarning()<<"Android bitmap size:"<<bwidth<<"x"<<bheight
+				  <<"is different than the requested size:"<<size.width()<<"x"<<size.height();
+	}
 
     qDebug()<<"AndroidBitmapInfo: width:"<<bwidth<<"height:"<<bheight
             <<"stride:"<<bstride<<"QImage::format:"<<static_cast<int>(format);
@@ -230,10 +212,10 @@ bool QAndroidJniImagePair::resize(const QSize & size)
     // Lock Android bitmap's pixels so we could create a QImage over it
     //
 	void * ptr = 0;
-	int errsv = AndroidBitmap_lockPixels(jep.env(), newBitmap, &ptr);
-	if (errsv != 0)
+	int lockpixelsresult = AndroidBitmap_lockPixels(jep.env(), newBitmap, &ptr);
+	if (lockpixelsresult != 0)
 	{
-        qCritical()<<"Could not get new surface pointer, error:"<<errsv;
+		qCritical()<<"Could not get new surface pointer, error:"<<lockpixelsresult;
 		dummy();
         return false;
     }
