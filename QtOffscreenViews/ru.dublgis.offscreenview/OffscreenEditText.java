@@ -154,18 +154,23 @@ class OffscreenEditText extends OffscreenView
             super.requestLayout();
         }
 
+        private int text_layout_width_ = 0;
+
         @Override
         protected void onLayout(boolean changed, int left, int top, int right, int bottom)
         {
             /*! \todo Here's an evil workaround: TextView does not recalculate word wrap
-                 on relayout. */
+                 on relayout. We should avoid the workaround triggering when text edit bar
+                 appears because it causes input method to restart. */
+            int w = right - left;
 
             super.onLayout(changed, left, top, right, bottom);
 
-            if (changed)
+            if (changed && w != text_layout_width_)
             {
                 setText(getText());
             }
+            text_layout_width_ = w;
         }
 
         @Override
