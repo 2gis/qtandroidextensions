@@ -110,7 +110,11 @@ abstract class OffscreenView
     private int gl_texture_id_ = 0;
     private Boolean painting_now_ = new Boolean(false);
     private ArrayList<Runnable> precreation_actions_ = new ArrayList<Runnable>();
-    protected Object view_existence_mutex_ = new Object();
+
+    private Object view_existence_mutex_ = new Object();
+    private Object texture_mutex_ = new Object();
+    private Object texture_transform_mutex_ = new Object();
+
     private int view_width_ = 512;
     private int view_height_ = 512;
     private int view_left_ = 0;
@@ -440,7 +444,7 @@ abstract class OffscreenView
             @Override
             public void run()
             {
-                synchronized(this)
+                synchronized(texture_mutex_)
                 {
                     Log.i(TAG, "OffscreenView.intializeGL(name=\""+object_name_+"\", texture="+gl_texture_id_+") RUN");
                     rendering_surface_ = new OffscreenGLTextureRenderingSurface();
@@ -566,8 +570,10 @@ abstract class OffscreenView
         {
             painting_now_ = true;
         }
-        synchronized(this)
+        synchronized(texture_mutex_)
         {
+            // Note: with a null View we will continue, but will only fill
+            // background with the fill color.
             if (rendering_surface_ == null || getNativePtr() == 0)
             {
                 Log.i(TAG, "doDrawViewOnTexture: surface or native ptr is null.");
@@ -639,7 +645,8 @@ abstract class OffscreenView
     {
         if (synced)
         {
-            synchronized(this)
+            // If Android UI thread is drawing the View now, the sync will pause execution it finishes.
+            synchronized(texture_mutex_)
             {
                 return unsyncedUpdateTexture();
             }
@@ -672,29 +679,33 @@ abstract class OffscreenView
     }
 
 
-    //! Called from C++ to get texture coordinate transformation matrix (filled in updateTexture()).
+    /*! Called from C++ to get texture coordinate transformation matrix (filled in updateTexture()).
+        This function should be called after updateTexture(). */
     public float getTextureTransformMatrix(int index)
     {
-        synchronized(this)
+        if (rendering_surface_ == null)
         {
-            if (rendering_surface_ == null)
-            {
-                return 0;
-            }
-            return rendering_surface_.getTextureTransformMatrix(index);
+            return 0;
         }
+        return rendering_surface_.getTextureTransformMatrix(index);
     }
 
     //! Called from C++.
     public int getLastTextureWidth()
     {
-        return last_texture_width_;
+        synchronized(texture_transform_mutex_)
+        {
+            return last_texture_width_;
+        }
     }
 
     //! Called from C++.
     public int getLastTextureHeight()
     {
-        return last_texture_height_;
+        synchronized(texture_transform_mutex_)
+        {
+            return last_texture_height_;
+        }
     }
 
     /*!
@@ -759,7 +770,7 @@ abstract class OffscreenView
         }
     }
 
-    //! Called from C++
+	/*//! Called from C++
     public boolean isFocused()
     {
         final View v = getView();
@@ -768,7 +779,7 @@ abstract class OffscreenView
             return v.isFocused();
         }
         return false;
-    }
+	}*/
 
     //! Called from C++
     public void setFocused(final boolean focused)
@@ -792,7 +803,7 @@ abstract class OffscreenView
                         v.setFocusable(false);
                         v.setFocusableInTouchMode(false);
                         // Simply passing focus to someone else or calling ClearFocus()
-                        // does not hide SIP for some unknown reason. We have to do it expliciltly.
+                        // does not hide SIP for some unknown reason. We have to do that expliciltly.
                         uiHideKeyboardFromView();
                     }
                 }
@@ -817,7 +828,6 @@ abstract class OffscreenView
             Log.w(TAG, "uiHideKeyboardFromView: InputMethodManager is null");
             return;
         }
-        // imm.restartInput(v);
         IBinder token = v.getWindowToken();
         if( token != null )
         {
@@ -1012,9 +1022,12 @@ abstract class OffscreenView
                     return false;
                 }
                 surface_texture_.updateTexImage();
-                surface_texture_.getTransformMatrix(mtx_);
-                last_texture_width_ = last_painted_width_;
-                last_texture_height_ = last_painted_height_;
+                synchronized(texture_transform_mutex_)
+                {
+                    surface_texture_.getTransformMatrix(mtx_);
+                    last_texture_width_ = last_painted_width_;
+                    last_texture_height_ = last_painted_height_;
+                }
                 return true;
             }
             catch(Exception e)
@@ -1027,7 +1040,10 @@ abstract class OffscreenView
         @Override
         final public float getTextureTransformMatrix(final int index)
         {
-            return mtx_[index];
+            synchronized(texture_transform_mutex_)
+            {
+                return mtx_[index];
+            }
         }
 
         @Override

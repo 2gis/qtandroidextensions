@@ -387,14 +387,14 @@ void QAndroidOffscreenView::setAttachingMode(bool attaching)
 	}
 }
 
-bool QAndroidOffscreenView::isFocused() const
+/*bool QAndroidOffscreenView::isFocused() const
 {
 	if (offscreen_view_)
 	{
 		return offscreen_view_->callBool("isFocused");
 	}
 	return false;
-}
+}*/
 
 void QAndroidOffscreenView::setFocused(bool focused)
 {
