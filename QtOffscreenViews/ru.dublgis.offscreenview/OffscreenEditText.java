@@ -99,7 +99,8 @@ class OffscreenEditText extends OffscreenView
             super(context);
             Log.i(TAG, "MyEditText constructor");
             // Fill in default properties
-            setText("Hello EditText bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla");
+            // setText("Hello EditText bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla");
+            setText("Hello EditText");
         }
 
         @Override

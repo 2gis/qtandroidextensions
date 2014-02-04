@@ -80,6 +80,18 @@ void QQuickAndroidOffscreenView::mouseReleaseEvent(QMouseEvent * event)
 	}
 }
 
+void QQuickAndroidOffscreenView::itemChange(QQuickItem::ItemChange change, const QQuickItem::ItemChangeData & value)
+{
+	/*
+	We would like to do this and setFlag(ItemSendsScenePositionChanges, true) in constructor,
+	but it's not available in Qt Quick 2.
+	if (change == QQuickItem::ItemScenePositionHasChanged && scene())
+	{
+		QMetaObject::invokeMethod(this, "updateAndroidViewPosition", Qt::QueuedConnection);
+	}*/
+	return QQuickFramebufferObject::itemChange(change, value);
+}
+
 void QQuickAndroidOffscreenView::updateAndroidViewVisibility()
 {
 	bool vis = isVisible() && opacity() > 0;
@@ -90,7 +102,8 @@ void QQuickAndroidOffscreenView::updateAndroidViewVisibility()
 void QQuickAndroidOffscreenView::updateAndroidViewPosition()
 {
 	qDebug()<<__PRETTY_FUNCTION__<<x()<<y();
-	aview_->setPosition(qRound(x()), qRound(y()));
+	QPointF scenepos = mapToScene(QPointF(x(), y()));
+	aview_->setPosition(qRound(scenepos.x()), qRound(scenepos.y()));
 }
 
 void QQuickAndroidOffscreenView::updateAndroidEnabled()
