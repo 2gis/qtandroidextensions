@@ -91,13 +91,7 @@ void QAndroidJniImagePair::dummy()
 	{
         return; // Already a dummy
 	}
-    deallocate();
 	mImageOnBitmap = QImage(1, 1, qtImageFormatForBitness(bitness_));
-}
-
-void QAndroidJniImagePair::deallocate()
-{
-	mImageOnBitmap = QImage();
 	mBitmap.reset();
 }
 
@@ -110,18 +104,9 @@ QJniObject * QAndroidJniImagePair::createBitmap(const QSize & size)
 	}
 	try
 	{
-		QJniObject * bitmap = qjniimagepairclass_.callStaticParamObject(
+		return qjniimagepairclass_.callStaticParamObject(
 			"createBitmap", "android/graphics/Bitmap", "III",
 			jint(size.width()), jint(size.height()), jint(bitness_));
-		if (!bitmap)
-		{
-			qCritical()<<"Failed to create bitmap (null pointer returned).";
-			return 0;
-		}
-		else
-		{
-			return bitmap;
-		}
 	}
 	catch(QJniBaseException & e)
 	{

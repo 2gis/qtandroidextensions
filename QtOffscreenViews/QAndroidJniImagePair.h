@@ -73,7 +73,7 @@ public:
 
     bool hasSize(int w, int h) const
     {
-        return isOk() && mImageOnBitmap.width()==w && mImageOnBitmap.height()==h;
+		return isOk() && mImageOnBitmap.width() == w && mImageOnBitmap.height() == h;
     }
 
     bool ensureSize(int w, int h)
@@ -94,12 +94,11 @@ public:
         return resize(sz);
     }
 protected:
-	void deallocate();
 	QJniObject * createBitmap(const QSize & size);
 
 private:
 	QJniObject qjniimagepairclass_;
-	mutable QScopedPointer<QJniObject> mBitmap;
+	QScopedPointer<QJniObject> mBitmap;
     QImage mImageOnBitmap;
 	int bitness_;
 };
