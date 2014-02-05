@@ -40,6 +40,7 @@
 #include <unistd.h>
 #include <android/bitmap.h>
 #include <QDebug>
+#include <QColor>
 #include "QAndroidJniImagePair.h"
 
 static QImage::Format AndroidBitmapFormat_to_QImageFormat(uint32_t abf)
@@ -237,6 +238,16 @@ bool QAndroidJniImagePair::doResize(const QSize & size)
 
 	mBitmap.reset(newBitmap.take());
 	return true;
+}
+
+void QAndroidJniImagePair::fill(const QColor & color, bool to_android_color)
+{
+	QColor fill = color;
+	if (to_android_color && bitness_ == 32)
+	{
+		fill = QColor(fill.blue(), fill.green(), fill.red(), fill.alpha());
+	}
+	mImageOnBitmap.fill(fill);
 }
 
 void QAndroidJniImagePair::convert32BitImageFromQtToAndroid()

@@ -87,6 +87,9 @@ public:
 	//! Reference to the const QImage.
 	const QImage & qImage() const { return mImageOnBitmap; }
 
+	//! Fills image with uniform color
+	void fill(const QColor & color, bool to_android_color);
+
 	//! Swap color planes so Qt image starts to look correct on Android.
 	void convert32BitImageFromQtToAndroid();
 

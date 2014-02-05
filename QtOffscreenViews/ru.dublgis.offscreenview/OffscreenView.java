@@ -788,6 +788,7 @@ abstract class OffscreenView
         {
             rendering_surface_.setBitmaps(bitmap_a, bitmap_b);
         }
+        invalidateOffscreenView();
     }
 
     //! Called from C++
@@ -1147,7 +1148,6 @@ abstract class OffscreenView
                     bitmap_a_ = bitmap_a;
                     bitmap_b_ = bitmap_b;
                     has_texture_ = false;
-                    invalidateOffscreenView();
                 }
             }
         }

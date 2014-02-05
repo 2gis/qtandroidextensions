@@ -359,6 +359,9 @@ const QImage * QAndroidOffscreenView::getBitmapBuffer(bool * out_texture_updated
 			{
 				return 0;
 			}
+			//! \todo FIXME size checks!
+			// last_texture_width_ = offscreen_view_->callInt("getLastTextureWidth");
+			// last_texture_height_ = offscreen_view_->callInt("getLastTextureHeight");
 			QAndroidJniImagePair & pair = (texture == 0)? bitmap_a_: bitmap_b_;
 			pair.convert32BitImageFromAndroidToQt(android_to_qt_buffer_);
 			if (out_texture_updated)
@@ -598,6 +601,8 @@ void QAndroidOffscreenView::resize(const QSize & size)
 		{
 			bitmap_a_.resize(size_);
 			bitmap_b_.resize(size_);
+			bitmap_a_.fill(fill_color_, true);
+			bitmap_b_.fill(fill_color_, true);
 			raster_to_texture_cache_.reset();
 		}
 		if (offscreen_view_)
