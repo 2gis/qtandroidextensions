@@ -84,17 +84,20 @@ public:
 	//! Global Java reference to the Java-side Bitmap.
 	jobject jbitmap(){ return (mBitmap)? mBitmap->jObject(): 0; }
 
-	//! Reference to the QImage.
-	QImage & qImage(){ return mImageOnBitmap; }
-
 	//! Reference to the const QImage.
 	const QImage & qImage() const { return mImageOnBitmap; }
 
 	//! Swap color planes so Qt image starts to look correct on Android.
 	void convert32BitImageFromQtToAndroid();
 
+	//! Swap color planes so Qt image starts to look correct on Android.
+	void convert32BitImageFromQtToAndroid(QImage & out_image) const;
+
 	//! Swap color planes so Android image starts to look correct on Qt.
 	void convert32BitImageFromAndroidToQt();
+
+	//! Swap color planes so Android image starts to look correct on Qt.
+	void convert32BitImageFromAndroidToQt(QImage & out_image) const;
 
 	//! Returns true if shared bitmap is allocated.
 	bool isAllocated() const;

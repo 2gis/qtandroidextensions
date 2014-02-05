@@ -277,6 +277,7 @@ void QAndroidOffscreenView::deinitialize()
 	bitmap_a_.dispose();
 	bitmap_b_.dispose();
 	raster_to_texture_cache_.reset();
+	android_to_qt_buffer_ = QImage();
 }
 
 static inline void clearGlRect(int l, int b, int w, int h, const QColor & fill_color_)
@@ -299,7 +300,7 @@ void QAndroidOffscreenView::paintGL(int l, int b, int w, int h, bool reverse_y)
 	{
 		if (need_update_texture_)
 		{
-			bool texture_updated_ok = updateTexture();
+			bool texture_updated_ok = updateGlTexture();
 			if (!texture_updated_ok && !texture_received_)
 			{
 				clearGlRect(l, b, w, h, fill_color_);
@@ -334,8 +335,8 @@ void QAndroidOffscreenView::paintGL(int l, int b, int w, int h, bool reverse_y)
 				return;
 			}
 			QAndroidJniImagePair & pair = (texture == 0)? bitmap_a_: bitmap_b_;
-			pair.convert32BitImageFromAndroidToQt();
-			raster_to_texture_cache_.reset(new QOpenGLTextureHolder(pair.qImage()));
+			pair.convert32BitImageFromAndroidToQt(android_to_qt_buffer_);
+			raster_to_texture_cache_.reset(new QOpenGLTextureHolder(android_to_qt_buffer_));
 			offscreen_view_->callVoid("unlockQtPaintingTexture");
 			need_update_texture_ = false;
 		}
@@ -502,7 +503,7 @@ void QAndroidOffscreenView::javaViewCreated()
 	emit viewCreated();
 }
 
-bool QAndroidOffscreenView::updateTexture()
+bool QAndroidOffscreenView::updateGlTexture()
 {
 	if (offscreen_view_)
 	{

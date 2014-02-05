@@ -255,11 +255,44 @@ void QAndroidJniImagePair::convert32BitImageFromQtToAndroid()
 	}
 }
 
+void QAndroidJniImagePair::convert32BitImageFromQtToAndroid(QImage & out_image) const
+{
+	if (bitness_ == 32)
+	{
+		if (out_image.size() != mImageOnBitmap.size()
+			|| out_image.format() != mImageOnBitmap.format())
+		{
+			out_image = QImage(mImageOnBitmap.size(), mImageOnBitmap.format());
+		}
+		const quint32 * src = reinterpret_cast<const quint32*>(mImageOnBitmap.scanLine(0));
+		quint32 * dest = reinterpret_cast<quint32*>(out_image.scanLine(0));
+		QSize sz = mImageOnBitmap.size();
+		int nquads = sz.width() * sz.height();
+		for (int i = 0; i < nquads; ++i, ++src, ++dest)
+		{
+			quint32 c = *src;
+			// Source: ARGB; formula: R | B00 | A0G0 => ABGR
+			*dest = ((c >> 16) & 0xFF) | ((c & 0xFF) << 16) | (c & 0xFF00FF00);
+		}
+	}
+	else
+	{
+		out_image = mImageOnBitmap;
+	}
+}
+
 void QAndroidJniImagePair::convert32BitImageFromAndroidToQt()
 {
 	// The trick is that the conversion is currently reversible, because
 	// it converts ARGB to ABGR by swapping R and B it also does the backward job.
 	convert32BitImageFromQtToAndroid();
+}
+
+void QAndroidJniImagePair::convert32BitImageFromAndroidToQt(QImage & out_image) const
+{
+	// The trick is that the conversion is currently reversible, because
+	// it converts ARGB to ABGR by swapping R and B it also does the backward job.
+	convert32BitImageFromQtToAndroid(out_image);
 }
 
 bool QAndroidJniImagePair::isAllocated() const
@@ -289,5 +322,6 @@ QSize QAndroidJniImagePair::size() const
 	}
 	return mImageOnBitmap.size();
 }
+
 
 

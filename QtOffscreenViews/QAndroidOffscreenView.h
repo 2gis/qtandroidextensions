@@ -244,17 +244,26 @@ private slots:
 	void javaViewCreated();
 
 protected:
-	bool updateTexture();
+	bool updateGlTexture();
 	QJniObject * offscreenView() { return offscreen_view_.data(); }
 	QJniObject * getView();
 
 private:
 	QString view_class_name_;
 	QString view_object_name_;
+
+	//
+	// For GL texture mode
+	//
 	QOpenGLTextureHolder tex_;
+
+	//
+	// For Bitmap mode
+	//
 	QScopedPointer<QOpenGLTextureHolder> raster_to_texture_cache_;
+	QImage android_to_qt_buffer_;
 	QAndroidJniImagePair bitmap_a_, bitmap_b_;
-	// QScopedPointer<QJniObject> system_class_;
+
 	QScopedPointer<QJniObject> offscreen_view_;
 	QSize size_;
 	QColor fill_color_;
