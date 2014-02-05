@@ -353,15 +353,14 @@ const QImage * QAndroidOffscreenView::getBitmapBuffer(bool * out_texture_updated
 	{
 		if (!raster_to_texture_cache_ || need_update_texture_)
 		{
-			int texture = offscreen_view_->callInt("lockQtPaintingTexture");
+			need_update_texture_ = false;
+			int texture = offscreen_view_->callInt("getQtPaintingTexture");
 			if (texture < 0)
 			{
 				return 0;
 			}
 			QAndroidJniImagePair & pair = (texture == 0)? bitmap_a_: bitmap_b_;
 			pair.convert32BitImageFromAndroidToQt(android_to_qt_buffer_);
-			offscreen_view_->callVoid("unlockQtPaintingTexture");
-			need_update_texture_ = false;
 			if (out_texture_updated)
 			{
 				*out_texture_updated = true;

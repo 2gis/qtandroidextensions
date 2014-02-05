@@ -791,24 +791,15 @@ abstract class OffscreenView
     }
 
     //! Called from C++
-    public int lockQtPaintingTexture()
+    public int getQtPaintingTexture()
     {
         if (rendering_surface_ != null)
         {
-            return rendering_surface_.lockQtPaintingTexture();
+            return rendering_surface_.getQtPaintingTexture();
         }
         else
         {
             return -1;
-        }
-    }
-
-    //! Called from C++
-    public void unlockQtPaintingTexture()
-    {
-        if (rendering_surface_ != null)
-        {
-            rendering_surface_.unlockQtPaintingTexture();
         }
     }
 
@@ -1057,6 +1048,7 @@ abstract class OffscreenView
         //
         abstract boolean updateTexture();
         abstract float getTextureTransformMatrix(final int index);
+        //! \todo FIXME remove this function?
         abstract public boolean hasTexture();
         abstract public void setNewSize(final int w, final int h);
 
@@ -1064,8 +1056,7 @@ abstract class OffscreenView
         // Bitmap mode
         //
         abstract public void setBitmaps(final Bitmap bitmap_a, final Bitmap bitmap_b);
-        abstract public int lockQtPaintingTexture();
-        abstract public void unlockQtPaintingTexture();
+        abstract public int getQtPaintingTexture();
     }
 
     protected class OffscreenBitmapRenderingSurface implements OffscreenRenderingSurface
@@ -1074,7 +1065,6 @@ abstract class OffscreenView
         Bitmap bitmap_b_ = null;
         int draw_bitmap_ = 0;
         boolean has_texture_ = false;
-        Object qt_painting_mutex_ = new Object();
 
         public OffscreenBitmapRenderingSurface()
         {
@@ -1098,11 +1088,6 @@ abstract class OffscreenView
         {
             synchronized(texture_mutex_)
             {
-                // Swapping buffers
-                synchronized(qt_painting_mutex_)
-                {
-                    draw_bitmap_ = (draw_bitmap_ == 0)? 1: 0;
-                }
                 // Marking that we have a painted texture
                 has_texture_ = true;
                 synchronized(texture_transform_mutex_)
@@ -1114,19 +1099,19 @@ abstract class OffscreenView
         }
 
         @Override
-        public int lockQtPaintingTexture()
+        public int getQtPaintingTexture()
         {
-        // !!!!! TO DO: SEMAPHORE
-            synchronized(qt_painting_mutex_)
+            synchronized(texture_mutex_)
             {
-                return (draw_bitmap_ == 0)? 1: 0;
+                if (!hasTexture())
+                {
+                    return -1;
+                }
+                // Swapping buffers
+                int old_draw_bitmap = draw_bitmap_;
+                draw_bitmap_ = (draw_bitmap_ == 0)? 1: 0;
+                return old_draw_bitmap;
             }
-        }
-
-        @Override
-        public void unlockQtPaintingTexture()
-        {
-         // !!!!!!!!!!!!!!!!!!!o
         }
 
         @Override
@@ -1157,10 +1142,13 @@ abstract class OffscreenView
         {
             synchronized(texture_mutex_)
             {
-                bitmap_a_ = bitmap_a;
-                bitmap_b_ = bitmap_b;
-                draw_bitmap_ = 0;
-                has_texture_ = false;
+                if (bitmap_a_ != bitmap_a || bitmap_b_ != bitmap_b)
+                {
+                    bitmap_a_ = bitmap_a;
+                    bitmap_b_ = bitmap_b;
+                    has_texture_ = false;
+                    invalidateOffscreenView();
+                }
             }
         }
     }
@@ -1286,14 +1274,9 @@ abstract class OffscreenView
         }
 
         @Override
-        public int lockQtPaintingTexture()
+        public int getQtPaintingTexture()
         {
-            return 0;
-        }
-
-        @Override
-        public void unlockQtPaintingTexture()
-        {
+            return -1;
         }
     }
 
