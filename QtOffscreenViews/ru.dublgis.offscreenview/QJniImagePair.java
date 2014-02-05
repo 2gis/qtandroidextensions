@@ -49,7 +49,7 @@ import android.util.Log;
 class QJniImagePair
 {
     public static final String TAG = "Grym/QJniImagePair";
-    private static int api_level_ = 0;
+    //private static int api_level_ = 0;
 
     public static Bitmap createBitmap(int w, int h, int depth)
     {

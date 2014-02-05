@@ -656,6 +656,63 @@ void QJniObject::callStaticVoid(const char* method_name)
 	}
 }
 
+jint QJniObject::callStaticInt(const char* method_name)
+{
+	VERBOSE(qDebug("void QJniObject::callStaticInt(const char* method_name) %p \"%s\"", this, method_name));
+	QJniEnvPtr jep;
+	JNIEnv* env = jep.env();
+	jmethodID mid = env->GetStaticMethodID(class_, method_name, "()I");
+	if (!mid)
+	{
+		qWarning("%s: method not found.", __FUNCTION__);
+		throw QJniMethodNotFoundException();
+	}
+	jint result = env->CallStaticIntMethod(class_, mid);
+	if (jep.clearException())
+	{
+		throw QJniJavaCallException();
+	}
+	return result;
+}
+
+jlong QJniObject::callStaticLong(const char* method_name)
+{
+	VERBOSE(qDebug("void QJniObject::callStaticLong(const char* method_name) %p \"%s\"", this, method_name));
+	QJniEnvPtr jep;
+	JNIEnv* env = jep.env();
+	jmethodID mid = env->GetStaticMethodID(class_, method_name, "()J");
+	if (!mid)
+	{
+		qWarning("%s: method not found.", __FUNCTION__);
+		throw QJniMethodNotFoundException();
+	}
+	jlong result = env->CallStaticLongMethod(class_, mid);
+	if (jep.clearException())
+	{
+		throw QJniJavaCallException();
+	}
+	return result;
+}
+
+bool QJniObject::callStaticBoolean(const char* method_name)
+{
+	VERBOSE(qDebug("void QJniObject::callStaticBoolean(const char* method_name) %p \"%s\"", this, method_name));
+	QJniEnvPtr jep;
+	JNIEnv* env = jep.env();
+	jmethodID mid = env->GetStaticMethodID(class_, method_name, "()Z");
+	if (!mid)
+	{
+		qWarning("%s: method not found.", __FUNCTION__);
+		throw QJniMethodNotFoundException();
+	}
+	bool result = env->CallStaticBooleanMethod(class_, mid)? true: false;
+	if (jep.clearException())
+	{
+		throw QJniJavaCallException();
+	}
+	return result;
+}
+
 void QJniObject::callStaticParamVoid(const char * method_name, const char * param_signature, ...)
 {
 	VERBOSE(qDebug("void QJniObject(%p)::CallParamVoid(\"%s\", \"%s\", ...)", this, method_name, param_signature));

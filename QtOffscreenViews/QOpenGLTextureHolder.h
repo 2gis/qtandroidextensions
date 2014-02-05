@@ -64,6 +64,7 @@ public:
 	 */
 	QOpenGLTextureHolder(GLenum type, const QSize & size);
 	QOpenGLTextureHolder();
+	QOpenGLTextureHolder(const QImage & qimage);
 	~QOpenGLTextureHolder();
 
 	bool isAllocated() const { return texture_id_ != 0; }

@@ -36,6 +36,7 @@
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#include <QGLWidget>
 #include "QOpenGLTextureHolder.h"
 
 static const GLuint c_vertex_coordinates_attr  = 0;
@@ -47,7 +48,9 @@ QOpenGLTextureHolder::QOpenGLTextureHolder(GLenum type, const QSize & size)
 	: texture_id_(0)
 	, texture_type_(type)
 	, texture_size_(size)
-	, a11_(1.0f), a12_(0), a21_(0), a22_(1.0f), b1_(0), b2_(0)
+	, a11_(1.0f), a12_(0)
+	, a21_(0), a22_(1.0f)
+	, b1_(0), b2_(0)
 {
 	Q_ASSERT(type == GL_TEXTURE_EXTERNAL_OES || type == GL_TEXTURE_2D);
 	allocateTexture();
@@ -59,6 +62,34 @@ QOpenGLTextureHolder::QOpenGLTextureHolder()
 	, texture_size_(64, 64)
 	, a11_(1.0f), a12_(0), a21_(0), a22_(1.0f), b1_(0), b2_(0)
 {
+}
+
+QOpenGLTextureHolder::QOpenGLTextureHolder(const QImage & qimage)
+	: texture_id_(0)
+	, texture_type_(GL_TEXTURE_2D)
+	, texture_size_(0, 0)
+	, a11_(1.0f), a12_(0), a21_(0), a22_(1.0f), b1_(0), b2_(0)
+{
+	if (qimage.isNull() || qimage.width() < 1 || qimage.height() < 1)
+	{
+		return;
+	}
+	QImage gl_image = QGLWidget::convertToGLFormat(qimage);
+	if (gl_image.isNull())
+	{
+		qCritical()<<"Failed to convert QImage to GL format!";
+		return;
+	}
+	glGenTextures(1, &texture_id_);
+	glBindTexture(GL_TEXTURE_2D, texture_id_);
+	glTexImage2D(
+		GL_TEXTURE_2D, 0, GL_RGBA
+		, gl_image.width(), gl_image.height()
+		, 0, GL_RGBA, GL_UNSIGNED_BYTE, gl_image.bits());
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	texture_size_ = gl_image.size();
 }
 
 QOpenGLTextureHolder::~QOpenGLTextureHolder()

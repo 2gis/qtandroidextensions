@@ -68,6 +68,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.os.Bundle;
+import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
@@ -501,6 +502,31 @@ abstract class OffscreenView
         });
     }
 
+    void initializeBitmap(final Bitmap bitmap_a, final Bitmap bitmap_b)
+    {
+        Log.i(TAG, "OffscreenView.intializeBitmap(name=\""+object_name_+"\"");
+        synchronized(texture_mutex_)
+        {
+            rendering_surface_ = new OffscreenBitmapRenderingSurface();
+            rendering_surface_.setBitmaps(bitmap_a, bitmap_b);
+        }
+        runViewAction(new Runnable() {
+            @Override
+            public void run()
+            {
+                synchronized(texture_mutex_)
+                {
+                    Log.i(TAG, "OffscreenView.intializeBitmap(name=\""+object_name_+"\") RUN");
+                    if (layout_ != null)
+                    {
+                        layout_.postInvalidate();
+                    }
+                    invalidateOffscreenView();
+                }
+            }
+        });
+    }
+
     abstract public void callViewPaintMethod(Canvas canvas);
     abstract public void doNativeUpdate();
     abstract public void doCreateView();
@@ -755,11 +781,11 @@ abstract class OffscreenView
     }
 
     //! Called from C++
-    public void setBitmap(final Bitmap bitmap)
+    public void setBitmaps(final Bitmap bitmap_a, final Bitmap bitmap_b)
     {
         if (rendering_surface_ != null)
         {
-            rendering_surface_.setBitmap(bitmap);
+            rendering_surface_.setBitmaps(bitmap_a, bitmap_b);
         }
     }
 
@@ -1002,20 +1028,32 @@ abstract class OffscreenView
     {
         abstract Canvas lockCanvas();
         abstract void unlockCanvas(Canvas canvas);
+
+        //
+        // OpenGL texture mode
+        //
         abstract boolean updateTexture();
-        //! In non-GL mode, this should not be used and can return 0 for any index.
         abstract float getTextureTransformMatrix(final int index);
         abstract public boolean hasTexture();
         abstract public void setNewSize(final int w, final int h);
-        abstract public void setBitmap(final Bitmap bitmap);
+
+        //
+        // Bitmap mode
+        //
+        abstract public void setBitmaps(final Bitmap bitmap_a, final Bitmap bitmap_b);
+        abstract public int lockQtPaintingTexture();
+        abstract public void unlockQtPaintingTexture();
     }
 
-    protected class OffscreenRasterRenderingSurface implements OffscreenRenderingSurface
+    protected class OffscreenBitmapRenderingSurface implements OffscreenRenderingSurface
     {
-        Bitmap bitmap_ = null;
+        Bitmap bitmap_a_ = null;
+        Bitmap bitmap_b_ = null;
+        int draw_bitmap_ = 0;
         boolean has_texture_ = false;
+        Object qt_painting_mutex_ = new Object();
 
-        public OffscreenRasterRenderingSurface()
+        public OffscreenBitmapRenderingSurface()
         {
         }
 
@@ -1024,18 +1062,48 @@ abstract class OffscreenView
         {
             synchronized(texture_mutex_)
             {
-                if (bitmap_ == null)
+                if (bitmap_a_ == null || bitmap_b_ == null)
                 {
                     return null;
                 }
-                return new Canvas(bitmap_);
+                return new Canvas((draw_bitmap_ == 0)? bitmap_a_: bitmap_b_);
             }
         }
 
         @Override
         public void unlockCanvas(Canvas canvas)
         {
-            has_texture_ = true;
+            synchronized(texture_mutex_)
+            {
+                // Swapping buffers
+                synchronized(qt_painting_mutex_)
+                {
+                    draw_bitmap_ = (draw_bitmap_ == 0)? 1: 0;
+                }
+                // Marking that we have a painted texture
+                has_texture_ = true;
+                synchronized(texture_transform_mutex_)
+                {
+                    last_texture_width_ = last_painted_width_;
+                    last_texture_height_ = last_painted_height_;
+                }
+            }
+        }
+
+        @Override
+        public int lockQtPaintingTexture()
+        {
+        // !!!!! TO DO: SEMAPHORE
+            synchronized(qt_painting_mutex_)
+            {
+                return (draw_bitmap_ == 0)? 1: 0;
+            }
+        }
+
+        @Override
+        public void unlockQtPaintingTexture()
+        {
+         // !!!!!!!!!!!!!!!!!!!o
         }
 
         @Override
@@ -1053,7 +1121,7 @@ abstract class OffscreenView
         @Override
         public boolean hasTexture()
         {
-            return has_texture_ && bitmap_ != null;
+            return has_texture_ && bitmap_a_ != null && bitmap_b_ != null;
         }
 
         @Override
@@ -1062,11 +1130,14 @@ abstract class OffscreenView
         }
 
         @Override
-        public void setBitmap(final Bitmap bitmap)
+        public void setBitmaps(final Bitmap bitmap_a, final Bitmap bitmap_b)
         {
             synchronized(texture_mutex_)
             {
-                bitmap_ = bitmap;
+                bitmap_a_ = bitmap_a;
+                bitmap_b_ = bitmap_b;
+                draw_bitmap_ = 0;
+                has_texture_ = false;
             }
         }
     }
@@ -1187,9 +1258,32 @@ abstract class OffscreenView
         }
 
         @Override
-        public void setBitmap(final Bitmap bitmap)
+        public void setBitmaps(final Bitmap bitmap_a, final Bitmap bitmap_b)
         {
         }
+
+        @Override
+        public int lockQtPaintingTexture()
+        {
+            return 0;
+        }
+
+        @Override
+        public void unlockQtPaintingTexture()
+        {
+        }
+    }
+
+    private static int api_level_ = 0;
+    final public static int getApiLevel()
+    {
+        if (api_level_ < 1)
+        {
+            Build b = new Build();
+            Build.VERSION ver = new Build.VERSION();
+            api_level_ = ver.SDK_INT;
+        }
+        return api_level_;
     }
 
 }

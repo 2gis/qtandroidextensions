@@ -249,6 +249,9 @@ public:
 
 	//! Call void static method of the wrapped Java class
 	void callStaticVoid(const char * method_name);
+	jint callStaticInt(const char * method_name);
+	jlong callStaticLong(const char * method_name);
+	bool callStaticBoolean(const char * method_name);
 	void callStaticParamVoid(const char * method_name, const char * param_signature, ...);
 	void callStaticVoid(const char * method_name, const QString & string);
 

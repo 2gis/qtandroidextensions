@@ -41,6 +41,7 @@
 #include <QScopedPointer>
 #include <QMutex>
 #include <QJniHelpers.h>
+#include <QAndroidJniImagePair.h>
 #include "QOpenGLTextureHolder.h"
 
 #if QT_VERSION < 0x050000
@@ -77,6 +78,7 @@ public:
 
 	static const QString & getDefaultJavaClassPath();
 	static void preloadJavaClasses();
+	static bool openGlTextureSupported();
 
 	/*!
 	 * Initialize OpenGL rendering surface. This function should be called within active
@@ -84,6 +86,11 @@ public:
 	 * It is safe to call this function multiple times. All subsequent calls are ignored.
 	 */
 	virtual void initializeGL();
+
+	/*!
+	 * Initialize non-OpenGL rendering surface.
+	 */
+	virtual void initializeBitmap();
 
 	/*!
 	 * Returns true if initializeGL() has been called.
@@ -245,6 +252,8 @@ private:
 	QString view_class_name_;
 	QString view_object_name_;
 	QOpenGLTextureHolder tex_;
+	QScopedPointer<QOpenGLTextureHolder> raster_to_texture_cache_;
+	QAndroidJniImagePair bitmap_a_, bitmap_b_;
 	// QScopedPointer<QJniObject> system_class_;
 	QScopedPointer<QJniObject> offscreen_view_;
 	QSize size_;

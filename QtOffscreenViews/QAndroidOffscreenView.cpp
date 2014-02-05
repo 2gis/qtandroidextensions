@@ -86,6 +86,9 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	: QObject(parent)
 	, view_class_name_(classname)
 	, view_object_name_(objectname)
+	, tex_()
+	, bitmap_a_(32)
+	, bitmap_b_(32)
 	, size_(defsize)
 	, fill_color_(Qt::white)
 	, need_update_texture_(false)
@@ -105,6 +108,7 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	if (!view_class_name_.contains('/'))
 	{
 		view_class_name_.prepend(c_class_path_);
+		qDebug()<<__PRETTY_FUNCTION__<<"Class name"<<classname<<"expanded to"<<view_class_name_;
 	}
 
 	// qDebug()<<__PRETTY_FUNCTION__<<"Connecting to java.lang.System...";
@@ -177,14 +181,27 @@ const QString & QAndroidOffscreenView::getDefaultJavaClassPath()
 
 void QAndroidOffscreenView::preloadJavaClasses()
 {
-	// QAndroidQPAPluginGap::preloadJavaClass("java/lang/System");
+	QAndroidQPAPluginGap::preloadJavaClass("ru/dublgis/offscreenview/OffscreenView");
 	QAndroidJniImagePair::preloadJavaClasses();
 }
 
+bool QAndroidOffscreenView::openGlTextureSupported()
+{
+	try
+	{
+		int api = QJniObject("ru/dublgis/offscreenview/OffscreenView", false).callStaticInt("getApiLevel");
+		return api >= 15;
+	}
+	catch(QJniBaseException & e)
+	{
+		qCritical()<<"openGlTextureSupported exception:"<<e.what();
+		return false;
+	}
+}
 
 void QAndroidOffscreenView::initializeGL()
 {
-	if (tex_.isAllocated())
+	if (tex_.isAllocated() || bitmap_a_.isAllocated())
 	{
 		// qDebug("QAndroidOffscreenView GL is already initialized.");
 		return;
@@ -223,6 +240,27 @@ void QAndroidOffscreenView::initializeGL()
 	offscreen_view_->callVoid("initializeGL");
 }
 
+void QAndroidOffscreenView::initializeBitmap()
+{
+	if (tex_.isAllocated() || bitmap_a_.isAllocated())
+	{
+		return;
+	}
+	if (!offscreen_view_)
+	{
+		qWarning("Cannot initialize QAndroidOffscreenView because OffscreenView object was not created!");
+		return;
+	}
+	qDebug()<<__PRETTY_FUNCTION__;
+	bitmap_a_.resize(size_);
+	bitmap_b_.resize(size_);
+	offscreen_view_->callParamVoid("SetInitialWidth", "I", jint(size_.width()));
+	offscreen_view_->callParamVoid("SetInitialHeight", "I", jint(size_.height()));
+	offscreen_view_->callParamVoid("setBitmaps",
+		"Landroid/graphics/Bitmap;Landroid/graphics/Bitmap;",
+		bitmap_a_.jbitmap(), bitmap_b_.jbitmap());
+}
+
 void QAndroidOffscreenView::deleteAndroidView()
 {
 	if (offscreen_view_)
@@ -236,6 +274,9 @@ void QAndroidOffscreenView::deinitialize()
 {
 	deleteAndroidView();
 	tex_.deallocateTexture();
+	bitmap_a_.dispose();
+	bitmap_b_.dispose();
+	raster_to_texture_cache_.reset();
 }
 
 static inline void clearGlRect(int l, int b, int w, int h, const QColor & fill_color_)
@@ -250,6 +291,10 @@ static inline void clearGlRect(int l, int b, int w, int h, const QColor & fill_c
 void QAndroidOffscreenView::paintGL(int l, int b, int w, int h, bool reverse_y)
 {
 	glViewport(l, b, w, h);
+
+	//
+	// GL texture + GL in Qt
+	//
 	if (tex_.isAllocated() && view_painted_)
 	{
 		if (need_update_texture_)
@@ -272,12 +317,31 @@ void QAndroidOffscreenView::paintGL(int l, int b, int w, int h, bool reverse_y)
 			QRect(QPoint(0, 0), QSize(w, h)) // target rect (relatively to viewport)
 			, QRect(QPoint(0, 0), QSize(w, h)) // source rect (in texture)
 			, reverse_y);
+		return;
 	}
-	else
+
+	//
+	// Bitmap texture + GL in Qt
+	//
+	if (bitmap_a_.isAllocated() && view_painted_ && offscreen_view_ && offscreen_view_->jObject())
 	{
-		// View is not ready, just fill the area with the fill color.
-		clearGlRect(l, b, w, h, fill_color_);
+		if (!raster_to_texture_cache_ || need_update_texture_)
+		{
+			int texture = offscreen_view_->callInt("lockQtPaintingTexture");
+			QAndroidJniImagePair & pair = (texture == 0)? bitmap_a_: bitmap_b_;
+			pair.convert32BitImageFromAndroidToQt();
+			raster_to_texture_cache_.reset(new QOpenGLTextureHolder(pair.qImage()));
+			offscreen_view_->callVoid("unlockQtPaintingTexture");
+		}
+		raster_to_texture_cache_->blitTexture(
+			QRect(QPoint(0, 0), QSize(w, h)) // target rect (relatively to viewport)
+			, QRect(QPoint(0, 0), QSize(w, h)) // source rect (in texture)
+			, reverse_y);
+		return;
 	}
+
+	// View is not ready, just fill the area with the fill color.
+	clearGlRect(l, b, w, h, fill_color_);
 }
 
 bool QAndroidOffscreenView::isCreated() const
@@ -348,7 +412,10 @@ void QAndroidOffscreenView::setFillColor(const QColor & color)
 		if (offscreen_view_)
 		{
 			offscreen_view_->callParamVoid("setFillColor", "IIII",
-				jint(fill_color_.alpha()), jint(fill_color_.red()), jint(fill_color_.green()), jint(fill_color_.blue()));
+				jint(fill_color_.alpha()),
+				jint(fill_color_.red()),
+				jint(fill_color_.green()),
+				jint(fill_color_.blue()));
 		}
 		if (!hasValidImage())
 		{
@@ -496,11 +563,20 @@ void QAndroidOffscreenView::resize(const QSize & size)
 	{
 		qDebug()<<__PRETTY_FUNCTION__<<"Old size:"<<size_<<"New size:"<<size;
 		size_ = size;
+		if (bitmap_a_.isAllocated())
+		{
+			bitmap_a_.resize(size_);
+			bitmap_b_.resize(size_);
+			raster_to_texture_cache_.reset();
+		}
 		if (offscreen_view_)
 		{
 			offscreen_view_->callParamVoid("resizeOffscreenView", "II", jint(size.width()), jint(size.height()));
+			offscreen_view_->callParamVoid("setBitmaps",
+				"Landroid/graphics/Bitmap;Landroid/graphics/Bitmap;",
+				bitmap_a_.jbitmap(), bitmap_b_.jbitmap());
 		}
-		tex_.setTextureSize(size);
+		tex_.setTextureSize(size);		
 	}
 }
 

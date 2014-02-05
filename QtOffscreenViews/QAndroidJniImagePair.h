@@ -122,7 +122,7 @@ protected:
 	QJniObject * createBitmap(const QSize & size);
 
 	/*!
-	 * After a call to this function, imageOnBitmap and bitmap have "size" size
+	 * After a call to  this function, imageOnBitmap and bitmap have "size" size
 	 * and are located in the same memory (i.e. share the same image data).
 	 * WARNING: size must be valid (non-zero and not too huge) or the function
 	 * will just return false without doing anything.

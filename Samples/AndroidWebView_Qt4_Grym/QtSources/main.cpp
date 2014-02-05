@@ -194,11 +194,13 @@ public:
 		view_->setCacheMode(QGraphicsView::CacheBackground);
 		view_->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 #endif
+		qDebug()<<__PRETTY_FUNCTION__<<"Creating EditText...";
 		etview.reset(new QOffscreenEditTextGraphicsWidget());
 		//etview->androidOffscreenView()->setSynchronizedTextureUpdate(false);
 		etview->androidOffscreenView()->setFillColor(Qt::yellow);
 		scene_.addItem(etview.data());
 
+		qDebug()<<__PRETTY_FUNCTION__<<"Creating WebView...";
 		aview.reset(new QOffscreenWebViewGraphicsWidget());
 		//aview->androidOffscreenView()->setSynchronizedTextureUpdate(false);
 		aview->androidOffscreenView()->setFillColor(Qt::white);
