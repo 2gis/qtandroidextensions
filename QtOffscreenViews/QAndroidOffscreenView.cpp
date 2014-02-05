@@ -349,20 +349,21 @@ const QImage * QAndroidOffscreenView::getBitmapBuffer(bool * out_texture_updated
 	{
 		*out_texture_updated = false;
 	}
-	if (bitmap_a_.isAllocated() && view_painted_ && offscreen_view_ && offscreen_view_->jObject())
+	if (bitmap_a_.isAllocated() && bitmap_b_.isAllocated()
+		&& view_painted_ && offscreen_view_ && offscreen_view_->jObject())
 	{
-		if (!raster_to_texture_cache_ || need_update_texture_)
+		if (android_to_qt_buffer_.isNull() || android_to_qt_buffer_.size() != size() || need_update_texture_)
 		{
 			need_update_texture_ = false;
-			int texture = offscreen_view_->callInt("getQtPaintingTexture");
-			if (texture < 0)
+			int buffer_index = offscreen_view_->callInt("getQtPaintingTexture");
+			if (buffer_index < 0)
 			{
 				return 0;
 			}
 			//! \todo FIXME size checks!
 			// last_texture_width_ = offscreen_view_->callInt("getLastTextureWidth");
 			// last_texture_height_ = offscreen_view_->callInt("getLastTextureHeight");
-			QAndroidJniImagePair & pair = (texture == 0)? bitmap_a_: bitmap_b_;
+			QAndroidJniImagePair & pair = (buffer_index == 0)? bitmap_a_: bitmap_b_;
 			pair.convert32BitImageFromAndroidToQt(android_to_qt_buffer_);
 			if (out_texture_updated)
 			{
@@ -450,6 +451,13 @@ void QAndroidOffscreenView::setFillColor(const QColor & color)
 				jint(fill_color_.red()),
 				jint(fill_color_.green()),
 				jint(fill_color_.blue()));
+		}
+		if (bitmap_a_.isAllocated() && bitmap_b_.isAllocated())
+		{
+			bitmap_a_.fill(fill_color_, true);
+			bitmap_b_.fill(fill_color_, true);
+			need_update_texture_ = true;
+			invalidate();
 		}
 		if (!hasValidImage())
 		{
