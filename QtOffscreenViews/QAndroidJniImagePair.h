@@ -1,8 +1,10 @@
 /*
   Offscreen Android Views library for Qt
 
-  Authors:
+  Author:
   Sergey A. Galin <sergey.galin@gmail.com>
+
+  Contributor:
   Ivan 'w23' Avdeev <marflon@gmail.com>
 
   Distrbuted under The BSD License
@@ -46,6 +48,8 @@
 /*!
  * This class holds QImage and Android Bitmap sharing the same pixel buffer.
  * For 16 bit, the image can be used in Android and in Qt at the same time.
+ * The 16 bit mode may have visible color errors and has no significant
+ * performance benefits comparing to 32 bits.
  * For 32 bit, it is necessary to call convert32BitImageFromQtToAndroid() /
  * convert32BitImageFromAndroidToQt() to fix color plane order.
  */
@@ -53,27 +57,38 @@ class QAndroidJniImagePair
 	: public QObject
 {
     Q_OBJECT
+	Q_PROPERTY(int bitness READ bitness)
+	Q_PROPERTY(QSize size READ size WRITE resize)
 public:
+	/*!
+	 * Create an image pair object for given color resoultion.
+	 * To actually allocate the bitmap call resize().
+	 * \param bitness can be 32 or 16.
+	 */
 	QAndroidJniImagePair(int bitness = 32);
 	virtual ~QAndroidJniImagePair();
-	static void preloadJavaClasses();
 
-    // Create a dummy object with 1x1 px QImage and no jbitmap.
-    // jbitmap is released, if necessary.
-    // This is used for some workarounds.
-    void dummy();
+	int bitness() const { return bitness_; }
 
 	/*!
-	 * After call of this function, imageOnBitmap and bitmap have "size" size
-	 * and are located in the same memory (i.e. share the same image data).
-	 * WARNING: size must be valid (non-zero and not too huge) or the function
-	 * will just return false without doing anything.
+	 * Call this from main() to make sure that Java classes will be accessible.
 	 */
-	bool resize(const QSize & size);
+	static void preloadJavaClasses();
 
+	/*!
+	 * After call of this function, Java-side Bitmap is released and
+	 * QImage is assigned with 1 pixel image (i.e. QImage is never a null image).
+	 */
+	void dispose();
+
+	//! Global Java reference to the Java-side Bitmap.
 	jobject jbitmap(){ return (mBitmap)? mBitmap->jObject(): 0; }
-	QImage & qimage(){ return mImageOnBitmap; }
-	const QImage & qimage() const { return mImageOnBitmap; }
+
+	//! Reference to the QImage.
+	QImage & qImage(){ return mImageOnBitmap; }
+
+	//! Reference to the const QImage.
+	const QImage & qImage() const { return mImageOnBitmap; }
 
 	//! Swap color planes so Qt image starts to look correct on Android.
 	void convert32BitImageFromQtToAndroid();
@@ -81,12 +96,38 @@ public:
 	//! Swap color planes so Android image starts to look correct on Qt.
 	void convert32BitImageFromAndroidToQt();
 
+	//! Returns true if shared bitmap is allocated.
 	bool isAllocated() const;
-	bool hasSize(int w, int h) const;
-	bool ensureSize(int w, int h);
-	bool ensureSize(const QSize& sz);
+
+	/*!
+	 * Allocate bitmap of the given size. If the bitmap is already allocated it does nothing.
+	 * \return true if bitmap of the requested size has been successfully allocated.
+	 */
+	bool resize(int w, int h);
+
+	/*!
+	 * Allocate bitmap of the given size. If the bitmap is already allocated it does nothing.
+	 * \return true if bitmap of the requested size has been successfully allocated.
+	 */
+	bool resize(const QSize & sz);
+
+	/*!
+	 * Get size. Note that it does not always match qImage().size() because
+	 * when the bitmap is not allocated it returns QSize(0, 0) while qImage().size()
+	 * will give QSize(1, 1).
+	 */
+	QSize size() const;
 protected:
+	//! Create Java-side bitmap of the given size for current bitness_.
 	QJniObject * createBitmap(const QSize & size);
+
+	/*!
+	 * After a call to this function, imageOnBitmap and bitmap have "size" size
+	 * and are located in the same memory (i.e. share the same image data).
+	 * WARNING: size must be valid (non-zero and not too huge) or the function
+	 * will just return false without doing anything.
+	 */
+	bool doResize(const QSize & size);
 
 private:
 	QJniObject qjniimagepairclass_;

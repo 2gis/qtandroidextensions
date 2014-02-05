@@ -1,8 +1,10 @@
 /*
   Offscreen Android Views library for Qt
 
-  Authors:
+  Author:
   Sergey A. Galin <sergey.galin@gmail.com>
+
+  Contributor:
   Ivan 'w23' Avdeev <marflon@gmail.com>
 
   Distrbuted under The BSD License
@@ -74,6 +76,7 @@ QAndroidJniImagePair::QAndroidJniImagePair(int bitness)
     , mImageOnBitmap()
 	, bitness_(bitness)
 {
+	dispose();
 }
 
 QAndroidJniImagePair::~QAndroidJniImagePair()
@@ -85,11 +88,11 @@ void QAndroidJniImagePair::preloadJavaClasses()
 	QAndroidQPAPluginGap::preloadJavaClass("ru/dublgis/offscreenview/QJniImagePair");
 }
 
-void QAndroidJniImagePair::dummy()
+void QAndroidJniImagePair::dispose()
 {
 	if (mImageOnBitmap.width() == 1 && mImageOnBitmap.height() == 1 && !mBitmap)
 	{
-        return; // Already a dummy
+		return; // Already a dispose
 	}
 	mImageOnBitmap = QImage(1, 1, qtImageFormatForBitness(bitness_));
 	mBitmap.reset();
@@ -115,7 +118,7 @@ QJniObject * QAndroidJniImagePair::createBitmap(const QSize & size)
 	}
 }
 
-bool QAndroidJniImagePair::resize(const QSize & size)
+bool QAndroidJniImagePair::doResize(const QSize & size)
 {
 	qDebug()<<"QAndroidJniImagePair::resize (static) tid:"<<gettid()<<"new size:"<<size;
 
@@ -135,7 +138,7 @@ bool QAndroidJniImagePair::resize(const QSize & size)
 	if (!newBitmap || !newBitmap->jObject() == 0)
     {
         qCritical("Could not create %dx%d surface", size.width(), size.height());
-		dummy();
+		dispose();
         return false;
     }
 
@@ -177,7 +180,7 @@ bool QAndroidJniImagePair::resize(const QSize & size)
 		if (format == QImage::Format_Invalid)
 		{
 			qCritical()<<"Don't know how to create bitmap of this Android bitmap format:"<<binfo.format;
-			dummy();
+			dispose();
 			return false;
 		}
 	}
@@ -198,13 +201,13 @@ bool QAndroidJniImagePair::resize(const QSize & size)
 	if (lock_pixels_result != 0)
 	{
 		qCritical()<<"Could not get new surface pointer, error:"<<lock_pixels_result;
-		dummy();
+		dispose();
         return false;
     }
 	if (!ptr)
 	{
         qCritical()<<"Could not get new surface pointer, null pointer returned.";
-		dummy();
+		dispose();
         return false;
     }
 
@@ -227,7 +230,7 @@ bool QAndroidJniImagePair::resize(const QSize & size)
 	if (mImageOnBitmap.isNull())
 	{
         qCritical()<<"Error: called QImage constructor but got null image! Memory error?";
-		dummy();
+		dispose();
 		return false;
 	}
 
@@ -263,25 +266,27 @@ bool QAndroidJniImagePair::isAllocated() const
 	return mBitmap && mBitmap->jObject() != 0 && !mImageOnBitmap.isNull();
 }
 
-bool QAndroidJniImagePair::hasSize(int w, int h) const
+bool QAndroidJniImagePair::resize(int w, int h)
 {
-	return isAllocated() && mImageOnBitmap.width() == w && mImageOnBitmap.height() == h;
-}
-
-bool QAndroidJniImagePair::ensureSize(int w, int h)
-{
-	if (hasSize(w, h))
+	if (isAllocated() && mImageOnBitmap.width() == w && mImageOnBitmap.height() == h)
 	{
 		return true;
 	}
-	return resize(QSize(w, h));
+	return doResize(QSize(w, h));
 }
 
-bool QAndroidJniImagePair::ensureSize(const QSize & sz)
+bool QAndroidJniImagePair::resize(const QSize & sz)
 {
-	if (hasSize(sz.width(), sz.height()))
-	{
-		return true;
-	}
-	return resize(sz);
+	return resize(sz.width(), sz.height());
 }
+
+QSize QAndroidJniImagePair::size() const
+{
+	if (!isAllocated())
+	{
+		return QSize(0, 0);
+	}
+	return mImageOnBitmap.size();
+}
+
+
