@@ -114,6 +114,12 @@ public:
 	 */
 	virtual void paintGL(int l, int b, int w, int h, bool reverse_y);
 
+	/*!
+	 * Used in Bitmap mode. Instead of paintGL(), get current bitmap buffer
+	 * using getBitmapBuffer() and paint it by yourself.
+	 */
+	const QImage * getBitmapBuffer(bool * out_texture_updated = 0);
+
 	//! Check if Android View already exists
 	bool isCreated() const;
 

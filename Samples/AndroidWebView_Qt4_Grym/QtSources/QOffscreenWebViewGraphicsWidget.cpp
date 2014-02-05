@@ -49,12 +49,23 @@ void QAndroidOffscreenViewGraphicsWidget::paint(QPainter * painter, const QStyle
 {
 	Q_UNUSED(option);
 	Q_UNUSED(widget);
-	Q_ASSERT(painter->paintEngine()->type() == QPaintEngine::OpenGL2);
+	bool use_gl = painter->paintEngine()->type() == QPaintEngine::OpenGL2;
 
 	// We don't have any function like initializeGL in QGraphicsWidget, so let's just
 	// do the initialization during the first paint.
-//	aview_->initializeGL();
-aview_->initializeBitmap();
+	if (!aview_->isIntialized())
+	{
+#if 0
+		if (aview_->openGlTextureSupported() && use_gl)
+		{
+			aview_->initializeGL();
+		}
+		else
+#endif
+		{
+			aview_->initializeBitmap();
+		}
+	}
 
 	if (!initial_visibilty_set_)
 	{
@@ -69,63 +80,78 @@ aview_->initializeBitmap();
 
 	painter->beginNativePainting();
 
-	QPaintDevice *device = painter->device();
-	QTransform combined_transform = painter->combinedTransform();
+	if (use_gl)
+	{
+		QPaintDevice *device = painter->device();
+		QTransform combined_transform = painter->combinedTransform();
 
-	Q_ASSERT(
-		(combined_transform.type() == QTransform::TxNone) ||
-		(combined_transform.type() == QTransform::TxTranslate) ||
-		(combined_transform.type() == QTransform::TxScale));
+		Q_ASSERT(
+			(combined_transform.type() == QTransform::TxNone) ||
+			(combined_transform.type() == QTransform::TxTranslate) ||
+			(combined_transform.type() == QTransform::TxScale));
 
-	QRectF widget_geometry = combined_transform.mapRect(QRectF(QPointF(0, 0), size()));
+		QRectF widget_geometry = combined_transform.mapRect(QRectF(QPointF(0, 0), size()));
 
-	GLint l = static_cast<GLint>(widget_geometry.left() + 0.5);
-	GLint b = static_cast<GLint>(device->height() - static_cast<int>(widget_geometry.bottom() + 0.5));
-	GLsizei w = static_cast<GLsizei>(widget_geometry.width()+0.5);
-	GLsizei h = static_cast<GLsizei>(widget_geometry.height()+0.5);
+		GLint l = static_cast<GLint>(widget_geometry.left() + 0.5);
+		GLint b = static_cast<GLint>(device->height() - static_cast<int>(widget_geometry.bottom() + 0.5));
+		GLsizei w = static_cast<GLsizei>(widget_geometry.width()+0.5);
+		GLsizei h = static_cast<GLsizei>(widget_geometry.height()+0.5);
 
-	QPoint viewpos = this->scene()->views().at(0)->pos();
-	Q_UNUSED(viewpos);
+		QPoint viewpos = this->scene()->views().at(0)->pos();
+		Q_UNUSED(viewpos);
 
-#if 0
-	qDebug()
-			<<__PRETTY_FUNCTION__
-			<<"tid"<<gettid()
-			<<"widget_geometry:"<<widget_geometry.left()<<widget_geometry.top()
-			<<"("<<widget_geometry.width()<<"x"<<widget_geometry.height()<<")"
-			<<"right"<<widget_geometry.right()<<"bottom"<<widget_geometry.bottom()
-			<<"//////// l"<<l<<"b"<<b<<"w"<<w<<"h"<<h
-			<<"widget_pos"<<widget->pos().x()<<widget->pos().y()
-			<<"viewpos"<<viewpos.x()<<viewpos.y();
-#endif
+		#if 0
+			qDebug()
+					<<__PRETTY_FUNCTION__
+					<<"tid"<<gettid()
+					<<"widget_geometry:"<<widget_geometry.left()<<widget_geometry.top()
+					<<"("<<widget_geometry.width()<<"x"<<widget_geometry.height()<<")"
+					<<"right"<<widget_geometry.right()<<"bottom"<<widget_geometry.bottom()
+					<<"//////// l"<<l<<"b"<<b<<"w"<<w<<"h"<<h
+					<<"widget_pos"<<widget->pos().x()<<widget->pos().y()
+					<<"viewpos"<<viewpos.x()<<viewpos.y();
+		#endif
 
-	l += widget->pos().x();
-	b += widget->pos().y();
-	//! \todo Take into account position of the view within the window
-	w++;
-	h++;
+		l += widget->pos().x();
+		b += widget->pos().y();
+		//! \todo Take into account position of the view within the window
+		w++;
+		h++;
 
-	glViewport(l, b, w, h);
+		glViewport(l, b, w, h);
 
-	#if defined(ANDROIDVIEWGRAPHICSPROXY_CLEARALL)
-		glEnable(GL_SCISSOR_TEST);
-		glScissor(l, b, w, h);
+		#if defined(ANDROIDVIEWGRAPHICSPROXY_CLEARALL)
+			glEnable(GL_SCISSOR_TEST);
+			glScissor(l, b, w, h);
 
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	#endif
+			glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		#endif
 
-	// Finally, we can draw the texture using these GL coordinates
-	aview_->paintGL(l, b, w, h, false);
+		// Finally, we can draw the texture using these GL coordinates
+		aview_->paintGL(l, b, w, h, false);
 
-	#if defined(ANDROIDVIEWGRAPHICSPROXY_CLEARALL)
-		glScissor(0, 0, static_cast<GLsizei>(device->width()), static_cast<GLsizei>(device->height()));
-		glDisable(GL_SCISSOR_TEST);
-	#endif
+		#if defined(ANDROIDVIEWGRAPHICSPROXY_CLEARALL)
+			glScissor(0, 0, static_cast<GLsizei>(device->width()), static_cast<GLsizei>(device->height()));
+			glDisable(GL_SCISSOR_TEST);
+		#endif
 
-	// Reset viewport (is it necessary?)
-	glViewport(0, 0, static_cast<GLsizei>(device->width()), static_cast<GLsizei>(device->height()));
-	painter->endNativePainting();
+		// Reset viewport (is it necessary?)
+		glViewport(0, 0, static_cast<GLsizei>(device->width()), static_cast<GLsizei>(device->height()));
+		painter->endNativePainting();
+	}
+	else
+	{
+		const QImage * buffer = aview_->getBitmapBuffer();
+		if (buffer)
+		{
+			painter->drawImage(0, 0, *buffer);
+		}
+		else
+		{
+			painter->fillRect(0, 0, size().width(), size().height(), aview_->fillColor());
+		}
+	}
 
 	if (last_updated_position_ != absolutePosition())
 	{

@@ -324,21 +324,13 @@ void QAndroidOffscreenView::paintGL(int l, int b, int w, int h, bool reverse_y)
 	//
 	// Bitmap texture + GL in Qt
 	//
-	if (bitmap_a_.isAllocated() && view_painted_ && offscreen_view_ && offscreen_view_->jObject())
+	bool new_texture = false;
+	const QImage * bitmap = QAndroidOffscreenView::getBitmapBuffer(&new_texture);
+	if (bitmap)
 	{
-		if (!raster_to_texture_cache_ || need_update_texture_)
+		if (new_texture || !raster_to_texture_cache_ || !raster_to_texture_cache_->isAllocated())
 		{
-			int texture = offscreen_view_->callInt("lockQtPaintingTexture");
-			if (texture < 0)
-			{
-				clearGlRect(l, b, w, h, fill_color_);
-				return;
-			}
-			QAndroidJniImagePair & pair = (texture == 0)? bitmap_a_: bitmap_b_;
-			pair.convert32BitImageFromAndroidToQt(android_to_qt_buffer_);
-			raster_to_texture_cache_.reset(new QOpenGLTextureHolder(android_to_qt_buffer_));
-			offscreen_view_->callVoid("unlockQtPaintingTexture");
-			need_update_texture_ = false;
+			raster_to_texture_cache_.reset(new QOpenGLTextureHolder(*bitmap));
 		}
 		raster_to_texture_cache_->blitTexture(
 			QRect(QPoint(0, 0), QSize(w, h)) // target rect (relatively to viewport)
@@ -349,6 +341,39 @@ void QAndroidOffscreenView::paintGL(int l, int b, int w, int h, bool reverse_y)
 
 	// View is not ready, just fill the area with the fill color.
 	clearGlRect(l, b, w, h, fill_color_);
+}
+
+const QImage * QAndroidOffscreenView::getBitmapBuffer(bool * out_texture_updated)
+{
+	if (out_texture_updated)
+	{
+		*out_texture_updated = false;
+	}
+	if (bitmap_a_.isAllocated() && view_painted_ && offscreen_view_ && offscreen_view_->jObject())
+	{
+		if (!raster_to_texture_cache_ || need_update_texture_)
+		{
+			int texture = offscreen_view_->callInt("lockQtPaintingTexture");
+			if (texture < 0)
+			{
+				return 0;
+			}
+			QAndroidJniImagePair & pair = (texture == 0)? bitmap_a_: bitmap_b_;
+			pair.convert32BitImageFromAndroidToQt(android_to_qt_buffer_);
+			offscreen_view_->callVoid("unlockQtPaintingTexture");
+			need_update_texture_ = false;
+			if (out_texture_updated)
+			{
+				*out_texture_updated = true;
+			}
+		}
+		return &android_to_qt_buffer_;
+	}
+	else
+	{
+		// qDebug()<<__PRETTY_FUNCTION__<<"Returning 0!";
+		return 0;
+	}
 }
 
 bool QAndroidOffscreenView::isCreated() const
