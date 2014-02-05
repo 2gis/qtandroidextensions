@@ -256,7 +256,7 @@ void QAndroidOffscreenView::initializeBitmap()
 	bitmap_b_.resize(size_);
 	offscreen_view_->callParamVoid("SetInitialWidth", "I", jint(size_.width()));
 	offscreen_view_->callParamVoid("SetInitialHeight", "I", jint(size_.height()));
-	offscreen_view_->callParamVoid("setBitmaps",
+	offscreen_view_->callParamVoid("initializeBitmap",
 		"Landroid/graphics/Bitmap;Landroid/graphics/Bitmap;",
 		bitmap_a_.jbitmap(), bitmap_b_.jbitmap());
 }
@@ -328,6 +328,11 @@ void QAndroidOffscreenView::paintGL(int l, int b, int w, int h, bool reverse_y)
 		if (!raster_to_texture_cache_ || need_update_texture_)
 		{
 			int texture = offscreen_view_->callInt("lockQtPaintingTexture");
+			if (texture < 0)
+			{
+				clearGlRect(l, b, w, h, fill_color_);
+				return;
+			}
 			QAndroidJniImagePair & pair = (texture == 0)? bitmap_a_: bitmap_b_;
 			pair.convert32BitImageFromAndroidToQt();
 			raster_to_texture_cache_.reset(new QOpenGLTextureHolder(pair.qImage()));

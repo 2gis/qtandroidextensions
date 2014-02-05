@@ -642,7 +642,8 @@ abstract class OffscreenView
             // background with the fill color.
             if (rendering_surface_ == null || getNativePtr() == 0)
             {
-                Log.i(TAG, "doDrawViewOnTexture: surface or native ptr is null. NP="+getNativePtr());
+                Log.i(TAG, "doDrawViewOnTexture: surface or native ptr is null. NP="+getNativePtr()
+                    +", RS? "+((rendering_surface_ == null)?"null":"not null"));
                 synchronized(painting_now_)
                 {
                      painting_now_ = false;
@@ -786,6 +787,28 @@ abstract class OffscreenView
         if (rendering_surface_ != null)
         {
             rendering_surface_.setBitmaps(bitmap_a, bitmap_b);
+        }
+    }
+
+    //! Called from C++
+    public int lockQtPaintingTexture()
+    {
+        if (rendering_surface_ != null)
+        {
+            return rendering_surface_.lockQtPaintingTexture();
+        }
+        else
+        {
+            return -1;
+        }
+    }
+
+    //! Called from C++
+    public void unlockQtPaintingTexture()
+    {
+        if (rendering_surface_ != null)
+        {
+            rendering_surface_.unlockQtPaintingTexture();
         }
     }
 
