@@ -51,7 +51,7 @@ class QJniImagePair
     public static final String TAG = "Grym/QJniImagePair";
     //private static int api_level_ = 0;
 
-    public static Bitmap createBitmap(int w, int h, int depth)
+    public static Bitmap createBitmap(final int w, final int h, final int depth)
     {
         Log.d(TAG, "createBitmap("+w+", "+h+", "+depth+")");
         Bitmap.Config fmt;
@@ -67,7 +67,16 @@ class QJniImagePair
                 Log.e(TAG, "Invalid pixel bit depth: "+depth);
                 return null;
         }
-        return Bitmap.createBitmap(w, h, fmt);
+        Bitmap result = Bitmap.createBitmap(w, h, fmt);
+        if (result == null)
+        {
+            Log.e(TAG, "Failed to allocate bitmap: "+w+"x"+h+", fmt="+fmt+", bits="+depth);
+        }
+        else
+        {
+            Log.i(TAG, "Successfully allocated bitmap: "+w+"x"+h+", fmt="+fmt+", bits="+depth);
+        }
+        return result;
     }
 
     /*public static int getApiLevel()

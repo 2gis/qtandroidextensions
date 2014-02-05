@@ -332,6 +332,7 @@ void QAndroidOffscreenView::paintGL(int l, int b, int w, int h, bool reverse_y)
 			pair.convert32BitImageFromAndroidToQt();
 			raster_to_texture_cache_.reset(new QOpenGLTextureHolder(pair.qImage()));
 			offscreen_view_->callVoid("unlockQtPaintingTexture");
+			need_update_texture_ = false;
 		}
 		raster_to_texture_cache_->blitTexture(
 			QRect(QPoint(0, 0), QSize(w, h)) // target rect (relatively to viewport)

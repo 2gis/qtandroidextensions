@@ -135,9 +135,10 @@ bool QAndroidJniImagePair::doResize(const QSize & size)
 
 	// Create new Android bitmap
 	QScopedPointer<QJniObject> newBitmap(createBitmap(size));
-	if (!newBitmap || !newBitmap->jObject() == 0)
+	if (!newBitmap || newBitmap->jObject() == 0)
     {
-        qCritical("Could not create %dx%d surface", size.width(), size.height());
+		qCritical("Could not create %dx%d bitmap! bitmap=%p, jbitmap=%p",
+			size.width(), size.height(), newBitmap.data(), (newBitmap.data())? newBitmap->jObject(): 0);
 		dispose();
         return false;
     }

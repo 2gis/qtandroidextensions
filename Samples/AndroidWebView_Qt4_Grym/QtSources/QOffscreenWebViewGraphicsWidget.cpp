@@ -53,7 +53,8 @@ void QAndroidOffscreenViewGraphicsWidget::paint(QPainter * painter, const QStyle
 
 	// We don't have any function like initializeGL in QGraphicsWidget, so let's just
 	// do the initialization during the first paint.
-	aview_->initializeGL();
+//	aview_->initializeGL();
+aview_->initializeBitmap();
 
 	if (!initial_visibilty_set_)
 	{

@@ -642,7 +642,7 @@ abstract class OffscreenView
             // background with the fill color.
             if (rendering_surface_ == null || getNativePtr() == 0)
             {
-                Log.i(TAG, "doDrawViewOnTexture: surface or native ptr is null.");
+                Log.i(TAG, "doDrawViewOnTexture: surface or native ptr is null. NP="+getNativePtr());
                 synchronized(painting_now_)
                 {
                      painting_now_ = false;
