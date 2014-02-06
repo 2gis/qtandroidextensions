@@ -57,7 +57,7 @@ void QAndroidOffscreenViewGraphicsWidget::paint(QPainter * painter, const QStyle
 	if (!aview_->isIntialized())
 	{
 #if 0
-		if (aview_->openGlTextureSupported() && use_gl)
+		if (use_gl)
 		{
 			aview_->initializeGL();
 		}
