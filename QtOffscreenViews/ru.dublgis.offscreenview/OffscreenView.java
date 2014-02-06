@@ -788,7 +788,6 @@ abstract class OffscreenView
         {
             rendering_surface_.setBitmaps(bitmap_a, bitmap_b);
         }
-        invalidateOffscreenView();
     }
 
     //! Called from C++
@@ -1108,7 +1107,8 @@ abstract class OffscreenView
                 {
                     return -1;
                 }
-                // Swapping buffers
+                // Swapping buffers, so Android won't paint on the Bitmap
+                // which is currently being used by Qt.
                 int old_draw_bitmap = draw_bitmap_;
                 draw_bitmap_ = (draw_bitmap_ == 0)? 1: 0;
                 return old_draw_bitmap;
@@ -1147,7 +1147,9 @@ abstract class OffscreenView
                 {
                     bitmap_a_ = bitmap_a;
                     bitmap_b_ = bitmap_b;
+                    draw_bitmap_ = 0;
                     has_texture_ = false;
+                    invalidateOffscreenView();
                 }
             }
         }
