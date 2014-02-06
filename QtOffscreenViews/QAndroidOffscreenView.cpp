@@ -87,6 +87,8 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	, view_class_name_(classname)
 	, view_object_name_(objectname)
 	, tex_()
+	, raster_to_texture_cache_()
+	, android_to_qt_buffer_()
 	, bitmap_a_(32)
 	, bitmap_b_(32)
 	, size_(defsize)
@@ -276,7 +278,7 @@ void QAndroidOffscreenView::deinitialize()
 	tex_.deallocateTexture();
 	bitmap_a_.dispose();
 	bitmap_b_.dispose();
-	raster_to_texture_cache_.reset();
+	//raster_to_texture_cache_.deallocateTexture();
 	android_to_qt_buffer_ = QImage();
 }
 
@@ -324,14 +326,9 @@ void QAndroidOffscreenView::paintGL(int l, int b, int w, int h, bool reverse_y)
 	//
 	// Bitmap texture + GL in Qt
 	//
-	bool new_texture = false;
-	const QImage * bitmap = QAndroidOffscreenView::getBitmapBuffer(&new_texture);
-	if (bitmap)
+	if (updateBitmapToGlTexture())
 	{
-		if (new_texture || !raster_to_texture_cache_ || !raster_to_texture_cache_->isAllocated())
-		{
-			raster_to_texture_cache_.reset(new QOpenGLTextureHolder(*bitmap));
-		}
+		//! \todo FIXME size checks!
 		raster_to_texture_cache_->blitTexture(
 			QRect(QPoint(0, 0), QSize(w, h)) // target rect (relatively to viewport)
 			, QRect(QPoint(0, 0), QSize(w, h)) // source rect (in texture)
@@ -360,9 +357,8 @@ const QImage * QAndroidOffscreenView::getBitmapBuffer(bool * out_texture_updated
 			{
 				return 0;
 			}
-			//! \todo FIXME size checks!
-			// last_texture_width_ = offscreen_view_->callInt("getLastTextureWidth");
-			// last_texture_height_ = offscreen_view_->callInt("getLastTextureHeight");
+			last_texture_width_ = offscreen_view_->callInt("getLastTextureWidth");
+			last_texture_height_ = offscreen_view_->callInt("getLastTextureHeight");
 			QAndroidJniImagePair & pair = (buffer_index == 0)? bitmap_a_: bitmap_b_;
 			pair.convert32BitImageFromAndroidToQt(android_to_qt_buffer_);
 			if (out_texture_updated)
@@ -376,6 +372,45 @@ const QImage * QAndroidOffscreenView::getBitmapBuffer(bool * out_texture_updated
 	{
 		// qDebug()<<__PRETTY_FUNCTION__<<"Returning 0!";
 		return 0;
+	}
+}
+
+bool QAndroidOffscreenView::updateBitmapToGlTexture()
+{
+	if (bitmap_a_.isAllocated() && bitmap_b_.isAllocated()
+		&& view_painted_ && offscreen_view_ && offscreen_view_->jObject())
+	{
+		if (android_to_qt_buffer_.isNull() || android_to_qt_buffer_.size() != size() || need_update_texture_)
+		{
+			need_update_texture_ = false;
+			int buffer_index = offscreen_view_->callInt("getQtPaintingTexture");
+			if (buffer_index < 0)
+			{
+				return 0;
+			}
+			last_texture_width_ = offscreen_view_->callInt("getLastTextureWidth");
+			last_texture_height_ = offscreen_view_->callInt("getLastTextureHeight");
+			QAndroidJniImagePair & pair = (buffer_index == 0)? bitmap_a_: bitmap_b_;
+			if (!raster_to_texture_cache_)
+			{
+				raster_to_texture_cache_.reset(new QOpenGLTextureHolder());
+			}
+			pair.convert32BitImageFromAndroidToQt(android_to_qt_buffer_);
+			bool can_avoid_gl_conversion = (android_to_qt_buffer_.format() == QImage::Format_ARGB32_Premultiplied);
+			raster_to_texture_cache_->allocateTexture(pair.qImage(), can_avoid_gl_conversion);
+			if (can_avoid_gl_conversion)
+			{
+				raster_to_texture_cache_->setTransformation(
+					1.0f, 0.0f,
+					0.0f, -1.0f,
+					0, 0);
+			}
+		}
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }
 
@@ -611,7 +646,7 @@ void QAndroidOffscreenView::resize(const QSize & size)
 			bitmap_b_.resize(size_);
 			bitmap_a_.fill(fill_color_, true);
 			bitmap_b_.fill(fill_color_, true);
-			raster_to_texture_cache_.reset();
+			//raster_to_texture_cache_.deallocateTexture();
 		}
 		if (offscreen_view_)
 		{

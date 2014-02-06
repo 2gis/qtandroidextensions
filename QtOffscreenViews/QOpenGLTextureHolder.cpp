@@ -64,34 +64,6 @@ QOpenGLTextureHolder::QOpenGLTextureHolder()
 {
 }
 
-QOpenGLTextureHolder::QOpenGLTextureHolder(const QImage & qimage)
-	: texture_id_(0)
-	, texture_type_(GL_TEXTURE_2D)
-	, texture_size_(0, 0)
-	, a11_(1.0f), a12_(0), a21_(0), a22_(1.0f), b1_(0), b2_(0)
-{
-	if (qimage.isNull() || qimage.width() < 1 || qimage.height() < 1)
-	{
-		return;
-	}
-	QImage gl_image = QGLWidget::convertToGLFormat(qimage);
-	if (gl_image.isNull())
-	{
-		qCritical()<<"Failed to convert QImage to GL format!";
-		return;
-	}
-	glGenTextures(1, &texture_id_);
-	glBindTexture(GL_TEXTURE_2D, texture_id_);
-	glTexImage2D(
-		GL_TEXTURE_2D, 0, GL_RGBA
-		, gl_image.width(), gl_image.height()
-		, 0, GL_RGBA, GL_UNSIGNED_BYTE, gl_image.bits());
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	texture_size_ = gl_image.size();
-}
-
 QOpenGLTextureHolder::~QOpenGLTextureHolder()
 {
 	deallocateTexture();
@@ -390,7 +362,6 @@ void QOpenGLTextureHolder::allocateTexture()
 	deallocateTexture();
 
 	glGenTextures(1, &texture_id_);
-
 	glBindTexture(texture_type_, texture_id_);
 	glTexParameteri(texture_type_, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(texture_type_, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -402,6 +373,53 @@ void QOpenGLTextureHolder::allocateTexture(GLenum type)
 	Q_ASSERT(type == GL_TEXTURE_EXTERNAL_OES || type == GL_TEXTURE_2D);
 	texture_type_ = type;
 	allocateTexture();
+}
+
+void QOpenGLTextureHolder::allocateTexture(const QImage & qimage, bool gl_prepared, GLenum prepared_image_type, GLenum texture_type)
+{
+	deallocateTexture();
+	if (qimage.isNull() || qimage.width() < 1 || qimage.height() < 1)
+	{
+		return;
+	}
+	texture_type_ = texture_type;
+	texture_size_ = qimage.size();
+	a11_ = 1.0f; a12_ = 0.0f;
+	a21_ = 0.0f; a22_ = 1.0f;
+	b1_ = 0; b2_ = 0;
+
+	// Prepare image data in bits
+	const uchar * bits = 0;
+	QImage gl_image;
+	int width = 0, height = 0;
+	GLenum type = GL_RGBA;
+	if (gl_prepared)
+	{
+		bits = qimage.bits();
+		width = qimage.width();
+		height = qimage.height();
+		type = prepared_image_type;
+	}
+	else
+	{
+		gl_image = QGLWidget::convertToGLFormat(qimage);
+		if (gl_image.isNull())
+		{
+			qCritical()<<"Failed to convert QImage to GL format!";
+			return;
+		}
+		bits = gl_image.bits();
+		width = gl_image.width();
+		height = gl_image.height();
+	}
+
+	// Create texture and load bits into its memory
+	glGenTextures(1, &texture_id_);
+	glBindTexture(texture_type, texture_id_);
+	glTexImage2D(texture_type, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, bits);
+	glTexParameteri(texture_type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(texture_type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(texture_type, 0);
 }
 
 void QOpenGLTextureHolder::initializeGL()

@@ -251,6 +251,7 @@ private slots:
 
 protected:
 	bool updateGlTexture();
+	bool updateBitmapToGlTexture();
 	QJniObject * offscreenView() { return offscreen_view_.data(); }
 	QJniObject * getView();
 

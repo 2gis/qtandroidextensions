@@ -64,7 +64,6 @@ public:
 	 */
 	QOpenGLTextureHolder(GLenum type, const QSize & size);
 	QOpenGLTextureHolder();
-	QOpenGLTextureHolder(const QImage & qimage);
 	~QOpenGLTextureHolder();
 
 	bool isAllocated() const { return texture_id_ != 0; }
@@ -98,6 +97,8 @@ public:
 
 	//! Set texture type and allocated a texture.
 	void allocateTexture(GLenum type);
+
+	void allocateTexture(const QImage & image, bool gl_prepared = false, GLenum prepared_image_type = GL_RGBA, GLenum texture_type = GL_TEXTURE_2D);
 
 	//! Deallocate texture, if it has been allocated.
 	void deallocateTexture();

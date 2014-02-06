@@ -866,7 +866,7 @@ abstract class OffscreenView
         }
     }
 
-	/*//! Called from C++
+    /*//! Called from C++
     public boolean isFocused()
     {
         final View v = getView();
@@ -875,7 +875,7 @@ abstract class OffscreenView
             return v.isFocused();
         }
         return false;
-	}*/
+    }*/
 
     //! Called from C++
     public void setFocused(final boolean focused)
