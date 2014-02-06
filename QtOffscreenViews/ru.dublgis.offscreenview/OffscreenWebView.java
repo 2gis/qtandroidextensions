@@ -375,6 +375,21 @@ class OffscreenWebView extends OffscreenView
         return true;
     }
 
+    /* SGEXP experimental
+    @Override
+    public void resizeOffscreenView(final int w, final int h)
+    {
+        super.resizeOffscreenView(w, h);
+        (new Handler()).postDelayed(new Runnable() {
+            @Override
+            public void run()
+            {
+                doNativeUpdate();
+            }
+        },
+        50);
+    }*/
+
     public native void nativeUpdate(long nativeptr);
     public native Activity nativeGetActivity();
     public native void nativeViewCreated(long nativeptr);
