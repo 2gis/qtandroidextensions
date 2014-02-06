@@ -567,7 +567,7 @@ void QAndroidOffscreenView::setPosition(int left, int top)
 
 void QAndroidOffscreenView::javaUpdate()
 {
-	qDebug()<<__PRETTY_FUNCTION__<<"SGEXP"<<view_object_name_;
+	// qDebug()<<__PRETTY_FUNCTION__<<view_object_name_;
 	need_update_texture_ = true;
 	view_painted_ = true;
 	emit updated();
