@@ -267,7 +267,6 @@ private:
 	//
 	// For Bitmap mode
 	//
-	QScopedPointer<QOpenGLTextureHolder> raster_to_texture_cache_;
 	QImage android_to_qt_buffer_;
 	QAndroidJniImagePair bitmap_a_, bitmap_b_;
 
