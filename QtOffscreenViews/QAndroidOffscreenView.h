@@ -259,16 +259,17 @@ private:
 	QString view_class_name_;
 	QString view_object_name_;
 
-	//
-	// For GL texture mode
-	//
+	//! Keeps OpenGL texture when painting goes on in GL.
 	QOpenGLTextureHolder tex_;
 
-	//
-	// For Bitmap mode
-	//
+	//! Intermediate buffer used in Bitmap mode to convert Android's BGR to RGB.
 	QImage android_to_qt_buffer_;
+
+	//! Double buffer for Bitmap mode.
 	QAndroidJniImagePair bitmap_a_, bitmap_b_;
+
+	//! Used to lock bitmap_a_/bitmap_b_ access.
+	QMutex bitmaps_mutex_;
 
 	QScopedPointer<QJniObject> offscreen_view_;
 	QSize size_;

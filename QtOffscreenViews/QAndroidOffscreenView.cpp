@@ -90,6 +90,7 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	, android_to_qt_buffer_()
 	, bitmap_a_(32)
 	, bitmap_b_(32)
+	, bitmaps_mutex_(QMutex::Recursive)
 	, size_(defsize)
 	, fill_color_(Qt::white)
 	, need_update_texture_(false)
@@ -243,6 +244,7 @@ void QAndroidOffscreenView::initializeGL()
 
 void QAndroidOffscreenView::initializeBitmap()
 {
+	QMutexLocker locker(&bitmaps_mutex_);
 	if (tex_.isAllocated() || bitmap_a_.isAllocated())
 	{
 		return;
@@ -273,6 +275,7 @@ void QAndroidOffscreenView::deleteAndroidView()
 
 void QAndroidOffscreenView::deinitialize()
 {
+	QMutexLocker locker(&bitmaps_mutex_);
 	deleteAndroidView();
 	tex_.deallocateTexture();
 	bitmap_a_.dispose();
@@ -340,6 +343,7 @@ void QAndroidOffscreenView::paintGL(int l, int b, int w, int h, bool reverse_y)
 
 const QImage * QAndroidOffscreenView::getBitmapBuffer(bool * out_texture_updated)
 {
+	QMutexLocker locker(&bitmaps_mutex_);
 	if (out_texture_updated)
 	{
 		*out_texture_updated = false;
@@ -375,6 +379,7 @@ const QImage * QAndroidOffscreenView::getBitmapBuffer(bool * out_texture_updated
 
 bool QAndroidOffscreenView::updateBitmapToGlTexture()
 {
+	QMutexLocker locker(&bitmaps_mutex_);
 	if (bitmap_a_.isAllocated() && bitmap_b_.isAllocated()
 		&& view_painted_ && offscreen_view_ && offscreen_view_->jObject())
 	{
@@ -481,12 +486,15 @@ void QAndroidOffscreenView::setFillColor(const QColor & color)
 				jint(fill_color_.green()),
 				jint(fill_color_.blue()));
 		}
-		if (bitmap_a_.isAllocated() && bitmap_b_.isAllocated())
 		{
-			bitmap_a_.fill(fill_color_, true);
-			bitmap_b_.fill(fill_color_, true);
-			need_update_texture_ = true;
-			invalidate();
+			QMutexLocker locker(&bitmaps_mutex_);
+			if (bitmap_a_.isAllocated() && bitmap_b_.isAllocated())
+			{
+				bitmap_a_.fill(fill_color_, true);
+				bitmap_b_.fill(fill_color_, true);
+				need_update_texture_ = true;
+				invalidate();
+			}
 		}
 		if (!hasValidImage())
 		{
@@ -634,19 +642,26 @@ void QAndroidOffscreenView::resize(const QSize & size)
 	{
 		qDebug()<<__PRETTY_FUNCTION__<<"Old size:"<<size_<<"New size:"<<size;
 		size_ = size;
-		if (bitmap_a_.isAllocated())
 		{
-			bitmap_a_.resize(size_);
-			bitmap_b_.resize(size_);
-			bitmap_a_.fill(fill_color_, true);
-			bitmap_b_.fill(fill_color_, true);
+			QMutexLocker locker(&bitmaps_mutex_);
+			if (bitmap_a_.isAllocated())
+			{
+				bitmap_a_.resize(size_);
+				bitmap_b_.resize(size_);
+				bitmap_a_.fill(fill_color_, true);
+				bitmap_b_.fill(fill_color_, true);
+			}
 		}
 		if (offscreen_view_)
 		{
 			offscreen_view_->callParamVoid("resizeOffscreenView", "II", jint(size.width()), jint(size.height()));
-			offscreen_view_->callParamVoid("setBitmaps",
-				"Landroid/graphics/Bitmap;Landroid/graphics/Bitmap;",
-				bitmap_a_.jbitmap(), bitmap_b_.jbitmap());
+			if (bitmap_a_.isAllocated())
+			{
+				QMutexLocker locker(&bitmaps_mutex_);
+				offscreen_view_->callParamVoid("setBitmaps",
+					"Landroid/graphics/Bitmap;Landroid/graphics/Bitmap;",
+					bitmap_a_.jbitmap(), bitmap_b_.jbitmap());
+			}
 		}
 		tex_.setTextureSize(size);		
 	}
