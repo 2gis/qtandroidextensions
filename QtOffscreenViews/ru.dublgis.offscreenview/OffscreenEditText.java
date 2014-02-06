@@ -150,8 +150,8 @@ class OffscreenEditText extends OffscreenView
         @Override
         public void requestLayout()
         {
-            invalidateOffscreenView();
             super.requestLayout();
+            invalidateOffscreenView();
         }
 
         private int text_layout_width_ = 0;

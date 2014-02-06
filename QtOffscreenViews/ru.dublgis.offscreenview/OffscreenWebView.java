@@ -220,8 +220,8 @@ class OffscreenWebView extends OffscreenView
         {
             // Necessary to call invalidateOffscreenView() to get Chromium update after page load
             // when in non-attached mode.
-            invalidateOffscreenView();
             super.requestLayout();
+            invalidateOffscreenView();
         }
 
 
