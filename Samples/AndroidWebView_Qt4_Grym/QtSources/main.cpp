@@ -256,7 +256,7 @@ protected:
 			20 + scene_.sceneRect().left()
 			, 300  + scene_.sceneRect().top()
 			, scene_.sceneRect().width() - 50
-			, scene_.sceneRect().height() - 200);
+			, scene_.sceneRect().height() - 320);
 	}
 
 private:
