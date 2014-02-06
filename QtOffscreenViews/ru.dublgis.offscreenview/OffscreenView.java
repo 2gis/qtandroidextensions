@@ -1149,7 +1149,6 @@ abstract class OffscreenView
                     bitmap_b_ = bitmap_b;
                     draw_bitmap_ = 0;
                     has_texture_ = false;
-                    invalidateOffscreenView();
                 }
             }
         }

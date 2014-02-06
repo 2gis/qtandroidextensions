@@ -103,10 +103,6 @@ public:
 	 */
 	virtual void deleteAndroidView();
 
-	/*!
-	 * Free Android view and OpenGL resources. The object will be unusable after that.
-	 */
-	virtual void deinitialize();
 
 	/*!
 	 * Draw the texture. targetRect is the output rectangle in OpenGL terms.
@@ -137,9 +133,6 @@ public:
 
 	//! Check if Android View has already painted something
 	virtual bool hasValidImage() const;
-
-	//! Tell Android View to repaint.
-	virtual void invalidate();
 
 	QSize size() const { return size_; }
 	virtual void resize(const QSize & size);
@@ -236,6 +229,15 @@ public:
 	void mouse(int android_action, int x, int y, long long timestamp_uptime_millis = 0);
 
 	//! \todo Add multi-touch support!
+
+public slots:
+	/*!
+	 * Free Android view and OpenGL resources. The object will be unusable after that.
+	 */
+	virtual void deinitialize();
+
+	//! Tell Android View to repaint.
+	virtual void invalidate();
 
 signals:
 	/*!
