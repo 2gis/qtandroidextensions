@@ -80,6 +80,9 @@ public:
 	static void preloadJavaClasses();
 	static bool openGlTextureSupported();
 
+	const QString & viewObjectName() const { return view_object_name_; }
+	const QString & viewClassName() const { return view_class_name_; }
+
 	/*!
 	 * Initialize OpenGL rendering surface. This function should be called within active
 	 * proper GL context as it will want to create an OpenGL texture.
@@ -276,8 +279,8 @@ private:
 	QScopedPointer<QJniObject> offscreen_view_;
 	QSize size_;
 	QColor fill_color_;
-	bool need_update_texture_;
-	bool view_painted_;
+	volatile bool need_update_texture_;
+	volatile bool view_painted_;
 	bool texture_received_;
 	bool synchronized_texture_update_;
 	bool view_creation_requested_;
@@ -288,5 +291,6 @@ private:
 private:
 	Q_DISABLE_COPY(QAndroidOffscreenView)
 	friend void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv * env, jobject jo, jlong param);
+	friend void JNICALL Java_OffscreenView_nativeViewCreated(JNIEnv *, jobject, jlong param);
 };
 

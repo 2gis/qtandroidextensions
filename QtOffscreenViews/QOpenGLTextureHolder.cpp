@@ -416,7 +416,7 @@ void QOpenGLTextureHolder::allocateTexture(const QImage & qimage, bool gl_prepar
 	// Create texture and load bits into its memory
 	glGenTextures(1, &texture_id_);
 	glBindTexture(texture_type, texture_id_);
-	glTexImage2D(texture_type, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, bits);
+	glTexImage2D(texture_type, 0, type, width, height, 0, type, GL_UNSIGNED_BYTE, bits);
 	glTexParameteri(texture_type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(texture_type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glBindTexture(texture_type, 0);

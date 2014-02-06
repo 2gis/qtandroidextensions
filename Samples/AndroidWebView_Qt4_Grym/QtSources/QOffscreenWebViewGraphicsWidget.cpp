@@ -42,6 +42,7 @@ void QAndroidOffscreenViewGraphicsWidget::setEnabled(bool enabled)
 
 void QAndroidOffscreenViewGraphicsWidget::onOffscreenUpdated()
 {
+	qDebug()<<__PRETTY_FUNCTION__<<"SGEXP"<<aview_->viewObjectName();
 	update();
 }
 

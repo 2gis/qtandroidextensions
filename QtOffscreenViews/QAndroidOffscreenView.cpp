@@ -39,6 +39,7 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <QThread>
+#include <QTimer>
 #include <QMutexLocker>
 #include <QCoreApplication>
 #include <QAndroidQPAPluginGap.h>
@@ -55,7 +56,7 @@ Q_DECL_EXPORT void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv *, jobject, jl
 		QAndroidOffscreenView * proxy = reinterpret_cast<QAndroidOffscreenView*>(vp);
 		if (proxy)
 		{
-			QMetaObject::invokeMethod(proxy, "javaUpdate", Qt::QueuedConnection);
+			proxy->javaUpdate();
 			return;
 		}
 	}
@@ -70,7 +71,7 @@ Q_DECL_EXPORT void JNICALL Java_OffscreenView_nativeViewCreated(JNIEnv *, jobjec
 		QAndroidOffscreenView * proxy = reinterpret_cast<QAndroidOffscreenView*>(vp);
 		if (proxy)
 		{
-			QMetaObject::invokeMethod(proxy, "javaViewCreated", Qt::QueuedConnection);
+			proxy->javaViewCreated();
 			return;
 		}
 	}
@@ -394,11 +395,15 @@ bool QAndroidOffscreenView::updateBitmapToGlTexture()
 			last_texture_width_ = offscreen_view_->callInt("getLastTextureWidth");
 			last_texture_height_ = offscreen_view_->callInt("getLastTextureHeight");
 			QAndroidJniImagePair & pair = (buffer_index == 0)? bitmap_a_: bitmap_b_;
+			// Note: we still have to do software ABGR->ARGB conversion because it looks like GL ES
+			// doesn't support GL_BGRA texture format (also note that GL color order notation is different
+			// than Qt notation, brain damaging!)
 			pair.convert32BitImageFromAndroidToQt(android_to_qt_buffer_);
 			bool can_avoid_gl_conversion = (android_to_qt_buffer_.format() == QImage::Format_ARGB32_Premultiplied);
 			tex_.allocateTexture(pair.qImage(), can_avoid_gl_conversion);
 			if (can_avoid_gl_conversion)
 			{
+				// Fixing Y axis by setting this texture transformation.
 				tex_.setTransformation(
 					1.0f, 0.0f,
 					0.0f, -1.0f,
@@ -562,7 +567,7 @@ void QAndroidOffscreenView::setPosition(int left, int top)
 
 void QAndroidOffscreenView::javaUpdate()
 {
-	// qDebug()<<__PRETTY_FUNCTION__;
+	qDebug()<<__PRETTY_FUNCTION__<<"SGEXP"<<view_object_name_;
 	need_update_texture_ = true;
 	view_painted_ = true;
 	emit updated();
@@ -570,7 +575,6 @@ void QAndroidOffscreenView::javaUpdate()
 
 void QAndroidOffscreenView::javaViewCreated()
 {
-	qDebug()<<__PRETTY_FUNCTION__;
 	view_created_ = true;
 	emit viewCreated();
 }

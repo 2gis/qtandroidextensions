@@ -598,20 +598,38 @@ abstract class OffscreenView
     protected void invalidateOffscreenView()
     {
         last_texture_invalidation_ = (last_texture_invalidation_ >= 2000000000)? 0: last_texture_invalidation_ + 1;
-        invalidated_ = true;
-        new Handler().post(new Runnable(){
-            private final int invalidation_ = last_texture_invalidation_;
+        Log.i(TAG, "SGEXP invalidateOffscreenView "+object_name_+", last := "+last_texture_invalidation_);
+        /*runOnUiThread(new Runnable(){
             @Override
             public void run()
-            {
-                // Log.i(TAG, "invalidateOffscreenView: processing with invalidated_="+invalidated_);
-                if (invalidation_ >= last_texture_invalidation_ || invalidated_)
-                {
-                    invalidated_ = false;
-                    doDrawViewOnTexture();
-                }
-            }
-        });
+            {*/
+                invalidated_ = true;
+                new Handler().post(new Runnable(){
+                    private final int invalidation_ = last_texture_invalidation_;
+                    @Override
+                    public void run()
+                    {
+                    Log.i(TAG, "SGEXP invalidateOffscreenView "+object_name_+" RUNNABLE");
+                        // Log.i(TAG, "invalidateOffscreenView: processing with invalidated_="+invalidated_);
+                        /*! \todo FIXME For now, ut is made that last and first queued events should be processed
+                            for responsibility of UI. As a downside this causes some unnecessary double repaints. */
+                        if (invalidation_ >= last_texture_invalidation_ || invalidated_)
+                        {
+                            Log.i(TAG, "SGEXP invalidateOffscreenView "+object_name_+" RUNNABLE: inval="+invalidation_+", last="+last_texture_invalidation_+
+                               ", invalidated="+invalidated_);
+                            invalidated_ = false;
+                            boolean drawn = doDrawViewOnTexture();
+                            if (!drawn) Log.i(TAG, "SGEXP "+object_name_+" FAILED TO DRAW!"); else Log.i(TAG, "SGEXP "+object_name_+" Redrawn."); 
+                        }
+                        else
+                        {
+                            Log.i(TAG, "SGEXP invalidateOffscreenView "+object_name_+" RUNNABLE SKIPPED: inval="+invalidation_+", last="+last_texture_invalidation_+
+                               ", invalidated="+invalidated_);
+                        }
+                    }
+                });
+            /*}
+        });*/
     }
 
     final protected boolean isInOffscreenDraw()
@@ -620,8 +638,9 @@ abstract class OffscreenView
     }
 
     //! Performs actual painting of the view. Should be called in Android UI thread.
-    protected void doDrawViewOnTexture()
+    protected boolean doDrawViewOnTexture()
     {
+        boolean result = false;
         synchronized(painting_now_)
         {
             painting_now_ = true;
@@ -638,7 +657,7 @@ abstract class OffscreenView
                 {
                      painting_now_ = false;
                 }
-                return;
+                return false;
             }
             try
             {
@@ -647,7 +666,7 @@ abstract class OffscreenView
                 Canvas canvas = rendering_surface_.lockCanvas();
                 if (canvas == null)
                 {
-                    Log.e(TAG, "doDrawViewOnTexture: failed to lock canvas!");
+                    Log.e(TAG, "doDrawViewOnTexture: failed to lock canvas!"+" SGEXP"+object_name_);
                 }
                 else
                 {
@@ -669,6 +688,8 @@ abstract class OffscreenView
                                 last_painted_width_ = v.getWidth();
                                 last_painted_height_ = v.getHeight();
                             }
+
+                            result = true;
                         }
                         else
                         {
@@ -687,6 +708,7 @@ abstract class OffscreenView
 
                     // t = System.nanoTime() - t;
                     // Tell C++ part that we have a new image
+                    Log.i(TAG, "SGEXP "+object_name_+" calling doNativeUpdate with nativePtr = "+getNativePtr());
                     doNativeUpdate();
 
                     // Log.i(TAG, "doDrawViewOnTexture: success, t="+t/1000000.0+"ms");
@@ -701,6 +723,7 @@ abstract class OffscreenView
         {
             painting_now_ = false;
         }
+        return result;
     }
 
     //! Called from C++ to get current texture.
@@ -777,7 +800,6 @@ abstract class OffscreenView
         if (rendering_surface_ != null)
         {
             rendering_surface_.setBitmaps(bitmap_a, bitmap_b);
-            invalidateOffscreenView();
         }
     }
 
@@ -786,10 +808,12 @@ abstract class OffscreenView
     {
         if (rendering_surface_ != null)
         {
+            Log.i(TAG, "SGEXP getQtPaintingTexture "+object_name_+" getting texture...");
             return rendering_surface_.getQtPaintingTexture();
         }
         else
         {
+            Log.i(TAG, "SGEXP getQtPaintingTexture "+object_name_+" no rendering surface, returning -1");
             return -1;
         }
     }
@@ -1053,6 +1077,7 @@ abstract class OffscreenView
                 {
                     return null;
                 }
+                Log.i(TAG, "SGEXP lockCanvas "+object_name_+" "+draw_bitmap_);
                 return new Canvas((draw_bitmap_ == 0)? bitmap_a_: bitmap_b_);
             }
         }
@@ -1079,12 +1104,14 @@ abstract class OffscreenView
             {
                 if (!hasTexture())
                 {
+                    Log.i(TAG, "SGEXP getQtPaintingTexture "+object_name_+" -1!");
                     return -1;
                 }
                 // Swapping buffers, so Android won't paint on the Bitmap
                 // which is currently being used by Qt.
                 int old_draw_bitmap = draw_bitmap_;
                 draw_bitmap_ = (draw_bitmap_ == 0)? 1: 0;
+                Log.i(TAG, "SGEXP getQtPaintingTexture "+object_name_+" "+old_draw_bitmap);
                 return old_draw_bitmap;
             }
         }
@@ -1117,6 +1144,7 @@ abstract class OffscreenView
         {
             synchronized(texture_mutex_)
             {
+                Log.i(TAG, "SGEXP setBitmaps "+object_name_);
                 if (bitmap_a_ != bitmap_a || bitmap_b_ != bitmap_b)
                 {
                     bitmap_a_ = bitmap_a;
