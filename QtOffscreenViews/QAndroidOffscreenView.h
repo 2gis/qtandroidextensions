@@ -86,19 +86,27 @@ public:
 	/*!
 	 * Initialize OpenGL rendering surface. This function should be called within active
 	 * proper GL context as it will want to create an OpenGL texture.
+	 * When View is initialized using this function it may be rendered on screen only using
+	 * paintGL(). Call to getBitmapBuffer() may return 0.
+	 * If GL mode is not supported on Android side this function will call initializeBitmap()
+	 * instead of creating GL texture surface; paintGL() can still be used to draw the View.
 	 * It is safe to call this function multiple times. All subsequent calls are ignored.
 	 */
 	virtual void initializeGL();
 
 	/*!
-	 * Initialize non-OpenGL rendering surface.
+	 * Initialize non-OpenGL (Bitmap-based) rendering surface. The View can be rendered on screen
+	 * either using paintGL() or by getting QImage via getBitmapBuffer() and drawing it using
+	 * some other method, e.g. QPainter::drawImage().
+	 * This function should be used when Qt is working in unaccelerated UI mode.
+	 * It is safe to call this function multiple times. All subsequent calls are ignored.
 	 */
 	virtual void initializeBitmap();
 
 	/*!
 	 * Returns true if initializeGL() has been called.
 	 */
-	virtual bool isIntialized() const { return tex_.isAllocated(); }
+	virtual bool isIntialized() const { return tex_.isAllocated() || bitmap_a_.isAllocated(); }
 
 	/*!
 	 * Delete associated Android View and its rendering infrastructure. The texture continues
@@ -106,20 +114,23 @@ public:
 	 */
 	virtual void deleteAndroidView();
 
-
 	/*!
-	 * Draw the texture. targetRect is the output rectangle in OpenGL terms.
-	 * If texture is not ready, the rectangle is filled with fillColor.
+	 * Draw GL texture or Bitmap (depending on the rendering surface on the Java side) using OpenGL.
+	 * targetRect is the output rectangle in OpenGL terms. If View image is not ready, the rectangle
+	 * is filled with fillColor.
+	 * Note: to draw the View when Qt is working in unaccelerated mode, intialize it
+	 * via initializeBitmap() and use QImage returned by getBitmapBuffer().
 	 */
 	virtual void paintGL(int l, int b, int w, int h, bool reverse_y);
 
 	/*!
 	 * Used in Bitmap mode. Instead of paintGL(), get current bitmap buffer
 	 * using getBitmapBuffer() and paint it by yourself.
+	 * The image buffer is guaranteed to be unmodified until the next call to getBitmapBuffer().
 	 */
 	const QImage * getBitmapBuffer(bool * out_texture_updated = 0);
 
-	//! Check if Android View already exists
+	//! Check if Android View already exists.
 	bool isCreated() const;
 
 #if defined(QANDROIDOFFSCREENVIEW_ALLOWWAIT)
