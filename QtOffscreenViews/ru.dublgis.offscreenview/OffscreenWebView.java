@@ -185,7 +185,7 @@ class OffscreenWebView extends OffscreenView
         {
             Log.i(TAG, "MyWebView.invalidate(Rect dirty)");
             super.invalidate(dirty);
-            invalidateTexture();
+            invalidateOffscreenView();
         }
 
         // Old WebKit updating here
@@ -203,7 +203,7 @@ class OffscreenWebView extends OffscreenView
                 // Log.i(TAG, "MyWebView.invalidate: ignoring invisible rectangle");
                 return;
             }
-            invalidateTexture();
+            invalidateOffscreenView();
         }
 
         // Old & new WebKit updating
@@ -212,7 +212,7 @@ class OffscreenWebView extends OffscreenView
         {
             // Log.i(TAG, "MyWebView.invalidate(void)");
             super.invalidate();
-            invalidateTexture();
+            invalidateOffscreenView();
         }
 
         @Override
@@ -230,7 +230,7 @@ class OffscreenWebView extends OffscreenView
         public ViewParent invalidateChildInParent(int[] location, Rect r)
         {
             Log.i(TAG, "MyWebView.invalidateChildInParent(int[] location, Rect r)");
-            invalidateTexture();
+            invalidateOffscreenView();
             return super.invalidateChildInParent(location, r);
         }*/
 
@@ -240,7 +240,7 @@ class OffscreenWebView extends OffscreenView
         public void invalidateDrawable(Drawable drawable)
         {
             Log.i(TAG, "MyWebView.invalidateDrawable()");
-            invalidateTexture();
+            invalidateOffscreenView();
         }
 
         // ????
@@ -248,7 +248,7 @@ class OffscreenWebView extends OffscreenView
         public void scheduleDrawable(Drawable who, Runnable what, long when)
         {
             Log.i(TAG, "MyWebView.scheduleDrawable()");
-            invalidateTexture();
+            invalidateOffscreenView();
         }
 
         // ????
@@ -256,7 +256,7 @@ class OffscreenWebView extends OffscreenView
         public void childDrawableStateChanged(View child)
         {
             Log.i(TAG, "MyWebView.childDrawableStateChanged()");
-            invalidateTexture();
+            invalidateOffscreenView();
             super.childDrawableStateChanged(child);
         }
         */

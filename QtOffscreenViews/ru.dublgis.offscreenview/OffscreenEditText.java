@@ -120,7 +120,7 @@ class OffscreenEditText extends OffscreenView
         public void invalidate(Rect dirty)
         {
             super.invalidate(dirty);
-            invalidateTexture();
+            invalidateOffscreenView();
         }
 
         @Override
@@ -137,14 +137,14 @@ class OffscreenEditText extends OffscreenView
                 // Log.i(TAG, "MyEditText.invalidate: ignoring invisible rectangle");
                 return;
             }
-            invalidateTexture();
+            invalidateOffscreenView();
         }
 
         @Override
         public void invalidate()
         {
             super.invalidate();
-            invalidateTexture();
+            invalidateOffscreenView();
         }
 
         @Override

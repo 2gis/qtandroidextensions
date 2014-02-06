@@ -129,7 +129,6 @@ abstract class OffscreenView
     private boolean offscreen_touch_ = false;
     private boolean is_attached_ = false;
     private boolean attaching_mode_ = true;
-    private boolean invalidated_ = true;
 
 
     // Variables to inform C++ about last painted texture / control size
@@ -592,34 +591,25 @@ abstract class OffscreenView
         }
     }
 
-    //! Schedules doDrawViewOnTexture() with filtering out subsequent calls.
-    protected void invalidateTexture()
+    private int last_texture_invalidation_ = 0;
+    private boolean invalidated_ = true;
+
+    //! Schedules doDrawViewOnTexture() with filtering out extra calls.
+    protected void invalidateOffscreenView()
     {
+        last_texture_invalidation_ = (last_texture_invalidation_ >= 2000000000)? 0: last_texture_invalidation_ + 1;
         invalidated_ = true;
-        // A little dance with a tambourine to filter out subsequent invalidations happened before a single paint
         new Handler().post(new Runnable(){
+            private final int invalidation_ = last_texture_invalidation_;
             @Override
             public void run()
             {
-                // Log.i(TAG, "invalidateTexture: processing with invalidated_="+invalidated_);
-                if (invalidated_)
+                // Log.i(TAG, "invalidateOffscreenView: processing with invalidated_="+invalidated_);
+                if (invalidation_ >= last_texture_invalidation_ || invalidated_)
                 {
                     invalidated_ = false;
                     doDrawViewOnTexture();
                 }
-            }
-        });
-    }
-
-    //! Schedule painting of the view (will be done in Android UI thread).
-    protected void drawViewOnTexture()
-    {
-        runOnUiThread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                doDrawViewOnTexture();
             }
         });
     }
@@ -787,6 +777,7 @@ abstract class OffscreenView
         if (rendering_surface_ != null)
         {
             rendering_surface_.setBitmaps(bitmap_a, bitmap_b);
+            invalidateOffscreenView();
         }
     }
 
@@ -843,23 +834,6 @@ abstract class OffscreenView
                         // If the view has only been scrolled, it won't call invalidate(). So we just force it to repaint for now.
                         doDrawViewOnTexture();
                     }
-                }
-            });
-        }
-    }
-
-    // Called from C++ to force the view
-    public void invalidateOffscreenView()
-    {
-        Log.i(TAG, "invalidateOffscreenView");
-        if (getView() != null)
-        {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run()
-                {
-                    // if (getView() != null)... assuming that view cannot be unassigned once created
-                    invalidateTexture();
                 }
             });
         }
@@ -959,7 +933,7 @@ abstract class OffscreenView
                             v.setTop(0);
                             v.setRight(w);
                             v.setBottom(h);
-                            invalidateTexture();
+                            invalidateOffscreenView();
                         }
                         else
                         {

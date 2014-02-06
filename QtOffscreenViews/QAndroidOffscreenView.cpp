@@ -655,7 +655,7 @@ void QAndroidOffscreenView::resize(const QSize & size)
 					offscreen_view_->callParamVoid("setBitmaps",
 						"Landroid/graphics/Bitmap;Landroid/graphics/Bitmap;",
 						bitmap_a_.jbitmap(), bitmap_b_.jbitmap());
-					QMetaObject::invokeMethod(this, "invalidate", Qt::QueuedConnection);
+					//QMetaObject::invokeMethod(this, "invalidate", Qt::QueuedConnection);
 				}
 			}
 		}
@@ -663,7 +663,7 @@ void QAndroidOffscreenView::resize(const QSize & size)
 		{
 			offscreen_view_->callParamVoid("resizeOffscreenView", "II", jint(size.width()), jint(size.height()));
 		}
-		tex_.setTextureSize(size);		
+		tex_.setTextureSize(size);
 	}
 }
 
