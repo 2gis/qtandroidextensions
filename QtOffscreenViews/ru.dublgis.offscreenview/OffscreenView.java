@@ -1129,12 +1129,11 @@ abstract class OffscreenView
                 }
                 // Swapping buffers, so Android won't paint on the Bitmap
                 // which is currently being used by Qt.
-/* SGEXP        if (draw_bitmap_ != last_drawn_bitmap_)
+                if (draw_bitmap_ != last_drawn_bitmap_)
                 {
                     Log.i(TAG, "SGEXP getQtPaintingTexture "+object_name_+" -1, new bitmap is not ready yet!");
                     return -1;
                 }
-      */
                 int old_draw_bitmap = draw_bitmap_;
                 draw_bitmap_ = (draw_bitmap_ == 0)? 1: 0;
                 Log.i(TAG, "SGEXP getQtPaintingTexture: "+object_name_+" returning texture="+old_draw_bitmap);

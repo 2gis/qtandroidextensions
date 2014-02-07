@@ -366,8 +366,6 @@ const QImage * QAndroidOffscreenView::getBitmapBuffer(bool * out_texture_updated
 			int buffer_index = offscreen_view_->callInt("getQtPaintingTexture");
 			if (buffer_index < 0)
 			{
-				return 0;
-				/*
 				if (view_painted_ && !android_to_qt_buffer_.isNull())
 				{
 					return &android_to_qt_buffer_;
@@ -375,7 +373,7 @@ const QImage * QAndroidOffscreenView::getBitmapBuffer(bool * out_texture_updated
 				else
 				{
 					return 0;
-				}*/
+				}
 			}
 			if (out_texture_updated)
 			{
