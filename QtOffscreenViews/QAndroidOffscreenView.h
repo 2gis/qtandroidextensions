@@ -128,7 +128,7 @@ public:
 	 * using getBitmapBuffer() and paint it by yourself.
 	 * The image buffer is guaranteed to be unmodified until the next call to getBitmapBuffer().
 	 */
-	const QImage * getBitmapBuffer(bool * out_texture_updated = 0, bool convert_from_android_format = true);
+	const QImage * getBitmapBuffer(bool * out_texture_updated = 0);
 
 	//! Check if Android View already exists.
 	bool isCreated() const;
@@ -265,7 +265,11 @@ private slots:
 	void javaUpdate();
 	void javaViewCreated();
 
+private:
+	const QImage * getPreviousBitmapBuffer(bool convert_from_android_format);
+
 protected:
+	const QImage * getBitmapBuffer(bool * out_texture_updated, bool convert_from_android_format);
 	bool updateGlTexture();
 	bool updateBitmapToGlTexture();
 	QJniObject * offscreenView() { return offscreen_view_.data(); }
@@ -280,6 +284,7 @@ private:
 
 	//! Intermediate buffer used in Bitmap mode to convert Android's BGR to RGB.
 	QImage android_to_qt_buffer_;
+	int last_qt_buffer_;
 
 	//! Double buffer for Bitmap mode.
 	QAndroidJniImagePair bitmap_a_, bitmap_b_;

@@ -89,6 +89,7 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	, view_object_name_(objectname)
 	, tex_()
 	, android_to_qt_buffer_()
+	, last_qt_buffer_(-1)
 	, bitmap_a_(32)
 	, bitmap_b_(32)
 	, bitmaps_mutex_(QMutex::Recursive)
@@ -266,6 +267,7 @@ void QAndroidOffscreenView::initializeBitmap()
 	qDebug()<<__PRETTY_FUNCTION__;
 	bitmap_a_.resize(size_);
 	bitmap_b_.resize(size_);
+	last_qt_buffer_ = -1;
 	offscreen_view_->callParamVoid("SetInitialWidth", "I", jint(size_.width()));
 	offscreen_view_->callParamVoid("SetInitialHeight", "I", jint(size_.height()));
 	offscreen_view_->callParamVoid("initializeBitmap",
@@ -289,6 +291,7 @@ void QAndroidOffscreenView::deinitialize()
 	tex_.deallocateTexture();
 	bitmap_a_.dispose();
 	bitmap_b_.dispose();
+	last_qt_buffer_ = -1;
 	android_to_qt_buffer_ = QImage();
 }
 
@@ -336,20 +339,58 @@ void QAndroidOffscreenView::paintGL(int l, int b, int w, int h, bool reverse_y)
 	//
 	// Bitmap texture + GL in Qt
 	//
-	if (updateBitmapToGlTexture())
+	if (bitmap_a_.isAllocated())
 	{
-		//! \todo FIXME Don't we need size checks here?
-		tex_.blitTexture(
-			QRect(QPoint(0, 0), QSize(w, h)) // target rect (relatively to viewport)
-			, QRect(QPoint(0, 0), QSize(w, h)) // source rect (in texture)
-			, reverse_y);
-		return;
+		if (updateBitmapToGlTexture())
+		{
+			// We don't have to check for texture size match because Bitmaps are
+			// destroyed and re-created on resize. (Also Java side checks for the match.)
+			tex_.blitTexture(
+				QRect(QPoint(0, 0), QSize(w, h)) // target rect (relatively to viewport)
+				, QRect(QPoint(0, 0), QSize(w, h)) // source rect (in texture)
+				, reverse_y);
+			return;
+		}
 	}
 
 	// View is not ready, just fill the area with the fill color.
 	clearGlRect(l, b, w, h, fill_color_);
 }
 
+// Public version
+const QImage * QAndroidOffscreenView::getBitmapBuffer(bool * out_texture_updated)
+{
+	return getBitmapBuffer(out_texture_updated, true);
+}
+
+const QImage * QAndroidOffscreenView::getPreviousBitmapBuffer(bool convert_from_android_format)
+{
+	if (!view_painted_)
+	{
+		return 0;
+	}
+	const QImage * result = 0;
+	if (convert_from_android_format)
+	{
+		result = &android_to_qt_buffer_;
+	}
+	else
+	{
+		const QAndroidJniImagePair & pair = (last_qt_buffer_ == 0)? bitmap_a_: bitmap_b_;
+		if (!pair.isAllocated())
+		{
+			return 0;
+		}
+		result = &pair.qImage();
+	}
+	if (result->isNull())
+	{
+		return 0;
+	}
+	return result;
+}
+
+// Protected version with some low-level functionality
 const QImage * QAndroidOffscreenView::getBitmapBuffer(bool * out_texture_updated, bool convert_from_android_format)
 {
 	QMutexLocker locker(&bitmaps_mutex_);
@@ -360,20 +401,15 @@ const QImage * QAndroidOffscreenView::getBitmapBuffer(bool * out_texture_updated
 	if (bitmap_a_.isAllocated() && bitmap_b_.isAllocated()
 		&& view_painted_ && offscreen_view_ && offscreen_view_->jObject())
 	{
-		if (android_to_qt_buffer_.isNull() || android_to_qt_buffer_.size() != size() || need_update_texture_)
+		if (need_update_texture_ ||
+			(convert_from_android_format && (android_to_qt_buffer_.isNull() || android_to_qt_buffer_.size() != size())) ||
+			(!convert_from_android_format && last_qt_buffer_ < 0))
 		{
 			need_update_texture_ = false;
 			int buffer_index = offscreen_view_->callInt("getQtPaintingTexture");
 			if (buffer_index < 0)
 			{
-				if (view_painted_ && !android_to_qt_buffer_.isNull())
-				{
-					return &android_to_qt_buffer_;
-				}
-				else
-				{
-					return 0;
-				}
+				return getPreviousBitmapBuffer(convert_from_android_format);
 			}
 			if (out_texture_updated)
 			{
@@ -381,19 +417,24 @@ const QImage * QAndroidOffscreenView::getBitmapBuffer(bool * out_texture_updated
 			}
 			last_texture_width_ = offscreen_view_->callInt("getLastTextureWidth");
 			last_texture_height_ = offscreen_view_->callInt("getLastTextureHeight");
-			const QAndroidJniImagePair & pair = (buffer_index == 0)? bitmap_a_: bitmap_b_;
+
+			// Updating texture
 			if (convert_from_android_format)
 			{
+				const QAndroidJniImagePair & pair = (buffer_index == 0)? bitmap_a_: bitmap_b_;
 				pair.convert32BitImageFromAndroidToQt(android_to_qt_buffer_);
+				return &android_to_qt_buffer_;
 			}
 			else
 			{
-				//! \todo FIXME optimize - avoid copying
-				//return &pair.qImage();
-				android_to_qt_buffer_ = pair.qImage();
+				last_qt_buffer_ = buffer_index;
+				return (buffer_index == 0)? &bitmap_a_.qImage(): &bitmap_b_.qImage();
 			}
 		}
-		return &android_to_qt_buffer_;
+		else
+		{
+			return getPreviousBitmapBuffer(convert_from_android_format);
+		}
 	}
 	else
 	{
@@ -664,6 +705,7 @@ void QAndroidOffscreenView::resize(const QSize & size)
 				bitmap_b_.resize(size_);
 				bitmap_a_.fill(fill_color_, true);
 				bitmap_b_.fill(fill_color_, true);
+				last_qt_buffer_ = -1;
 				if (offscreen_view_)
 				{
 					offscreen_view_->callParamVoid("setBitmaps",
