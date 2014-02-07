@@ -610,8 +610,15 @@ abstract class OffscreenView
                     public void run()
                     {
                         // Log.i(TAG, "invalidateOffscreenView "+object_name_+" RUNNABLE");
-                        /*! \todo FIXME For now, ut is made that last and first queued events should be processed
-                            for responsibility of UI. As a downside this causes some unnecessary double repaints. */
+
+                        // 1. We always have to draw last queued paint event to have the View painted to its latest state
+                        //    (which may be changed by some events scheduled between paints).
+                        // 2. We have to draw first event in the queue because otherwise fast input event generation
+                        //    may defer any painting for too long. For example, when user quickly types on soft keyboard
+                        //    the editor will not be repainted at all until all scheduled key presses are processed,
+                        //    which may easily take up a second.
+                        // Unfortunately, this approach sometimes causes unnecessary double paints, but that seems to be
+                        // a lesser evil available.
                         if (invalidation_ >= last_texture_invalidation_ || invalidated_)
                         {
                             //Log.i(TAG, "invalidateOffscreenView "+object_name_+" RUNNABLE: inval="+invalidation_+", last="+last_texture_invalidation_+
