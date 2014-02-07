@@ -350,7 +350,7 @@ void QAndroidOffscreenView::paintGL(int l, int b, int w, int h, bool reverse_y)
 	clearGlRect(l, b, w, h, fill_color_);
 }
 
-const QImage * QAndroidOffscreenView::getBitmapBuffer(bool * out_texture_updated)
+const QImage * QAndroidOffscreenView::getBitmapBuffer(bool * out_texture_updated, bool convert_from_android_format)
 {
 	QMutexLocker locker(&bitmaps_mutex_);
 	if (out_texture_updated)
@@ -367,14 +367,32 @@ const QImage * QAndroidOffscreenView::getBitmapBuffer(bool * out_texture_updated
 			if (buffer_index < 0)
 			{
 				return 0;
+				/*
+				if (view_painted_ && !android_to_qt_buffer_.isNull())
+				{
+					return &android_to_qt_buffer_;
+				}
+				else
+				{
+					return 0;
+				}*/
 			}
-			last_texture_width_ = offscreen_view_->callInt("getLastTextureWidth");
-			last_texture_height_ = offscreen_view_->callInt("getLastTextureHeight");
-			QAndroidJniImagePair & pair = (buffer_index == 0)? bitmap_a_: bitmap_b_;
-			pair.convert32BitImageFromAndroidToQt(android_to_qt_buffer_);
 			if (out_texture_updated)
 			{
 				*out_texture_updated = true;
+			}
+			last_texture_width_ = offscreen_view_->callInt("getLastTextureWidth");
+			last_texture_height_ = offscreen_view_->callInt("getLastTextureHeight");
+			const QAndroidJniImagePair & pair = (buffer_index == 0)? bitmap_a_: bitmap_b_;
+			if (convert_from_android_format)
+			{
+				pair.convert32BitImageFromAndroidToQt(android_to_qt_buffer_);
+			}
+			else
+			{
+				//! \todo FIXME optimize - avoid copying
+				//return &pair.qImage();
+				android_to_qt_buffer_ = pair.qImage();
 			}
 		}
 		return &android_to_qt_buffer_;
@@ -389,26 +407,15 @@ const QImage * QAndroidOffscreenView::getBitmapBuffer(bool * out_texture_updated
 bool QAndroidOffscreenView::updateBitmapToGlTexture()
 {
 	QMutexLocker locker(&bitmaps_mutex_);
-	if (bitmap_a_.isAllocated() && bitmap_b_.isAllocated()
-		&& view_painted_ && offscreen_view_ && offscreen_view_->jObject())
+	bool updated_texture = true;
+	const QImage * qtbuffer = getBitmapBuffer(&updated_texture, false);
+	if (qtbuffer && !qtbuffer->isNull())
 	{
-		if (need_update_texture_ || android_to_qt_buffer_.isNull() || android_to_qt_buffer_.size() != size())
+		if (updated_texture || !tex_.isAllocated())
 		{
-			need_update_texture_ = false;
-			int buffer_index = offscreen_view_->callInt("getQtPaintingTexture");
-			if (buffer_index < 0)
-			{
-				return 0;
-			}
-			last_texture_width_ = offscreen_view_->callInt("getLastTextureWidth");
-			last_texture_height_ = offscreen_view_->callInt("getLastTextureHeight");
-			QAndroidJniImagePair & pair = (buffer_index == 0)? bitmap_a_: bitmap_b_;
-			// Note: we still have to do software ABGR->ARGB conversion because it looks like GL ES
-			// doesn't support GL_BGRA texture format (also note that GL color order notation is different
-			// than Qt notation, brain damaging!)
-			pair.convert32BitImageFromAndroidToQt(android_to_qt_buffer_);
-			bool can_avoid_gl_conversion = (android_to_qt_buffer_.format() == QImage::Format_ARGB32_Premultiplied);
-			tex_.allocateTexture(pair.qImage(), can_avoid_gl_conversion);
+			bool can_avoid_gl_conversion = (qtbuffer->format() == QImage::Format_ARGB32_Premultiplied);
+			qDebug()<<"SGEXP WTF "<<can_avoid_gl_conversion;
+			tex_.allocateTexture(*qtbuffer, can_avoid_gl_conversion, GL_RGBA, GL_TEXTURE_2D);
 			if (can_avoid_gl_conversion)
 			{
 				// Fixing Y axis by setting this texture transformation.
@@ -418,17 +425,9 @@ bool QAndroidOffscreenView::updateBitmapToGlTexture()
 					0, 0);
 			}
 		}
-		else
-		{
-			qDebug()<<"SGEXP"<<view_object_name_<<"Skipping update. need_update_texture_ ="<<need_update_texture_;
-		}
 		return true; // Texture is correct
 	}
-	else
-	{
-		qDebug()<<"SGEXP"<<view_object_name_<<"Skipping update. view_painted_ ="<<view_painted_;
-		return false; // Texture contains no valid data
-	}
+	return false; // Texture contains no valid data
 }
 
 bool QAndroidOffscreenView::isCreated() const

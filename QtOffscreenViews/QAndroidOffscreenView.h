@@ -128,7 +128,7 @@ public:
 	 * using getBitmapBuffer() and paint it by yourself.
 	 * The image buffer is guaranteed to be unmodified until the next call to getBitmapBuffer().
 	 */
-	const QImage * getBitmapBuffer(bool * out_texture_updated = 0);
+	const QImage * getBitmapBuffer(bool * out_texture_updated = 0, bool convert_from_android_format = true);
 
 	//! Check if Android View already exists.
 	bool isCreated() const;

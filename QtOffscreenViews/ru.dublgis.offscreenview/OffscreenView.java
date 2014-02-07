@@ -1073,6 +1073,7 @@ abstract class OffscreenView
         Bitmap bitmap_b_ = null;
         int draw_bitmap_ = 0;
         boolean has_texture_ = false;
+        int last_drawn_bitmap_ = -1;
 
         public OffscreenBitmapRenderingSurface()
         {
@@ -1094,7 +1095,9 @@ abstract class OffscreenView
                     Log.i(TAG, "SGEXP lockCanvas "+object_name_+": bitmap size mismatch!");
                     return null;
                 }
+                Log.i(TAG, "SGEXP lockCanvas: locking "+object_name_+" texture="+draw_bitmap_);
                 // Log.i(TAG, "lockCanvas "+object_name_+" "+draw_bitmap_);
+                last_drawn_bitmap_ = draw_bitmap_;
                 return new Canvas(bitmap);
             }
         }
@@ -1121,13 +1124,20 @@ abstract class OffscreenView
             {
                 if (!hasTexture())
                 {
-                    // Log.i(TAG, "getQtPaintingTexture "+object_name_+" -1!");
+                    Log.i(TAG, "SGEXP getQtPaintingTexture "+object_name_+" -1!");
                     return -1;
                 }
                 // Swapping buffers, so Android won't paint on the Bitmap
                 // which is currently being used by Qt.
+/* SGEXP        if (draw_bitmap_ != last_drawn_bitmap_)
+                {
+                    Log.i(TAG, "SGEXP getQtPaintingTexture "+object_name_+" -1, new bitmap is not ready yet!");
+                    return -1;
+                }
+      */
                 int old_draw_bitmap = draw_bitmap_;
                 draw_bitmap_ = (draw_bitmap_ == 0)? 1: 0;
+                Log.i(TAG, "SGEXP getQtPaintingTexture: "+object_name_+" returning texture="+old_draw_bitmap);
                 // Log.i(TAG, "getQtPaintingTexture "+object_name_+" "+old_draw_bitmap);
                 return old_draw_bitmap;
             }
@@ -1168,6 +1178,7 @@ abstract class OffscreenView
                     bitmap_b_ = bitmap_b;
                     draw_bitmap_ = 0;
                     has_texture_ = false;
+                    last_drawn_bitmap_ = -1;
                 }
             }
         }
