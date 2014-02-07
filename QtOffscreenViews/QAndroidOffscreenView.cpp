@@ -392,7 +392,7 @@ bool QAndroidOffscreenView::updateBitmapToGlTexture()
 	if (bitmap_a_.isAllocated() && bitmap_b_.isAllocated()
 		&& view_painted_ && offscreen_view_ && offscreen_view_->jObject())
 	{
-		if (android_to_qt_buffer_.isNull() || android_to_qt_buffer_.size() != size() || need_update_texture_)
+		if (need_update_texture_ || android_to_qt_buffer_.isNull() || android_to_qt_buffer_.size() != size())
 		{
 			need_update_texture_ = false;
 			int buffer_index = offscreen_view_->callInt("getQtPaintingTexture");
@@ -413,16 +413,21 @@ bool QAndroidOffscreenView::updateBitmapToGlTexture()
 			{
 				// Fixing Y axis by setting this texture transformation.
 				tex_.setTransformation(
-					1.0f, 0.0f,
+					1.0f,  0.0f,
 					0.0f, -1.0f,
 					0, 0);
 			}
 		}
-		return true;
+		else
+		{
+			qDebug()<<"SGEXP"<<view_object_name_<<"Skipping update. need_update_texture_ ="<<need_update_texture_;
+		}
+		return true; // Texture is correct
 	}
 	else
 	{
-		return false;
+		qDebug()<<"SGEXP"<<view_object_name_<<"Skipping update. view_painted_ ="<<view_painted_;
+		return false; // Texture contains no valid data
 	}
 }
 

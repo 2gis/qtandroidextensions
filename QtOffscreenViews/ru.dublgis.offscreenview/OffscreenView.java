@@ -597,12 +597,12 @@ abstract class OffscreenView
     //! Schedules doDrawViewOnTexture() with filtering out extra calls.
     protected void invalidateOffscreenView()
     {
-        last_texture_invalidation_ = (last_texture_invalidation_ >= 2000000000)? 0: last_texture_invalidation_ + 1;
         // Log.i(TAG, "invalidateOffscreenView "+object_name_+", last := "+last_texture_invalidation_);
-        /*runOnUiThread(new Runnable(){
+        runOnUiThread(new Runnable(){
             @Override
             public void run()
-            {*/
+            {
+                last_texture_invalidation_ = (last_texture_invalidation_ >= 2000000000)? 0: last_texture_invalidation_ + 1;
                 invalidated_ = true;
                 new Handler().post(new Runnable(){
                     private final int invalidation_ = last_texture_invalidation_;
@@ -625,7 +625,11 @@ abstract class OffscreenView
                              //  ", invalidated="+invalidated_);
                             invalidated_ = false;
                             boolean drawn = doDrawViewOnTexture();
-                            // if (!drawn) Log.i(TAG, object_name_+" FAILED TO DRAW!"); else Log.i(TAG, object_name_+" Redrawn.");
+                            if (!drawn)
+                            {
+                                Log.i(TAG, "invalidateOffscreenView: "+object_name_+" Failed to draw the View. SGEXP");
+                                invalidated_ = true;
+                            }
                         }
                         else
                         {
@@ -634,8 +638,8 @@ abstract class OffscreenView
                         }
                     }
                 });
-            /*}
-        });*/
+            }
+        });
     }
 
     final protected boolean isInOffscreenDraw()
@@ -806,6 +810,7 @@ abstract class OffscreenView
         {
             rendering_surface_.setBitmaps(bitmap_a, bitmap_b);
         }
+        System.gc();
     }
 
     //! Called from C++
@@ -962,13 +967,13 @@ abstract class OffscreenView
                             v.setTop(0);
                             v.setRight(w);
                             v.setBottom(h);
-                            invalidateOffscreenView();
                         }
                         else
                         {
                             v.forceLayout();
                             v.requestLayout();
                         }
+                        invalidateOffscreenView();
                     }
                 }
             });
@@ -1082,8 +1087,15 @@ abstract class OffscreenView
                 {
                     return null;
                 }
+                Bitmap bitmap = (draw_bitmap_ == 0)? bitmap_a_: bitmap_b_;
+                View v = getView();
+                if (v != null && (bitmap.getWidth() != v.getWidth() || bitmap.getHeight() != v.getHeight()))
+                {
+                    Log.i(TAG, "SGEXP lockCanvas "+object_name_+": bitmap size mismatch!");
+                    return null;
+                }
                 // Log.i(TAG, "lockCanvas "+object_name_+" "+draw_bitmap_);
-                return new Canvas((draw_bitmap_ == 0)? bitmap_a_: bitmap_b_);
+                return new Canvas(bitmap);
             }
         }
 

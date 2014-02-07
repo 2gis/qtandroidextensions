@@ -172,6 +172,7 @@ class OffscreenWebView extends OffscreenView
         protected void onDraw(Canvas canvas)
         {
             // Don't draw when called from layout
+            invalidateOffscreenView(); // SGEXP
         }
 
         public void onDrawPublic(Canvas canvas)
@@ -225,41 +226,38 @@ class OffscreenWebView extends OffscreenView
         }
 
 
-        /*// ????
         @Override
         public ViewParent invalidateChildInParent(int[] location, Rect r)
         {
             Log.i(TAG, "MyWebView.invalidateChildInParent(int[] location, Rect r)");
+            ViewParent result = super.invalidateChildInParent(location, r);
             invalidateOffscreenView();
-            return super.invalidateChildInParent(location, r);
-        }*/
+            return result;
+        }
 
-        /*
-        // ????
         @Override
         public void invalidateDrawable(Drawable drawable)
         {
             Log.i(TAG, "MyWebView.invalidateDrawable()");
+            super.invalidateDrawable(drawable);
             invalidateOffscreenView();
         }
 
-        // ????
         @Override
         public void scheduleDrawable(Drawable who, Runnable what, long when)
         {
             Log.i(TAG, "MyWebView.scheduleDrawable()");
+            super.scheduleDrawable(who, what, when);
             invalidateOffscreenView();
         }
 
-        // ????
         @Override
         public void childDrawableStateChanged(View child)
         {
             Log.i(TAG, "MyWebView.childDrawableStateChanged()");
-            invalidateOffscreenView();
             super.childDrawableStateChanged(child);
+            invalidateOffscreenView();
         }
-        */
 
         //  public boolean isDirty () 
 
