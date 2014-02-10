@@ -106,6 +106,7 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	, view_created_(false)
 	, last_texture_width_(0)
 	, last_texture_height_(0)
+	, npot_textures_supported_(false)
 {
 	setObjectName(objectname);
 
@@ -198,12 +199,12 @@ static int getApiLevel()
 	}
 	catch(QJniBaseException & e)
 	{
-		qCritical()<<"openGlTextureSupported exception:"<<e.what();
+		qCritical()<<"getApiLevel exception:"<<e.what();
 		return 0;
 	}
 }
 
-bool QAndroidOffscreenView::openGlTextureSupported()
+bool QAndroidOffscreenView::openGlTextureSupportedOnJavaSide()
 {
 	return getApiLevel() >= 15; // Android 4.0.3+
 }
@@ -221,14 +222,24 @@ void QAndroidOffscreenView::initializeGL()
 		return;
 	}
 
-	bool gl_texture_mode_supported = openGlTextureSupported();
+	bool gl_texture_mode_supported = openGlTextureSupportedOnJavaSide();
+
+	// Some older devices don't support non-power of 2 OES textures.
+	// (IMG textures seem to be supported by all GLES2 devices, but not OES.)
+	// We have to detect that and keep that in mind.
+	QByteArray extensions((const char *)glGetString(GL_EXTENSIONS));
+	npot_textures_supported_ = extensions.contains("GL_OES_texture_npot");
+
+	qDebug()<<((npot_textures_supported_)?
+		"GL_OES_texture_npot is available." :
+		"GL_OES_texture_npot extension not found, cannot use full GL mode.";
 
 	// Good time to compile shaders. We don't need to compile GL_TEXTURE_EXTERNAL_OES
 	// shaders if we are not working in full GL mode.
 	QOpenGLTextureHolder::initializeGL(gl_texture_mode_supported);
 
 	// Automatically fall back to Bitmap + GL mode if pure GL is not available.
-	if (!gl_texture_mode_supported)
+	if (!gl_texture_mode_supported || !npot_textures_supported_)
 	{
 		qDebug()<<__PRETTY_FUNCTION__<<"OpenGL mode is not supported on this device, will initialize for internal Bitmap mode.";
 		initializeBitmap();
@@ -481,6 +492,9 @@ bool QAndroidOffscreenView::updateBitmapToGlTexture()
 			// continue to work properly if someone switches to 16-bit buffers.
 			bool can_avoid_gl_conversion = (qtbuffer->format() == QImage::Format_ARGB32_Premultiplied);
 			tex_.allocateTexture(*qtbuffer, can_avoid_gl_conversion, GL_RGBA, GL_TEXTURE_2D);
+
+// if npot_textures_supported_...
+
 			if (can_avoid_gl_conversion)
 			{
 				// Fixing Y axis by setting this texture transformation.

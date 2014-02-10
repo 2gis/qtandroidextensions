@@ -83,7 +83,7 @@ public:
 	// Functions to check for available configuration
 	//
 
-	static bool openGlTextureSupported();
+	static bool openGlTextureSupportedOnJavaSide();
 	static bool nonAttachingModeSupported();
 
 	const QString & viewObjectName() const { return view_object_name_; }
@@ -312,6 +312,7 @@ private:
 	bool is_enabled_;
 	volatile mutable bool view_created_; //!< Cache for isCreated()
 	int last_texture_width_, last_texture_height_;
+	bool npot_textures_supported_;
 private:
 	Q_DISABLE_COPY(QAndroidOffscreenView)
 	friend void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv * env, jobject jo, jlong param);
