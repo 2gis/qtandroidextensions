@@ -633,7 +633,7 @@ abstract class OffscreenView
                             boolean drawn = doDrawViewOnTexture();
                             if (!drawn)
                             {
-                                Log.i(TAG, "invalidateOffscreenView: "+object_name_+" Failed to draw the View. SGEXP");
+                                // Log.i(TAG, "invalidateOffscreenView: "+object_name_+" Failed to draw the View.");
                                 invalidated_ = true;
                             }
                         }
@@ -1101,11 +1101,10 @@ abstract class OffscreenView
                 View v = getView();
                 if (v != null && (bitmap.getWidth() != v.getWidth() || bitmap.getHeight() != v.getHeight()))
                 {
-                    Log.i(TAG, "SGEXP lockCanvas "+object_name_+": bitmap size mismatch!");
+                    // Log.i(TAG, "lockCanvas "+object_name_+": bitmap size mismatch!");
                     return null;
                 }
-                Log.i(TAG, "SGEXP lockCanvas: locking "+object_name_+" texture="+draw_bitmap_);
-                // Log.i(TAG, "lockCanvas "+object_name_+" "+draw_bitmap_);
+                // Log.i(TAG, "lockCanvas: locking "+object_name_+" texture="+draw_bitmap_);
                 last_drawn_bitmap_ = draw_bitmap_;
                 return new Canvas(bitmap);
             }
@@ -1133,20 +1132,19 @@ abstract class OffscreenView
             {
                 if (!hasTexture())
                 {
-                    Log.i(TAG, "SGEXP getQtPaintingTexture "+object_name_+" -1!");
+                    // Log.i(TAG, "getQtPaintingTexture "+object_name_+" -1!");
                     return -1;
                 }
                 // Swapping buffers, so Android won't paint on the Bitmap
                 // which is currently being used by Qt.
                 if (draw_bitmap_ != last_drawn_bitmap_)
                 {
-                    Log.i(TAG, "SGEXP getQtPaintingTexture "+object_name_+" -1, new bitmap is not ready yet!");
+                    // Log.i(TAG, "getQtPaintingTexture "+object_name_+" -1, new bitmap is not ready yet!");
                     return -1;
                 }
                 int old_draw_bitmap = draw_bitmap_;
                 draw_bitmap_ = (draw_bitmap_ == 0)? 1: 0;
-                Log.i(TAG, "SGEXP getQtPaintingTexture: "+object_name_+" returning texture="+old_draw_bitmap);
-                // Log.i(TAG, "getQtPaintingTexture "+object_name_+" "+old_draw_bitmap);
+                // Log.i(TAG, "getQtPaintingTexture: "+object_name_+" returning texture="+old_draw_bitmap);
                 return old_draw_bitmap;
             }
         }
