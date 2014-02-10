@@ -681,7 +681,7 @@ abstract class OffscreenView
                 Canvas canvas = rendering_surface_.lockCanvas();
                 if (canvas == null)
                 {
-                    Log.e(TAG, "doDrawViewOnTexture: failed to lock canvas!"+object_name_);
+                    Log.e(TAG, "doDrawViewOnTexture: failed to lock canvas for: "+object_name_);
                 }
                 else
                 {
@@ -1098,12 +1098,6 @@ abstract class OffscreenView
                     return null;
                 }
                 Bitmap bitmap = (draw_bitmap_ == 0)? bitmap_a_: bitmap_b_;
-                View v = getView();
-                if (v != null && (bitmap.getWidth() != v.getWidth() || bitmap.getHeight() != v.getHeight()))
-                {
-                    // Log.i(TAG, "lockCanvas "+object_name_+": bitmap size mismatch!");
-                    return null;
-                }
                 // Log.i(TAG, "lockCanvas: locking "+object_name_+" texture="+draw_bitmap_);
                 last_drawn_bitmap_ = draw_bitmap_;
                 return new Canvas(bitmap);

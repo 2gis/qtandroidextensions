@@ -133,6 +133,9 @@ public:
 	 * Used in Bitmap mode. Instead of paintGL(), get current bitmap buffer
 	 * using getBitmapBuffer() and paint it by yourself.
 	 * The image buffer is guaranteed to be unmodified until the next call to getBitmapBuffer().
+	 * \note This function is not guaranteed to return expected image when not
+	 *  initialized through initializeGL(). For example, returned image may be padded to
+	 *  have power-of-two size.
 	 */
 	const QImage * getBitmapBuffer(bool * out_texture_updated = 0);
 
@@ -291,8 +294,6 @@ private:
 
 	//! Intermediate buffer used in Bitmap mode to convert Android's BGR to RGB.
 	QImage android_to_qt_buffer_;
-	//! Intermediate buffer used in Bitmap mode if device doesn't support NPOT textures.
-	QImage pot_size_buffer_;
 	int last_qt_buffer_;
 
 	//! Double buffer for Bitmap mode.
@@ -314,7 +315,7 @@ private:
 	bool is_enabled_;
 	volatile mutable bool view_created_; //!< Cache for isCreated()
 	int last_texture_width_, last_texture_height_;
-	bool npot_textures_supported_;
+	bool have_to_adjust_size_to_pot_;
 private:
 	Q_DISABLE_COPY(QAndroidOffscreenView)
 	friend void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv * env, jobject jo, jlong param);

@@ -46,6 +46,37 @@
 #include <QAndroidJniImagePair.h>
 #include "QAndroidOffscreenView.h"
 
+//! Calculate smallest power of 2 which is greater than x.
+static int potSize(int x, int max_possible)
+{
+	int p = 1;
+	while (p < x)
+	{
+		p <<= 1;
+		if (p >= max_possible)
+		{
+			return max_possible;
+		}
+	}
+	return p;
+}
+
+//! Calculate smallest power of 2 size which is greater than the size.
+static QSize potSize(const QSize & size, const QSize & maxsize)
+{
+	QSize result;
+	if (!maxsize.isEmpty())
+	{
+		result = QSize(potSize(size.width(), maxsize.width()), potSize(size.height(), maxsize.height()));
+	}
+	else
+	{
+		result = QSize(potSize(size.width(), 0x40000000), potSize(size.height(), 0x40000000));
+	}
+	qDebug()<<__FUNCTION__<<"In:"<<size<<"Max:"<<maxsize<<"Result:"<<result;
+	return result;
+}
+
 static const QString c_class_path_(QLatin1String("ru/dublgis/offscreenview/"));
 
 Q_DECL_EXPORT void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv *, jobject, jlong param)
@@ -106,7 +137,7 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	, view_created_(false)
 	, last_texture_width_(0)
 	, last_texture_height_(0)
-	, npot_textures_supported_(false)
+	, have_to_adjust_size_to_pot_(false)
 {
 	setObjectName(objectname);
 
@@ -229,8 +260,8 @@ void QAndroidOffscreenView::initializeGL()
 	// We have to detect that and keep that in mind.
 	{
 		QByteArray extensions((const char *)glGetString(GL_EXTENSIONS));
-		npot_textures_supported_ = extensions.contains("GL_OES_texture_npot");
-		qDebug()<<((npot_textures_supported_)?
+		have_to_adjust_size_to_pot_ = !extensions.contains("GL_OES_texture_npot");
+		qDebug()<<((!have_to_adjust_size_to_pot_)?
 			"GL_OES_texture_npot is available." :
 			"GL_OES_texture_npot extension not found, cannot use full GL mode.");
 	}
@@ -249,7 +280,10 @@ void QAndroidOffscreenView::initializeGL()
 	QOpenGLTextureHolder::initializeGL(gl_texture_mode_supported);
 
 	// Automatically fall back to Bitmap + GL mode if pure GL is not available.
-	if (!gl_texture_mode_supported || !npot_textures_supported_)
+	// Note: we could also support have_to_adjust_size_to_pot_ in pure GL, but it doesn't seem
+	// necessary as pure GL requires API >= 15 which means newer devices and newer drivers,
+	// so such situation doesn't seem probable.
+	if (!gl_texture_mode_supported || have_to_adjust_size_to_pot_)
 	{
 		qDebug()<<__PRETTY_FUNCTION__<<"OpenGL mode is not supported on this device, will initialize for internal Bitmap mode.";
 		initializeBitmap();
@@ -292,8 +326,9 @@ void QAndroidOffscreenView::initializeBitmap()
 		return;
 	}
 	qDebug()<<__PRETTY_FUNCTION__;
-	bitmap_a_.resize(size_);
-	bitmap_b_.resize(size_);
+	QSize bitmapsize = (have_to_adjust_size_to_pot_)? potSize(size_, max_gl_size_): size_;
+	bitmap_a_.resize(bitmapsize);
+	bitmap_b_.resize(bitmapsize);
 	last_qt_buffer_ = -1;
 	offscreen_view_->callParamVoid("SetInitialWidth", "I", jint(size_.width()));
 	offscreen_view_->callParamVoid("SetInitialHeight", "I", jint(size_.height()));
@@ -320,7 +355,6 @@ void QAndroidOffscreenView::deinitialize()
 	bitmap_b_.dispose();
 	last_qt_buffer_ = -1;
 	android_to_qt_buffer_ = QImage();
-	pot_size_buffer_ = QImage();
 }
 
 static inline void clearGlRect(int l, int b, int w, int h, const QColor & fill_color_)
@@ -474,21 +508,6 @@ const QImage * QAndroidOffscreenView::getBitmapBuffer(bool * out_texture_updated
 	}
 }
 
-//! Calculate smallest power of 2 which is greater than x.
-static int potSize(int x, int max_possible)
-{
-	int p = 1;
-	while (p < x)
-	{
-		p <<= 1;
-		if (p >= max_possible)
-		{
-			return max_possible;
-		}
-	}
-	return p;
-}
-
 bool QAndroidOffscreenView::updateBitmapToGlTexture()
 {
 	QMutexLocker locker(&bitmaps_mutex_);
@@ -500,42 +519,17 @@ bool QAndroidOffscreenView::updateBitmapToGlTexture()
 	{
 		if (updated_texture || !tex_.isAllocated())
 		{
-			if (npot_textures_supported_)
+			// Note: QImage thinks that format is Format_ARGB32_Premultiplied, but in fact if
+			// it is 32 bit then it is Android's RGBA.
+			// TODO: we support only 32-bit here for now, for 16 we need to change GL_RGBA
+			// to the appropriate value.
+			bool can_avoid_gl_conversion =
+				(qtbuffer->format() == QImage::Format_ARGB32_Premultiplied) ||
+				(qtbuffer->format() == QImage::Format_ARGB32);
+			tex_.allocateTexture(*qtbuffer, can_avoid_gl_conversion, GL_RGBA, GL_TEXTURE_2D);
+			if (can_avoid_gl_conversion)
 			{
-				// Note: QImage thinks that format is Format_ARGB32_Premultiplied, but in fact if
-				// it is 32 bit then it is Android's RGBA.
-				// TODO: we support only 32-bit here for now, for 16 we need to change GL_RGBA
-				// to the appropriate value.
-				bool can_avoid_gl_conversion =
-					(qtbuffer->format() == QImage::Format_ARGB32_Premultiplied) ||
-					(qtbuffer->format() == QImage::Format_ARGB32);
-				tex_.allocateTexture(*qtbuffer, can_avoid_gl_conversion, GL_RGBA, GL_TEXTURE_2D);
-				if (can_avoid_gl_conversion)
-				{
-					// Fixing Y axis by setting this texture transformation.
-					tex_.setTransformation(
-						1.0f,  0.0f,
-						0.0f, -1.0f,
-						0, 0);
-				}
-			}
-			else
-			{
-				// The device doesn't support NPOT textures. Going the long route.
-				QSize psize(potSize(qtbuffer->width(), max_gl_size_.width()),
-							potSize(qtbuffer->height(), max_gl_size_.height()));
-				if (pot_size_buffer_.isNull() || pot_size_buffer_.size() != psize ||
-					pot_size_buffer_.format() != QImage::Format_ARGB32_Premultiplied)
-				{
-					pot_size_buffer_ = QImage(psize, QImage::Format_ARGB32_Premultiplied);
-				}
-				// qDebug()<<view_class_name_<<"View buffer size:"<<qtbuffer->size()<<"Max GL size:"<<max_gl_size_<<"POT size:"<<psize;
-				pot_size_buffer_.fill(fill_color_);
-				{
-					QPainter painter(&pot_size_buffer_);
-					painter.drawImage(0, 0, *qtbuffer);
-				}
-				tex_.allocateTexture(pot_size_buffer_, true, GL_RGBA, GL_TEXTURE_2D);
+				// Fixing Y axis by setting this texture transformation.
 				tex_.setTransformation(
 					1.0f,  0.0f,
 					0.0f, -1.0f,
@@ -785,8 +779,9 @@ void QAndroidOffscreenView::resize(const QSize & newsize)
 			QMutexLocker locker(&bitmaps_mutex_);
 			if (bitmap_a_.isAllocated())
 			{
-				bitmap_a_.resize(size_);
-				bitmap_b_.resize(size_);
+				QSize bitmapsize = (have_to_adjust_size_to_pot_)? potSize(size_, max_gl_size_): size_;
+				bitmap_a_.resize(bitmapsize);
+				bitmap_b_.resize(bitmapsize);
 				bitmap_a_.fill(fill_color_, true);
 				bitmap_b_.fill(fill_color_, true);
 				last_qt_buffer_ = -1;
