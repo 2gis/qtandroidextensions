@@ -155,7 +155,7 @@ public:
 	virtual bool hasValidImage() const;
 
 	QSize size() const { return size_; }
-	virtual void resize(const QSize & size);
+	virtual void resize(const QSize & newsize);
 	QColor fillColor() const { return fill_color_; }
 	virtual void setFillColor(const QColor & color);
 
@@ -301,6 +301,7 @@ private:
 
 	QScopedPointer<QJniObject> offscreen_view_;
 	QSize size_;
+	QSize max_gl_size_;
 	QColor fill_color_;
 	volatile bool need_update_texture_;
 	volatile bool view_painted_;

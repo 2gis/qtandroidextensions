@@ -94,6 +94,7 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	, bitmap_b_(32)
 	, bitmaps_mutex_(QMutex::Recursive)
 	, size_(defsize)
+	, max_gl_size_(0, 0)
 	, fill_color_(Qt::white)
 	, need_update_texture_(false)
 	, view_painted_(false)
@@ -231,41 +232,44 @@ void QAndroidOffscreenView::initializeGL()
 	{
 		qDebug()<<__PRETTY_FUNCTION__<<"OpenGL mode is not supported on this device, will initialize for internal Bitmap mode.";
 		initializeBitmap();
-		return;
 	}
-
-	qDebug()<<__PRETTY_FUNCTION__;
-
-	tex_.allocateTexture(GL_TEXTURE_EXTERNAL_OES);
-
-	if (!offscreen_view_)
+	else
 	{
-		qWarning("Cannot initialize QAndroidOffscreenView because OffscreenView object was not created!");
-		return;
+		qDebug()<<__PRETTY_FUNCTION__;
+
+		tex_.allocateTexture(GL_TEXTURE_EXTERNAL_OES);
+
+		if (!offscreen_view_)
+		{
+			qWarning("Cannot initialize QAndroidOffscreenView because OffscreenView object was not created!");
+			return;
+		}
+
+		qDebug()<<__PRETTY_FUNCTION__;
+
+		//
+		// Check for max texture size and limit control size
+		//
+		GLint maxdims[2];
+		GLint maxtextsz;
+		glGetIntegerv(GL_MAX_VIEWPORT_DIMS, maxdims);
+		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxtextsz);
+		int max_x = qMin(maxdims[0], maxtextsz);
+		int max_y = qMin(maxdims[1], maxtextsz);
+		max_gl_size_ = QSize(max_x, max_y);
+		QSize texture_size = QSize(qMin(max_x, size_.width()), qMin(max_y, size_.height()));
+		tex_.setTextureSize(texture_size);
+		qDebug()<<__PRETTY_FUNCTION__<<"GL_MAX_VIEWPORT_DIMS"<<maxdims[0]<<maxdims[1]
+			<<"GL_MAX_TEXTURE_SIZE"<<maxtextsz
+			<<"My size:"<<size_.width()<<"x"<<size_.height()
+			<<"Resulting size:"<<texture_size.width()<<"x"<<texture_size.height();
+		size_ = texture_size;
+
+		offscreen_view_->callParamVoid("SetTexture", "I", jint(tex_.getTexture()));
+		offscreen_view_->callParamVoid("SetInitialWidth", "I", jint(size_.width()));
+		offscreen_view_->callParamVoid("SetInitialHeight", "I", jint(size_.height()));
+		offscreen_view_->callVoid("initializeGL");
 	}
-
-	qDebug()<<__PRETTY_FUNCTION__;
-
-	// Check for max texture size
-	GLint maxdims[2];
-	GLint maxtextsz;
-	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, maxdims);
-	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxtextsz);
-	int max_x = qMin(maxdims[0], maxtextsz);
-	int max_y = qMin(maxdims[1], maxtextsz);
-	QSize texture_size = QSize(qMin(max_x, size_.width()), qMin(max_y, size_.height()));
-	tex_.setTextureSize(texture_size);
-	qDebug()<<__PRETTY_FUNCTION__<<"GL_MAX_VIEWPORT_DIMS"<<maxdims[0]<<maxdims[1]
-		<<"GL_MAX_TEXTURE_SIZE"<<maxtextsz
-		<<"My size:"<<size_.width()<<"x"<<size_.height()
-		<<"Resulting size:"<<texture_size.width()<<"x"<<texture_size.height();
-
-	size_ = texture_size;
-
-	offscreen_view_->callParamVoid("SetTexture", "I", jint(tex_.getTexture()));
-	offscreen_view_->callParamVoid("SetInitialWidth", "I", jint(size_.width()));
-	offscreen_view_->callParamVoid("SetInitialHeight", "I", jint(size_.height()));
-	offscreen_view_->callVoid("initializeGL");
 }
 
 void QAndroidOffscreenView::initializeBitmap()
@@ -706,8 +710,14 @@ void QAndroidOffscreenView::mouse(int android_action, int x, int y, long long ti
 	}
 }
 
-void QAndroidOffscreenView::resize(const QSize & size)
+void QAndroidOffscreenView::resize(const QSize & newsize)
 {
+	QSize size = newsize;
+	if (!max_gl_size_.isEmpty())
+	{
+		size = QSize(qMin(size.width(), max_gl_size_.width()), qMin(size.height(), max_gl_size_.height()));
+	}
+
 	if (size_ != size)
 	{
 		qDebug()<<__PRETTY_FUNCTION__<<"Old size:"<<size_<<"New size:"<<size;
