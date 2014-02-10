@@ -172,7 +172,6 @@ class OffscreenWebView extends OffscreenView
         protected void onDraw(Canvas canvas)
         {
             // Don't draw when called from layout
-            invalidateOffscreenView(); // SGEXP
         }
 
         public void onDrawPublic(Canvas canvas)
@@ -373,21 +372,6 @@ class OffscreenWebView extends OffscreenView
         });
         return true;
     }
-
-    /* SGEXP experimental
-    @Override
-    public void resizeOffscreenView(final int w, final int h)
-    {
-        super.resizeOffscreenView(w, h);
-        (new Handler()).postDelayed(new Runnable() {
-            @Override
-            public void run()
-            {
-                doNativeUpdate();
-            }
-        },
-        50);
-    }*/
 
     public native void nativeUpdate(long nativeptr);
     public native Activity nativeGetActivity();
