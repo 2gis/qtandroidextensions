@@ -225,7 +225,7 @@ class OffscreenWebView extends OffscreenView
             invalidateOffscreenView();
         }
 
-
+        /*
         @Override
         public ViewParent invalidateChildInParent(int[] location, Rect r)
         {
@@ -258,6 +258,7 @@ class OffscreenWebView extends OffscreenView
             super.childDrawableStateChanged(child);
             invalidateOffscreenView();
         }
+        */
 
         //  public boolean isDirty () 
 
