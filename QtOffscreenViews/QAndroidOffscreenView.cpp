@@ -213,7 +213,7 @@ void QAndroidOffscreenView::initializeGL()
 
 	if (!openGlTextureSupported())
 	{
-		qDebug()<<__PRETTY_FUNCTION__<<"OpenGL mode is not supported on this devices, will initialize for internal Bitmap mode.";
+		qDebug()<<__PRETTY_FUNCTION__<<"OpenGL mode is not supported on this device, will initialize for internal Bitmap mode.";
 		initializeBitmap();
 		return;
 	}

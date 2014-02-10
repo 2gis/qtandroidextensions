@@ -319,16 +319,22 @@ abstract class OffscreenView
                     view.setFocusable(false);
                     view.setFocusableInTouchMode(false);
                     view.setVisibility(last_visibility_? View.VISIBLE: View.INVISIBLE);
-                    view.setLeft(0);
-                    view.setTop(0);
-                    view.setRight(view_width_);
-                    view.setBottom(view_height_);
+                    if (getApiLevel() >= 11)
+                    {
+                        view.setLeft(0);
+                        view.setTop(0);
+                        view.setRight(view_width_);
+                        view.setBottom(view_height_);
+                    }
 
                     // Insert the View into layout.
                     // Note: functions of many views will crash if they are not inserted into layout.
                     layout_ = new MyLayout(activity);
-                    layout_.setRight(view_width_);
-                    layout_.setBottom(view_height_);
+                    if (getApiLevel() >= 11)
+                    {
+                        layout_.setRight(view_width_);
+                        layout_.setBottom(view_height_);
+                    }
                     layout_.addView(view);
                     attachViewToQtScreen();
 
@@ -963,10 +969,13 @@ abstract class OffscreenView
                     {
                         if (!attaching_mode_)
                         {
-                            v.setLeft(0);
-                            v.setTop(0);
-                            v.setRight(w);
-                            v.setBottom(h);
+                            if (getApiLevel() >= 11)
+                            {
+                                v.setLeft(0);
+                                v.setTop(0);
+                                v.setRight(w);
+                                v.setBottom(h);
+                            }
                         }
                         else
                         {
