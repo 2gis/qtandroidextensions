@@ -232,7 +232,7 @@ void QAndroidOffscreenView::initializeGL()
 
 	qDebug()<<((npot_textures_supported_)?
 		"GL_OES_texture_npot is available." :
-		"GL_OES_texture_npot extension not found, cannot use full GL mode.";
+		"GL_OES_texture_npot extension not found, cannot use full GL mode.");
 
 	// Good time to compile shaders. We don't need to compile GL_TEXTURE_EXTERNAL_OES
 	// shaders if we are not working in full GL mode.
