@@ -101,6 +101,8 @@ public:
 
 	void allocateTexture(const QImage & image, bool gl_prepared = false, GLenum prepared_image_type = GL_RGBA, GLenum texture_type = GL_TEXTURE_2D);
 
+	void allocateTexture(const QString & filename);
+
 	//! Deallocate texture, if it has been allocated.
 	void deallocateTexture();
 

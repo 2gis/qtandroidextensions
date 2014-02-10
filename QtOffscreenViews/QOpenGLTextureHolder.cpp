@@ -422,6 +422,11 @@ void QOpenGLTextureHolder::allocateTexture(const QImage & qimage, bool gl_prepar
 	glBindTexture(texture_type, 0);
 }
 
+void QOpenGLTextureHolder::allocateTexture(const QString & filename)
+{
+	allocateTexture(QImage(filename));
+}
+
 void QOpenGLTextureHolder::initializeGL(bool init_extension)
 {
 	qDebug()<<"QOpenGLTextureHolder::initializeGL() Checking shader programs...";
