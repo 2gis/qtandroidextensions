@@ -227,12 +227,22 @@ void QAndroidOffscreenView::initializeGL()
 	// Some older devices don't support non-power of 2 OES textures.
 	// (IMG textures seem to be supported by all GLES2 devices, but not OES.)
 	// We have to detect that and keep that in mind.
-	QByteArray extensions((const char *)glGetString(GL_EXTENSIONS));
-	npot_textures_supported_ = extensions.contains("GL_OES_texture_npot");
+	{
+		QByteArray extensions((const char *)glGetString(GL_EXTENSIONS));
+		npot_textures_supported_ = extensions.contains("GL_OES_texture_npot");
+		qDebug()<<((npot_textures_supported_)?
+			"GL_OES_texture_npot is available." :
+			"GL_OES_texture_npot extension not found, cannot use full GL mode.");
+	}
 
-	qDebug()<<((npot_textures_supported_)?
-		"GL_OES_texture_npot is available." :
-		"GL_OES_texture_npot extension not found, cannot use full GL mode.");
+	// Detecting max possible size of texture.
+	{
+		GLint maxdims[2] = {0, 0};
+		GLint maxtextsz = 0;
+		glGetIntegerv(GL_MAX_VIEWPORT_DIMS, maxdims);
+		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxtextsz);
+		max_gl_size_ = QSize(qMin(maxdims[0], maxtextsz), qMin(maxdims[1], maxtextsz));
+	}
 
 	// Good time to compile shaders. We don't need to compile GL_TEXTURE_EXTERNAL_OES
 	// shaders if we are not working in full GL mode.
@@ -258,23 +268,9 @@ void QAndroidOffscreenView::initializeGL()
 
 		qDebug()<<__PRETTY_FUNCTION__;
 
-		//
 		// Check for max texture size and limit control size
-		//
-		GLint maxdims[2];
-		GLint maxtextsz;
-		glGetIntegerv(GL_MAX_VIEWPORT_DIMS, maxdims);
-		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxtextsz);
-		int max_x = qMin(maxdims[0], maxtextsz);
-		int max_y = qMin(maxdims[1], maxtextsz);
-		max_gl_size_ = QSize(max_x, max_y);
-		QSize texture_size = QSize(qMin(max_x, size_.width()), qMin(max_y, size_.height()));
-		tex_.setTextureSize(texture_size);
-		qDebug()<<__PRETTY_FUNCTION__<<"GL_MAX_VIEWPORT_DIMS"<<maxdims[0]<<maxdims[1]
-			<<"GL_MAX_TEXTURE_SIZE"<<maxtextsz
-			<<"My size:"<<size_.width()<<"x"<<size_.height()
-			<<"Resulting size:"<<texture_size.width()<<"x"<<texture_size.height();
-		size_ = texture_size;
+		size_ = QSize(qMin(max_gl_size_.width(), size_.width()), qMin(max_gl_size_.height(), size_.height()));
+		tex_.setTextureSize(size_);
 
 		offscreen_view_->callParamVoid("SetTexture", "I", jint(tex_.getTexture()));
 		offscreen_view_->callParamVoid("SetInitialWidth", "I", jint(size_.width()));
@@ -324,6 +320,7 @@ void QAndroidOffscreenView::deinitialize()
 	bitmap_b_.dispose();
 	last_qt_buffer_ = -1;
 	android_to_qt_buffer_ = QImage();
+	pot_size_buffer_ = QImage();
 }
 
 static inline void clearGlRect(int l, int b, int w, int h, const QColor & fill_color_)
@@ -477,33 +474,73 @@ const QImage * QAndroidOffscreenView::getBitmapBuffer(bool * out_texture_updated
 	}
 }
 
+//! Calculate smallest power of 2 which is greater than x.
+static int potSize(int x, int max_possible)
+{
+	int p = 1;
+	while (p < x)
+	{
+		p <<= 1;
+		if (p >= max_possible)
+		{
+			return max_possible;
+		}
+	}
+	return p;
+}
+
 bool QAndroidOffscreenView::updateBitmapToGlTexture()
 {
 	QMutexLocker locker(&bitmaps_mutex_);
 	bool updated_texture = true;
-	// Get bitmap buffer in Android format (ABGR aka RGBA).
+	// Get bitmap buffer in Android format (for 32 bits it is ABGR (in Qt) aka RGBA (in Android)).
+	// We don't need conversion to Qt format because GL can hangle Android formats directly.
 	const QImage * qtbuffer = getBitmapBuffer(&updated_texture, false);
 	if (qtbuffer && !qtbuffer->isNull())
 	{
 		if (updated_texture || !tex_.isAllocated())
 		{
-			// Note: QImage thinks that format is Format_ARGB32_Premultiplied, but in fact if
-			// it is 32 bit then it is Android's RGBA. This check exists only so the code will
-			// continue to work properly if someone switches to 16-bit buffers.
-			bool can_avoid_gl_conversion = (qtbuffer->format() == QImage::Format_ARGB32_Premultiplied);
-			tex_.allocateTexture(*qtbuffer, can_avoid_gl_conversion, GL_RGBA, GL_TEXTURE_2D);
-
-// if npot_textures_supported_...
-
-			if (can_avoid_gl_conversion)
+			if (npot_textures_supported_)
 			{
-				// Fixing Y axis by setting this texture transformation.
+				// Note: QImage thinks that format is Format_ARGB32_Premultiplied, but in fact if
+				// it is 32 bit then it is Android's RGBA.
+				// TODO: we support only 32-bit here for now, for 16 we need to change GL_RGBA
+				// to the appropriate value.
+				bool can_avoid_gl_conversion =
+					(qtbuffer->format() == QImage::Format_ARGB32_Premultiplied) ||
+					(qtbuffer->format() == QImage::Format_ARGB32);
+				tex_.allocateTexture(*qtbuffer, can_avoid_gl_conversion, GL_RGBA, GL_TEXTURE_2D);
+				if (can_avoid_gl_conversion)
+				{
+					// Fixing Y axis by setting this texture transformation.
+					tex_.setTransformation(
+						1.0f,  0.0f,
+						0.0f, -1.0f,
+						0, 0);
+				}
+			}
+			else
+			{
+				// The device doesn't support NPOT textures. Going the long route.
+				QSize psize(potSize(qtbuffer->width(), max_gl_size_.width()),
+							potSize(qtbuffer->height(), max_gl_size_.height()));
+				if (pot_size_buffer_.isNull() || pot_size_buffer_.size() != psize ||
+					pot_size_buffer_.format() != QImage::Format_ARGB32_Premultiplied)
+				{
+					pot_size_buffer_ = QImage(psize, QImage::Format_ARGB32_Premultiplied);
+				}
+				// qDebug()<<view_class_name_<<"View buffer size:"<<qtbuffer->size()<<"Max GL size:"<<max_gl_size_<<"POT size:"<<psize;
+				pot_size_buffer_.fill(fill_color_);
+				{
+					QPainter painter(&pot_size_buffer_);
+					painter.drawImage(0, 0, *qtbuffer);
+				}
+				tex_.allocateTexture(pot_size_buffer_, true, GL_RGBA, GL_TEXTURE_2D);
 				tex_.setTransformation(
 					1.0f,  0.0f,
 					0.0f, -1.0f,
 					0, 0);
 			}
-			// tex_.allocateTexture(":/images/kotik.png");
 		}
 		return true; // Texture is correct
 	}

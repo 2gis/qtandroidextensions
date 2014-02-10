@@ -291,6 +291,8 @@ private:
 
 	//! Intermediate buffer used in Bitmap mode to convert Android's BGR to RGB.
 	QImage android_to_qt_buffer_;
+	//! Intermediate buffer used in Bitmap mode if device doesn't support NPOT textures.
+	QImage pot_size_buffer_;
 	int last_qt_buffer_;
 
 	//! Double buffer for Bitmap mode.
