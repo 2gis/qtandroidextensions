@@ -59,7 +59,8 @@ public:
 	/*!
 	 * Allocates a texture and sets its supposed size.
 	 * \note This function should be called with correct OpenGL context.
-	 * \param type - GL_TEXTURE_EXTERNAL_OES or GL_TEXTURE_2D.
+	 * \param type - GL_TEXTURE_EXTERNAL_OES or GL_TEXTURE_2D. Note that
+	 *  GL_TEXTURE_EXTERNAL_OES requires Android API Level 15.
 	 * \param size - Expected size of the texture (used by blitTexture()).
 	 */
 	QOpenGLTextureHolder(GLenum type, const QSize & size);
@@ -107,7 +108,7 @@ public:
 	 * This function may be called during initialization of GL to prevent shader compilation
 	 * during first blitTexture() call.
 	 */
-	static void initializeGL();
+	static void initializeGL(bool init_extension);
 
 private:
 	//! Helper for blitTexture().

@@ -220,9 +220,14 @@ void QAndroidOffscreenView::initializeGL()
 		return;
 	}
 
-	QOpenGLTextureHolder::initializeGL();
+	bool gl_texture_mode_supported = openGlTextureSupported();
 
-	if (!openGlTextureSupported())
+	// Good time to compile shaders. We don't need to compile GL_TEXTURE_EXTERNAL_OES
+	// shaders if we are not working in full GL mode.
+	QOpenGLTextureHolder::initializeGL(gl_texture_mode_supported);
+
+	// Automatically fall back to Bitmap + GL mode if pure GL is not available.
+	if (!gl_texture_mode_supported)
 	{
 		qDebug()<<__PRETTY_FUNCTION__<<"OpenGL mode is not supported on this device, will initialize for internal Bitmap mode.";
 		initializeBitmap();
