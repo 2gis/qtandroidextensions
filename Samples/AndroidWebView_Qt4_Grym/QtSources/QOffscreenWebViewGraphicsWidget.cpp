@@ -56,7 +56,7 @@ void QAndroidOffscreenViewGraphicsWidget::paint(QPainter * painter, const QStyle
 	// do the initialization during the first paint.
 	if (!aview_->isIntialized())
 	{
-#if 1
+#if 1 // (Enable/disable GL init)
 		if (use_gl)
 		{
 			aview_->initializeGL();
@@ -79,10 +79,10 @@ void QAndroidOffscreenViewGraphicsWidget::paint(QPainter * painter, const QStyle
 		painter->fillRect(rect(), Qt::green);
 	#endif
 
-	painter->beginNativePainting();
-
+#if 1 // (Enable/disable texture modes)
 	if (use_gl)
 	{
+		painter->beginNativePainting();
 		QPaintDevice *device = painter->device();
 		QTransform combined_transform = painter->combinedTransform();
 
@@ -142,6 +142,7 @@ void QAndroidOffscreenViewGraphicsWidget::paint(QPainter * painter, const QStyle
 		painter->endNativePainting();
 	}
 	else
+#endif
 	{
 		const QImage * buffer = aview_->getBitmapBuffer();
 		if (buffer)

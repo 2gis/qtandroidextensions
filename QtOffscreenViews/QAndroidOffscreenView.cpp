@@ -328,6 +328,8 @@ void QAndroidOffscreenView::paintGL(int l, int b, int w, int h, bool reverse_y)
 {
 	glViewport(l, b, w, h);
 
+#if 1 // (Enable/disable painting of the texture)
+
 	//
 	// GL texture + GL in Qt
 	//
@@ -372,6 +374,7 @@ void QAndroidOffscreenView::paintGL(int l, int b, int w, int h, bool reverse_y)
 			return;
 		}
 	}
+#endif
 
 	// View is not ready, just fill the area with the fill color.
 	clearGlRect(l, b, w, h, fill_color_);
@@ -467,11 +470,15 @@ bool QAndroidOffscreenView::updateBitmapToGlTexture()
 {
 	QMutexLocker locker(&bitmaps_mutex_);
 	bool updated_texture = true;
+	// Get bitmap buffer in Android format (ABGR aka RGBA).
 	const QImage * qtbuffer = getBitmapBuffer(&updated_texture, false);
 	if (qtbuffer && !qtbuffer->isNull())
 	{
 		if (updated_texture || !tex_.isAllocated())
 		{
+			// Note: QImage thinks that format is Format_ARGB32_Premultiplied, but in fact if
+			// it is 32 bit then it is Android's RGBA. This check exists only so the code will
+			// continue to work properly if someone switches to 16-bit buffers.
 			bool can_avoid_gl_conversion = (qtbuffer->format() == QImage::Format_ARGB32_Premultiplied);
 			tex_.allocateTexture(*qtbuffer, can_avoid_gl_conversion, GL_RGBA, GL_TEXTURE_2D);
 			if (can_avoid_gl_conversion)
