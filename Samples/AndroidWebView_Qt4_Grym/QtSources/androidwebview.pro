@@ -1,11 +1,9 @@
 QT += core gui opengl
 
-HEADERS += \
-    QOffscreenWebViewGraphicsWidget.h
+#HEADERS +=
 
 SOURCES += \
-	main.cpp \
-    QOffscreenWebViewGraphicsWidget.cpp
+    main.cpp
 
 # Necessary for Bitmap-based mode of the offscreen views
 include("../../../QtOffscreenViews/androidjnigraphics.pri")
