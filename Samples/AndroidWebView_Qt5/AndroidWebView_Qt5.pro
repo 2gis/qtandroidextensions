@@ -21,23 +21,27 @@ QML_IMPORT_PATH =
 # The .cpp file which was generated for your project. Feel free to hack it.
 SOURCES += \
     main.cpp \
-	QQuickAndroidOffscreenView.cpp \
     ../../QtOffscreenViews/QAndroidOffscreenView.cpp \
     ../../QtOffscreenViews/QAndroidOffscreenWebView.cpp \
     ../../QtOffscreenViews/QOpenGLTextureHolder.cpp \
 	../../QJniHelpers/QAndroidQPAPluginGap.cpp \
     ../../QtOffscreenViews/QAndroidOffscreenEditText.cpp \
 	../../QJniHelpers/QJniHelpers.cpp \
-    ../../QtOffscreenViews/QAndroidJniImagePair.cpp
+    ../../QtOffscreenViews/QAndroidJniImagePair.cpp \
+    ../../QtOffscreenViews/QQuickViews/QQuickAndroidOffscreenView.cpp \
+    ../../QtOffscreenViews/QQuickViews/QQuickOffscreenEditText.cpp \
+    ../../QtOffscreenViews/QQuickViews/QQuickOffscreenWebView.cpp
 HEADERS += \
-	QQuickAndroidOffscreenView.h \
     ../../QtOffscreenViews/QAndroidOffscreenView.h \
     ../../QtOffscreenViews/QAndroidOffscreenWebView.h \
     ../../QtOffscreenViews/QOpenGLTextureHolder.h \
 	../../QJniHelpers/QAndroidQPAPluginGap.h \
     ../../QtOffscreenViews/QAndroidOffscreenEditText.h \
 	../../QJniHelpers/QJniHelpers.h \
-    ../../QtOffscreenViews/QAndroidJniImagePair.h
+    ../../QtOffscreenViews/QAndroidJniImagePair.h \
+    ../../QtOffscreenViews/QQuickViews/QQuickAndroidOffscreenView.h \
+    ../../QtOffscreenViews/QQuickViews/QQuickOffscreenEditText.h \
+    ../../QtOffscreenViews/QQuickViews/QQuickOffscreenWebView.h
 
 # Please do not modify the following two lines. Required for deployment.
 include(qtquick2applicationviewer/qtquick2applicationviewer.pri)

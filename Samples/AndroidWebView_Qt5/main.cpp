@@ -2,7 +2,8 @@
 #include <QtQuick/QQuickView>
 #include <QAndroidOffscreenWebView.h>
 #include <QAndroidOffscreenEditText.h>
-#include "QQuickAndroidOffscreenView.h"
+#include "QQuickViews/QQuickOffscreenWebView.h"
+#include "QQuickViews/QQuickOffscreenEditText.h"
 #include <QtAndroidExtras>
 
 int main(int argc, char **argv)
