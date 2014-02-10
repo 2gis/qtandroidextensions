@@ -8,6 +8,8 @@ ANDROID_APP_NAME = QML WebView
 
 # DEFINES += QJNIHELPERS_VERBOSE_LOG
 
+LIBS += -ljnigraphics
+
 # Additional import path used to resolve QML modules in Creator's code model
 QML_IMPORT_PATH =
 
@@ -25,7 +27,8 @@ SOURCES += \
     ../../QtOffscreenViews/QOpenGLTextureHolder.cpp \
 	../../QJniHelpers/QAndroidQPAPluginGap.cpp \
     ../../QtOffscreenViews/QAndroidOffscreenEditText.cpp \
-	../../QJniHelpers/QJniHelpers.cpp
+	../../QJniHelpers/QJniHelpers.cpp \
+    ../../QtOffscreenViews/QAndroidJniImagePair.cpp
 HEADERS += \
 	QQuickAndroidOffscreenView.h \
     ../../QtOffscreenViews/QAndroidOffscreenView.h \
@@ -33,7 +36,8 @@ HEADERS += \
     ../../QtOffscreenViews/QOpenGLTextureHolder.h \
 	../../QJniHelpers/QAndroidQPAPluginGap.h \
     ../../QtOffscreenViews/QAndroidOffscreenEditText.h \
-	../../QJniHelpers/QJniHelpers.h
+	../../QJniHelpers/QJniHelpers.h \
+    ../../QtOffscreenViews/QAndroidJniImagePair.h
 
 # Please do not modify the following two lines. Required for deployment.
 include(qtquick2applicationviewer/qtquick2applicationviewer.pri)
