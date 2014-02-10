@@ -189,18 +189,27 @@ void QAndroidOffscreenView::preloadJavaClasses()
 	QAndroidJniImagePair::preloadJavaClasses();
 }
 
-bool QAndroidOffscreenView::openGlTextureSupported()
+static int getApiLevel()
 {
 	try
 	{
-		int api = QJniObject("ru/dublgis/offscreenview/OffscreenView", false).callStaticInt("getApiLevel");
-		return api >= 15;
+		return QJniObject("ru/dublgis/offscreenview/OffscreenView", false).callStaticInt("getApiLevel");
 	}
 	catch(QJniBaseException & e)
 	{
 		qCritical()<<"openGlTextureSupported exception:"<<e.what();
-		return false;
+		return 0;
 	}
+}
+
+bool QAndroidOffscreenView::openGlTextureSupported()
+{
+	return getApiLevel() >= 15; // Android 4.0.3+
+}
+
+bool QAndroidOffscreenView::nonAttachingModeSupported()
+{
+	return getApiLevel() >= 11; // Android 3.0+
 }
 
 void QAndroidOffscreenView::initializeGL()
@@ -210,6 +219,8 @@ void QAndroidOffscreenView::initializeGL()
 		// qDebug("QAndroidOffscreenView GL is already initialized.");
 		return;
 	}
+
+	QOpenGLTextureHolder::initializeGL();
 
 	if (!openGlTextureSupported())
 	{
@@ -453,7 +464,6 @@ bool QAndroidOffscreenView::updateBitmapToGlTexture()
 		if (updated_texture || !tex_.isAllocated())
 		{
 			bool can_avoid_gl_conversion = (qtbuffer->format() == QImage::Format_ARGB32_Premultiplied);
-			qDebug()<<"SGEXP WTF "<<can_avoid_gl_conversion;
 			tex_.allocateTexture(*qtbuffer, can_avoid_gl_conversion, GL_RGBA, GL_TEXTURE_2D);
 			if (can_avoid_gl_conversion)
 			{
@@ -585,7 +595,7 @@ void QAndroidOffscreenView::setEnabled(bool enabled)
 
 void QAndroidOffscreenView::setAttachingMode(bool attaching)
 {
-	if (offscreen_view_)
+	if (offscreen_view_ && nonAttachingModeSupported())
 	{
 		offscreen_view_->callVoid("setAttachingMode", jboolean(attaching));
 	}

@@ -78,7 +78,13 @@ public:
 
 	static const QString & getDefaultJavaClassPath();
 	static void preloadJavaClasses();
+
+	//
+	// Functions to check for available configuration
+	//
+
 	static bool openGlTextureSupported();
+	static bool nonAttachingModeSupported();
 
 	const QString & viewObjectName() const { return view_object_name_; }
 	const QString & viewClassName() const { return view_class_name_; }
@@ -195,6 +201,7 @@ public:
 	 * It is typically called one time after constructing QAndroidOffscreenView.
 	 * Unattached views will not receive keyboard events when focused and
 	 * can't use SIP and popup menus.
+	 * Non-attached mode is not supported on API < 11 (\see nonAttachingModeSupported()).
 	 */
 	void setAttachingMode(bool attaching);
 
