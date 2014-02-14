@@ -355,7 +355,7 @@ abstract class OffscreenView
                     }
 
                     // Notify C++ part that the view construction has been completed.
-                    doNativeViewCreated();
+                    nativeViewCreated(getNativePtr());
                 }
             }
         });
@@ -720,8 +720,7 @@ abstract class OffscreenView
 
                     // t = System.nanoTime() - t;
                     // Tell C++ part that we have a new image
-                    // Log.i(TAG, object_name_+" calling doNativeUpdate with nativePtr = "+getNativePtr());
-                    doNativeUpdate();
+                    nativeUpdate(getNativePtr());
 
                     // Log.i(TAG, "doDrawViewOnTexture: success, t="+t/1000000.0+"ms");
                 }
@@ -1321,27 +1320,6 @@ abstract class OffscreenView
     }
 
     public native void nativeUpdate(long nativeptr);
-    public native Activity nativeGetActivity();
+    public native Activity getActivity();
     public native void nativeViewCreated(long nativeptr);
-
-    public void doNativeUpdate()
-    {
-        nativeUpdate(getNativePtr());
-    }
-
-    public Activity getActivity()
-    {
-        Activity a = nativeGetActivity();
-        if (a == null)
-        {
-            Log.w(TAG, "getActivity: NULL ACTIVITY");
-        }
-        return a;
-    }
-
-    public void doNativeViewCreated()
-    {
-        nativeViewCreated(getNativePtr());
-    }
-
 }

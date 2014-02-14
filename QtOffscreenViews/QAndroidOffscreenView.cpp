@@ -230,7 +230,7 @@ void QAndroidOffscreenView::preloadJavaClasses()
 		static const JNINativeMethod methods[] = {
 			{"nativeUpdate", "(J)V", (void*)Java_OffscreenView_nativeUpdate},
 			{"nativeViewCreated", "(J)V", (void*)Java_OffscreenView_nativeViewCreated},
-			{"nativeGetActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity}
+			{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity}
 		};
 		ov.registerNativeMethods(methods, sizeof(methods));
 	}
