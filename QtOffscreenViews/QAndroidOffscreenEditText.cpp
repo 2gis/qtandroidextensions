@@ -95,9 +95,8 @@ void QAndroidOffscreenEditText::preloadJavaClasses()
 
 void QAndroidOffscreenEditText::javaOnTextChanged(const QString & str, int start, int before, int count)
 {
-	// qDebug()<<__FUNCTION__<<str;
 	emit onTextChanged(str, start, before, count);
-	emit onTextChanged(str);
+	emit onTextChanged();
 }
 
 bool QAndroidOffscreenEditText::javaOnKey(bool down, int androidKey)
@@ -108,7 +107,6 @@ bool QAndroidOffscreenEditText::javaOnKey(bool down, int androidKey)
 		{
 		case 0x00000017: // KEYCODE_DPAD_CENTER
 		case 0x00000042: // KEYCODE_ENTER
-			qDebug()<<"SGEXP Enter!";
 			emit onEnter();
 			break;
 		default:
@@ -293,7 +291,6 @@ void QAndroidOffscreenEditText::setTextColor(int color)
 {
 	if (QJniObject * view = offscreenView())
 	{
-		qDebug()<<"SGEXP"<<__FUNCTION__<<color;
 		view->callVoid("setTextColor", jint(color));
 	}
 }

@@ -517,7 +517,6 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-            Log.i(TAG, "SGEXP WTF OLALA "+color);
                 ((MyEditText)getView()).setTextColor(color);
             }
         });

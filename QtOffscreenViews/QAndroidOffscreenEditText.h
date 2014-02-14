@@ -230,7 +230,7 @@ public:
 
 signals:
 	void onTextChanged(QString text, int start, int before, int count);
-	void onTextChanged(QString text);
+	void onTextChanged();
 	void onEnter();
 
 
