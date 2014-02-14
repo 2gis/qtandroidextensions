@@ -37,10 +37,32 @@
 #include <QAndroidQPAPluginGap.h>
 #include "QAndroidOffscreenEditText.h"
 
+Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnTextChanged(JNIEnv *, jobject, jlong param, jstring str, jint start, jint before, jint count)
+{
+	if (param)
+	{
+		void * vp = reinterpret_cast<void*>(param);
+		QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(reinterpret_cast<QAndroidOffscreenView*>(vp));
+		if (edit)
+		{
+			QString qstr = QJniEnvPtr().JStringToQString(str);
+			edit->javaOnTextChanged(qstr, start, before, count);
+			return;
+		}
+	}
+	qWarning()<<__FUNCTION__<<"Zero param!";
+}
+
+
 QAndroidOffscreenEditText::QAndroidOffscreenEditText(const QString & object_name, const QSize & def_size, QObject * parent)
-	: QAndroidOffscreenView(QLatin1String("OffscreenEditText"), object_name, true, def_size, parent)
+	: QAndroidOffscreenView(QLatin1String("OffscreenEditText"), object_name, false, def_size, parent)
 {
 	setAttachingMode(true);
+	if (QJniObject * view = offscreenView())
+	{
+		view->registerNativeMethod("nativeOnTextChanged", "(JLjava/lang/String;III)V", (void*)Java_AndroidOffscreenEditText_nativeOnTextChanged);
+	}
+	createView();
 }
 
 QAndroidOffscreenEditText::~QAndroidOffscreenEditText()
@@ -52,6 +74,19 @@ void QAndroidOffscreenEditText::preloadJavaClasses()
 	QAndroidOffscreenView::preloadJavaClasses();
 	QAndroidQPAPluginGap::preloadJavaClass((getDefaultJavaClassPath() + QLatin1String("OffscreenEditText")).toLatin1());
 }
+
+
+
+void QAndroidOffscreenEditText::javaOnTextChanged(const QString & str, int start, int before, int count)
+{
+	// qDebug()<<__FUNCTION__<<str;
+	emit onTextChanged(str, start, before, count);
+	emit onTextChanged(str);
+}
+
+
+
+
 
 void QAndroidOffscreenEditText::setText(const QString & text)
 {

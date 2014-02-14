@@ -205,6 +205,7 @@ public:
 		etview->editText()->setHintTextColor(QColor(Qt::green));
 		etview->editText()->setHighlightColor(QColor(Qt::red));
 		etview->editText()->setHint("Type your text here");
+		etview->editText()->setSingleLine();
 		scene_.addItem(etview.data());
 
 		qDebug()<<__PRETTY_FUNCTION__<<"Creating WebView...";

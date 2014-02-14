@@ -70,8 +70,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
+import android.text.Editable;
 import android.text.method.MetaKeyKeyListener;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.util.DisplayMetrics;
 import android.view.ContextMenu;
@@ -94,11 +96,28 @@ class OffscreenEditText extends OffscreenView
 {
     class MyEditText extends EditText
     {
+        class MyTextWatcher implements TextWatcher
+        {
+            @Override
+            public void afterTextChanged(Editable s)
+            {}
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after)
+            {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count)
+            {
+                nativeOnTextChanged(getNativePtr(), s.toString(), start, before, count);
+            }
+        }
+
         public MyEditText(Context context)
         {
             super(context);
             Log.i(TAG, "MyEditText constructor");
-            // Fill in default properties here
+            addTextChangedListener(new MyTextWatcher());
         }
 
         @Override
@@ -200,6 +219,8 @@ class OffscreenEditText extends OffscreenView
         ((MyEditText)getView()).onDrawPublic(canvas);
     }
 
+
+    // TODO: Move this block to the base class ========>
     public native void nativeUpdate(long nativeptr);
     public native Activity nativeGetActivity();
     public native void nativeViewCreated(long nativeptr);
@@ -226,6 +247,16 @@ class OffscreenEditText extends OffscreenView
     {
         nativeViewCreated(getNativePtr());
     }
+    // <=========
+
+
+
+
+
+    public native void nativeOnTextChanged(long nativePtr, String s, int start, int before, int count);
+
+
+
 
 
     public void setText(final String text)

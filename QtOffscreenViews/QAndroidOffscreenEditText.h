@@ -176,6 +176,7 @@ public:
 	//! Sets the text color for all the states (normal, selected, focused) to be this color.
 	void setTextColor(int color);
 
+	//! NB: to use QGlobalColor, do like this: setTextColor(QColor(Qt::red)).
 	void setTextColor(const QColor & color);
 
 	//! Sets the extent by which text should be stretched horizontally.
@@ -193,6 +194,7 @@ public:
 	//! Sets the color used to display the selection highlight.
 	void setHighlightColor(int color);
 
+	//! NB: to use QGlobalColor, do like this: setTextColor(QColor(Qt::red)).
 	void setHighlightColor(const QColor & color);
 
 	//! Sets the text to be displayed when the text of the TextView is empty.
@@ -201,6 +203,7 @@ public:
 	//! Sets the color of the hint text for all the states (disabled, focussed, selected...) of this TextView.
 	void setHintTextColor(int color);
 
+	//! NB: to use QGlobalColor, do like this: setTextColor(QColor(Qt::red)).
 	void setHintTextColor(const QColor & color);
 
 	//! Makes the TextView exactly this many pixels wide.
@@ -226,6 +229,7 @@ public:
 	void setSelection(int start, int stop);
 
 signals:
+	void onTextChanged(QString text, int start, int before, int count);
 	void onTextChanged(QString text);
 
 
@@ -406,6 +410,11 @@ signals:
 	//	final void 	setTextKeepState(CharSequence text, TextView.BufferType type)	//	Like setText(CharSequence, android.widget.TextView.BufferType), except that the cursor position (if any) is retained in the new text.
 	//	final void 	setTransformationMethod(TransformationMethod method)	//	Sets the transformation that is applied to the text that this TextView is displaying.
 	// void setTextLocale(Locale locale)	//	Set the default Locale of the text in this TextView to the given value.
+
+private:
+	virtual void javaOnTextChanged(const QString & str, int start, int before, int count);
+
+	friend void JNICALL Java_AndroidOffscreenEditText_nativeOnTextChanged(JNIEnv * env, jobject jo, jlong param, jstring str, jint start, jint before, jint count);
 
 };
 
