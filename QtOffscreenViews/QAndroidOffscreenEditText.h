@@ -77,8 +77,15 @@ public:
 		ANDROID_TYPEFACE_ITALIC			= 0x00000002,
 		ANDROID_TYPEFACE_NORMAL			= 0x00000000;
 
-	//! Sets the typeface and style (ANDROID_TYPEFACE_...) in which the text should be displayed.
+	/*! Sets the typeface and style (ANDROID_TYPEFACE_...) in which the text should be displayed.
+		\param name can be "normal", "sans", "serif", "monospace". */
 	void setTypeface(const QString & name, int style = ANDROID_TYPEFACE_NORMAL);
+
+	//! Creates Typeface from file and sets it.
+	void setTypefaceFromFile(const QString & filename);
+
+	//! Creates Typeface from asset file and sets it.
+	void setTypefaceFromAsset(const QString & filename);
 
 	//! Set whether the cursor is visible.
 	void setCursorVisible(bool visible);

@@ -199,7 +199,8 @@ public:
 		etview.reset(new QOffscreenEditTextGraphicsWidget());
 		//etview->androidOffscreenView()->setSynchronizedTextureUpdate(false);
 		etview->androidOffscreenView()->setFillColor(Qt::yellow);
-//		etview->editText()->setTypeface("Roboto", QAndroidOffscreenEditText::ANDROID_TYPEFACE_ITALIC);
+		// etview->editText()->setTypeface("serif", QAndroidOffscreenEditText::ANDROID_TYPEFACE_ITALIC);
+		etview->editText()->setTypefaceFromAsset("Roboto-BoldCondensed.ttf");
 		etview->editText()->setTextColor(QColor(Qt::blue));
 		etview->editText()->setHintTextColor(QColor(Qt::green));
 		etview->editText()->setHighlightColor(QColor(Qt::red));

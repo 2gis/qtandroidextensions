@@ -260,6 +260,30 @@ class OffscreenEditText extends OffscreenView
         });
     }
 
+    void setTypefaceFromFile(final String filename)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setTypeface(Typeface.createFromFile(filename));
+            }
+        });
+    }
+
+    void setTypefaceFromAsset(final String filename)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                Activity a = getActivity();
+                if (a != null)
+                {
+                    ((MyEditText)getView()).setTypeface(Typeface.createFromAsset(a.getAssets(), filename));
+                }
+            }
+        });
+    }
+
     void setCursorVisible(final boolean visible)
     {
         runViewAction(new Runnable(){

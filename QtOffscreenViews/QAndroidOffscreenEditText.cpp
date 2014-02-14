@@ -82,7 +82,23 @@ void QAndroidOffscreenEditText::setTypeface(const QString & name, int style)
 {
 	if (QJniObject * view = offscreenView())
 	{
-		view->callParamVoid("setTypeface", "Ljava/lang/string;I", QJniLocalRef(name).jObject(), jint(style));
+		view->callParamVoid("setTypeface", "Ljava/lang/String;I", QJniLocalRef(name).jObject(), jint(style));
+	}
+}
+
+void QAndroidOffscreenEditText::setTypefaceFromFile(const QString & filename)
+{
+	if (QJniObject * view = offscreenView())
+	{
+		view->callVoid("setTypefaceFromFile", filename);
+	}
+}
+
+void QAndroidOffscreenEditText::setTypefaceFromAsset(const QString & filename)
+{
+	if (QJniObject * view = offscreenView())
+	{
+		view->callVoid("setTypefaceFromAsset", filename);
 	}
 }
 
