@@ -167,7 +167,7 @@ bool QJniEnvPtr::preloadClass(const char * class_name)
 {
 	qWarning("Preloading class \"%s\"", class_name);
 	QJniLocalRef clazz(env_, env_->FindClass(class_name)); // jclass
-	if (clearException() || clazz.jObject() == NULL)
+	if (clearException() || clazz.jObject() == 0)
 	{
 		qWarning("...Failed to preload class %s (tid %d)", class_name, (int)gettid());
 		return false;
@@ -272,7 +272,7 @@ jstring QJniEnvPtr::JStringFromQString(const QString& str)
 
 QString QJniEnvPtr::QStringFromJString(jstring str)
 {
-	if (str == NULL)
+	if (str == 0)
 	{
 		return QString();
 	}
@@ -283,8 +283,8 @@ QString QJniEnvPtr::QStringFromJString(jstring str)
 		return QString();
 	}
 
-	const jchar* str_ptr = env_->GetStringChars(str, NULL);
-	if (str_ptr == NULL)
+	const jchar* str_ptr = env_->GetStringChars(str, 0);
+	if (str_ptr == 0)
 	{
 		return QString();
 	}
@@ -360,11 +360,11 @@ QJniObject::~QJniObject()
 {
 	VERBOSE(qDebug("QJniObject::~QJniObject() %p",this));
 	QJniEnvPtr jep;
-	if (instance_ != NULL)
+	if (instance_ != 0)
 	{
 		jep.env()->DeleteGlobalRef(instance_);
 	}
-	if (class_ != NULL)
+	if (class_ != 0)
 	{
 		jep.env()->DeleteGlobalRef(class_);
 	}
@@ -429,7 +429,7 @@ void QJniObject::init(JNIEnv * env, jclass class_to_instantiate, bool create)
 	else
 	{
 		class_ = static_cast<jclass>(env->NewGlobalRef(class_to_instantiate));
-		instance_ = NULL;
+		instance_ = 0;
 	}
 }
 
@@ -442,7 +442,7 @@ void QJniObject::init(JNIEnv* env, const char * full_class_name, bool create)
 	{
 		throw QJniBaseException();
 	}
-	if (cls == NULL)
+	if (cls == 0)
 	{
 		qWarning("Could not find class %s", full_class_name);
 		throw QJniClassNotFoundException();
@@ -456,7 +456,7 @@ void QJniObject::init(JNIEnv* env, const char * full_class_name, bool create)
 	else
 	{
 		class_ = static_cast<jclass>(env->NewGlobalRef(cls));
-		instance_ = NULL;
+		instance_ = 0;
 	}
 }
 
@@ -833,7 +833,7 @@ QJniObject* QJniObject::callStaticObject(const char * method_name, const char * 
 	}
 	if (jret == 0)
 	{
-		return NULL;
+		return 0;
 	}
 	return new QJniObject(jret, true);
 }
