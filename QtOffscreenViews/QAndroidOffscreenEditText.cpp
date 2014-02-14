@@ -53,6 +53,21 @@ Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnTextChanged(JNI
 	qWarning()<<__FUNCTION__<<"Zero param!";
 }
 
+Q_DECL_EXPORT jboolean JNICALL Java_AndroidOffscreenEditText_nativeOnKey(JNIEnv *, jobject, jlong param, jboolean down, jint keycode)
+{
+	if (param)
+	{
+		void * vp = reinterpret_cast<void*>(param);
+		QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(reinterpret_cast<QAndroidOffscreenView*>(vp));
+		if (edit)
+		{
+			return jboolean(edit->javaOnKey(down? true: false, keycode));
+		}
+	}
+	qWarning()<<__FUNCTION__<<"Zero param!";
+	return 0;
+}
+
 
 QAndroidOffscreenEditText::QAndroidOffscreenEditText(const QString & object_name, const QSize & def_size, QObject * parent)
 	: QAndroidOffscreenView(QLatin1String("OffscreenEditText"), object_name, false, def_size, parent)
@@ -61,6 +76,7 @@ QAndroidOffscreenEditText::QAndroidOffscreenEditText(const QString & object_name
 	if (QJniObject * view = offscreenView())
 	{
 		view->registerNativeMethod("nativeOnTextChanged", "(JLjava/lang/String;III)V", (void*)Java_AndroidOffscreenEditText_nativeOnTextChanged);
+		view->registerNativeMethod("nativeOnKey", "(JZI)Z", (void*)Java_AndroidOffscreenEditText_nativeOnKey);
 	}
 	createView();
 }
@@ -84,7 +100,23 @@ void QAndroidOffscreenEditText::javaOnTextChanged(const QString & str, int start
 	emit onTextChanged(str);
 }
 
-
+bool QAndroidOffscreenEditText::javaOnKey(bool down, int androidKey)
+{
+	if (down)
+	{
+		switch(androidKey)
+		{
+		case 0x00000017: // KEYCODE_DPAD_CENTER
+		case 0x00000042: // KEYCODE_ENTER
+			qDebug()<<"SGEXP Enter!";
+			emit onEnter();
+			break;
+		default:
+			break;
+		}
+	}
+	return false;
+}
 
 
 
@@ -121,19 +153,19 @@ void QAndroidOffscreenEditText::setTypeface(const QString & name, int style)
 	}
 }
 
-void QAndroidOffscreenEditText::setTypefaceFromFile(const QString & filename)
+void QAndroidOffscreenEditText::setTypefaceFromFile(const QString & filename, int style)
 {
 	if (QJniObject * view = offscreenView())
 	{
-		view->callVoid("setTypefaceFromFile", filename);
+		view->callParamVoid("setTypefaceFromFile", "Ljava/lang/String;I", QJniLocalRef(filename).jObject(), style);
 	}
 }
 
-void QAndroidOffscreenEditText::setTypefaceFromAsset(const QString & filename)
+void QAndroidOffscreenEditText::setTypefaceFromAsset(const QString & filename, int style)
 {
 	if (QJniObject * view = offscreenView())
 	{
-		view->callVoid("setTypefaceFromAsset", filename);
+		view->callParamVoid("setTypefaceFromAsset", "Ljava/lang/String;I", QJniLocalRef(filename).jObject(), style);
 	}
 }
 

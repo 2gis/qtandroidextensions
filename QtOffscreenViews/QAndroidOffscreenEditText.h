@@ -82,10 +82,10 @@ public:
 	void setTypeface(const QString & name, int style = ANDROID_TYPEFACE_NORMAL);
 
 	//! Creates Typeface from file and sets it.
-	void setTypefaceFromFile(const QString & filename);
+	void setTypefaceFromFile(const QString & filename, int style = ANDROID_TYPEFACE_NORMAL);
 
 	//! Creates Typeface from asset file and sets it.
-	void setTypefaceFromAsset(const QString & filename);
+	void setTypefaceFromAsset(const QString & filename, int style = ANDROID_TYPEFACE_NORMAL);
 
 	//! Set whether the cursor is visible.
 	void setCursorVisible(bool visible);
@@ -231,6 +231,7 @@ public:
 signals:
 	void onTextChanged(QString text, int start, int before, int count);
 	void onTextChanged(QString text);
+	void onEnter();
 
 
 /*	void onKeyDown(int keyCode, KeyEvent event)	//	Default implementation of KeyEvent.Callback.onKeyDown(): perform press of the view when KEYCODE_DPAD_CENTER or KEYCODE_ENTER is released, if the view is enabled and clickable.
@@ -413,8 +414,10 @@ signals:
 
 private:
 	virtual void javaOnTextChanged(const QString & str, int start, int before, int count);
+	virtual bool javaOnKey(bool down, int androidKey);
 
 	friend void JNICALL Java_AndroidOffscreenEditText_nativeOnTextChanged(JNIEnv * env, jobject jo, jlong param, jstring str, jint start, jint before, jint count);
+	friend jboolean JNICALL Java_AndroidOffscreenEditText_nativeOnKey(JNIEnv * env, jobject jo, jlong param, jboolean down, jint keycode);
 
 };
 

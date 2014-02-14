@@ -94,6 +94,8 @@ import android.graphics.Canvas;
 
 class OffscreenEditText extends OffscreenView
 {
+    protected String text_ = "";
+
     class MyEditText extends EditText
     {
         class MyTextWatcher implements TextWatcher
@@ -109,7 +111,12 @@ class OffscreenEditText extends OffscreenView
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count)
             {
-                nativeOnTextChanged(getNativePtr(), s.toString(), start, before, count);
+                String str = s.toString();
+                synchronized(text_)
+                {
+                    text_ = str;
+                }
+                nativeOnTextChanged(getNativePtr(), str, start, before, count);
             }
         }
 
@@ -192,6 +199,32 @@ class OffscreenEditText extends OffscreenView
         }
 
         @Override
+        public boolean onKeyDown(int keyCode, KeyEvent event)
+        {
+            if (!nativeOnKey(getNativePtr(), true, keyCode))
+            {
+                return super.onKeyDown(keyCode, event);
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        @Override
+        public boolean onKeyUp(int keyCode, KeyEvent event)
+        {
+            if (!nativeOnKey(getNativePtr(), false, keyCode))
+            {
+                return super.onKeyUp(keyCode, event);
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        @Override
         public boolean onTouchEvent(MotionEvent event)
         {
             if (isOffscreenTouch())
@@ -254,6 +287,7 @@ class OffscreenEditText extends OffscreenView
 
 
     public native void nativeOnTextChanged(long nativePtr, String s, int start, int before, int count);
+    public native boolean nativeOnKey(long nativePtr, boolean down, int keyCode);
 
 
 
@@ -265,11 +299,22 @@ class OffscreenEditText extends OffscreenView
             @Override
             public void run(){
                 ((MyEditText)getView()).setText(text);
+                synchronized(text_)
+                {
+                    text_ = text;
+                }
             }
         });
     }
 
-//SGEXP TODO QString getText() const;
+    String getText()
+    {
+        synchronized(text_)
+        {
+            return text_;
+        }
+    }
+
     void setTextSize(final float size, final int unit)
     {
         runViewAction(new Runnable(){
@@ -291,17 +336,18 @@ class OffscreenEditText extends OffscreenView
         });
     }
 
-    void setTypefaceFromFile(final String filename)
+    void setTypefaceFromFile(final String filename, final int style)
     {
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setTypeface(Typeface.createFromFile(filename));
+                Typeface face = Typeface.createFromFile(filename);
+                ((MyEditText)getView()).setTypeface((style==0)? face: Typeface.create(face, style));
             }
         });
     }
 
-    void setTypefaceFromAsset(final String filename)
+    void setTypefaceFromAsset(final String filename, final int style)
     {
         runViewAction(new Runnable(){
             @Override
@@ -309,7 +355,8 @@ class OffscreenEditText extends OffscreenView
                 Activity a = getActivity();
                 if (a != null)
                 {
-                    ((MyEditText)getView()).setTypeface(Typeface.createFromAsset(a.getAssets(), filename));
+                    Typeface face = Typeface.createFromAsset(a.getAssets(), filename);
+                    ((MyEditText)getView()).setTypeface((style==0)? face: Typeface.create(face, style));
                 }
             }
         });
