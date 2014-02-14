@@ -253,37 +253,6 @@ class OffscreenEditText extends OffscreenView
     }
 
 
-    // TODO: Move this block to the base class ========>
-    public native void nativeUpdate(long nativeptr);
-    public native Activity nativeGetActivity();
-    public native void nativeViewCreated(long nativeptr);
-
-    @Override
-    public void doNativeUpdate()
-    {
-        nativeUpdate(getNativePtr());
-    }
-
-    @Override
-    public Activity getActivity()
-    {
-        Activity a = nativeGetActivity();
-        if (a == null)
-        {
-            Log.w(TAG, "getActivity: NULL ACTIVITY");
-        }
-        return a;
-    }
-
-    @Override
-    public void doNativeViewCreated()
-    {
-        nativeViewCreated(getNativePtr());
-    }
-    // <=========
-
-
-
 
 
     public native void nativeOnTextChanged(long nativePtr, String s, int start, int before, int count);

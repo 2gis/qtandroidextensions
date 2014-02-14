@@ -373,33 +373,6 @@ class OffscreenWebView extends OffscreenView
         return true;
     }
 
-    public native void nativeUpdate(long nativeptr);
-    public native Activity nativeGetActivity();
-    public native void nativeViewCreated(long nativeptr);
-
-    @Override
-    public void doNativeUpdate()
-    {
-        nativeUpdate(getNativePtr());
-    }
-
-    @Override
-    public Activity getActivity()
-    {
-        Activity a = nativeGetActivity();
-        if (a == null)
-        {
-            Log.w(TAG, "getActivity: NULL ACTIVITY");
-        }
-        return a;
-    }
-
-    @Override
-    public void doNativeViewCreated()
-    {
-        nativeViewCreated(getNativePtr());
-    }
-
     // WebViewClient
     public native void doUpdateVisitedHistory(long nativeptr, String url, boolean isReload);
     public native void onFormResubmission(long nativeptr, Message dontResend, Message resend);

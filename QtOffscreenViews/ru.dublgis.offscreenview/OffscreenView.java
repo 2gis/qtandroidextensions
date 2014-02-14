@@ -533,10 +533,7 @@ abstract class OffscreenView
     }
 
     abstract public void callViewPaintMethod(Canvas canvas);
-    abstract public void doNativeUpdate();
     abstract public void doCreateView();
-    abstract public void doNativeViewCreated();
-    abstract public Activity getActivity();
 
     //! Note: all views are hidden by default (after creation).
     public boolean isVisible()
@@ -1321,6 +1318,30 @@ abstract class OffscreenView
             api_level_ = ver.SDK_INT;
         }
         return api_level_;
+    }
+
+    public native void nativeUpdate(long nativeptr);
+    public native Activity nativeGetActivity();
+    public native void nativeViewCreated(long nativeptr);
+
+    public void doNativeUpdate()
+    {
+        nativeUpdate(getNativePtr());
+    }
+
+    public Activity getActivity()
+    {
+        Activity a = nativeGetActivity();
+        if (a == null)
+        {
+            Log.w(TAG, "getActivity: NULL ACTIVITY");
+        }
+        return a;
+    }
+
+    public void doNativeViewCreated()
+    {
+        nativeViewCreated(getNativePtr());
     }
 
 }

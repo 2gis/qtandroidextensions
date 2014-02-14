@@ -75,8 +75,11 @@ QAndroidOffscreenEditText::QAndroidOffscreenEditText(const QString & object_name
 	setAttachingMode(true);
 	if (QJniObject * view = offscreenView())
 	{
-		view->registerNativeMethod("nativeOnTextChanged", "(JLjava/lang/String;III)V", (void*)Java_AndroidOffscreenEditText_nativeOnTextChanged);
-		view->registerNativeMethod("nativeOnKey", "(JZI)Z", (void*)Java_AndroidOffscreenEditText_nativeOnKey);
+		static const JNINativeMethod methods[] = {
+			{"nativeOnTextChanged", "(JLjava/lang/String;III)V", (void*)Java_AndroidOffscreenEditText_nativeOnTextChanged},
+			{"nativeOnKey", "(JZI)Z", (void*)Java_AndroidOffscreenEditText_nativeOnKey}
+		};
+		view->registerNativeMethods(methods, sizeof(methods));
 	}
 	createView();
 }

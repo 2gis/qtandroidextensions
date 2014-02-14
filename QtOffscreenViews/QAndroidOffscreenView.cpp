@@ -139,6 +139,8 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	, last_texture_height_(0)
 	, have_to_adjust_size_to_pot_(false)
 {
+	preloadJavaClasses();
+
 	setObjectName(objectname);
 
 	// Expand like: OffscreenWebView => ru/dublgis/offscreenview/OffscreenWebView
@@ -159,9 +161,6 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 
 	if (offscreen_view_ && offscreen_view_->jObject())
 	{
-		offscreen_view_->registerNativeMethod("nativeUpdate", "(J)V", (void*)Java_OffscreenView_nativeUpdate);
-		offscreen_view_->registerNativeMethod("nativeViewCreated", "(J)V", (void*)Java_OffscreenView_nativeViewCreated);
-		offscreen_view_->registerNativeMethod("nativeGetActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity);
 		offscreen_view_->callVoid("SetObjectName", view_object_name_);
 		offscreen_view_->callParamVoid("SetNativePtr", "J", jlong(reinterpret_cast<void*>(this)));
 		offscreen_view_->callParamVoid("setFillColor", "IIII",
@@ -218,8 +217,23 @@ const QString & QAndroidOffscreenView::getDefaultJavaClassPath()
 
 void QAndroidOffscreenView::preloadJavaClasses()
 {
-	QAndroidQPAPluginGap::preloadJavaClass("ru/dublgis/offscreenview/OffscreenView");
-	QAndroidJniImagePair::preloadJavaClasses();
+	static volatile bool preloaded_ = false;
+
+	if (!preloaded_)
+	{
+		preloaded_ = true;
+
+		QAndroidQPAPluginGap::preloadJavaClass("ru/dublgis/offscreenview/OffscreenView");
+		QAndroidJniImagePair::preloadJavaClasses();
+
+		QJniObject ov("ru/dublgis/offscreenview/OffscreenView", false);
+		static const JNINativeMethod methods[] = {
+			{"nativeUpdate", "(J)V", (void*)Java_OffscreenView_nativeUpdate},
+			{"nativeViewCreated", "(J)V", (void*)Java_OffscreenView_nativeViewCreated},
+			{"nativeGetActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity}
+		};
+		ov.registerNativeMethods(methods, sizeof(methods));
+	}
 }
 
 static int getApiLevel()
