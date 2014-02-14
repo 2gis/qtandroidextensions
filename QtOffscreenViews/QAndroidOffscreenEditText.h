@@ -205,6 +205,13 @@ public:
 	//! Sets the properties of this field to transform input to ALL CAPS display.
 	void setAllCaps(bool allCaps);
 
+	//
+	// EditText methods
+	//
+	void selectAll();
+	void setSelection(int index);
+	void setSelection(int start, int stop);
+
 signals:
 	void onTextChanged(QString text);
 

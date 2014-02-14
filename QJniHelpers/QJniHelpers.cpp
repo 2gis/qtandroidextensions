@@ -939,6 +939,16 @@ void QJniObject::callVoid(const char * method_name, jboolean x)
 	callParamVoid(method_name, "Z", x);
 }
 
+void QJniObject::callVoid(const char * method_name, jfloat x)
+{
+	callParamVoid(method_name, "F", x);
+}
+
+void QJniObject::callVoid(const char * method_name, jdouble x)
+{
+	callParamVoid(method_name, "D", x);
+}
+
 void QJniObject::callVoid(const char * method_name, const QString & string)
 {
 	callParamVoid(method_name, "Ljava/lang/String;", QJniLocalRef(string).jObject());

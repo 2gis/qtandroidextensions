@@ -283,6 +283,7 @@ protected:
 	bool updateGlTexture();
 	bool updateBitmapToGlTexture();
 	QJniObject * offscreenView() { return offscreen_view_.data(); }
+	const QJniObject * offscreenView() const { return offscreen_view_.data(); }
 	QJniObject * getView();
 
 private:

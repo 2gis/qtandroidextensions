@@ -229,5 +229,74 @@ class OffscreenEditText extends OffscreenView
         nativeViewCreated(getNativePtr());
     }
 
+/*void QAndroidOffscreenEditText::setText(const QString & text);
+QString QAndroidOffscreenEditText::getText() const;
+
+void QAndroidOffscreenEditText::setTextSize(float size, int unit);
+
+void QAndroidOffscreenEditText::setTypeface(const QString & name, int style);
+
+void QAndroidOffscreenEditText::setCursorVisible(bool visible);
+
+void QAndroidOffscreenEditText::setInputType(int type);
+
+void QAndroidOffscreenEditText::setMarqueeRepeatLimit(int marqueeLimit);
+
+void QAndroidOffscreenEditText::setMaxEms(int maxems);
+
+void QAndroidOffscreenEditText::setMinEms(int minems);
+
+void QAndroidOffscreenEditText::setMaxHeight(int maxHeight);
+
+void QAndroidOffscreenEditText::setMinHeight(int minHeight);
+
+void QAndroidOffscreenEditText::setMaxLines(int maxlines);
+
+void QAndroidOffscreenEditText::setMinLines(int minlines);
+
+void QAndroidOffscreenEditText::setMaxWidth(int maxpixels);
+
+void QAndroidOffscreenEditText::setMinWidth(int minpixels);
+
+void QAndroidOffscreenEditText::setPadding(int left, int top, int right, int bottom);
+
+void QAndroidOffscreenEditText::setPaintFlags(int flags);
+
+void QAndroidOffscreenEditText::setSelectAllOnFocus(bool selectAllOnFocus);
+
+void QAndroidOffscreenEditText::setSingleLine(bool singleLine);
+
+void QAndroidOffscreenEditText::setTextColor(int color);
+
+void QAndroidOffscreenEditText::setTextScaleX(float size);
+
+void QAndroidOffscreenEditText::setTextIsSelectable(bool selectable);
+
+void QAndroidOffscreenEditText::setGravity(int gravity);
+
+void QAndroidOffscreenEditText::setHeight(int pixels);
+
+void QAndroidOffscreenEditText::setHighlightColor(int color);
+
+void QAndroidOffscreenEditText::setHint(const QString & hint);
+
+void QAndroidOffscreenEditText::setHintTextColor(int color);
+
+void QAndroidOffscreenEditText::setWidth(int pixels);
+
+void QAndroidOffscreenEditText::setLineSpacing(float add, float mult);
+
+void QAndroidOffscreenEditText::setLines(int lines);
+
+void QAndroidOffscreenEditText::setHorizontallyScrolling(bool whether);
+
+void QAndroidOffscreenEditText::setAllCaps(bool allCaps);
+
+void QAndroidOffscreenEditText::selectAll();
+void QAndroidOffscreenEditText::setSelection(int index);
+void QAndroidOffscreenEditText::setSelection(int start, int stop);
+
+*/
+
 }
 

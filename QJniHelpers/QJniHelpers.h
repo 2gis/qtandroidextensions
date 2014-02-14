@@ -241,6 +241,8 @@ public:
 	void callVoid(const char * method_name, jint x);
 	void callVoid(const char * method_name, jlong x);
 	void callVoid(const char * method_name, jboolean x);
+	void callVoid(const char * method_name, jfloat x);
+	void callVoid(const char * method_name, jdouble x);
 	void callVoid(const char * method_name, const QString & string);
 	void callVoid(const char * method_name, const QString & string1, const QString & string2);
 	void callVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3);
