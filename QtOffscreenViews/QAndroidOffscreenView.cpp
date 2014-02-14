@@ -802,3 +802,8 @@ void QAndroidOffscreenView::resize(const QSize & newsize)
 	}
 }
 
+int QColorToAndroidColor(const QColor & color)
+{
+	// QColor to BGRA aka ARGB in Android terms
+	return color.blue() | (color.green()<<8) | (color.red()<<16) | (color.alpha()<<24);
+}

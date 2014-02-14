@@ -46,5 +46,7 @@ public:
 	QOffscreenEditTextGraphicsWidget(const QString objectname = QLatin1String("DefaultEditText"),
 		const QSize & def_size = QSize(512, 32), QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
 
+	QAndroidOffscreenEditText * editText() { return static_cast<QAndroidOffscreenEditText*>(androidOffscreenView()); }
+	const QAndroidOffscreenEditText * editText() const  { return static_cast<const QAndroidOffscreenEditText*>(androidOffscreenView()); }
 };
 

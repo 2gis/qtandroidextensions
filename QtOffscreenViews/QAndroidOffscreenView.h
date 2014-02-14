@@ -323,3 +323,6 @@ private:
 	friend void JNICALL Java_OffscreenView_nativeViewCreated(JNIEnv *, jobject, jlong param);
 };
 
+int QColorToAndroidColor(const QColor & color);
+
+

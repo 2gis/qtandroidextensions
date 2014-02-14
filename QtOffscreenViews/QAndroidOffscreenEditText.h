@@ -169,6 +169,8 @@ public:
 	//! Sets the text color for all the states (normal, selected, focused) to be this color.
 	void setTextColor(int color);
 
+	void setTextColor(const QColor & color);
+
 	//! Sets the extent by which text should be stretched horizontally.
 	void setTextScaleX(float size);
 
@@ -184,11 +186,15 @@ public:
 	//! Sets the color used to display the selection highlight.
 	void setHighlightColor(int color);
 
+	void setHighlightColor(const QColor & color);
+
 	//! Sets the text to be displayed when the text of the TextView is empty.
 	void setHint(const QString & hint);
 
 	//! Sets the color of the hint text for all the states (disabled, focussed, selected...) of this TextView.
 	void setHintTextColor(int color);
+
+	void setHintTextColor(const QColor & color);
 
 	//! Makes the TextView exactly this many pixels wide.
 	void setWidth(int pixels);

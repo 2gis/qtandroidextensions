@@ -82,8 +82,7 @@ void QAndroidOffscreenEditText::setTypeface(const QString & name, int style)
 {
 	if (QJniObject * view = offscreenView())
 	{
-		QJniLocalRef jstr(QJniEnvPtr().JStringFromQString(name));
-		view->callParamVoid("setTypeface", "Ljava/lang/string;I", jstr.jObject(), jint(style));
+		view->callParamVoid("setTypeface", "Ljava/lang/string;I", QJniLocalRef(name).jObject(), jint(style));
 	}
 }
 
@@ -211,6 +210,7 @@ void QAndroidOffscreenEditText::setTextColor(int color)
 {
 	if (QJniObject * view = offscreenView())
 	{
+		qDebug()<<"SGEXP"<<__FUNCTION__<<color;
 		view->callVoid("setTextColor", jint(color));
 	}
 }
@@ -335,4 +335,18 @@ void QAndroidOffscreenEditText::setSelection(int start, int stop)
 	}
 }
 
+void QAndroidOffscreenEditText::setTextColor(const QColor & color)
+{
+	setTextColor(QColorToAndroidColor(color));
+}
+
+void QAndroidOffscreenEditText::setHighlightColor(const QColor & color)
+{
+	setHighlightColor(QColorToAndroidColor(color));
+}
+
+void QAndroidOffscreenEditText::setHintTextColor(const QColor & color)
+{
+	setHintTextColor(QColorToAndroidColor(color));
+}
 

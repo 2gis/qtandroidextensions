@@ -63,7 +63,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.net.http.SslError;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -98,9 +98,7 @@ class OffscreenEditText extends OffscreenView
         {
             super(context);
             Log.i(TAG, "MyEditText constructor");
-            // Fill in default properties
-            // setText("Hello EditText bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla");
-            setText("Hello EditText");
+            // Fill in default properties here
         }
 
         @Override
@@ -229,74 +227,348 @@ class OffscreenEditText extends OffscreenView
         nativeViewCreated(getNativePtr());
     }
 
-/*void QAndroidOffscreenEditText::setText(const QString & text);
-QString QAndroidOffscreenEditText::getText() const;
 
-void QAndroidOffscreenEditText::setTextSize(float size, int unit);
+    public void setText(final String text)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setText(text);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setTypeface(const QString & name, int style);
+//SGEXP TODO QString getText() const;
+    void setTextSize(final float size, final int unit)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                //Note that the param order is different in C++ and View
+                ((MyEditText)getView()).setTextSize(unit, size);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setCursorVisible(bool visible);
+    void setTypeface(final String name, final int style)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setTypeface(Typeface.create((name.length() > 0)? name: null, style));
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setInputType(int type);
+    void setCursorVisible(final boolean visible)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setCursorVisible(visible);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setMarqueeRepeatLimit(int marqueeLimit);
+    void setInputType(final int type)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setInputType(type);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setMaxEms(int maxems);
+    void setMarqueeRepeatLimit(final int marqueeLimit)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setMarqueeRepeatLimit(marqueeLimit);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setMinEms(int minems);
+    void setMaxEms(final int maxems)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setMaxEms(maxems);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setMaxHeight(int maxHeight);
+    void setMinEms(final int minems)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setMinEms(minems);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setMinHeight(int minHeight);
+    void setMaxHeight(final int maxHeight)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setMaxHeight(maxHeight);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setMaxLines(int maxlines);
+   void setMinHeight(final int minHeight)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setMinHeight(minHeight);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setMinLines(int minlines);
+    void setMaxLines(final int maxlines)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setMaxLines(maxlines);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setMaxWidth(int maxpixels);
+    void setMinLines(final int minlines)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setMinLines(minlines);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setMinWidth(int minpixels);
+    void setMaxWidth(final int maxpixels)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setMaxWidth(maxpixels);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setPadding(int left, int top, int right, int bottom);
+    void setMinWidth(final int minpixels)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setMinWidth(minpixels);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setPaintFlags(int flags);
+    void setPadding(final int left, final int top, final int right, final int bottom)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setPadding(left, top, right, bottom);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setSelectAllOnFocus(bool selectAllOnFocus);
+    void setPaintFlags(final int flags)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setPaintFlags(flags);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setSingleLine(bool singleLine);
+   void setSelectAllOnFocus(final boolean selectAllOnFocus)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setSelectAllOnFocus(selectAllOnFocus);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setTextColor(int color);
+    void setSingleLine(final boolean singleLine)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setSingleLine(singleLine);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setTextScaleX(float size);
+    void setTextColor(final int color)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+            Log.i(TAG, "SGEXP WTF OLALA "+color);
+                ((MyEditText)getView()).setTextColor(color);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setTextIsSelectable(bool selectable);
+    void setTextScaleX(final float size)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setTextScaleX(size);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setGravity(int gravity);
+    void setTextIsSelectable(final boolean selectable)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setTextIsSelectable(selectable);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setHeight(int pixels);
+    void setGravity(final int gravity)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setGravity(gravity);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setHighlightColor(int color);
+    void setHeight(final int pixels)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setHeight(pixels);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setHint(const QString & hint);
+    void setHighlightColor(final int color)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setHighlightColor(color);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setHintTextColor(int color);
+    void setHint(final String hint)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setHint(hint);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setWidth(int pixels);
+    void setHintTextColor(final int color)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setHintTextColor(color);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setLineSpacing(float add, float mult);
+    void setWidth(final int pixels)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setWidth(pixels);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setLines(int lines);
+    void setLineSpacing(final float add, final float mult)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setLineSpacing(add, mult);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setHorizontallyScrolling(bool whether);
+    void setLines(final int lines)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setLines(lines);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::setAllCaps(bool allCaps);
+    void setHorizontallyScrolling(final boolean whether)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setHorizontallyScrolling(whether);
+            }
+        });
+    }
 
-void QAndroidOffscreenEditText::selectAll();
-void QAndroidOffscreenEditText::setSelection(int index);
-void QAndroidOffscreenEditText::setSelection(int start, int stop);
+    void setAllCaps(final boolean allCaps)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setAllCaps(allCaps);
+            }
+        });
+    }
 
-*/
+    void selectAll()
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).selectAll();
+            }
+        });
+    }
 
+    void setSelection(final int index)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setSelection(index);
+            }
+        });
+    }
+
+    void setSelection(final int start, final int stop)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setSelection(start, stop);
+            }
+        });
+    }
 }
 
