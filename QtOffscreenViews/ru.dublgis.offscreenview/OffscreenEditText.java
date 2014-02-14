@@ -162,10 +162,11 @@ class OffscreenEditText extends OffscreenView
             /*! \todo Here's an evil workaround: TextView does not recalculate word wrap
                  on relayout. We should avoid the workaround triggering when text edit bar
                  appears because it causes input method to restart. */
-            int w = right - left;
 
             super.onLayout(changed, left, top, right, bottom);
 
+            // TODO: also check if the view is not single-line
+            int w = right - left;
             if (changed && w != text_layout_width_)
             {
                 setText(getText());
