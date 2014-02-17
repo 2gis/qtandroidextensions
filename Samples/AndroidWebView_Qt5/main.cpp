@@ -5,7 +5,7 @@
 
 int main(int argc, char **argv)
 {
-	QJniClassUnloader unloader;
+	// Preload Java classes, so they can be instantiated in other threads.
 	QAndroidOffscreenWebView::preloadJavaClasses();
 	QAndroidOffscreenEditText::preloadJavaClasses();
 

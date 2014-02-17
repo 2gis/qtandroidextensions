@@ -282,8 +282,6 @@ static const char* const TAG = "**** main() ****";
 
 int main(int argc, char **argv)
 {
-	QJniClassUnloader unloader;
-
     qDebug()<<"Static plugins "<<QPluginLoader::staticInstances().count();
     foreach(QObject * obj, QPluginLoader::staticInstances())
         qDebug()<<"Plugin: "<<obj;

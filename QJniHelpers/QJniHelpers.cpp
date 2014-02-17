@@ -54,10 +54,20 @@ public:
 	~QJniEnvPtrThreadDetacher();
 };
 
+class QJniClassUnloader
+{
+public:
+	~QJniClassUnloader()
+	{
+		QJniEnvPtr().unloadAllClasses();
+	}
+};
+
 static JavaVM * g_JavaVm = 0;
 static QMutex g_PreloadedClassesMutex;
 static PreloadedClasses g_PreloadedClasses;
 static QThreadStorage<QJniEnvPtrThreadDetacher*> g_JavaThreadDetacher;
+static QJniClassUnloader g_class_unloader_;
 
 QJniEnvPtrThreadDetacher::~QJniEnvPtrThreadDetacher()
 {
