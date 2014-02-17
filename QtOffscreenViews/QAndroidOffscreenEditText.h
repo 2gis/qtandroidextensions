@@ -229,18 +229,20 @@ public:
 	void setSelection(int start, int stop);
 
 signals:
+	//! See Android: TextWatcher.onTextChanged().
 	void onTextChanged(QString text, int start, int before, int count);
+
+	//! Simple notification that the text has been changed.
 	void onTextChanged();
+
+	//! Emitted when KEYCODE_DPAD_CENTER or KEYCODE_ENTER has been released.
 	void onEnter();
 
 
-/*	void onKeyDown(int keyCode, KeyEvent event)	//	Default implementation of KeyEvent.Callback.onKeyDown(): perform press of the view when KEYCODE_DPAD_CENTER or KEYCODE_ENTER is released, if the view is enabled and clickable.
-	void onKeyMultiple(int keyCode, int repeatCount, KeyEvent event)	//	Default implementation of KeyEvent.Callback.onKeyMultiple(): always returns false (doesn't handle the event).
+/*	void onKeyMultiple(int keyCode, int repeatCount, KeyEvent event)	//	Default implementation of KeyEvent.Callback.onKeyMultiple(): always returns false (doesn't handle the event).
 	void onKeyPreIme(int keyCode, KeyEvent event)	//	Handle a key event before it is processed by any input method associated with the view hierarchy.
 	//	Called on the focused view when a key shortcut event is not handled.
-	void onKeyShortcut(int keyCode, KeyEvent event);
-	//	Default implementation of KeyEvent.Callback.onKeyUp(): perform clicking of the view when KEYCODE_DPAD_CENTER or KEYCODE_ENTER is released.
-	void onKeyUp(int keyCode, KeyEvent event);*/
+	void onKeyShortcut(int keyCode, KeyEvent event); */
 
 
 	//
@@ -412,12 +414,12 @@ signals:
 	//	final void 	setTransformationMethod(TransformationMethod method)	//	Sets the transformation that is applied to the text that this TextView is displaying.
 	// void setTextLocale(Locale locale)	//	Set the default Locale of the text in this TextView to the given value.
 
-private:
+protected:
 	virtual void javaOnTextChanged(const QString & str, int start, int before, int count);
 	virtual bool javaOnKey(bool down, int androidKey);
 
+private:
 	friend void JNICALL Java_AndroidOffscreenEditText_nativeOnTextChanged(JNIEnv * env, jobject jo, jlong param, jstring str, jint start, jint before, jint count);
 	friend jboolean JNICALL Java_AndroidOffscreenEditText_nativeOnKey(JNIEnv * env, jobject jo, jlong param, jboolean down, jint keycode);
-
 };
 

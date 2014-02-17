@@ -46,10 +46,14 @@
 class QQuickAndroidOffscreenView : public QQuickFramebufferObject
 {
     Q_OBJECT
+	Q_PROPERTY(QColor backgroundColor READ getBackgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged)
 public:
 	//!\ todo pass QAndroidOffscreenView
 	QQuickAndroidOffscreenView(QAndroidOffscreenView * aview);
 	Renderer * createRenderer() const;
+
+	QColor getBackgroundColor() const { return androidView()->fillColor(); }
+	void setBackgroundColor(QColor color);
 
 protected:
 	QAndroidOffscreenView * androidView() { return aview_.data(); }
@@ -69,6 +73,7 @@ public slots:
 
 signals:
 	void textureUpdated();
+	void backgroundColorChanged(QColor color);
 
 protected slots:
 	void onTextureUpdated();

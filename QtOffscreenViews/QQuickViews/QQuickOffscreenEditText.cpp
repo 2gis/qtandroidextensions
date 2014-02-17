@@ -39,7 +39,19 @@
 QQuickAndroidOffscreenEditText::QQuickAndroidOffscreenEditText()
 	: QQuickAndroidOffscreenView(new QAndroidOffscreenEditText("EditTextInQuick", QSize(512, 64)))
 {
-	// SGEXP
-	androidView()->setFillColor(Qt::yellow);
+	connect(androidEditText(), SIGNAL(onTextChanged(QString,int,int,int)), this, SLOT(textChanged(QString,int,int,int)));
+	connect(androidEditText(), SIGNAL(onEnter()), this, SLOT(enter()));
 }
 
+void QQuickAndroidOffscreenEditText::textChanged(QString text, int start, int before, int count)
+{
+	Q_UNUSED(start);
+	Q_UNUSED(before);
+	Q_UNUSED(count);
+	emit onTextChanged(text);
+}
+
+void QQuickAndroidOffscreenEditText::enter()
+{
+	emit onEnter();
+}

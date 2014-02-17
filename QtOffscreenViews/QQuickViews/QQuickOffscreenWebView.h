@@ -44,7 +44,39 @@ class QQuickAndroidOffscreenWebView: public QQuickAndroidOffscreenView
 public:
 	QQuickAndroidOffscreenWebView();
 
+protected:
 	QAndroidOffscreenWebView * androidWebView() { return static_cast<QAndroidOffscreenWebView*>(androidView()); }
 	const QAndroidOffscreenWebView * androidWebView() const { return static_cast<const QAndroidOffscreenWebView*>(androidView()); }
+
+public:
+#if 0
+	bool loadUrl(const QString & url);
+
+	/*!
+	 * Start loading specified URL.
+	 * \param additionalHttpHeaders contains the additional headers. The headers should not contain '\n' symbols.
+	 */
+	bool loadUrl(const QString & url, const QMap<QString, QString> & additionalHttpHeaders);
+
+	/*!
+	 * Load document from a string.
+	 */
+	bool loadData(const QString & text, const QString & mime = QLatin1String("text/html"), const QString & encoding = QString::null);
+
+	/*!
+	 * Start loading specified URL.
+	 */
+	bool loadDataWithBaseURL(const QString & baseUrl, const QString & data, const QString & mimeType, const QString & encoding, const QString & historyUrl);
+
+	//! Will emit contentHeightReceived(int) after done.
+	bool requestContentHeight();
+
+
+signals:
+	void pageStarted();
+	void pageFinished();
+	void contentHeightReceived(int height);
+
+#endif
 };
 

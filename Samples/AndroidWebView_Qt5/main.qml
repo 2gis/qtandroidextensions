@@ -11,6 +11,11 @@ Item {
 		y: 20
 		width: parent.width - 40
 		height: 200
+		Component.onCompleted: {
+			edittext.setSingleLine(true)
+			edittext.setHint("Hello QML World")
+			edittext.backgroundColor = "yellow"
+		}
 	}
 
 	OffscreenWebView {

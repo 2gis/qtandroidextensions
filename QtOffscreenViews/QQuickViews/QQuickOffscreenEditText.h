@@ -41,10 +41,148 @@
 class QQuickAndroidOffscreenEditText: public QQuickAndroidOffscreenView
 {
 	Q_OBJECT
+	Q_PROPERTY(QString text READ getText WRITE setText NOTIFY onTextChanged)
 public:
 	QQuickAndroidOffscreenEditText();
 
+	QString getText() const { return androidEditText()->getText(); }
+
+protected:
 	QAndroidOffscreenEditText * androidEditText() { return static_cast<QAndroidOffscreenEditText*>(androidView()); }
 	const QAndroidOffscreenEditText * androidEditText() const { return static_cast<const QAndroidOffscreenEditText*>(androidView()); }
+
+public slots:
+	void setText(QString text) { androidEditText()->setText(text); }
+
+	//! Set the default text size to a given unit (ANDROID_TYPEDVALUE_...) and value.
+	void setTextSize(float size, int unit) { androidEditText()->setTextSize(size, unit); }
+
+	//! Set text size in raw pixels.
+	void setTextSize(float size) { androidEditText()->setTextSize(size); }
+
+	/*! Sets the typeface and style (ANDROID_TYPEFACE_...) in which the text should be displayed.
+		\param name can be "normal", "sans", "serif", "monospace". */
+	void setTypeface(QString name, int style) { androidEditText()->setTypeface(name, style); }
+
+	void setTypeface(QString name) { androidEditText()->setTypeface(name); }
+
+	//! Creates Typeface from file and sets it.
+	void setTypefaceFromFile(const QString & filename, int style) { androidEditText()->setTypefaceFromFile(filename, style); }
+
+	void setTypefaceFromFile(const QString & filename) { androidEditText()->setTypefaceFromFile(filename); }
+
+	//! Creates Typeface from asset file and sets it.
+	void setTypefaceFromAsset(const QString & filename, int style) { androidEditText()->setTypefaceFromAsset(filename, style); }
+
+	void setTypefaceFromAsset(const QString & filename) { androidEditText()->setTypefaceFromAsset(filename); }
+
+	//! Set whether the cursor is visible.
+	void setCursorVisible(bool visible) { androidEditText()->setCursorVisible(visible); }
+
+	//! Set the type of the content with a constant as defined for inputType (ANDROID_INPUTTYPE_...)
+	void setInputType(int type) { androidEditText()->setInputType(type); }
+
+	//! Sets how many times to repeat the marquee animation.
+	void setMarqueeRepeatLimit(int marqueeLimit) { androidEditText()->setMarqueeRepeatLimit(marqueeLimit); }
+
+	//! Makes the TextView at most this many ems wide
+	void setMaxEms(int maxems) { androidEditText()->setMaxEms(maxems); }
+
+	//! Makes the TextView at least this many ems wide
+	void setMinEms(int minems) { androidEditText()->setMinEms(minems); }
+
+	//! Makes the TextView at most this many pixels tall.
+	void setMaxHeight(int maxHeight) { androidEditText()->setMaxHeight(maxHeight); }
+
+	//! Makes the TextView at least this many pixels tall.
+	void setMinHeight(int minHeight) { androidEditText()->setMinHeight(minHeight); }
+
+	//! Makes the TextView at most this many lines tall.
+	void setMaxLines(int maxlines) { androidEditText()->setMaxLines(maxlines); }
+
+	//! Makes the TextView at least this many lines tall.
+	void setMinLines(int minlines) { androidEditText()->setMinLines(minlines); }
+
+	//! Makes the TextView at most this many pixels wide
+	void setMaxWidth(int maxpixels) { androidEditText()->setMaxWidth(maxpixels); }
+
+	//! Makes the TextView at least this many pixels wide
+	void setMinWidth(int minpixels) { androidEditText()->setMinWidth(minpixels); }
+
+	//! Sets the padding.
+	void setPadding(int left, int top, int right, int bottom) { androidEditText()->setPadding(left, top, right, bottom); }
+
+	//! Sets flags on the Paint being used to display the text and reflows the text if they are different from the old flags.
+	void setPaintFlags(int flags) { androidEditText()->setPaintFlags(flags); }
+
+	//! Set the TextView so that when it takes focus, all the text is selected.
+	void setSelectAllOnFocus(bool selectAllOnFocus) { androidEditText()->setSelectAllOnFocus(selectAllOnFocus); }
+
+	//! If true, sets the properties of this field (number of lines, horizontally scrolling, transformation method) to be for a single-line input; if false, restores these to the default conditions.
+	void setSingleLine(bool singleLine = true) { androidEditText()->setSingleLine(singleLine); }
+
+	//! Sets the text color for all the states (normal, selected, focused) to be this color.
+	void setTextColor(int color) { androidEditText()->setTextColor(color); }
+
+	//! NB: to use QGlobalColor, do like this: setTextColor(QColor(Qt::red)).
+	void setTextColor(const QColor & color) { androidEditText()->setTextColor(color); }
+
+	//! Sets the extent by which text should be stretched horizontally.
+	void setTextScaleX(float size) { androidEditText()->setTextScaleX(size); }
+
+	//! Sets whether the content of this view is selectable by the user.
+	void setTextIsSelectable(bool selectable) { androidEditText()->setTextIsSelectable(selectable); }
+
+	//! Sets the horizontal alignment of the text and the vertical gravity that will be used when there is extra space in the TextView beyond what is required for the text itself.
+	void setGravity(int gravity) { androidEditText()->setGravity(gravity); }
+
+	// //! Makes the TextView exactly this many pixels tall.
+	// void setHeight(int pixels) { androidEditText()->setHeight(pixels); }
+
+	//! Sets the color used to display the selection highlight.
+	void setHighlightColor(int color) { androidEditText()->setHighlightColor(color); }
+
+	//! NB: to use QGlobalColor, do like this: setTextColor(QColor(Qt::red)).
+	void setHighlightColor(const QColor & color) { androidEditText()->setHighlightColor(color); }
+
+	//! Sets the text to be displayed when the text of the TextView is empty.
+	void setHint(const QString & hint) { androidEditText()->setHint(hint); }
+
+	//! Sets the color of the hint text for all the states (disabled, focussed, selected...) of this TextView.
+	void setHintTextColor(int color) { androidEditText()->setHintTextColor(color); }
+
+	//! NB: to use QGlobalColor, do like this: setTextColor(QColor(Qt::red)).
+	void setHintTextColor(const QColor & color) { androidEditText()->setHintTextColor(color); }
+
+	// //! Makes the TextView exactly this many pixels wide.
+	// void setWidth(int pixels) { androidEditText()->setWidth(pixels); }
+
+	//! Sets line spacing for this TextView.
+	void setLineSpacing(float add, float mult) { androidEditText()->setLineSpacing(add, mult); }
+
+	//! Makes the TextView exactly this many lines tall.
+	void setLines(int lines) { androidEditText()->setLines(lines); }
+
+	//! Sets whether the text should be allowed to be wider than the View is.
+	void setHorizontallyScrolling(bool whether) { androidEditText()->setHorizontallyScrolling(whether); }
+
+	//! Sets the properties of this field to transform input to ALL CAPS display.
+	void setAllCaps(bool allCaps) { androidEditText()->setAllCaps(allCaps); }
+
+	void selectAll() { androidEditText()->selectAll(); }
+
+	void setSelection(int index) { androidEditText()->setSelection(index); }
+
+	void setSelection(int start, int stop) { androidEditText()->setSelection(start, stop); }
+
+signals:
+	void onTextChanged(QString text);
+
+	//! Emitted when KEYCODE_DPAD_CENTER or KEYCODE_ENTER has been released.
+	void onEnter();
+
+protected slots:
+	virtual void textChanged(QString text, int start, int before, int count);
+	virtual void enter();
 };
 

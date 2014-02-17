@@ -64,6 +64,15 @@ QQuickFramebufferObject::Renderer * QQuickAndroidOffscreenView::createRenderer()
 	return renderer;
 }
 
+void QQuickAndroidOffscreenView::setBackgroundColor(QColor color)
+{
+	if (color != androidView()->fillColor())
+	{
+		androidView()->setFillColor(color);
+		emit backgroundColorChanged(color);
+	}
+}
+
 void QQuickAndroidOffscreenView::onTextureUpdated()
 {
 	emit textureUpdated();
