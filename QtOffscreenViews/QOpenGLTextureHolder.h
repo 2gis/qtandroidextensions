@@ -110,17 +110,17 @@ public:
 
 	/*!
 	 * Allocate texture and load data from QImage. If QImage has Format_ARGB32,
-	 * Format_ARGB32_Premultiplied and real_32bit_format_is_bgr is true, or it has Format_RGB16,
+	 * Format_ARGB32_Premultiplied and real_32bit_format_is_qt_abgr is true, or it has Format_RGB16,
 	 * it is loaded into GL directly; for other cases, it is automatically converted to
 	 * format useable by GL (which is a quite slow operation).
 	 * \note Note: Android and GL's RGBA would be ABGR32 in Qt's notation. Qt doesn't support
-	 *  such format directly. That's why we need the real_32bit_format_is_bgr flag.
+	 *  such format directly. That's why we need the real_32bit_format_is_qt_abgr flag.
 	 * \note We don't expect anything useful in the alpha channel here, so premultiplied
 	 *  and non-premultiplied formats are treated in the same way.
 	 * \note If the texture has been loaded directly from QImage, its transformation matrix is
 	 *  set to reverse Y axis.
 	 */
-	void allocateTexture(const QImage & qimage, bool real_32bit_format_is_bgr = false, GLenum texture_type = GL_TEXTURE_2D);
+	void allocateTexture(const QImage & qimage, bool real_32bit_format_is_qt_abgr = false, GLenum texture_type = GL_TEXTURE_2D);
 
 	/*!
 	 * Allocate texture and load data from a file.

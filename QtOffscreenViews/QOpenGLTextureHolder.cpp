@@ -429,10 +429,10 @@ void QOpenGLTextureHolder::allocateTexture(const QImage & qimage, GLenum texture
 	glBindTexture(texture_type, 0);
 }
 
-void QOpenGLTextureHolder::allocateTexture(const QImage & qimage, bool real_32bit_format_is_bgr, GLenum texture_type)
+void QOpenGLTextureHolder::allocateTexture(const QImage & qimage, bool real_32bit_format_is_qt_abgr, GLenum texture_type)
 {
 	bool avoid_gl_conversion =
-		(real_32bit_format_is_bgr && (
+		(real_32bit_format_is_qt_abgr && (
 			qimage.format() == QImage::Format_ARGB32_Premultiplied ||
 			qimage.format() == QImage::Format_ARGB32)) ||
 		qimage.format() == QImage::Format_RGB16;
