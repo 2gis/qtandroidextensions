@@ -433,3 +433,10 @@ void QAndroidOffscreenEditText::setHintTextColor(const QColor & color)
 	setHintTextColor(QColorToAndroidColor(color));
 }
 
+void QAndroidOffscreenEditText::setAllowFullscreenKeyboard(bool allow)
+{
+	if (QJniObject * view = offscreenView())
+	{
+		view->callVoid("setAllowFullscreenKeyboard", jboolean(allow));
+	}
+}

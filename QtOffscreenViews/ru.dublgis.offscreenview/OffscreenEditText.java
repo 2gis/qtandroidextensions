@@ -78,6 +78,7 @@ import android.util.Log;
 import android.util.DisplayMetrics;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.inputmethod.EditorInfo;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -653,6 +654,27 @@ class OffscreenEditText extends OffscreenView
             @Override
             public void run(){
                 ((MyEditText)getView()).setSelection(start, stop);
+            }
+        });
+    }
+
+    void setAllowFullscreenKeyboard(final boolean allow)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                // Log.i(TAG, "setAllowFullscreenKeyboard "+allow);
+                MyEditText met = (MyEditText)getView();
+                int ops = met.getImeOptions();
+                if (allow)
+                {
+                    ops &= ~EditorInfo.IME_FLAG_NO_EXTRACT_UI;
+                }
+                else
+                {
+                    ops |= EditorInfo.IME_FLAG_NO_EXTRACT_UI;
+                }
+                met.setImeOptions(ops);
             }
         });
     }

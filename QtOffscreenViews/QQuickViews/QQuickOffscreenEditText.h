@@ -175,6 +175,8 @@ public slots:
 
 	void setSelection(int start, int stop) { androidEditText()->setSelection(start, stop); }
 
+	void setAllowFullscreenKeyboard(bool allow) { androidEditText()->setAllowFullscreenKeyboard(allow); }
+
 signals:
 	void onTextChanged(QString text);
 

@@ -12,6 +12,7 @@ Item {
 		width: parent.width - 40
 		height: 200
 		Component.onCompleted: {
+			edittext.setAllowFullscreenKeyboard(false)
 			edittext.setSingleLine(true)
 			edittext.setHint("Hello QML World")
 			edittext.backgroundColor = "yellow"

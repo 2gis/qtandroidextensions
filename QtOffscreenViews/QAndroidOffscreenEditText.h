@@ -228,6 +228,12 @@ public:
 	void setSelection(int index);
 	void setSelection(int start, int stop);
 
+	//
+	// Own helper methods
+	//
+	void setAllowFullscreenKeyboard(bool allow);
+
+
 signals:
 	//! See Android: TextWatcher.onTextChanged().
 	void onTextChanged(QString text, int start, int before, int count);
