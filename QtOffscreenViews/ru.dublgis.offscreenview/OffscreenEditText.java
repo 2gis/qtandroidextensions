@@ -95,9 +95,11 @@ import android.graphics.Canvas;
 class OffscreenEditText extends OffscreenView
 {
     protected String text_ = "";
+    boolean single_line_ = false;
 
     class MyEditText extends EditText
     {
+
         class MyTextWatcher implements TextWatcher
         {
             @Override
@@ -195,19 +197,19 @@ class OffscreenEditText extends OffscreenView
         @Override
         protected void onLayout(boolean changed, int left, int top, int right, int bottom)
         {
-            /*! \todo Here's an evil workaround: TextView does not recalculate word wrap
-                 on relayout. We should avoid the workaround triggering when text edit bar
-                 appears because it causes input method to restart. */
-
             super.onLayout(changed, left, top, right, bottom);
-
-            // TODO: also check if the view is not single-line
-            int w = right - left;
-            if (changed && w != text_layout_width_)
+            if (!single_line_)
             {
-                setText(getText());
+                // Here's an evil workaround. TextView does not update text flow on relayout.
+                // We should avoid the workaround triggering when text edit bar appears because
+                // it causes input method to restart.
+                int w = right - left;
+                if (changed && w != text_layout_width_)
+                {
+                    setText(getText());
+                }
+                text_layout_width_ = w;
             }
-            text_layout_width_ = w;
         }
 
         @Override
@@ -418,6 +420,7 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
+                single_line_ = (maxlines == 1);
                 ((MyEditText)getView()).setMaxLines(maxlines);
             }
         });
@@ -488,6 +491,7 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
+                single_line_ = singleLine;
                 ((MyEditText)getView()).setSingleLine(singleLine);
             }
         });

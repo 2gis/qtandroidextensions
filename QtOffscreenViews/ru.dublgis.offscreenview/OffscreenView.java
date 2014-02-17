@@ -1062,7 +1062,6 @@ abstract class OffscreenView
         //
         abstract boolean updateTexture();
         abstract float getTextureTransformMatrix(final int index);
-        //! \todo FIXME remove this function?
         abstract public boolean hasTexture();
         abstract public void setNewSize(final int w, final int h);
 

@@ -575,12 +575,10 @@ bool QAndroidOffscreenView::waitForViewCreation()
 		qWarning("QAndroidOffscreenView: will not wait for View creation because the creation was not requested (yet?)");
 		return false;
 	}
-	//! \todo: Use semaphore-based wait?
 	qDebug()<<"QAndroidOffscreenView::waitForViewCreation"<<view_class_name_<<view_object_name_<<"tid ="<<gettid()<<">>>>>>";
 	while (!isCreated())
 	{
 		usleep(5000); // 5 ms
-		// QThread::yieldCurrentThread();		
 	}
 	qDebug()<<"QAndroidOffscreenView::waitForViewCreation"<<view_class_name_<<view_object_name_<<"tid ="<<gettid()<<"<<<<<<";
 	return true;

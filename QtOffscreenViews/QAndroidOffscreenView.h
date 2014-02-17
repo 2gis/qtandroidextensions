@@ -70,7 +70,6 @@ protected:
 	 */
 	QAndroidOffscreenView(const QString & classname, const QString & objectname, bool create_view, const QSize & defsize, QObject * parent = 0);
 
-	//! \todo Use return result!
 	bool createView();
 
 public:

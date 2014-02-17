@@ -95,14 +95,9 @@ import android.graphics.Canvas;
 
 class OffscreenWebView extends OffscreenView
 {
+	// http://developer.android.com/reference/android/webkit/WebView.html
     class MyWebView extends WebView
     {
-        // TODO: pauseTimers/ resumeTimers ()
-        // http://developer.android.com/reference/android/webkit/WebView.html
-        //  public void setInitialScale (int scaleInPercent) (0 = default)
-
-        boolean invalidated_ = true;
-
         private class MyWebViewClient extends WebViewClient
         {
             @Override
