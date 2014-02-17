@@ -533,10 +533,12 @@ bool QAndroidOffscreenView::updateBitmapToGlTexture()
 	{
 		if (updated_texture || !tex_.isAllocated())
 		{
-			// Note: QImage thinks that format is Format_ARGB32_Premultiplied, but in fact if
-			// it is 32 bit then it is Android's RGBA.
-			// TODO: we support only 32-bit here for now, for 16 we need to change GL_RGBA
-			// to the appropriate value.
+			// Notes:
+			// 0. TODO: we support only 32-bit here for now, for 16 we need to change GL_RGBA
+			//    to the appropriate value.
+			// 1. Android and GL's RGBA is ARGB32 in Qt.
+			// 2. We don't expect anything useful in the alpha channel here, so premultiplied
+			//    and non-premultiplied formats are treated the same way.
 			bool can_avoid_gl_conversion =
 				(qtbuffer->format() == QImage::Format_ARGB32_Premultiplied) ||
 				(qtbuffer->format() == QImage::Format_ARGB32);
