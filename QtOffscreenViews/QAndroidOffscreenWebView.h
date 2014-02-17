@@ -71,7 +71,7 @@ public:
 	/*!
 	 * Start loading specified URL.
 	 */
-	bool loadDataWithBaseURL(const QString & baseUrl, const QString & data, const QString & mimeType, const QString & encoding, const QString & historyUrl);
+	bool loadDataWithBaseURL(const QString & baseUrl, const QString & data, const QString & mimeType= QLatin1String("text/html"), const QString & encoding = QString::null, const QString & historyUrl = QString::null);
 
 	//! Will emit contentHeightReceived(int) after done.
 	bool requestContentHeight();

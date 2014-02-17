@@ -182,7 +182,7 @@ signals:
 	void onEnter();
 
 protected slots:
-	virtual void textChanged(QString text, int start, int before, int count);
-	virtual void enter();
+	virtual void etTextChanged(QString text, int start, int before, int count);
+	virtual void etEnter();
 };
 

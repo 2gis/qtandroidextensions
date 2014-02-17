@@ -39,11 +39,11 @@
 QQuickAndroidOffscreenEditText::QQuickAndroidOffscreenEditText()
 	: QQuickAndroidOffscreenView(new QAndroidOffscreenEditText("EditTextInQuick", QSize(512, 64)))
 {
-	connect(androidEditText(), SIGNAL(onTextChanged(QString,int,int,int)), this, SLOT(textChanged(QString,int,int,int)));
-	connect(androidEditText(), SIGNAL(onEnter()), this, SLOT(enter()));
+	connect(androidEditText(), SIGNAL(onTextChanged(QString,int,int,int)), this, SLOT(etTextChanged(QString,int,int,int)));
+	connect(androidEditText(), SIGNAL(onEnter()), this, SLOT(etEnter()));
 }
 
-void QQuickAndroidOffscreenEditText::textChanged(QString text, int start, int before, int count)
+void QQuickAndroidOffscreenEditText::etTextChanged(QString text, int start, int before, int count)
 {
 	Q_UNUSED(start);
 	Q_UNUSED(before);
@@ -51,7 +51,7 @@ void QQuickAndroidOffscreenEditText::textChanged(QString text, int start, int be
 	emit onTextChanged(text);
 }
 
-void QQuickAndroidOffscreenEditText::enter()
+void QQuickAndroidOffscreenEditText::etEnter()
 {
 	emit onEnter();
 }

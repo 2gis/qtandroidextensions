@@ -39,6 +39,22 @@
 QQuickAndroidOffscreenWebView::QQuickAndroidOffscreenWebView()
 	: QQuickAndroidOffscreenView(new QAndroidOffscreenWebView("WebViewInQuick", QSize(512, 512)))
 {
-	// SGEXP
-	androidWebView()->loadUrl("http://www.android.com/intl/en/about/");
+	connect(androidWebView(), SIGNAL(pageStarted()), this, SLOT(wwPageStarted()));
+	connect(androidWebView(), SIGNAL(pageFinished()), this, SLOT(wwPageFinished()));
+	connect(androidWebView(), SIGNAL(contentHeightReceived(int)), this, SLOT(wwContentHeightReceived(int)));
+}
+
+void QQuickAndroidOffscreenWebView::wwPageStarted()
+{
+	emit pageStarted();
+}
+
+void QQuickAndroidOffscreenWebView::wwPageFinished()
+{
+	emit pageFinished();
+}
+
+void QQuickAndroidOffscreenWebView::wwContentHeightReceived(int height)
+{
+	emit contentHeightReceived(height);
 }

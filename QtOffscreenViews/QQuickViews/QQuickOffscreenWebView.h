@@ -48,35 +48,21 @@ protected:
 	QAndroidOffscreenWebView * androidWebView() { return static_cast<QAndroidOffscreenWebView*>(androidView()); }
 	const QAndroidOffscreenWebView * androidWebView() const { return static_cast<const QAndroidOffscreenWebView*>(androidView()); }
 
-public:
-#if 0
-	bool loadUrl(const QString & url);
-
-	/*!
-	 * Start loading specified URL.
-	 * \param additionalHttpHeaders contains the additional headers. The headers should not contain '\n' symbols.
-	 */
-	bool loadUrl(const QString & url, const QMap<QString, QString> & additionalHttpHeaders);
-
-	/*!
-	 * Load document from a string.
-	 */
-	bool loadData(const QString & text, const QString & mime = QLatin1String("text/html"), const QString & encoding = QString::null);
-
-	/*!
-	 * Start loading specified URL.
-	 */
-	bool loadDataWithBaseURL(const QString & baseUrl, const QString & data, const QString & mimeType, const QString & encoding, const QString & historyUrl);
-
-	//! Will emit contentHeightReceived(int) after done.
-	bool requestContentHeight();
-
+public slots:
+	void loadUrl(QString url) { androidWebView()->loadUrl(url); }
+	void loadData(const QString & text, const QString & mime, const QString & encoding = QString::null) { androidWebView()->loadData(text, mime, encoding); }
+	void loadData(const QString & text) { androidWebView()->loadData(text); }
+	void loadDataWithBaseURL(const QString & baseUrl, const QString & data, const QString & mimeType, const QString & encoding, const QString & historyUrl) { androidWebView()->loadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl); }
+	void requestContentHeight() { androidWebView()->requestContentHeight(); }
 
 signals:
 	void pageStarted();
 	void pageFinished();
 	void contentHeightReceived(int height);
 
-#endif
+protected slots:
+	virtual void wwPageStarted();
+	virtual void wwPageFinished();
+	virtual void wwContentHeightReceived(int height);
 };
 

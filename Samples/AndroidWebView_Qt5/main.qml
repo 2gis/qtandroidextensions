@@ -24,6 +24,9 @@ Item {
 		y: 240
 		width: parent.width - 40
 		height: parent.height - 260
+		Component.onCompleted: {
+			webview.loadUrl("http://www.android.com/intl/en/about/")
+		}
     }
 
     Rectangle {
