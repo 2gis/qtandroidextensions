@@ -125,6 +125,18 @@ class OffscreenEditText extends OffscreenView
             super(context);
             Log.i(TAG, "MyEditText constructor");
             addTextChangedListener(new MyTextWatcher());
+
+            // Eliminate any system background by setting null background drawable.
+            // Any borders should be drawn on Qt side, because we simply cannot deal with
+            // all these custom vendors backrounds.
+            if (getApiLevel() >= 16)
+            {
+                setBackground(null);
+            }
+            else
+            {
+                setBackgroundDrawable(null);
+            }
         }
 
         @Override
