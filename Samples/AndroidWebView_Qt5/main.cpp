@@ -5,6 +5,7 @@
 
 int main(int argc, char **argv)
 {
+	QJniClassUnloader unloader;
 	QAndroidOffscreenWebView::preloadJavaClasses();
 	QAndroidOffscreenEditText::preloadJavaClasses();
 
@@ -18,10 +19,6 @@ int main(int argc, char **argv)
 	view.setSource(QUrl("qrc:///qml/main.qml"));
     view.show();
 
-	bool result = app.exec();
-
-	QJniEnvPtr().unloadAllClasses();
-
-	return result;
+	return app.exec();
 }
 

@@ -359,5 +359,16 @@ private:
 	Q_DISABLE_COPY(QJniLocalRef)
 };
 
-
+/*!
+ * Create an instance of this class in main() to have Java class references deleted
+ * as main() exits.
+ */
+class QJniClassUnloader
+{
+public:
+	~QJniClassUnloader()
+	{
+		QJniEnvPtr().unloadAllClasses();
+	}
+};
 
