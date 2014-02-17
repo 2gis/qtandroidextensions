@@ -419,6 +419,7 @@ abstract class OffscreenView
      */
     private boolean detachViewFromQtScreen()
     {
+        uiHideKeyboardFromView();
         try
         {
             final Activity activity = getActivity();
@@ -922,26 +923,33 @@ abstract class OffscreenView
      */
     protected void uiHideKeyboardFromView()
     {
-        final View v = getView();
-        if (v == null)
+        try
         {
-            Log.e(TAG, "uiHideKeyboardFromView: View is null");
-            return;
+            final View v = getView();
+            if (v == null)
+            {
+                Log.e(TAG, "uiHideKeyboardFromView: View is null");
+                return;
+            }
+            InputMethodManager imm = (InputMethodManager)v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm == null)
+            {
+                Log.w(TAG, "uiHideKeyboardFromView: InputMethodManager is null");
+                return;
+            }
+            IBinder token = v.getWindowToken();
+            if( token != null )
+            {
+                imm.hideSoftInputFromWindow(token, 0);
+            }
+            else
+            {
+                Log.i(TAG, "uiHideKeyboardFromView: Window token is null");
+            }
         }
-        InputMethodManager imm = (InputMethodManager)v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (imm == null)
+        catch (Exception e)
         {
-            Log.w(TAG, "uiHideKeyboardFromView: InputMethodManager is null");
-            return;
-        }
-        IBinder token = v.getWindowToken();
-        if( token != null )
-        {
-            imm.hideSoftInputFromWindow(token, 0);
-        }
-        else
-        {
-            Log.i(TAG, "uiHideKeyboardFromView: Window token is null");
+            Log.e(TAG, "uiHideKeyboardFromView: exception:", e);
         }
     }
 
