@@ -84,7 +84,7 @@ jobject JNICALL getActivity(JNIEnv *, jobject)
 		// Java will handle the type casting.
 		static const char * const c_result_name = "org/qt/core/QtActivityBase";
 	#elif defined(QPA_QT5)
-		//! \todo If we make another plugin for Qt 5, this place will need an update!
+		//! \todo If we make another plugin for Qt 5, this place might need an update!
 		static const char * const c_class_name = "org/qtproject/qt5/android/QtNative";
 		static const char * const c_method_name = "activity";
 		static const char * const c_result_name = "android/app/Activity";

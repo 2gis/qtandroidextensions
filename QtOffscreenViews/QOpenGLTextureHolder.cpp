@@ -76,6 +76,10 @@ void QOpenGLTextureHolder::deallocateTexture()
 		glDeleteTextures(1, &texture_id_);
 		texture_id_ = 0;
 	}
+	setTransformation(
+		1.0f, 0.0f,
+		0.0f, 1.0f,
+		0, 0);
 }
 
 static inline void QRectFToVertexArray(const QRectF & r, GLfloat * array)
@@ -375,7 +379,8 @@ void QOpenGLTextureHolder::allocateTexture(GLenum type)
 	allocateTexture();
 }
 
-void QOpenGLTextureHolder::allocateTexture(const QImage & qimage, bool gl_prepared, GLenum prepared_image_type, GLenum texture_type)
+void QOpenGLTextureHolder::allocateTexture(const QImage & qimage, GLenum texture_type, bool gl_prepared,
+	GLenum prepared_image_type, GLenum prepared_pixel_type)
 {
 	deallocateTexture();
 	if (qimage.isNull() || qimage.width() < 1 || qimage.height() < 1)
@@ -393,12 +398,14 @@ void QOpenGLTextureHolder::allocateTexture(const QImage & qimage, bool gl_prepar
 	QImage gl_image;
 	int width = 0, height = 0;
 	GLenum type = GL_RGBA;
+	GLenum pixel_type = GL_UNSIGNED_BYTE;
 	if (gl_prepared)
 	{
 		bits = qimage.bits();
 		width = qimage.width();
 		height = qimage.height();
 		type = prepared_image_type;
+		pixel_type = prepared_pixel_type;
 	}
 	else
 	{
@@ -416,10 +423,31 @@ void QOpenGLTextureHolder::allocateTexture(const QImage & qimage, bool gl_prepar
 	// Create texture and load bits into its memory
 	glGenTextures(1, &texture_id_);
 	glBindTexture(texture_type, texture_id_);
-	glTexImage2D(texture_type, 0, type, width, height, 0, type, GL_UNSIGNED_BYTE, bits);
+	glTexImage2D(texture_type, 0, type, width, height, 0, type, pixel_type, bits);
 	glTexParameteri(texture_type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(texture_type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glBindTexture(texture_type, 0);
+}
+
+void QOpenGLTextureHolder::allocateTexture(const QImage & qimage, bool real_32bit_format_is_bgr, GLenum texture_type)
+{
+	bool avoid_gl_conversion =
+		(real_32bit_format_is_bgr && (
+			qimage.format() == QImage::Format_ARGB32_Premultiplied ||
+			qimage.format() == QImage::Format_ARGB32)) ||
+		qimage.format() == QImage::Format_RGB16;
+	GLenum pixel_type = (qimage.format() == QImage::Format_RGB16)? GL_UNSIGNED_SHORT_5_6_5: GL_UNSIGNED_BYTE;
+	// Note: Android and GL's RGBA is ARGB32 in Qt.
+	GLenum type = (qimage.format() == QImage::Format_RGB16)? GL_RGB: GL_RGBA;
+	allocateTexture(qimage, texture_type, avoid_gl_conversion, type, pixel_type);
+	if (avoid_gl_conversion)
+	{
+		// Fixing Y axis by setting this texture transformation.
+		setTransformation(
+			1.0f,  0.0f,
+			0.0f, -1.0f,
+			0, 0);
+	}
 }
 
 void QOpenGLTextureHolder::allocateTexture(const QString & filename)

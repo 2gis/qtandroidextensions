@@ -902,9 +902,6 @@ int QJniObject::getIntField(const char* field_name)
 	return result;
 }
 
-// TODO: add something like what they do in jni.h:
-//	#define CALL_TYPE_METHOD(_jtype, _jname)
-//	_jtype Call##_jname##Method(jobject obj, jmethodID methodID, ...)
 void QJniObject::callParamVoid(const char * method_name, const char * param_signature, ...)
 {
 	VERBOSE(qDebug("void QJniObject(%p)::CallParamVoid(\"%s\", \"%s\", ...)", this, method_name, param_signature));

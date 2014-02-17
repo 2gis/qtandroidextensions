@@ -99,11 +99,33 @@ public:
 	//! Set texture type and allocated a texture.
 	void allocateTexture(GLenum type);
 
-	void allocateTexture(const QImage & image, bool gl_prepared = false, GLenum prepared_image_type = GL_RGBA, GLenum texture_type = GL_TEXTURE_2D);
+	/*!
+	 * Allocate texture and load data from QImage using custom parameters.
+	 * \param gl_prepared - set to false to convert data from any QImage format to one supported
+	 *  by GL, or set to true to load data directly from qimage as described by prepared_image_type
+	 *  and prepared_pixel_type.
+	 */
+	void allocateTexture(const QImage & qimage, GLenum texture_type, bool gl_prepared,
+		GLenum prepared_image_type = GL_RGBA, GLenum prepared_pixel_type = GL_UNSIGNED_BYTE);
 
+	/*!
+	 * Allocate texture and load data from QImage. If QImage has Format_ARGB32,
+	 * Format_ARGB32_Premultiplied and real_32bit_format_is_bgr is true, or it is Format_RGB16,
+	 * it is loaded into GL directly; for other cases, it is automatically converted to
+	 * format useable by GL (which is a quite slow operation).
+	 * \note We don't expect anything useful in the alpha channel here, so premultiplied
+	 *  and non-premultiplied formats are treated the same way.
+	 * \note If the texture has been loaded directly from QImage, its transformation is
+	 *  set to reverse Y axis.
+	 */
+	void allocateTexture(const QImage & qimage, bool real_32bit_format_is_bgr = false, GLenum texture_type = GL_TEXTURE_2D);
+
+	/*!
+	 * Allocate texture and load data from a file.
+	 */
 	void allocateTexture(const QString & filename);
 
-	//! Deallocate texture, if it has been allocated.
+	//! Deallocate texture, if it has been allocated. Also clears the transformation matrix.
 	void deallocateTexture();
 
 	/*!
