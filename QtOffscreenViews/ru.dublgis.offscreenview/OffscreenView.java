@@ -425,7 +425,8 @@ abstract class OffscreenView
             final View view = layout_;
             if (activity == null || view == null)
             {
-                Log.e(TAG, "Failed to insert "+object_name_+" into the ViewGroup because Activity or View is null!");
+                Log.w(TAG, "Could not remove "+object_name_+" from the ViewGroup because Activity or View is null.");
+                return false;
             }
             ViewGroup vg = (ViewGroup)activity.findViewById(android.R.id.content);
             if (vg != null)
@@ -437,7 +438,7 @@ abstract class OffscreenView
             }
             else
             {
-                Log.w(TAG, "Failed to remove "+object_name_+" from the ViewGroup because it was not found!");
+                Log.w(TAG, "Failed to remove "+object_name_+" from the ViewGroup because it was not found.");
                 return false;
             }
         }
