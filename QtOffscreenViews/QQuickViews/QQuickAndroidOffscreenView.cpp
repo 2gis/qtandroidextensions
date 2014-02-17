@@ -138,7 +138,11 @@ void QQuickAndroidOffscreenView::updateAndroidViewVisibility()
 void QQuickAndroidOffscreenView::updateAndroidViewPosition()
 {
 	qDebug()<<__PRETTY_FUNCTION__<<x()<<y();
-	QPointF scenepos = mapToScene(QPointF(x(), y()));
+	// Mapping item's top left corner to scene coordinates, in a hope that
+	// the Quick scene covers all Android window.
+	// Note: x() and y() return coordinates of the item within parent, i.e. we don't
+	// need them. We only need in-scene coordinates.
+	QPointF scenepos = mapToScene(QPointF(0, 0));
 	aview_->setPosition(qRound(scenepos.x()), qRound(scenepos.y()));
 }
 
