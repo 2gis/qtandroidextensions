@@ -437,7 +437,6 @@ void QOpenGLTextureHolder::allocateTexture(const QImage & qimage, bool real_32bi
 			qimage.format() == QImage::Format_ARGB32)) ||
 		qimage.format() == QImage::Format_RGB16;
 	GLenum pixel_type = (qimage.format() == QImage::Format_RGB16)? GL_UNSIGNED_SHORT_5_6_5: GL_UNSIGNED_BYTE;
-	// Note: Android and GL's RGBA is ARGB32 in Qt.
 	GLenum type = (qimage.format() == QImage::Format_RGB16)? GL_RGB: GL_RGBA;
 	allocateTexture(qimage, texture_type, avoid_gl_conversion, type, pixel_type);
 	if (avoid_gl_conversion)
