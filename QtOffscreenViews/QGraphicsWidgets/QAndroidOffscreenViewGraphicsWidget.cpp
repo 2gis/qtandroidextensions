@@ -36,8 +36,6 @@
 
 #include "QAndroidOffscreenViewGraphicsWidget.h"
 
-// #define ANDROIDVIEWGRAPHICSPROXY_CLEARALL
-
 QAndroidOffscreenViewGraphicsWidget::QAndroidOffscreenViewGraphicsWidget(QAndroidOffscreenView * view, bool interactive, QGraphicsItem *parent, Qt::WindowFlags wFlags)
 	: QGraphicsWidget(parent, wFlags)
 	, aview_(view)
@@ -102,11 +100,7 @@ void QAndroidOffscreenViewGraphicsWidget::paint(QPainter * painter, const QStyle
 		initial_visibilty_set_ = true;
 	}
 
-	#if defined(ANDROIDVIEWGRAPHICSPROXY_CLEARALL)
-		painter->fillRect(rect(), Qt::green);
-	#endif
-
-#if 1 // (Enable/disable texture modes)
+#if 1 // (Enable/disable texture-based drawing)
 	if (use_gl)
 	{
 		painter->beginNativePainting();
@@ -148,21 +142,8 @@ void QAndroidOffscreenViewGraphicsWidget::paint(QPainter * painter, const QStyle
 
 		glViewport(l, b, w, h);
 
-		#if defined(ANDROIDVIEWGRAPHICSPROXY_CLEARALL)
-			glEnable(GL_SCISSOR_TEST);
-			glScissor(l, b, w, h);
-
-			glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		#endif
-
 		// Finally, we can draw the texture using these GL coordinates
 		aview_->paintGL(l, b, w, h, false);
-
-		#if defined(ANDROIDVIEWGRAPHICSPROXY_CLEARALL)
-			glScissor(0, 0, static_cast<GLsizei>(device->width()), static_cast<GLsizei>(device->height()));
-			glDisable(GL_SCISSOR_TEST);
-		#endif
 
 		// Reset viewport (is it necessary?)
 		glViewport(0, 0, static_cast<GLsizei>(device->width()), static_cast<GLsizei>(device->height()));
