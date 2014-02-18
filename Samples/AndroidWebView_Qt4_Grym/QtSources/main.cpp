@@ -312,9 +312,9 @@ public slots:
 	void test()
 	{
 		qDebug()<<__PRETTY_FUNCTION__;
-		// createAndroidViews();
-		etview->androidOffscreenView()->reattachView();
-		aview->androidOffscreenView()->reattachView();
+		createAndroidViews();
+		//etview->androidOffscreenView()->reattachView();
+		//aview->androidOffscreenView()->reattachView();
 	}
 
 private:

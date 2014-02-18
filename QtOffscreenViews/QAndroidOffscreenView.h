@@ -211,7 +211,7 @@ public:
 	 */
 	void setAttachingMode(bool attaching);
 
-	void reattachView();
+	// void reattachView();
 
 	/* !
 	 * Returns true if View is currently focused. Please note that this View takes and

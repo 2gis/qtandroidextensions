@@ -502,7 +502,7 @@ abstract class OffscreenView
         }
     }
 
-    public void reattachView()
+    /*public void reattachView()
     {
         runOnUiThread(new Runnable(){
             @Override
@@ -517,7 +517,7 @@ abstract class OffscreenView
                 }
             }
         });
-    }
+    }*/
 
     /*!
      * Invokes object initialization based on values passed via SetObjectName(), SetTexture(),
