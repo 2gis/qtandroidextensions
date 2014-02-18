@@ -12,6 +12,7 @@ HEADERS += \
     QAndroidOffscreenWebView.h \
     QAndroidOffscreenEditText.h \
     QAndroidJniImagePair.h \
+    QApplicationActivityObserver.h \
     QGraphicsWidgets/QAndroidOffscreenViewGraphicsWidget.h \
     QGraphicsWidgets/QOffscreenEditTextGraphicsWidget.h \
     QGraphicsWidgets/QOffscreenWebViewGraphicsWidget.h
@@ -22,6 +23,7 @@ SOURCES += \
     QAndroidOffscreenWebView.cpp \
     QAndroidOffscreenEditText.cpp \
     QAndroidJniImagePair.cpp \
+    QApplicationActivityObserver.cpp \
     QGraphicsWidgets/QAndroidOffscreenViewGraphicsWidget.cpp \
     QGraphicsWidgets/QOffscreenEditTextGraphicsWidget.cpp \
     QGraphicsWidgets/QOffscreenWebViewGraphicsWidget.cpp

@@ -46,28 +46,6 @@
 #include <QAndroidJniImagePair.h>
 #include "QAndroidOffscreenView.h"
 
-QApplicationActivityObserver * QApplicationActivityObserver::instance()
-{
-	static QMutex mymutex;
-	static QScopedPointer<QApplicationActivityObserver> instance;
-	QMutexLocker locker(&mymutex);
-	if (instance.isNull())
-	{
-		instance.reset(new QApplicationActivityObserver());
-	}
-	return instance.data();
-}
-
-void QApplicationActivityObserver::setApplicationActive(bool active)
-{
-	if (active != is_active_)
-	{
-		is_active_ = active;
-		emit applicationActiveStateChanged();
-	}
-}
-
-
 //! Calculate smallest power of 2 which is greater than x.
 static int potSize(int x, int max_possible)
 {

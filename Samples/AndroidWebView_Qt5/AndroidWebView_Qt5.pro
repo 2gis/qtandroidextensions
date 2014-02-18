@@ -30,7 +30,8 @@ SOURCES += \
     ../../QtOffscreenViews/QAndroidJniImagePair.cpp \
     ../../QtOffscreenViews/QQuickViews/QQuickAndroidOffscreenView.cpp \
     ../../QtOffscreenViews/QQuickViews/QQuickOffscreenEditText.cpp \
-    ../../QtOffscreenViews/QQuickViews/QQuickOffscreenWebView.cpp
+    ../../QtOffscreenViews/QQuickViews/QQuickOffscreenWebView.cpp \
+    ../../QtOffscreenViews/QApplicationActivityObserver.cpp
 HEADERS += \
     ../../QtOffscreenViews/QAndroidOffscreenView.h \
     ../../QtOffscreenViews/QAndroidOffscreenWebView.h \
@@ -41,7 +42,8 @@ HEADERS += \
     ../../QtOffscreenViews/QAndroidJniImagePair.h \
     ../../QtOffscreenViews/QQuickViews/QQuickAndroidOffscreenView.h \
     ../../QtOffscreenViews/QQuickViews/QQuickOffscreenEditText.h \
-    ../../QtOffscreenViews/QQuickViews/QQuickOffscreenWebView.h
+    ../../QtOffscreenViews/QQuickViews/QQuickOffscreenWebView.h \
+    ../../QtOffscreenViews/QApplicationActivityObserver.h
 
 # Please do not modify the following two lines. Required for deployment.
 include(qtquick2applicationviewer/qtquick2applicationviewer.pri)

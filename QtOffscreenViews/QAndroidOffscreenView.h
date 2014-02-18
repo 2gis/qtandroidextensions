@@ -43,26 +43,7 @@
 #include <QJniHelpers.h>
 #include <QAndroidJniImagePair.h>
 #include "QOpenGLTextureHolder.h"
-
-class QApplicationActivityObserver: public QObject
-{
-	Q_OBJECT
-	Q_PROPERTY(bool active READ isActive WRITE setApplicationActive)
-private:
-	QApplicationActivityObserver(): is_active_(true) {}
-public:
-	static QApplicationActivityObserver * instance();
-	bool isActive() const { return is_active_; }
-public slots:
-	//! Emits applicationActive; should be called from
-	void setApplicationActive(bool active);
-signals:
-	void applicationActiveStateChanged();
-private:
-	volatile bool is_active_;
-	Q_DISABLE_COPY(QApplicationActivityObserver)
-};
-
+#include "QApplicationActivityObserver.h"
 
 /*!
  * A general wrapper for Android offscreen views.f
