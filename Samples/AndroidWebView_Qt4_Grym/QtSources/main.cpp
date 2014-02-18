@@ -94,8 +94,8 @@ class View : public QGraphicsView
 public:
 	View(QGraphicsScene * scene, QWidget * parent)
 		: QGraphicsView(scene, parent)
+		, testButton(this)
 		, quitButton(this)
-		// , focusButton(this)
     {
 		setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 		setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -107,6 +107,11 @@ public:
 		quitButton.setFocusPolicy(Qt::StrongFocus);
         connect(&quitButton, SIGNAL(clicked()), QCoreApplication::instance(), SLOT(quit()));
 
+		testButton.resize(150, 100);
+		testButton.move(190, 20);
+		testButton.setText("Test");
+		testButton.setFocusPolicy(Qt::StrongFocus);
+
 		/*focusButton.resize(150, 100);
 		focusButton.move(190, 20);
 		focusButton.setText("Defocus");
@@ -116,17 +121,13 @@ public:
 		setFocusPolicy(Qt::StrongFocus);
     }
 
-/*protected slots:
-	void onDefocus()
-	{
-		qDebug()<<__PRETTY_FUNCTION__;
-		focusButton.setFocus();
-	}*/
+	QPushButton testButton;
 
 protected:
     QPushButton quitButton;
-	//QPushButton focusButton;
-    void resizeEvent(QResizeEvent *event)
+
+
+	void resizeEvent(QResizeEvent *event)
     {
         QGraphicsView::resizeEvent(event);
 		fitInView(sceneRect(), Qt::KeepAspectRatio);
@@ -183,6 +184,7 @@ public:
 
 		view_ = new View(&scene_, gl_layer_);
 		view_->setFocusPolicy(Qt::NoFocus);
+		connect(&(view_->testButton), SIGNAL(clicked()), this, SLOT(test()));
 
 #if 1
 		view_->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
@@ -190,11 +192,19 @@ public:
 		view_->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 #endif
 
+		createAndroidViews();
+
 #if 1
 		view_->setBackgroundBrush(bgPix);
 		view_->setCacheMode(QGraphicsView::CacheBackground);
 		view_->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 #endif
+		resize(1000, 1000);
+		doLayout(size());
+	}
+
+	void createAndroidViews()
+	{
 		qDebug()<<__PRETTY_FUNCTION__<<"Creating EditText...";
 		etview.reset(new QOffscreenEditTextGraphicsWidget());
 		//etview->androidOffscreenView()->setSynchronizedTextureUpdate(false);
@@ -230,8 +240,6 @@ public:
 			"</html>"
 		);
 
-
-		resize(1000, 1000);
 		doLayout(size());
 	}
 
@@ -282,6 +290,13 @@ protected:
 			, 300  + scene_.sceneRect().top()
 			, scene_.sceneRect().width() - 50
 			, scene_.sceneRect().height() - 320);
+	}
+
+public slots:
+	void test()
+	{
+		qDebug()<<__PRETTY_FUNCTION__;
+		createAndroidViews();
 	}
 
 private:

@@ -546,26 +546,23 @@ abstract class OffscreenView
     //! Note: all views are hidden by default.
     public void setVisible(final boolean visible)
     {
-        if (visible != last_visibility_)
-        {
-            last_visibility_ = visible;
-            runViewAction(new Runnable(){
-                @Override
-                public void run()
+        last_visibility_ = visible;
+        runViewAction(new Runnable(){
+            @Override
+            public void run()
+            {
+                View v = getView();
+                if (v != null)
                 {
-                    View v = getView();
-                    int vis = last_visibility_? View.VISIBLE: View.INVISIBLE;
-                    if (v != null && v.getVisibility() != vis)
+                    if (!visible)
                     {
-                        if (!visible)
-                        {
-                            uiHideKeyboardFromView();
-                        }
-                        v.setVisibility(vis);
+                        uiHideKeyboardFromView();
                     }
+                    int vis = last_visibility_? View.VISIBLE: View.INVISIBLE;
+                    v.setVisibility(vis);
                 }
-            });
-        }
+            }
+        });
     }
 
     public boolean isEnabled()
@@ -575,25 +572,22 @@ abstract class OffscreenView
 
     public void setEnabled(final boolean enabled)
     {
-        if (enabled != last_enabled_)
-        {
-            last_enabled_ = enabled;
-            runViewAction(new Runnable(){
-                @Override
-                public void run()
+        last_enabled_ = enabled;
+        runViewAction(new Runnable(){
+            @Override
+            public void run()
+            {
+                View v = getView();
+                if (v != null)
                 {
-                    View v = getView();
-                    if (v != null && v.isEnabled() != enabled)
+                    if (!enabled)
                     {
-                        if (!enabled)
-                        {
-                            uiHideKeyboardFromView();
-                        }
-                        v.setEnabled(enabled);
+                        uiHideKeyboardFromView();
                     }
+                    v.setEnabled(enabled);
                 }
-            });
-        }
+            }
+        });
     }
 
     private int last_texture_invalidation_ = 0;
@@ -913,6 +907,7 @@ abstract class OffscreenView
                         // does not hide SIP for some unknown reason. We have to do that expliciltly.
                         uiHideKeyboardFromView();
                     }
+                    invalidateOffscreenView();
                 }
             }
         });

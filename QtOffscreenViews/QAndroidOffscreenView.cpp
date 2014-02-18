@@ -630,25 +630,21 @@ void QAndroidOffscreenView::setFillColor(const QColor & color)
 
 void QAndroidOffscreenView::setVisible(bool visible)
 {
-	if (visible != is_visible_)
+	// NB: we always call Java setVisible!
+	is_visible_ = visible;
+	if (offscreen_view_)
 	{
-		is_visible_ = visible;
-		if (offscreen_view_)
-		{
-			offscreen_view_->callVoid("setVisible", jboolean(is_visible_));
-		}
+		offscreen_view_->callVoid("setVisible", jboolean(visible));
 	}
 }
 
 void QAndroidOffscreenView::setEnabled(bool enabled)
 {
-	if (enabled != is_enabled_)
+	// NB: we always call Java setEnabled!
+	is_enabled_ = enabled;
+	if (offscreen_view_)
 	{
-		is_enabled_ = enabled;
-		if (offscreen_view_)
-		{
-			offscreen_view_->callVoid("setEnabled", jboolean(is_enabled_));
-		}
+		offscreen_view_->callVoid("setEnabled", jboolean(is_enabled_));
 	}
 }
 
