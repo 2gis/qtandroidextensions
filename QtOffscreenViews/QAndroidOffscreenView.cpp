@@ -46,6 +46,28 @@
 #include <QAndroidJniImagePair.h>
 #include "QAndroidOffscreenView.h"
 
+QApplicationActivityObserver * QApplicationActivityObserver::instance()
+{
+	static QMutex mymutex;
+	static QScopedPointer<QApplicationActivityObserver> instance;
+	QMutexLocker locker(&mymutex);
+	if (instance.isNull())
+	{
+		instance.reset(new QApplicationActivityObserver());
+	}
+	return instance.data();
+}
+
+void QApplicationActivityObserver::setApplicationActive(bool active)
+{
+	if (active != is_active_)
+	{
+		is_active_ = active;
+		emit applicationActiveStateChanged();
+	}
+}
+
+
 //! Calculate smallest power of 2 which is greater than x.
 static int potSize(int x, int max_possible)
 {
@@ -139,6 +161,8 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	, last_texture_height_(0)
 	, have_to_adjust_size_to_pot_(false)
 {
+	connect(QApplicationActivityObserver::instance(), SIGNAL(applicationActiveStateChanged()), this, SLOT(updateAndroidViewVisibility()));
+
 	preloadJavaClasses();
 
 	setObjectName(objectname);
@@ -598,6 +622,17 @@ void QAndroidOffscreenView::invalidate()
 	}
 }
 
+void QAndroidOffscreenView::updateAndroidViewVisibility()
+{
+	if (offscreen_view_)
+	{
+		bool vis = is_visible_ && QApplicationActivityObserver::instance()->isActive();
+		qDebug()<<"SGEXP"<<__FUNCTION__<<"Vis:"<<is_visible_
+			 <<"Act:"<<QApplicationActivityObserver::instance()->isActive()<<"Set:"<<vis;
+		offscreen_view_->callVoid("setVisible", jboolean(vis));
+	}
+}
+
 void QAndroidOffscreenView::setFillColor(const QColor & color)
 {
 	if (color != fill_color_)
@@ -630,12 +665,8 @@ void QAndroidOffscreenView::setFillColor(const QColor & color)
 
 void QAndroidOffscreenView::setVisible(bool visible)
 {
-	// NB: we always call Java setVisible!
 	is_visible_ = visible;
-	if (offscreen_view_)
-	{
-		offscreen_view_->callVoid("setVisible", jboolean(visible));
-	}
+	updateAndroidViewVisibility();
 }
 
 void QAndroidOffscreenView::setEnabled(bool enabled)

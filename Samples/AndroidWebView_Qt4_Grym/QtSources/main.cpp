@@ -246,7 +246,7 @@ public:
 	virtual ~MyWindow()
 	{
 		#if defined(Q_OS_ANDROID)
-//			gl_layer_->__qpaDetachContext();
+			// gl_layer_->__qpaDetachContext();
 		#endif
 	}
 
@@ -275,14 +275,10 @@ protected:
 		switch(e->type())
 		{
 		case QEvent::WindowActivate:
-			qDebug()<<__PRETTY_FUNCTION__<<"WindowActivate"<<"SGEXP";
-			etview->androidOffscreenView()->setVisible(true);
-			aview->androidOffscreenView()->setVisible(true);
+			QApplicationActivityObserver::instance()->setApplicationActive(true);
 			break;
 		case QEvent::WindowDeactivate:
-			qDebug()<<__PRETTY_FUNCTION__<<"WindowDeactivate"<<"SGEXP";
-			etview->androidOffscreenView()->setVisible(false);
-			aview->androidOffscreenView()->setVisible(false);
+			QApplicationActivityObserver::instance()->setApplicationActive(false);
 			break;
 		default:
 			break;
