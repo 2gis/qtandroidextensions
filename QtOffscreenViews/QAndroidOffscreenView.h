@@ -44,10 +44,6 @@
 #include <QAndroidJniImagePair.h>
 #include "QOpenGLTextureHolder.h"
 
-#if QT_VERSION < 0x050000
-	#define QANDROIDOFFSCREENVIEW_ALLOWWAIT
-#endif
-
 class QApplicationActivityObserver: public QObject
 {
 	Q_OBJECT
@@ -160,18 +156,6 @@ public:
 
 	//! Check if Android View already exists.
 	bool isCreated() const;
-
-#if defined(QANDROIDOFFSCREENVIEW_ALLOWWAIT)
-	/*!
-	 * Wait until Android View will be actually created.
-	 * This function should be called after initializeGL().
-	 * If the View is already created or initializeGL() has not been called the function
-	 * returns immediately.
-	 * \note This function is not made availble for Qt 5 because in typical use cases Java UI thread
-	 *  may be blocked during call for waitForViewCreation() and your application will deadlock.
-	 */
-	bool waitForViewCreation();
-#endif
 
 	//! Check if Android View has already painted something
 	virtual bool hasValidImage() const;

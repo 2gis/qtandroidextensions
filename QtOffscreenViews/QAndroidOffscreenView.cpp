@@ -582,33 +582,6 @@ bool QAndroidOffscreenView::isCreated() const
 	return false;
 }
 
-#if defined(QANDROIDOFFSCREENVIEW_ALLOWWAIT)
-bool QAndroidOffscreenView::waitForViewCreation()
-{
-	if (isCreated())
-	{
-		return true;
-	}
-	if (!offscreen_view_)
-	{
-		qWarning("QAndroidOffscreenView: will not wait for View creation because OffscreenView is not initialized (yet?)");
-		return false;
-	}
-	if (!view_creation_requested_)
-	{
-		qWarning("QAndroidOffscreenView: will not wait for View creation because the creation was not requested (yet?)");
-		return false;
-	}
-	qDebug()<<"QAndroidOffscreenView::waitForViewCreation"<<view_class_name_<<view_object_name_<<"tid ="<<gettid()<<">>>>>>";
-	while (!isCreated())
-	{
-		usleep(5000); // 5 ms
-	}
-	qDebug()<<"QAndroidOffscreenView::waitForViewCreation"<<view_class_name_<<view_object_name_<<"tid ="<<gettid()<<"<<<<<<";
-	return true;
-}
-#endif
-
 bool QAndroidOffscreenView::hasValidImage() const
 {
 	return view_painted_ && texture_received_;
