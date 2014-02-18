@@ -10,6 +10,7 @@ int main(int argc, char **argv)
 	QAndroidOffscreenEditText::preloadJavaClasses();
 
 	QGuiApplication app(argc, argv);
+	QApplicationActivityObserver::installQApplicationEventFilter();
 
 	qmlRegisterType<QQuickAndroidOffscreenEditText>("SceneGraphRendering", 1, 0, "OffscreenEditText");
 	qmlRegisterType<QQuickAndroidOffscreenWebView>("SceneGraphRendering", 1, 0, "OffscreenWebView");

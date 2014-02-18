@@ -270,7 +270,7 @@ protected:
 		doLayout(e->size());
 	}
 
-	bool event(QEvent *e)
+	virtual bool event(QEvent *e)
 	{
 		switch(e->type())
 		{
@@ -343,6 +343,7 @@ int main(int argc, char **argv)
 	qDebug()<<TAG<<"Construct QApplication...";
 	QApplication::setGraphicsSystem(QLatin1String("opengl"));
 	QApplication app(argc, argv);
+	QApplicationActivityObserver::installQApplicationEventFilter();
 
 	QPixmap kineticPix(":/images/kinetic.png");
 

@@ -577,9 +577,9 @@ void QAndroidOffscreenView::updateAndroidViewVisibility()
 {
 	if (offscreen_view_)
 	{
-		bool vis = is_visible_ && QApplicationActivityObserver::instance()->isActive();
+		bool vis = is_visible_ && QApplicationActivityObserver::instance()->isApplicationActive();
 		// qDebug()<<__FUNCTION__<<"Visible:"<<is_visible_
-		//	 <<"AppActive:"<<QApplicationActivityObserver::instance()->isActive()<<"Set:"<<vis;
+		//	 <<"AppActive:"<<QApplicationActivityObserver::instance()->isApplicationActive()<<"Set:"<<vis;
 		offscreen_view_->callVoid("setVisible", jboolean(vis));
 	}
 }

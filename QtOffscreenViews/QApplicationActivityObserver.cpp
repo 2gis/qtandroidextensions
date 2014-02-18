@@ -34,6 +34,8 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <QCoreApplication>
+#include <QDebug>
 #include "QApplicationActivityObserver.h"
 
 
@@ -56,5 +58,33 @@ void QApplicationActivityObserver::setApplicationActive(bool active)
 		is_active_ = active;
 		emit applicationActiveStateChanged();
 	}
+}
+
+void QApplicationActivityObserver::installQApplicationEventFilter()
+{
+	QCoreApplication * app = QCoreApplication::instance();
+	if (app)
+	{
+		app->installEventFilter(instance());
+	}
+	else
+	{
+		qWarning()<<__FUNCTION__<<"failed because QApplication instance doesn't exist.";
+	}
+}
+
+bool QApplicationActivityObserver::eventFilter(QObject * obj, QEvent * event)
+{
+	if (event->type() == QEvent::ApplicationActivate)
+	{
+		qDebug()<<__PRETTY_FUNCTION__<<"ACTIVE!";
+		QMetaObject::invokeMethod(this, "setApplicationActive", Qt::QueuedConnection, Q_ARG(bool,true));
+	}
+	else if (event->type() == QEvent::ApplicationDeactivate)
+	{
+		qDebug()<<__PRETTY_FUNCTION__<<"DEACTIVATE!";
+		QMetaObject::invokeMethod(this, "setApplicationActive", Qt::QueuedConnection, Q_ARG(bool,false));
+	}
+	return QObject::eventFilter(obj, event);
 }
 
