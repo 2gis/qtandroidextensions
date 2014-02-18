@@ -336,7 +336,7 @@ abstract class OffscreenView
                         layout_.setBottom(view_height_);
                     }
                     layout_.addView(view);
-                    attachViewToQtScreen();
+                    uiAttachViewToQtScreen();
 
                     // Process command queue
                     synchronized(view_existence_mutex_)
@@ -379,7 +379,7 @@ abstract class OffscreenView
         return vg;
     }
 
-    private boolean attachViewToQtScreen()
+    private boolean uiAttachViewToQtScreen()
     {
         try
         {
@@ -387,8 +387,7 @@ abstract class OffscreenView
             {
                 return false;
             }
-            final View view = layout_;
-            if (view == null)
+            if (layout_ == null)
             {
                 Log.e(TAG, "Failed to insert "+object_name_+" into the ViewGroup because View is null!");
                 return false;
@@ -396,8 +395,8 @@ abstract class OffscreenView
             ViewGroup vg = getMainLayout();
             if (vg != null)
             {
-                Log.i(TAG, "Inserting "+object_name_+" (view id="+view.getId()+") into the ViewGroup...");
-                vg.addView(view);
+                Log.i(TAG, "Inserting "+object_name_+" (layout_ id="+layout_.getId()+") into the ViewGroup...");
+                vg.addView(layout_);
                 is_attached_ = true;
                 return true;
             }
@@ -409,7 +408,7 @@ abstract class OffscreenView
         }
         catch(Exception e)
         {
-            Log.e(TAG, "Exception in attachViewToQtScreen:", e);
+            Log.e(TAG, "Exception in uiAttachViewToQtScreen:", e);
             return false;
         }
     }
@@ -417,23 +416,45 @@ abstract class OffscreenView
     /*!
      * \note This function doesn't check attaching_mode_/is_attached_.
      */
-    private boolean detachViewFromQtScreen()
+    private boolean uiDetachViewFromQtScreen()
     {
         uiHideKeyboardFromView();
         try
         {
-            final Activity activity = getActivity();
-            final View view = layout_;
-            if (activity == null || view == null)
+            Activity activity = getActivity();
+            View view = getView();
+            if (activity == null || layout_ == null || view == null)
             {
-                Log.w(TAG, "Could not remove "+object_name_+" from the ViewGroup because Activity or View is null.");
+                Log.w(TAG, "Could not remove "+object_name_+" from the ViewGroup because Activity, layout or view is null.");
                 return false;
             }
+            // Remove layout_ from its previous known parent.
+            ViewGroup parent = (ViewGroup)layout_.getParent();
+            if (parent != null)
+            {
+                Log.i(TAG, "Removing "+object_name_+" (layout_ id="+layout_.getId()+") from its parent...");
+                parent.removeView(layout_);
+                is_attached_ = false;
+            }
+            // This step is probably not necessary, but it's not harmful either.
             ViewGroup vg = (ViewGroup)activity.findViewById(android.R.id.content);
             if (vg != null)
             {
-                Log.i(TAG, "Removing "+object_name_+" (view id="+view.getId()+") from the ViewGroup...");
-                vg.removeView(view);
+                Log.i(TAG, "Removing "+object_name_+" (layout_ id="+layout_.getId()+") from the ViewGroup...");
+                if (view.isFocused())
+                {
+                    int count = vg.getChildCount();
+                    for (int i = 0; i < count; i++) {
+                       final View child = vg.getChildAt(i);
+                       if (child != (View)layout_ && child.getVisibility() == View.VISIBLE && child.isEnabled() && child.isFocusable())
+                       {
+                           child.requestFocus();
+                           Log.i(TAG, "Successfully passed focus from "+object_name_);
+                           break;
+                       }
+                    }
+                }
+                vg.removeView(layout_);
                 is_attached_ = false;
                 return true;
             }
@@ -445,7 +466,7 @@ abstract class OffscreenView
         }
         catch(Exception e)
         {
-            Log.e(TAG, "Exception in detachViewFromQtScreen:", e);
+            Log.e(TAG, "Exception in uiDetachViewFromQtScreen:", e);
             return false;
         }
     }
@@ -469,16 +490,33 @@ abstract class OffscreenView
                     {
                         if (attaching && !is_attached_)
                         {
-                            attachViewToQtScreen();
+                            uiAttachViewToQtScreen();
                         }
                         else if (!attaching && is_attached_)
                         {
-                            detachViewFromQtScreen();
+                            uiDetachViewFromQtScreen();
                         }
                     }
                 }
             });
         }
+    }
+
+    public void reattachView()
+    {
+        runOnUiThread(new Runnable(){
+            @Override
+            public void run()
+            {
+                View v = getView();
+                if (v != null && attaching_mode_)
+                {
+                    Log.i(TAG, "reattachView "+object_name_);
+                    uiDetachViewFromQtScreen();
+                    uiAttachViewToQtScreen();
+                }
+            }
+        });
     }
 
     /*!
@@ -889,7 +927,7 @@ abstract class OffscreenView
             @Override
             public void run()
             {
-                Log.i(TAG, "setFocused("+focused+"): run");
+                Log.i(TAG, "setFocused("+focused+") "+object_name_+": run");
                 final View v = getView();
                 if (v != null)
                 {
@@ -1035,7 +1073,7 @@ abstract class OffscreenView
             {
                 if (is_attached_)
                 {
-                    detachViewFromQtScreen();
+                    uiDetachViewFromQtScreen();
                 }
             }
         });

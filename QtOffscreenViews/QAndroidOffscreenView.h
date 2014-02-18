@@ -207,6 +207,8 @@ public:
 	 */
 	void setAttachingMode(bool attaching);
 
+	void reattachView();
+
 	/* !
 	 * Returns true if View is currently focused. Please note that this View takes and
 	 * and releases focus in another thread so this function may e.g. return false if

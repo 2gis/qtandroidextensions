@@ -650,9 +650,25 @@ void QAndroidOffscreenView::setEnabled(bool enabled)
 
 void QAndroidOffscreenView::setAttachingMode(bool attaching)
 {
-	if (offscreen_view_ && nonAttachingModeSupported())
+	if (!nonAttachingModeSupported())
+	{
+		qDebug()<<__FUNCTION__<<"Ignoring ("<<attaching<<") because non-attaching mode is not supported on this device";
+		return;
+	}
+	if (offscreen_view_)
 	{
 		offscreen_view_->callVoid("setAttachingMode", jboolean(attaching));
+	}
+}
+
+void QAndroidOffscreenView::reattachView()
+{
+	if (offscreen_view_)
+	{
+		offscreen_view_->callVoid("reattachView");
+		setVisible(visible());
+		setEnabled(enabled());
+		invalidate();
 	}
 }
 
