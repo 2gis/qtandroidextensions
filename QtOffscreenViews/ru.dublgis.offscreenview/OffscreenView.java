@@ -594,10 +594,14 @@ abstract class OffscreenView
                 {
                     if (!visible)
                     {
-                        uiHideKeyboardFromView();
+                        uiDetachViewFromQtScreen();
                     }
                     int vis = last_visibility_? View.VISIBLE: View.INVISIBLE;
                     v.setVisibility(vis);
+                    if (visible && attaching_mode_)
+                    {
+                        uiAttachViewToQtScreen();
+                    }
                 }
             }
         });

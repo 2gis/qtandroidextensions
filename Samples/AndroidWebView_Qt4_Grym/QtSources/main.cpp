@@ -270,6 +270,26 @@ protected:
 		doLayout(e->size());
 	}
 
+	bool event(QEvent *e)
+	{
+		switch(e->type())
+		{
+		case QEvent::WindowActivate:
+			qDebug()<<__PRETTY_FUNCTION__<<"WindowActivate"<<"SGEXP";
+			etview->androidOffscreenView()->setVisible(true);
+			aview->androidOffscreenView()->setVisible(true);
+			break;
+		case QEvent::WindowDeactivate:
+			qDebug()<<__PRETTY_FUNCTION__<<"WindowDeactivate"<<"SGEXP";
+			etview->androidOffscreenView()->setVisible(false);
+			aview->androidOffscreenView()->setVisible(false);
+			break;
+		default:
+			break;
+		}
+		return QWidget::event(e);
+	}
+
 	virtual void doLayout(const QSize & newsize)
 	{
 		gl_layer_->move(0, 0);
