@@ -41,30 +41,28 @@
 
 /*!
  * A place where various QObjects can connect to receive signals about
- * application activation and deactivation. It's a shame that QApplication does not
- * implement such signals...
- * Please note that for this to work you the application should implement calling
- * to setApplicationActive(). For QWidget / QGraphicsWidget based application this
- * can be done in the main window, protected virtual bool event(QEvent *e),
- * the events types are QEvent::WindowActivate and QEvent::WindowDeactivate.
- * If you do not implement the calls some functionality which relies on the
- * applicationActiveStateChanged() may not work.
+ * application activation and deactivation.
+ * This class relies on QCoreApplication instance event filtering;
+ * the event filter is installed by a call to instance() as soon as QCoreApplication
+ * instance is available.
  */
 class QApplicationActivityObserver: public QObject
 {
 	Q_OBJECT
-	Q_PROPERTY(bool applicationActive READ isApplicationActive WRITE setApplicationActive)
 private:
 	QApplicationActivityObserver(): is_active_(true) {}
 
 public:
+	/*!
+	 * Makes sure QApplicationActivityObserver instance exists, attemps to
+	 * install a QCoreApplication event filter if necessary, then returns
+	 * a pointer to the QApplicationActivityObserver instance.
+	 */
 	static QApplicationActivityObserver * instance();
 
 	bool isApplicationActive() const { return is_active_; }
 
-	static void installQApplicationEventFilter();
-
-public slots:
+private slots:
 	/*!
 	 * Sets activity flag and emits applicationActive; this function
 	 * is usually called from main window.

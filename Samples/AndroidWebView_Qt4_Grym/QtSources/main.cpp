@@ -270,22 +270,6 @@ protected:
 		doLayout(e->size());
 	}
 
-	virtual bool event(QEvent *e)
-	{
-		switch(e->type())
-		{
-		case QEvent::WindowActivate:
-			QApplicationActivityObserver::instance()->setApplicationActive(true);
-			break;
-		case QEvent::WindowDeactivate:
-			QApplicationActivityObserver::instance()->setApplicationActive(false);
-			break;
-		default:
-			break;
-		}
-		return QWidget::event(e);
-	}
-
 	virtual void doLayout(const QSize & newsize)
 	{
 		gl_layer_->move(0, 0);
@@ -343,7 +327,6 @@ int main(int argc, char **argv)
 	qDebug()<<TAG<<"Construct QApplication...";
 	QApplication::setGraphicsSystem(QLatin1String("opengl"));
 	QApplication app(argc, argv);
-	QApplicationActivityObserver::installQApplicationEventFilter();
 
 	QPixmap kineticPix(":/images/kinetic.png");
 
