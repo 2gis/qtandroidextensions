@@ -199,16 +199,18 @@ class OffscreenEditText extends OffscreenView
         protected void onLayout(boolean changed, int left, int top, int right, int bottom)
         {
             super.onLayout(changed, left, top, right, bottom);
-            if (!single_line_)
+
+            // Here's an evil workaround. TextView does not update text flow on relayout.
+            // We should avoid the workaround triggering when text edit bar appears because
+            // it causes input method to restart.
+            int w = right - left;
+            if (changed && w != text_layout_width_)
             {
-                // Here's an evil workaround. TextView does not update text flow on relayout.
-                // We should avoid the workaround triggering when text edit bar appears because
-                // it causes input method to restart.
-                int w = right - left;
-                if (changed && w != text_layout_width_)
+                if (!single_line_)
                 {
                     setText(getText());
                 }
+                setHint(getHint());
                 text_layout_width_ = w;
             }
         }
