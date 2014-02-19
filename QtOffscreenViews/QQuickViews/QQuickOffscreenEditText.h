@@ -180,7 +180,7 @@ public slots:
 signals:
 	void onTextChanged(QString text);
 
-	//! Emitted when KEYCODE_DPAD_CENTER or KEYCODE_ENTER has been released.
+	//! Wraps QAndroidOffscreenEditText::onEnterOrPositiveAction().
 	void returnPressed();
 
 protected slots:
