@@ -66,15 +66,21 @@ protected:
 	virtual void itemChange(ItemChange change, const ItemChangeData & value);
 
 public slots:
-	void updateAndroidViewVisibility();
+	/*!
+	 * This function must be called from QML after screen position has been changed
+	 * to make sure that any Android's overlay controls are placed correctly.
+	 * Unfortunately, Quick doesn't seem to allow to track change of absolute item
+	 * coordinates - only its x/y within the parent.
+	 */
 	void updateAndroidViewPosition();
-	void updateAndroidEnabled();
 
 signals:
 	void textureUpdated();
 	void backgroundColorChanged(QColor color);
 
 protected slots:
+	void updateAndroidViewVisibility();
+	void updateAndroidEnabled();
 	void onTextureUpdated();
 
 private:

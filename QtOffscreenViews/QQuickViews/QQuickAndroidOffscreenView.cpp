@@ -51,6 +51,7 @@ QQuickAndroidOffscreenView::QQuickAndroidOffscreenView(QAndroidOffscreenView * a
 
 	setAcceptedMouseButtons(Qt::LeftButton);
 
+	// TODO: the control sometimes may be already attached before we come to this place
 	aview_->setAttachingMode(is_interactive_);
 }
 
@@ -58,9 +59,8 @@ QQuickFramebufferObject::Renderer * QQuickAndroidOffscreenView::createRenderer()
 {
 	QAndroidOffscreenViewRenderer * renderer = new QAndroidOffscreenViewRenderer(aview_);
 	connect(this, SIGNAL(textureUpdated()), renderer, SLOT(onTextureUpdated()));
-
+	// The View is hidden by default. It's a good time to update its visibility status.
 	const_cast<QQuickAndroidOffscreenView*>(this)->updateAndroidViewVisibility();
-
 	return renderer;
 }
 

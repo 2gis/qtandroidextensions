@@ -679,6 +679,22 @@ void QAndroidOffscreenView::setPosition(int left, int top)
 	}
 }
 
+void QAndroidOffscreenView::hideKeyboard()
+{
+	if (offscreen_view_)
+	{
+		offscreen_view_->callVoid("hideKeyboard");
+	}
+}
+
+void QAndroidOffscreenView::setHideKeyboardOnFocusLoss(bool hide)
+{
+	if (offscreen_view_)
+	{
+		offscreen_view_->callVoid("setHideKeyboardOnFocusLoss", jboolean(hide));
+	}
+}
+
 void QAndroidOffscreenView::javaUpdate()
 {
 	// qDebug()<<__PRETTY_FUNCTION__<<view_object_name_;

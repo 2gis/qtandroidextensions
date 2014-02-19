@@ -216,6 +216,21 @@ public:
 	 */
 	void setPosition(int left, int top);
 
+	//! Make sure software keyboard is hidden for this control.
+	void hideKeyboard();
+
+	/*!
+	 * Set/cleaer the flag to hide software keyboard when focus is lost.
+	 * By default, the mode is enabled and keyboard slides away when focus goes from the View.
+	 * If it is disabled, SIP won't hide when user changes focus to any pure Qt control
+	 * because main Qt window always accepts text input.
+	 * Disable the mode if you want user to be able to switch between various form
+	 * fields without hiding and re-opening keyboard. In this case, you have to call
+	 * hideKeyboard() from your C++/Qt code to make sure the keyboard is hidden when focus
+	 * goes to something which doesn't need it.
+	 */
+	void setHideKeyboardOnFocusLoss(bool hide);
+
 	//
 	// Handling of user input events
 	//
