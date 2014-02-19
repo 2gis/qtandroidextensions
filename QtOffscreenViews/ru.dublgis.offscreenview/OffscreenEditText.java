@@ -675,13 +675,16 @@ class OffscreenEditText extends OffscreenView
                 // Log.i(TAG, "setAllowFullscreenKeyboard "+allow);
                 MyEditText met = (MyEditText)getView();
                 int ops = met.getImeOptions();
+                int flag = (getApiLevel() >= 11)?
+                    EditorInfo.IME_FLAG_NO_FULLSCREEN | EditorInfo.IME_FLAG_NO_EXTRACT_UI
+                    : EditorInfo.IME_FLAG_NO_EXTRACT_UI;
                 if (allow)
                 {
-                    ops &= ~EditorInfo.IME_FLAG_NO_EXTRACT_UI;
+                    ops &= ~flag;
                 }
                 else
                 {
-                    ops |= EditorInfo.IME_FLAG_NO_EXTRACT_UI;
+                    ops |= flag;
                 }
                 met.setImeOptions(ops);
             }
