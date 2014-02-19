@@ -181,7 +181,7 @@ signals:
 	void onTextChanged(QString text);
 
 	//! Emitted when KEYCODE_DPAD_CENTER or KEYCODE_ENTER has been released.
-	void onEnter();
+	void returnPressed();
 
 protected slots:
 	virtual void etTextChanged(QString text, int start, int before, int count);

@@ -68,6 +68,23 @@ Q_DECL_EXPORT jboolean JNICALL Java_AndroidOffscreenEditText_nativeOnKey(JNIEnv 
 	return 0;
 }
 
+Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnEditorAction(JNIEnv *, jobject, jlong param, jint action)
+{
+	if (param)
+	{
+		void * vp = reinterpret_cast<void*>(param);
+		QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(reinterpret_cast<QAndroidOffscreenView*>(vp));
+		if (edit)
+		{
+			edit->javaOnEditorAction(action);
+			return;
+		}
+	}
+	qWarning()<<__FUNCTION__<<"Zero param!";
+}
+
+
+
 
 QAndroidOffscreenEditText::QAndroidOffscreenEditText(const QString & object_name, const QSize & def_size, QObject * parent)
 	: QAndroidOffscreenView(QLatin1String("OffscreenEditText"), object_name, false, def_size, parent)
@@ -77,7 +94,8 @@ QAndroidOffscreenEditText::QAndroidOffscreenEditText(const QString & object_name
 	{
 		static const JNINativeMethod methods[] = {
 			{"nativeOnTextChanged", "(JLjava/lang/String;III)V", (void*)Java_AndroidOffscreenEditText_nativeOnTextChanged},
-			{"nativeOnKey", "(JZI)Z", (void*)Java_AndroidOffscreenEditText_nativeOnKey}
+			{"nativeOnKey", "(JZI)Z", (void*)Java_AndroidOffscreenEditText_nativeOnKey},
+			{"nativeOnEditorAction", "(JI)V", (void*)Java_AndroidOffscreenEditText_nativeOnEditorAction}
 		};
 		view->registerNativeMethods(methods, sizeof(methods));
 	}
@@ -111,6 +129,7 @@ bool QAndroidOffscreenEditText::javaOnKey(bool down, int androidKey)
 		case 0x00000017: // KEYCODE_DPAD_CENTER
 		case 0x00000042: // KEYCODE_ENTER
 			emit onEnter();
+			emit onEnterOrPositiveAction();
 			break;
 		default:
 			break;
@@ -119,7 +138,22 @@ bool QAndroidOffscreenEditText::javaOnKey(bool down, int androidKey)
 	return false;
 }
 
-
+void QAndroidOffscreenEditText::javaOnEditorAction(int action)
+{
+	qDebug()<<__FUNCTION__<<action;
+	emit onEditorAction(action);
+	switch (action)
+	{
+	case ANDROID_EDITORINFO_IME_ACTION_DONE:
+	case ANDROID_EDITORINFO_IME_ACTION_GO:
+	case ANDROID_EDITORINFO_IME_ACTION_NEXT:
+	case ANDROID_EDITORINFO_IME_ACTION_SEARCH:
+	case ANDROID_EDITORINFO_IME_ACTION_SEND:
+	case ANDROID_EDITORINFO_IME_ACTION_UNSPECIFIED:
+	default:
+		emit onEnterOrPositiveAction();
+	}
+}
 
 void QAndroidOffscreenEditText::setText(const QString & text)
 {

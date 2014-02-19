@@ -242,6 +242,12 @@ class OffscreenEditText extends OffscreenView
         }
 
         @Override
+        public void onEditorAction(int actionCode)
+        {
+            nativeOnEditorAction(getNativePtr(), actionCode);
+        }
+
+        @Override
         public boolean onTouchEvent(MotionEvent event)
         {
             if (isOffscreenTouch())
@@ -274,6 +280,7 @@ class OffscreenEditText extends OffscreenView
 
     public native void nativeOnTextChanged(long nativePtr, String s, int start, int before, int count);
     public native boolean nativeOnKey(long nativePtr, boolean down, int keyCode);
+    public native void nativeOnEditorAction(long nativePtr, int action);
 
 
 

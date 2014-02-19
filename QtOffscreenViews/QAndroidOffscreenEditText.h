@@ -244,6 +244,25 @@ signals:
 	//! Emitted when KEYCODE_DPAD_CENTER or KEYCODE_ENTER has been released.
 	void onEnter();
 
+public:
+	static const int
+		ANDROID_EDITORINFO_IME_ACTION_DONE			= 0x00000006,
+		ANDROID_EDITORINFO_IME_ACTION_GO			= 0x00000002,
+		ANDROID_EDITORINFO_IME_ACTION_NEXT			= 0x00000005,
+		ANDROID_EDITORINFO_IME_ACTION_NONE			= 0x00000001,
+		ANDROID_EDITORINFO_IME_ACTION_PREVIOUS		= 0x00000007,
+		ANDROID_EDITORINFO_IME_ACTION_SEARCH		= 0x00000003,
+		ANDROID_EDITORINFO_IME_ACTION_SEND			= 0x00000004,
+		ANDROID_EDITORINFO_IME_ACTION_UNSPECIFIED	= 0x00000000;
+
+signals:
+	//! Use ANDROID_EDITORINFO_IME_... for actions.
+	void onEditorAction(int action);
+
+	//! Emitted when Enter pressed or editor action required.
+	void onEnterOrPositiveAction();
+
+
 
 /*	void onKeyMultiple(int keyCode, int repeatCount, KeyEvent event)	//	Default implementation of KeyEvent.Callback.onKeyMultiple(): always returns false (doesn't handle the event).
 	void onKeyPreIme(int keyCode, KeyEvent event)	//	Handle a key event before it is processed by any input method associated with the view hierarchy.
@@ -423,9 +442,11 @@ signals:
 protected:
 	virtual void javaOnTextChanged(const QString & str, int start, int before, int count);
 	virtual bool javaOnKey(bool down, int androidKey);
+	virtual void javaOnEditorAction(int action);
 
 private:
 	friend void JNICALL Java_AndroidOffscreenEditText_nativeOnTextChanged(JNIEnv * env, jobject jo, jlong param, jstring str, jint start, jint before, jint count);
 	friend jboolean JNICALL Java_AndroidOffscreenEditText_nativeOnKey(JNIEnv * env, jobject jo, jlong param, jboolean down, jint keycode);
+	friend void JNICALL Java_AndroidOffscreenEditText_nativeOnEditorAction(JNIEnv *, jobject, jlong param, jint action);
 };
 
