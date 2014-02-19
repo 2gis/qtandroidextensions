@@ -129,7 +129,7 @@ abstract class OffscreenView
     private boolean offscreen_touch_ = false;
     private boolean is_attached_ = false;
     private boolean attaching_mode_ = true;
-
+    private boolean hide_keyboard_on_focus_loss_ = true;
 
     // Variables to inform C++ about last painted texture / control size
     private int last_painted_width_ = 0;
@@ -448,6 +448,13 @@ abstract class OffscreenView
                        final View child = vg.getChildAt(i);
                        if (child != (View)layout_ && child.getVisibility() == View.VISIBLE && child.isEnabled() && child.isFocusable())
                        {
+                           // Avoid trying to pass focus to another OffscreenView
+                           try {
+                               if ((MyLayout)child != null)
+                               {
+                                   continue;
+                               }
+                           } catch(Exception e) {} // ClassCastException
                            child.requestFocus();
                            Log.i(TAG, "Successfully passed focus from "+object_name_);
                            break;
@@ -943,11 +950,15 @@ abstract class OffscreenView
                     }
                     else
                     {
+                        boolean was_focused = v.isFocused();
                         v.setFocusable(false);
                         v.setFocusableInTouchMode(false);
-                        // Simply passing focus to someone else or calling ClearFocus()
-                        // does not hide SIP for some unknown reason. We have to do that expliciltly.
-                        uiHideKeyboardFromView();
+                        // This doesn't seem to do anything useful:
+                        // v.clearFocus();
+                        if (hide_keyboard_on_focus_loss_)
+                        {
+                            uiHideKeyboardFromView();
+                        }
                     }
                     invalidateOffscreenView();
                 }
@@ -988,6 +999,24 @@ abstract class OffscreenView
         {
             Log.e(TAG, "uiHideKeyboardFromView: exception:", e);
         }
+    }
+
+    // Called from C++ to hide keyboard
+    public void hideKeyboard()
+    {
+        runOnUiThread(new Runnable(){
+            @Override
+            public void run()
+            {
+                uiHideKeyboardFromView();
+            }
+        });
+    }
+
+    // Called from C++ to set hide_keyboard_on_focus_loss_ flag
+    public void setHideKeyboardOnFocusLoss(boolean hide)
+    {
+        hide_keyboard_on_focus_loss_ = hide;
     }
 
     //! Called from C++ to change size of the view.
