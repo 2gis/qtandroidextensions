@@ -80,12 +80,14 @@ void QQuickAndroidOffscreenView::onTextureUpdated()
 
 void QQuickAndroidOffscreenView::focusInEvent(QFocusEvent * event)
 {
+	// qDebug()<<__PRETTY_FUNCTION__;
 	QQuickFramebufferObject::focusInEvent(event);
 	aview_->setFocused(true);
 }
 
 void QQuickAndroidOffscreenView::focusOutEvent(QFocusEvent * event)
 {
+	// qDebug()<<__PRETTY_FUNCTION__;
 	QQuickFramebufferObject::focusOutEvent(event);
 	aview_->setFocused(false);
 }
@@ -94,6 +96,7 @@ void QQuickAndroidOffscreenView::mouseMoveEvent(QMouseEvent * event)
 {
 	if (is_interactive_ && mouse_tracking_)
 	{
+		// qDebug()<<__PRETTY_FUNCTION__;
 		QPoint pos = event->pos();
 		aview_->mouse(QAndroidOffscreenView::ANDROID_MOTIONEVENT_ACTION_MOVE, pos.x(), pos.y());
 		event->accept();
@@ -104,12 +107,14 @@ void QQuickAndroidOffscreenView::mousePressEvent(QMouseEvent * event)
 {
 	if (is_interactive_ && event->button() == Qt::LeftButton)
 	{
-		QPoint pos = event->pos();
-		aview_->mouse(QAndroidOffscreenView::ANDROID_MOTIONEVENT_ACTION_DOWN, pos.x(), pos.y());
-		mouse_tracking_ = true;
+		// qDebug()<<__PRETTY_FUNCTION__;
 		// We must take focus here, or interactive View will not work properly.
 		// Note that this happens only if the Quick item is interactive.
 		setFocus(true);
+		forceActiveFocus(Qt::MouseFocusReason);
+		QPoint pos = event->pos();
+		aview_->mouse(QAndroidOffscreenView::ANDROID_MOTIONEVENT_ACTION_DOWN, pos.x(), pos.y());
+		mouse_tracking_ = true;
 		event->accept();
 	}
 }
@@ -118,6 +123,7 @@ void QQuickAndroidOffscreenView::mouseReleaseEvent(QMouseEvent * event)
 {
 	if (is_interactive_ && event->button() == Qt::LeftButton)
 	{
+		qDebug()<<"SGEXP"<<__PRETTY_FUNCTION__;
 		QPoint pos = event->pos();
 		aview_->mouse(QAndroidOffscreenView::ANDROID_MOTIONEVENT_ACTION_UP, pos.x(), pos.y());
 		mouse_tracking_ = false;
