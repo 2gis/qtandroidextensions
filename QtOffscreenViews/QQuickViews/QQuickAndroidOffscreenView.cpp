@@ -43,15 +43,12 @@ QQuickAndroidOffscreenView::QQuickAndroidOffscreenView(QAndroidOffscreenView * a
 	, is_interactive_(true) // TODO
 	, mouse_tracking_(false)
 {
+	setAcceptedMouseButtons(Qt::LeftButton);
 	connect(aview_.data(), SIGNAL(updated()), this, SLOT(onTextureUpdated()));
 	connect(this, SIGNAL(xChanged()), this, SLOT(updateAndroidViewPosition()));
 	connect(this, SIGNAL(yChanged()), this, SLOT(updateAndroidViewPosition()));
 	connect(this, SIGNAL(enabledChanged()), this, SLOT(updateAndroidEnabled()));
 	connect(this, SIGNAL(visibleChanged()), this, SLOT(updateAndroidViewVisibility()));
-
-	setAcceptedMouseButtons(Qt::LeftButton);
-
-	// TODO: the control sometimes may be already attached before we come to this place
 	aview_->setAttachingMode(is_interactive_);
 }
 
@@ -123,7 +120,7 @@ void QQuickAndroidOffscreenView::mouseReleaseEvent(QMouseEvent * event)
 {
 	if (is_interactive_ && event->button() == Qt::LeftButton)
 	{
-		qDebug()<<"SGEXP"<<__PRETTY_FUNCTION__;
+		// qDebug()<<"<<__PRETTY_FUNCTION__;
 		QPoint pos = event->pos();
 		aview_->mouse(QAndroidOffscreenView::ANDROID_MOTIONEVENT_ACTION_UP, pos.x(), pos.y());
 		mouse_tracking_ = false;
