@@ -133,16 +133,19 @@ public:
 	 * Used in Bitmap mode. Instead of paintGL(), get current bitmap buffer
 	 * using getBitmapBuffer() and paint it by yourself.
 	 * The image buffer is guaranteed to be unmodified until the next call to getBitmapBuffer().
-	 * \note This function is not guaranteed to return expected image when not
+	 * \note This function is not guaranteed to return expected image when
 	 *  initialized through initializeGL(). For example, returned image may be padded to
 	 *  have power-of-two size.
+	 * \param out_texture_updated: the bool value is set to true/false to indicate
+	 *  that the image has been actually changed since the last call to getBitmapBuffer().
+	 *  This can be used, for example, to avoid reloading the bitmap into GL texture.
 	 */
 	const QImage * getBitmapBuffer(bool * out_texture_updated = 0);
 
 	//! Check if Android View already exists.
 	bool isCreated() const;
 
-	//! Check if Android View has already painted something
+	//! Check if Android View has already painted something.
 	virtual bool hasValidImage() const;
 
 	QSize size() const { return size_; }
