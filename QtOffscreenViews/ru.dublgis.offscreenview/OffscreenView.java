@@ -109,7 +109,6 @@ abstract class OffscreenView
     private String object_name_ = "UnnamedView";
     private long native_ptr_ = 0;
     private int gl_texture_id_ = 0;
-    private Boolean painting_now_ = new Boolean(false);
     private ArrayList<Runnable> precreation_actions_ = new ArrayList<Runnable>();
 
     private Object native_ptr_mutex_ = new Object();
@@ -690,19 +689,10 @@ abstract class OffscreenView
         });
     }
 
-    final protected boolean isInOffscreenDraw()
-    {
-        return painting_now_;
-    }
-
     //! Performs actual painting of the view. Should be called in Android UI thread.
     protected boolean doDrawViewOnTexture()
     {
         boolean result = false;
-        synchronized(painting_now_)
-        {
-            painting_now_ = true;
-        }
         synchronized(texture_mutex_)
         {
             // Note: with a null View we will continue, but will only fill
@@ -711,10 +701,6 @@ abstract class OffscreenView
             {
                 Log.i(TAG, "doDrawViewOnTexture: surface or native ptr is null. NP="+getNativePtr()
                     +", RS? "+((rendering_surface_ == null)?"null":"not null"));
-                synchronized(painting_now_)
-                {
-                     painting_now_ = false;
-                }
                 return false;
             }
             try
@@ -775,49 +761,21 @@ abstract class OffscreenView
                 Log.e(TAG, "doDrawViewOnTexture exception:", e);
             }
         }
-        synchronized(painting_now_)
-        {
-            painting_now_ = false;
-        }
         return result;
     }
 
     //! Called from C++ to get current texture.
-    public boolean updateTexture(boolean synced)
+    public boolean updateTexture()
     {
-        if (synced)
+        // If Android UI thread is drawing the View now, the sync will pause execution it finishes.
+        synchronized(texture_mutex_)
         {
-            // If Android UI thread is drawing the View now, the sync will pause execution it finishes.
-            synchronized(texture_mutex_)
-            {
-                return unsyncedUpdateTexture();
-            }
-        }
-        else
-        {
-            return unsyncedUpdateTexture();
-        }
-    }
-
-    private boolean unsyncedUpdateTexture()
-    {
-        // Async (non-blocking) update, or already blocked painting
-        if (rendering_surface_ == null)
-        {
-            return false;
-        }
-        // If the view is being currently painted, just back off
-        synchronized(painting_now_)
-        {
-            if (painting_now_)
+            if (rendering_surface_ == null)
             {
                 return false;
             }
+            return rendering_surface_.updateTexture();
         }
-        // Note: the painting may sometimes start right here.
-        // We assume that it's safe to call rendering surfaces's updateTexture()
-        // in parallel to painting, it will simply leave the previous texture.
-        return rendering_surface_.updateTexture();
     }
 
 
