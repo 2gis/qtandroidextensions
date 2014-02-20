@@ -87,7 +87,7 @@ Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnEditorAction(JN
 
 
 QAndroidOffscreenEditText::QAndroidOffscreenEditText(const QString & object_name, const QSize & def_size, QObject * parent)
-	: QAndroidOffscreenView(QLatin1String("OffscreenEditText"), object_name, false, def_size, parent)
+	: QAndroidOffscreenView(QLatin1String("OffscreenEditText"), object_name, def_size, parent)
 {
 	setAttachingMode(true);
 	if (QJniObject * view = offscreenView())
@@ -99,7 +99,6 @@ QAndroidOffscreenEditText::QAndroidOffscreenEditText(const QString & object_name
 		};
 		view->registerNativeMethods(methods, sizeof(methods));
 	}
-	createView();
 }
 
 QAndroidOffscreenEditText::~QAndroidOffscreenEditText()

@@ -198,7 +198,7 @@ Q_DECL_EXPORT void JNICALL Java_onContentHeightReceived(JNIEnv *, jobject, jlong
 }
 
 QAndroidOffscreenWebView::QAndroidOffscreenWebView(const QString & object_name, const QSize & def_size, QObject * parent)
-	: QAndroidOffscreenView(QLatin1String("OffscreenWebView"), object_name, false, def_size, parent)
+	: QAndroidOffscreenView(QLatin1String("OffscreenWebView"), object_name, def_size, parent)
 {
 	static const JNINativeMethod methods[] = {
 		//
@@ -242,9 +242,6 @@ QAndroidOffscreenWebView::QAndroidOffscreenWebView(const QString & object_name, 
 	{
 		qCritical("Failed to register native methods of QAndroidOffscreenWebView because Java object pointer is null.");
 	}
-
-	// Creating the view
-	createView();
 }
 
 QAndroidOffscreenWebView::~QAndroidOffscreenWebView()

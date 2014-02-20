@@ -64,10 +64,14 @@ protected:
 	 * \param objectname - set for QObject and also passed to Java side, to identify the object in logs and etc.
 	 * \param defsize - initial size of the view.
 	 * \param parent - passed to QObject constructor.
+	 * \note The function invokes createView() through Qt::QueuedConnection so descenant constructor still
+	 *       has time to register View-specific native functions and do some other initialization before
+	 *       the construction of the View will start.
 	 */
-	QAndroidOffscreenView(const QString & classname, const QString & objectname, bool create_view, const QSize & defsize, QObject * parent = 0);
+	QAndroidOffscreenView(const QString & classname, const QString & objectname, const QSize & defsize, QObject * parent = 0);
 
-	bool createView();
+protected slots:
+	void createView();
 
 public:
 	virtual ~QAndroidOffscreenView();

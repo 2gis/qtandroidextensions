@@ -112,7 +112,6 @@ Q_DECL_EXPORT void JNICALL Java_OffscreenView_nativeViewCreated(JNIEnv *, jobjec
 QAndroidOffscreenView::QAndroidOffscreenView(
 	const QString & classname
 	, const QString & objectname
-	, bool create_view
 	, const QSize & defsize
 	, QObject * parent)
 	: QObject(parent)
@@ -168,12 +167,9 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 		offscreen_view_->callParamVoid("setFillColor", "IIII",
 			jint(fill_color_.alpha()), jint(fill_color_.red()), jint(fill_color_.green()), jint(fill_color_.blue()));
 
-		// Invoke creation of the view, so its functions will be available
-		// before initialization of GL part.
-		if (create_view)
-		{
-			createView();
-		}
+		// Our descendant constructors may want to register natives before createView is actually
+		// called, so let's invoke it through the message queue rather than calling directly.
+		QMetaObject::invokeMethod(this, "createView", Qt::QueuedConnection);
 	}
 	else
 	{
@@ -184,7 +180,7 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	}
 }
 
-bool QAndroidOffscreenView::createView()
+void QAndroidOffscreenView::createView()
 {
 	if (offscreen_view_ && !view_creation_requested_)
 	{
@@ -192,7 +188,6 @@ bool QAndroidOffscreenView::createView()
 		if (result)
 		{
 			view_creation_requested_ = true;
-			return true;
 		}
 		else
 		{
@@ -204,7 +199,6 @@ bool QAndroidOffscreenView::createView()
 		qWarning()<<"Attempted to call QAndroidOffscreenView::createView() with offscreen view:"
 			<<((offscreen_view_)?"not null":"null")<<"and creation_requested ="<<view_creation_requested_;
 	}
-	return false;
 }
 
 QAndroidOffscreenView::~QAndroidOffscreenView()
