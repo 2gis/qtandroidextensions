@@ -115,6 +115,8 @@ class OffscreenEditText extends OffscreenView
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count)
             {
+                need_to_reflow_text_ = false;
+                need_to_reflow_hint_ = false;
                 String str = s.toString();
                 synchronized(text_)
                 {
