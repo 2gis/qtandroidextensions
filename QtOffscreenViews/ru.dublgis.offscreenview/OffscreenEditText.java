@@ -97,6 +97,7 @@ class OffscreenEditText extends OffscreenView
 {
     protected String text_ = "";
     boolean single_line_ = false;
+    boolean need_to_reflow_text_ = false, need_to_reflow_hint_ = false;
 
     class MyEditText extends EditText
     {
@@ -208,10 +209,40 @@ class OffscreenEditText extends OffscreenView
             {
                 if (!single_line_)
                 {
-                    setText(getText());
+                    need_to_reflow_text_ = true;
                 }
-                setHint(getHint());
+                need_to_reflow_hint_ = true;
                 text_layout_width_ = w;
+
+                // Can't reflow text or hint right now because it causes text selection
+                // markers to become "invincible" if they are visible. So let's post
+                // it for later.
+                (new Handler()).post(new Runnable(){
+                    @Override
+                    public void run(){
+                        // No need to reflow hint if it's not shown
+                        if (getText().length() > 0)
+                        {
+                            need_to_reflow_hint_ = false;
+                        }
+                        if (need_to_reflow_text_ || need_to_reflow_hint_)
+                        {
+                            // Text selection markers may obtain invicibility if we call setText()
+                            // or setHint(), so let's hide keyboard to be sure they are not there.
+                            uiHideKeyboardFromView();
+                            if (need_to_reflow_text_)
+                            {
+                                setText(getText());
+                                need_to_reflow_text_ = false;
+                            }
+                            if (need_to_reflow_hint_)
+                            {
+                                setHint(getHint());
+                                need_to_reflow_hint_ = false;
+                            }
+                        }
+                    }
+                });
             }
         }
 
@@ -296,6 +327,7 @@ class OffscreenEditText extends OffscreenView
                 {
                     text_ = text;
                 }
+                need_to_reflow_text_ = false;
             }
         });
     }
@@ -573,6 +605,7 @@ class OffscreenEditText extends OffscreenView
             @Override
             public void run(){
                 ((MyEditText)getView()).setHint(hint);
+                need_to_reflow_hint_ = false;
             }
         });
     }

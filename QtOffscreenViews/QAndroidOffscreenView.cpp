@@ -571,8 +571,7 @@ void QAndroidOffscreenView::updateAndroidViewVisibility()
 	if (offscreen_view_)
 	{
 		bool vis = is_visible_ && QApplicationActivityObserver::instance()->isApplicationActive();
-		// qDebug()<<__FUNCTION__<<"Visible:"<<is_visible_
-		//	 <<"AppActive:"<<QApplicationActivityObserver::instance()->isApplicationActive()<<"Set:"<<vis;
+		// qDebug()<<__FUNCTION__<<viewObjectName()<<"Visible:"<<is_visible_<<"AppActive:"<<QApplicationActivityObserver::instance()->isApplicationActive()<<"Set:"<<vis;
 		offscreen_view_->callVoid("setVisible", jboolean(vis));
 	}
 }
@@ -636,14 +635,15 @@ void QAndroidOffscreenView::setAttachingMode(bool attaching)
 	}
 }
 
-/*void QAndroidOffscreenView::reattachView()
+/*
+void QAndroidOffscreenView::reattachView()
 {
 	if (offscreen_view_)
 	{
 		offscreen_view_->callVoid("reattachView");
-		setVisible(visible());
-		setEnabled(enabled());
-		invalidate();
+//		setVisible(visible());
+//		setEnabled(enabled());
+//		invalidate();
 	}
 }*/
 

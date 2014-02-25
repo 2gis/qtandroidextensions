@@ -508,7 +508,8 @@ abstract class OffscreenView
         }
     }
 
-    /*public void reattachView()
+/*    //! This function detaches view and attaches it back. Can be used for certain workarounds.
+    public void reattachView()
     {
         runOnUiThread(new Runnable(){
             @Override
@@ -523,7 +524,7 @@ abstract class OffscreenView
                 }
             }
         });
-    }*/
+    } */
 
     /*!
      * Invokes object initialization based on values passed via SetObjectName(), SetTexture(),
