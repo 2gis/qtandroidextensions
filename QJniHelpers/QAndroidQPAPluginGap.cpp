@@ -107,9 +107,7 @@ jobject JNICALL getActivity(JNIEnv *, jobject)
 	{
 		qCritical("QAndroid: Java instance of the Activity is 0.");
 	}
-	// Take jobject away from 'activity' because otherwise it will destroy
-	// the global reference and it will become invalid when we return to Java.
-	return activity->takeJobjectOver();
+	return QJniEnvPtr().env()->NewLocalRef(activity->jObject());
 }
 
 void preloadJavaClass(const char * class_name)
