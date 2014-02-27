@@ -55,6 +55,7 @@
 #if defined(Q_OS_ANDROID)
 
 #if defined(QPA_QT4GRYM)
+	// Exported from QtAndroidCore
 	extern JavaVM * qt_android_get_java_vm();
 #elif QT_VERSION >= 0x050000
 	#include <QAndroidJniEnvironment>

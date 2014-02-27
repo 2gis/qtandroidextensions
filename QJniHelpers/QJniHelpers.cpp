@@ -46,14 +46,21 @@
 	#define VERBOSE(x)
 #endif
 
+//! Data type to keep list of JNI references to Java classes ever preloaded or loaded.
 typedef QMap<QString, jclass> PreloadedClasses;
 
+//! QThreadStorage object to detach thread from JNI when it's finished and prevent Java reference leak.
 class QJniEnvPtrThreadDetacher
 {
 public:
 	~QJniEnvPtrThreadDetacher();
 };
 
+/*!
+ * Static object to free Java class references upon deinitalization of the module. This is not totally
+ * necessary in Android as whold Java machine is destroyed when application exists and the reference
+ * leak is not an issue, but let's just be on the good side.
+ */
 class QJniClassUnloader
 {
 public:

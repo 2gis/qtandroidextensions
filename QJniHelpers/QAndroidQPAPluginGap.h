@@ -39,19 +39,27 @@
 
 /*!
  * This namespace contains some functions which screen differences between various
- * QPA plugin implementations.
+ * Android QPA plugin implementations.
  */
 namespace QAndroidQPAPluginGap {
 
+	/*!
+	 * Return pointer to JavaVM using helpers available in current QPA plug-in.
+	 */
 	JavaVM * detectJavaVM();
 
 	/*!
 	 * Obtain Activity object.
 	 * \param env, jo are not used and only needed so the function could be set as native
 	 *  method in Java object and called from there over JNI.
+	 * \return Returns local JNI reference to the Activity object.
 	 */
 	jobject JNICALL getActivity(JNIEnv * env = 0, jobject jo = 0);
 
+	/*!
+	 * This function should be called from main thread to pre-load Java class, so
+	 * objects of the class could later be instantiated from threads not created in Java.
+	 */
 	void preloadJavaClass(const char * class_name);
 
 } // namespace QAndroidQPAPluginGap
