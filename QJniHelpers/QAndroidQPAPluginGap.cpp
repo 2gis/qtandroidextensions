@@ -106,6 +106,7 @@ jobject JNICALL getActivity(JNIEnv *, jobject)
 	if (!activity->jObject())
 	{
 		qCritical("QAndroid: Java instance of the Activity is 0.");
+		return 0;
 	}
 	return QJniEnvPtr().env()->NewLocalRef(activity->jObject());
 }
