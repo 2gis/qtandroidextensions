@@ -217,19 +217,22 @@ void QAndroidOffscreenViewGraphicsWidget::moveEvent(QGraphicsSceneMoveEvent * ev
 
 QPoint QAndroidOffscreenViewGraphicsWidget::absolutePosition() const
 {
-	QList<QGraphicsView*> views = scene()->views();
-	if (views.size() >= 1)
+	if (scene())
 	{
-		if (views.size() > 1)
+		QList<QGraphicsView*> views = scene()->views();
+		if (views.size() >= 1)
 		{
-			qWarning()<<__PRETTY_FUNCTION__<<"The scene has multiple views, the View may be positioned improperly!";
+			if (views.size() > 1)
+			{
+				qWarning()<<__PRETTY_FUNCTION__<<"The scene has multiple views, the View may be positioned improperly!";
+			}
+			QGraphicsView * view = views.at(0);
+			QPointF scenepos = this->scenePos();
+			QPointF inviewpos = view->mapFromScene(scenepos);
+			QPoint abspos = view->mapToGlobal(inviewpos.toPoint());
+			// qDebug()<<__PRETTY_FUNCTION__<<"ScenePos:"<<scenepos<<"InViewPos:"<<inviewpos<<"AbsPos:"<<abspos;
+			return abspos;
 		}
-		QGraphicsView * view = views.at(0);
-		QPointF scenepos = this->pos();
-		QPointF inviewpos = view->mapFromScene(scenepos);
-		QPoint abspos = view->mapToGlobal(inviewpos.toPoint());
-		// qDebug()<<__PRETTY_FUNCTION__<<"ScenePos:"<<scenepos<<"InViewPos:"<<inviewpos<<"AbsPos:"<<abspos;
-		return abspos;
 	}
 	return last_updated_position_;
 }
