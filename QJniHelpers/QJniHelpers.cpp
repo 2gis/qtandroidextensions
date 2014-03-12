@@ -37,8 +37,8 @@
 
 #include <unistd.h>
 #include <sys/types.h>
-#include <QJniHelpers.h>
-#include <QAndroidQPAPluginGap.h>
+#include "QJniHelpers.h"
+#include "QAndroidQPAPluginGap.h"
 
 #if defined(QJNIHELPERS_VERBOSE_LOG)
 	#define VERBOSE(x) x

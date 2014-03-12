@@ -41,7 +41,7 @@
 #include <QScopedPointer>
 #include <QMutex>
 #include <QJniHelpers.h>
-#include <QAndroidJniImagePair.h>
+#include "QAndroidJniImagePair.h"
 #include "QOpenGLTextureHolder.h"
 #include "QApplicationActivityObserver.h"
 

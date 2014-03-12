@@ -43,7 +43,7 @@
 #include <QMutexLocker>
 #include <QCoreApplication>
 #include <QAndroidQPAPluginGap.h>
-#include <QAndroidJniImagePair.h>
+#include "QAndroidJniImagePair.h"
 #include "QAndroidOffscreenView.h"
 
 //! Calculate smallest power of 2 which is greater than x.

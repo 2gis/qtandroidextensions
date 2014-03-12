@@ -36,7 +36,7 @@
 #include <qconfig.h>
 #include <QDebug>
 #include <QScopedPointer>
-#include <QJniHelpers.h>
+#include "QJniHelpers.h"
 
 #if QT_VERSION < 0x050000 && defined(QJNIHELPERS_GRYM)
 	#define QPA_QT4GRYM
