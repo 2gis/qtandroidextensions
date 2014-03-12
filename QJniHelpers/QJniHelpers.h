@@ -351,7 +351,7 @@ public:
 	operator jstring() { return (jstring)local_; }
 	operator jclass() { return (jclass)local_; }
 	jobject jObject() { return local_; }
-	operator QString() { return QJniEnvPtr(env_).JStringToQString(jstring()); }
+	operator QString() { return QJniEnvPtr(env_).JStringToQString(operator jstring()); }
 
 private:
 	jobject local_;
