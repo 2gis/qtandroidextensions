@@ -124,6 +124,21 @@ Q_DECL_EXPORT void JNICALL Java_OffscreenView_onVisibleRect(JNIEnv *, jobject, j
 	qWarning()<<__FUNCTION__<<"Zero param!";
 }
 
+Q_DECL_EXPORT void JNICALL Java_OffscreenView_globalLayoutChanged(JNIEnv *, jobject, jlong param)
+{
+	if (param)
+	{
+		void * vp = reinterpret_cast<void*>(param);
+		QAndroidOffscreenView * proxy = reinterpret_cast<QAndroidOffscreenView*>(vp);
+		if (proxy)
+		{
+			proxy->javaGlobalLayoutChanged();
+			return;
+		}
+	}
+	qWarning()<<__FUNCTION__<<"Zero param!";
+}
+
 
 QAndroidOffscreenView::QAndroidOffscreenView(
 	const QString & classname
@@ -242,7 +257,8 @@ void QAndroidOffscreenView::preloadJavaClasses()
 			{"nativeUpdate", "(J)V", (void*)Java_OffscreenView_nativeUpdate},
 			{"nativeViewCreated", "(J)V", (void*)Java_OffscreenView_nativeViewCreated},
 			{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity},
-			{"onVisibleRect", "(JIIII)V", (void*)Java_OffscreenView_onVisibleRect},
+			{"nativeOnVisibleRect", "(JIIII)V", (void*)Java_OffscreenView_onVisibleRect},
+			{"nativeGlobalLayoutChanged", "(J)V", (void*)Java_OffscreenView_globalLayoutChanged},
 		};
 		ov.registerNativeMethods(methods, sizeof(methods));
 	}
@@ -722,8 +738,14 @@ void QAndroidOffscreenView::javaViewCreated()
 void QAndroidOffscreenView::javaVisibleRectReceived(int left, int top, int right, int bottom)
 {
 	int width = right - left, height = bottom - top;
-	qDebug()<<viewObjectName()<<__FUNCTION__<<left<<top<<right<<bottom<<"W:"<<width<<"H:"<<height;
+	// qDebug()<<viewObjectName()<<__FUNCTION__<<left<<top<<right<<bottom<<"W:"<<width<<"H:"<<height;
 	emit visibleRectReceived(width, height);
+}
+
+void QAndroidOffscreenView::javaGlobalLayoutChanged()
+{
+	// qDebug()<<viewObjectName()<<__FUNCTION__;
+	emit globalLayoutChanged();
 }
 
 bool QAndroidOffscreenView::updateGlTexture()

@@ -338,6 +338,15 @@ abstract class OffscreenView
                     layout_.addView(view);
                     uiAttachViewToQtScreen();
 
+                    // Add layout listener
+                    view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener(){
+                        @Override
+                        public void onGlobalLayout()
+                        {
+                            nativeGlobalLayoutChanged(getNativePtr());
+                        }
+                    });
+
                     // Process command queue
                     synchronized(view_existence_mutex_)
                     {
@@ -1366,7 +1375,7 @@ abstract class OffscreenView
                 {
                     Rect rect = new Rect();
                     v.getWindowVisibleDisplayFrame(rect);
-                    onVisibleRect(getNativePtr(), rect.left, rect.top, rect.right, rect.bottom);
+                    nativeOnVisibleRect(getNativePtr(), rect.left, rect.top, rect.right, rect.bottom);
                 }
             }
         });
@@ -1375,5 +1384,6 @@ abstract class OffscreenView
     public native void nativeUpdate(long nativeptr);
     public native Activity getActivity();
     public native void nativeViewCreated(long nativeptr);
-    public native void onVisibleRect(long nativeptr, int left, int top, int right, int bottom);
+    public native void nativeOnVisibleRect(long nativeptr, int left, int top, int right, int bottom);
+    public native void nativeGlobalLayoutChanged(long nativeptr);
 }
