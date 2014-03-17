@@ -109,6 +109,22 @@ Q_DECL_EXPORT void JNICALL Java_OffscreenView_nativeViewCreated(JNIEnv *, jobjec
 	qWarning()<<__FUNCTION__<<"Zero param!";
 }
 
+Q_DECL_EXPORT void JNICALL Java_OffscreenView_onVisibleRect(JNIEnv *, jobject, jlong param, int left, int top, int right, int bottom)
+{
+	if (param)
+	{
+		void * vp = reinterpret_cast<void*>(param);
+		QAndroidOffscreenView * proxy = reinterpret_cast<QAndroidOffscreenView*>(vp);
+		if (proxy)
+		{
+			proxy->javaVisibleRectReceived(left, top, right, bottom);
+			return;
+		}
+	}
+	qWarning()<<__FUNCTION__<<"Zero param!";
+}
+
+
 QAndroidOffscreenView::QAndroidOffscreenView(
 	const QString & classname
 	, const QString & objectname
@@ -225,7 +241,8 @@ void QAndroidOffscreenView::preloadJavaClasses()
 		static const JNINativeMethod methods[] = {
 			{"nativeUpdate", "(J)V", (void*)Java_OffscreenView_nativeUpdate},
 			{"nativeViewCreated", "(J)V", (void*)Java_OffscreenView_nativeViewCreated},
-			{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity}
+			{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity},
+			{"onVisibleRect", "(JIIII)V", (void*)Java_OffscreenView_onVisibleRect},
 		};
 		ov.registerNativeMethods(methods, sizeof(methods));
 	}
@@ -702,6 +719,13 @@ void QAndroidOffscreenView::javaViewCreated()
 	emit viewCreated();
 }
 
+void QAndroidOffscreenView::javaVisibleRectReceived(int left, int top, int right, int bottom)
+{
+	int width = right - left, height = bottom - top;
+	qDebug()<<viewObjectName()<<__FUNCTION__<<left<<top<<right<<bottom<<"W:"<<width<<"H:"<<height;
+	emit visibleRectReceived(width, height);
+}
+
 bool QAndroidOffscreenView::updateGlTexture()
 {
 	if (offscreen_view_)
@@ -756,6 +780,14 @@ void QAndroidOffscreenView::mouse(int android_action, int x, int y, long long ti
 	if (offscreen_view_)
 	{
 		offscreen_view_->callParamVoid("ProcessMouseEvent", "IIIJ", jint(android_action), jint(x), jint(y), jlong(timestamp_uptime_millis));
+	}
+}
+
+void QAndroidOffscreenView::requestVisibleRect()
+{
+	if (offscreen_view_)
+	{
+		offscreen_view_->callVoid("queryVisibleRect");
 	}
 }
 

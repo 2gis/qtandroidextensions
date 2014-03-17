@@ -251,6 +251,15 @@ public:
 
 	//! \todo Add multi-touch support!
 
+	/*!
+	 * Request currently visible rectangle of the view.
+	 * The result will be sent via visibleRectReceived() signal.
+	 * This function returns size of rectangle not covered by software keyboard
+	 * and may be used to scroll contents to have a text edit located in
+	 * the visible part of the screen.
+	 */
+	void requestVisibleRect();
+
 public slots:
 	/*!
 	 * Free Android view and OpenGL resources. The object will be unusable after that.
@@ -260,6 +269,7 @@ public slots:
 	//! Tell Android View to repaint.
 	virtual void invalidate();
 
+	//! Update Android View visibility from visibility of the Qt View and activity of Qt application.
 	virtual void updateAndroidViewVisibility();
 
 signals:
@@ -268,11 +278,22 @@ signals:
 	 * can be displayed in our Qt app UI (via paintGL()).
 	 */
 	void updated();
+
+	/*!
+	 * Emitted when view has been actually created.
+	 * \todo This signal seems to be useless, maybe it should be removed.
+	 */
 	void viewCreated();
+
+	/*!
+	 * Emitted when visible screen rect requested via requestVisibleRect() is receieved.
+	 */
+	void visibleRectReceived(int width, int height);
 
 private slots:
 	void javaUpdate();
 	void javaViewCreated();
+	void javaVisibleRectReceived(int left, int top, int right, int bottom);
 
 private:
 	const QImage * getPreviousBitmapBuffer(bool convert_from_android_format);
@@ -319,6 +340,7 @@ private:
 	Q_DISABLE_COPY(QAndroidOffscreenView)
 	friend void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv * env, jobject jo, jlong param);
 	friend void JNICALL Java_OffscreenView_nativeViewCreated(JNIEnv *, jobject, jlong param);
+	friend void JNICALL Java_OffscreenView_onVisibleRect(JNIEnv *, jobject, jlong param, int left, int top, int right, int bottom);
 };
 
 int QColorToAndroidColor(const QColor & color);

@@ -83,6 +83,7 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.ViewTreeObserver;
 import android.view.KeyEvent;
 import android.view.KeyCharacterMap;
 import android.view.Menu;
@@ -1340,6 +1341,7 @@ abstract class OffscreenView
         }
     }
 
+    //! Can be called from either C++ or here to get avaialble API level.
     private static int api_level_ = 0;
     final public static int getApiLevel()
     {
@@ -1352,7 +1354,26 @@ abstract class OffscreenView
         return api_level_;
     }
 
+    //! Called from C++ to get currently visibile rectangle of the view.
+    public void queryVisibleRect()
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run()
+            {
+                View v = getView();
+                if (v != null)
+                {
+                    Rect rect = new Rect();
+                    v.getWindowVisibleDisplayFrame(rect);
+                    onVisibleRect(getNativePtr(), rect.left, rect.top, rect.right, rect.bottom);
+                }
+            }
+        });
+    }
+
     public native void nativeUpdate(long nativeptr);
     public native Activity getActivity();
     public native void nativeViewCreated(long nativeptr);
+    public native void onVisibleRect(long nativeptr, int left, int top, int right, int bottom);
 }

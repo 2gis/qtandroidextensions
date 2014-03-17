@@ -111,8 +111,6 @@ void QAndroidOffscreenEditText::preloadJavaClasses()
 	QAndroidQPAPluginGap::preloadJavaClass((getDefaultJavaClassPath() + QLatin1String("OffscreenEditText")).toLatin1());
 }
 
-
-
 void QAndroidOffscreenEditText::javaOnTextChanged(const QString & str, int start, int before, int count)
 {
 	emit onTextChanged(str, start, before, count);
