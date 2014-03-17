@@ -49,6 +49,8 @@ QQuickAndroidOffscreenView::QQuickAndroidOffscreenView(QAndroidOffscreenView * a
 	connect(this, SIGNAL(yChanged()), this, SLOT(updateAndroidViewPosition()));
 	connect(this, SIGNAL(enabledChanged()), this, SLOT(updateAndroidEnabled()));
 	connect(this, SIGNAL(visibleChanged()), this, SLOT(updateAndroidViewVisibility()));
+	connect(aview_.data(), SIGNAL(visibleRectReceived(int,int)), this, SLOT(onVisibleRectReceived(int,int)));
+	connect(aview_.data(), SIGNAL(globalLayoutChanged()), this, SLOT(onGlobalLayoutChanged()));
 	aview_->setAttachingMode(is_interactive_);
 }
 
@@ -73,6 +75,16 @@ void QQuickAndroidOffscreenView::setBackgroundColor(QColor color)
 void QQuickAndroidOffscreenView::onTextureUpdated()
 {
 	emit textureUpdated();
+}
+
+void QQuickAndroidOffscreenView::onVisibleRectReceived(int width, int height)
+{
+	emit visibleRectReceived(width, height);
+}
+
+void QQuickAndroidOffscreenView::onGlobalLayoutChanged()
+{
+	emit globalLayoutChanged();
 }
 
 void QQuickAndroidOffscreenView::focusInEvent(QFocusEvent * event)
@@ -156,6 +168,11 @@ void QQuickAndroidOffscreenView::updateAndroidViewPosition()
 	// need them. We only need in-scene coordinates.
 	QPointF scenepos = mapToScene(QPointF(0, 0));
 	aview_->setPosition(qRound(scenepos.x()), qRound(scenepos.y()));
+}
+
+void QQuickAndroidOffscreenView::requestVisibleRect()
+{
+	aview_->requestVisibleRect();
 }
 
 void QQuickAndroidOffscreenView::updateAndroidEnabled()

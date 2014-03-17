@@ -54,6 +54,23 @@ public:
 	QColor getBackgroundColor() const { return androidView()->fillColor(); }
 	void setBackgroundColor(QColor color);
 
+public slots:
+	/*!
+	 * This function must be called from QML after screen position has been changed
+	 * to make sure that any Android's overlay controls are placed correctly.
+	 * Unfortunately, Quick doesn't seem to allow to track change of absolute item
+	 * coordinates - only its x/y within the parent.
+	 */
+	void updateAndroidViewPosition();
+
+	void requestVisibleRect();
+
+signals:
+	void textureUpdated();
+	void backgroundColorChanged(QColor color);
+	void visibleRectReceived(int width, int height);
+	void globalLayoutChanged();
+
 protected:
 	QAndroidOffscreenView * androidView() { return aview_.data(); }
 	const QAndroidOffscreenView * androidView() const { return aview_.data(); }
@@ -65,23 +82,12 @@ protected:
 	virtual void mouseReleaseEvent(QMouseEvent * event);
 	virtual void itemChange(ItemChange change, const ItemChangeData & value);
 
-public slots:
-	/*!
-	 * This function must be called from QML after screen position has been changed
-	 * to make sure that any Android's overlay controls are placed correctly.
-	 * Unfortunately, Quick doesn't seem to allow to track change of absolute item
-	 * coordinates - only its x/y within the parent.
-	 */
-	void updateAndroidViewPosition();
-
-signals:
-	void textureUpdated();
-	void backgroundColorChanged(QColor color);
-
 protected slots:
-	void updateAndroidViewVisibility();
-	void updateAndroidEnabled();
-	void onTextureUpdated();
+	virtual void updateAndroidViewVisibility();
+	virtual void updateAndroidEnabled();
+	virtual void onTextureUpdated();
+	virtual void onVisibleRectReceived(int width, int height);
+	virtual void onGlobalLayoutChanged();
 
 private:
 	QSharedPointer<QAndroidOffscreenView> aview_;
