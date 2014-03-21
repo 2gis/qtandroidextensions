@@ -949,8 +949,7 @@ abstract class OffscreenView
                         boolean was_focused = v.isFocused();
                         v.setFocusable(false);
                         v.setFocusableInTouchMode(false);
-                        // This doesn't seem to do anything useful:
-                        // v.clearFocus();
+                        v.clearFocus();
                         if (hide_keyboard_on_focus_loss_)
                         {
                             uiHideKeyboardFromView();
