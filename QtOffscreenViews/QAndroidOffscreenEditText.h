@@ -230,6 +230,8 @@ public:
 	void selectAll();
 	void setSelection(int index);
 	void setSelection(int start, int stop);
+	int getSelectionStart();
+	int getSelectionEnd();
 
 	//
 	// Own helper methods
@@ -349,8 +351,6 @@ signals:
 	//	TextPaint 	getPaint()
 	//	int 	getPaintFlags()
 	//	String 	getPrivateImeOptions()	//	Get the private type of the content.
-	//	int 	getSelectionEnd()	//	Convenience for getSelectionEnd(CharSequence).
-	//	int 	getSelectionStart()	//	Convenience for getSelectionStart(CharSequence).
 	//	int 	getShadowColor()
 	//	float 	getShadowDx()
 	//	float 	getShadowDy()

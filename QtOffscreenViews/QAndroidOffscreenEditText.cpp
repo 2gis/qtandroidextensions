@@ -457,6 +457,22 @@ void QAndroidOffscreenEditText::setSelection(int start, int stop)
 	}
 }
 
+int QAndroidOffscreenEditText::getSelectionStart()
+{
+	if (QJniObject * view = offscreenView())
+	{
+		return view->callInt("getSelectionStart");
+	}
+}
+
+int QAndroidOffscreenEditText::getSelectionEnd()
+{
+	if (QJniObject * view = offscreenView())
+	{
+		return view->callInt("getSelectionEnd");
+	}
+}
+
 void QAndroidOffscreenEditText::setTextColor(const QColor & color)
 {
 	setTextColor(QColorToAndroidColor(color));
