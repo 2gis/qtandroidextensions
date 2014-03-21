@@ -185,6 +185,23 @@ public:
 	//! Sets whether the content of this view is selectable by the user.
 	void setTextIsSelectable(bool selectable);
 
+	// http://developer.android.com/reference/android/widget/TextView.html#attr_android:gravity
+	static const int
+		ANDROID_GRAVITY_TOP					= 0x00000030,
+		ANDROID_GRAVITY_BOTTOM				= 0x00000050,
+		ANDROID_GRAVITY_LEFT				= 0x00000003,
+		ANDROID_GRAVITY_RIGHT				= 0x00000005,
+		ANDROID_GRAVITY_CENTER				= 0x00000011,
+		ANDROID_GRAVITY_CENTER_HORIZONTAL	= 0x00000001,
+		ANDROID_GRAVITY_CENTER_VERTICAL		= 0x00000010,
+		ANDROID_GRAVITY_FILL				= 0x00000077,
+		ANDROID_GRAVITY_FILL_HORIZONTAL		= 0x00000007,
+		ANDROID_GRAVITY_FILL_VERTICAL		= 0x00000070,
+		ANDROID_GRAVITY_CLIP_HORIZONTAL		= 0x00000008,
+		ANDROID_GRAVITY_CLIP_VERTICAL		= 0x00000080,
+		ANDROID_GRAVITY_START				= 0x00800003,
+		ANDROID_GRAVITY_END					= 0x00800005;
+
 	//! Sets the horizontal alignment of the text and the vertical gravity that will be used when there is extra space in the TextView beyond what is required for the text itself.
 	void setGravity(int gravity);
 
