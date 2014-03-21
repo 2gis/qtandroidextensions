@@ -249,6 +249,12 @@ public:
 	 */
 	void mouse(int android_action, int x, int y, long long timestamp_uptime_millis = 0);
 
+	//! Return the scrolled left position of this view.
+	int getScrollX();
+
+	//! Return the scrolled top position of this view.
+	int getScrollY();
+
 	//! \todo Add multi-touch support!
 
 public slots:

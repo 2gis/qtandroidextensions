@@ -130,6 +130,8 @@ abstract class OffscreenView
     private boolean is_attached_ = false;
     private boolean attaching_mode_ = true;
     private boolean hide_keyboard_on_focus_loss_ = true;
+    private int scroll_x_ = 0;
+    private int scroll_y_ = 0;
 
     // Variables to inform C++ about last painted texture / control size
     private int last_painted_width_ = 0;
@@ -760,7 +762,12 @@ abstract class OffscreenView
 
                             // Prepare canvas.
                             // Take View scroll into account.
-                            canvas.translate(-v.getScrollX(), -v.getScrollY());
+                            synchronized(view_variables_mutex_)
+                            {
+                                scroll_x_ = v.getScrollX();
+                                scroll_y_ = v.getScrollY();
+                            }
+                            canvas.translate(-scroll_x_, -scroll_y_);
 
                             callViewPaintMethod(canvas);
 
@@ -1121,6 +1128,22 @@ abstract class OffscreenView
             fill_r_ = r;
             fill_g_ = g;
             fill_b_ = b;
+        }
+    }
+
+    public int getScrollX()
+    {
+        synchronized(view_variables_mutex_)
+        {
+            return scroll_x_;
+        }
+    }
+
+    public int getScrollY()
+    {
+        synchronized(view_variables_mutex_)
+        {
+            return scroll_y_;
         }
     }
 
