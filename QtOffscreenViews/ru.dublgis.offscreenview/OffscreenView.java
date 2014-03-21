@@ -159,7 +159,7 @@ abstract class OffscreenView
             {
                 throw new IllegalStateException("OffscreenView layout should have 1 child!");
             }
-            setMeasuredDimension(view_left_+view_width_, view_top_+view_height_);
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         }
 
         @Override
@@ -172,7 +172,22 @@ abstract class OffscreenView
                 throw new IllegalStateException("OffscreenView layout should have 1 child!");
             }
             View child = getChildAt(0);
-            child.layout(view_left_, view_top_, view_left_+view_width_, view_top_+view_height_);
+            if (getApiLevel() >= 11)
+            {
+                // To child view does not overlap the keyboard
+                child.setLeft(0);
+                child.setTop(0);
+                child.setRight(view_width_);
+                child.setBottom(view_height_);
+                // Translate to real position
+                child.setX(view_left_);
+                child.setY(view_top_);
+            }
+            else
+            {
+                child.layout(view_left_, view_top_, view_left_+view_width_, view_top_+view_height_);
+            }
+
         }
     }
 
@@ -553,7 +568,13 @@ abstract class OffscreenView
                     rendering_surface_ = new OffscreenGLTextureRenderingSurface();
                     if (layout_ != null)
                     {
-                        layout_.postInvalidate();
+                        runViewAction(new Runnable(){
+                                @Override
+                                public void run()
+                                {
+                                    layout_.requestLayout();
+                                }
+                        });
                     }
                     // Make sure the view will be repainted on the rendering surface, even it did
                     // finish its updates before the surface is available and its size didn't change
@@ -581,7 +602,13 @@ abstract class OffscreenView
                     Log.i(TAG, "OffscreenView.intializeBitmap(name=\""+object_name_+"\") RUN");
                     if (layout_ != null)
                     {
-                        layout_.postInvalidate();
+                        runViewAction(new Runnable(){
+                                @Override
+                                public void run()
+                                {
+                                    layout_.requestLayout();
+                                }
+                        });
                     }
                     invalidateOffscreenView();
                 }
@@ -1043,7 +1070,13 @@ abstract class OffscreenView
                 view_top_ = top;
                 if (layout_ != null)
                 {
-                    layout_.postInvalidate();
+                    runViewAction(new Runnable(){
+                            @Override
+                            public void run()
+                            {
+                                layout_.requestLayout();
+                            }
+                    });
                 }
             }
         }

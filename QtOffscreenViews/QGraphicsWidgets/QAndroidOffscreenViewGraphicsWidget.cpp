@@ -47,6 +47,7 @@ QAndroidOffscreenViewGraphicsWidget::QAndroidOffscreenViewGraphicsWidget(QAndroi
 	aview_->setAttachingMode(interactive);
 	setAcceptedMouseButtons(Qt::LeftButton);
 	setFocusPolicy(Qt::StrongFocus);
+	setFlag(QGraphicsItem::ItemSendsScenePositionChanges);
 	connect(aview_.data(), SIGNAL(updated()), this, SLOT(onOffscreenUpdated()));
 }
 
@@ -256,5 +257,19 @@ void QAndroidOffscreenViewGraphicsWidget::focusOutEvent (QFocusEvent * event)
 	qDebug()<<__PRETTY_FUNCTION__;
 	aview_->setFocused(false);
 	QGraphicsWidget::focusOutEvent(event);
+}
+
+QVariant QAndroidOffscreenViewGraphicsWidget::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value)
+{
+	if (change == QGraphicsItem::ItemScenePositionHasChanged)
+	{
+		// For hide pins if EditText outside of visible area
+		if (clipPath().isEmpty())
+		{
+			updateViewPosition();
+		}
+	}
+
+	return QGraphicsWidget::itemChange(change, value);
 }
 
