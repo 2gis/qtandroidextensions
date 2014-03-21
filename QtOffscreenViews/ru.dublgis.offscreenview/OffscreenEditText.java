@@ -74,6 +74,7 @@ import android.text.Editable;
 import android.text.method.MetaKeyKeyListener;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.util.DisplayMetrics;
 import android.view.ContextMenu;
@@ -722,6 +723,16 @@ class OffscreenEditText extends OffscreenView
                     ops |= flag;
                 }
                 met.setImeOptions(ops);
+            }
+        });
+    }
+
+    void setPasswordMode()
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setTransformationMethod(PasswordTransformationMethod.getInstance());
             }
         });
     }

@@ -425,6 +425,14 @@ void QAndroidOffscreenEditText::setAllCaps(bool allCaps)
 	}
 }
 
+void QAndroidOffscreenEditText::setPasswordMode()
+{
+	if (QJniObject * view = offscreenView())
+	{
+		view->callVoid("setPasswordMode");
+	}
+}
+
 void QAndroidOffscreenEditText::selectAll()
 {
 	if (QJniObject * view = offscreenView())

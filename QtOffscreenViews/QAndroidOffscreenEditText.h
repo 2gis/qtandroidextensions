@@ -221,6 +221,9 @@ public:
 	//! Sets the properties of this field to transform input to ALL CAPS display.
 	void setAllCaps(bool allCaps);
 
+	//! Set password mode.
+	void setPasswordMode();
+
 	//
 	// EditText methods
 	//
