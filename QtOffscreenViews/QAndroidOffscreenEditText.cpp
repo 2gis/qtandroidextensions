@@ -466,6 +466,7 @@ int QAndroidOffscreenEditText::getSelectionStart()
 	{
 		return view->callInt("getSelectionStart");
 	}
+	return 0;
 }
 
 int QAndroidOffscreenEditText::getSelectionEnd()
@@ -474,6 +475,7 @@ int QAndroidOffscreenEditText::getSelectionEnd()
 	{
 		return view->callInt("getSelectionEnd");
 	}
+	return 0;
 }
 
 void QAndroidOffscreenEditText::setTextColor(const QColor & color)
