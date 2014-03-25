@@ -74,6 +74,7 @@ import android.text.Editable;
 import android.text.method.MetaKeyKeyListener;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.util.DisplayMetrics;
 import android.view.ContextMenu;
@@ -98,6 +99,8 @@ class OffscreenEditText extends OffscreenView
     protected String text_ = "";
     boolean single_line_ = false;
     boolean need_to_reflow_text_ = false, need_to_reflow_hint_ = false;
+    int selection_start_ = 0, selection_end_ = 0;
+    private Object variables_mutex_ = new Object();
 
     class MyEditText extends EditText
     {
@@ -288,6 +291,16 @@ class OffscreenEditText extends OffscreenView
                 return super.onTouchEvent(event);
             }
             return false;
+        }
+
+        @Override
+        public void onSelectionChanged(int selStart, int selEnd)
+        {
+            synchronized(variables_mutex_)
+            {
+                selection_start_ = selStart;
+                selection_end_ = selEnd;
+            }
         }
     }
 
@@ -724,6 +737,32 @@ class OffscreenEditText extends OffscreenView
                 met.setImeOptions(ops);
             }
         });
+    }
+
+    void setPasswordMode()
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setTransformationMethod(PasswordTransformationMethod.getInstance());
+            }
+        });
+    }
+
+    int getSelectionStart()
+    {
+        synchronized(variables_mutex_)
+        {
+            return selection_start_;
+        }
+    }
+
+    int getSelectionEnd()
+    {
+        synchronized(variables_mutex_)
+        {
+            return selection_end_;
+        }
     }
 }
 

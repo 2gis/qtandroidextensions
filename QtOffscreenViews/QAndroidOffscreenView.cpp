@@ -813,6 +813,24 @@ void QAndroidOffscreenView::requestVisibleRect()
 	}
 }
 
+int QAndroidOffscreenView::getScrollX()
+{
+	if (offscreen_view_)
+	{
+		return offscreen_view_->callInt("getScrollX");
+	}
+	return 0;
+}
+
+int QAndroidOffscreenView::getScrollY()
+{
+	if (offscreen_view_)
+	{
+		return offscreen_view_->callInt("getScrollY");
+	}
+	return 0;
+}
+
 void QAndroidOffscreenView::resize(const QSize & newsize)
 {
 	QSize size = newsize;

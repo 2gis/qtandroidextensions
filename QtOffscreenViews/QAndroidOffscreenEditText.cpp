@@ -428,6 +428,14 @@ void QAndroidOffscreenEditText::setAllCaps(bool allCaps)
 	}
 }
 
+void QAndroidOffscreenEditText::setPasswordMode()
+{
+	if (QJniObject * view = offscreenView())
+	{
+		view->callVoid("setPasswordMode");
+	}
+}
+
 void QAndroidOffscreenEditText::selectAll()
 {
 	if (QJniObject * view = offscreenView())
@@ -449,6 +457,22 @@ void QAndroidOffscreenEditText::setSelection(int start, int stop)
 	if (QJniObject * view = offscreenView())
 	{
 		view->callParamVoid("setSelection", "II", jint(start), jint(stop));
+	}
+}
+
+int QAndroidOffscreenEditText::getSelectionStart()
+{
+	if (QJniObject * view = offscreenView())
+	{
+		return view->callInt("getSelectionStart");
+	}
+}
+
+int QAndroidOffscreenEditText::getSelectionEnd()
+{
+	if (QJniObject * view = offscreenView())
+	{
+		return view->callInt("getSelectionEnd");
 	}
 }
 
