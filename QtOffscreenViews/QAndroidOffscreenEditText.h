@@ -256,6 +256,14 @@ public:
 		ANDROID_EDITORINFO_IME_ACTION_UNSPECIFIED	= 0x00000000;
 
 signals:
+	/*!
+	 * Emitted when Back key is pressed. Note: QAndroidOffscreenEditText suppresses
+	 * the default processing of the Back key (which ends current activity).
+	 * A wrapper can inject Qt::Key_Escape press into Qt queue or simply process
+	 * the signal by itself.
+	 */
+	void onKeyBack(bool down);
+
 	//! Use ANDROID_EDITORINFO_IME_... for actions.
 	void onEditorAction(int action);
 

@@ -123,6 +123,9 @@ bool QAndroidOffscreenEditText::javaOnKey(bool down, int androidKey)
 	{
 		switch(androidKey)
 		{
+		case 0x00000004: // KEYCODE_BACK
+			emit onKeyBack(down);
+			return true;
 		case 0x00000017: // KEYCODE_DPAD_CENTER
 		case 0x00000042: // KEYCODE_ENTER
 			emit onEnter();
