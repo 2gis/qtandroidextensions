@@ -34,6 +34,7 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#pragma once
 #include <QtCore/QString>
 #include <QtCore/QObject>
 
