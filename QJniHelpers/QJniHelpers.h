@@ -270,6 +270,9 @@ public:
 	//! Get value of int field of the wrapped Java object
 	int getIntField(const char* field_name);
 
+	//! Get value of float field of the wrapped Java object
+	float getFloatField(const char* field_name);
+
 	/*!
 	 * Call jstring method of the wrapped Java object and
 	 * return the result as a QString.

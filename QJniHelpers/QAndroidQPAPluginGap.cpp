@@ -63,6 +63,21 @@
 	#error "Unimplemented QPA case"
 #endif
 
+#if defined(QPA_QT4GRYM)
+	static const char * const c_activity_getter_class_name = "org/qt/core/QtApplicationBase";
+	static const char * const c_activity_getter_method_name = "getActivityStatic";
+	// It is OK to return QtActivityBase as it's a descendant of Activity and
+	// Java will handle the type casting.
+	static const char * const c_activity_getter_result_name = "org/qt/core/QtActivityBase";
+#elif defined(QPA_QT5)
+	//! \todo If we make another plugin for Qt 5, this place might need an update!
+	static const char * const c_activity_getter_class_name = "org/qtproject/qt5/android/QtNative";
+	static const char * const c_activity_getter_method_name = "activity";
+	static const char * const c_activity_getter_result_name = "android/app/Activity";
+#else
+	#error "Unimplemented QPA case"
+#endif
+
 namespace QAndroidQPAPluginGap {
 
 JavaVM * detectJavaVM()
@@ -78,27 +93,13 @@ JavaVM * detectJavaVM()
 
 jobject JNICALL getActivity(JNIEnv *, jobject)
 {
-	#if defined(QPA_QT4GRYM)
-		static const char * const c_class_name = "org/qt/core/QtApplicationBase";
-		static const char * const c_method_name = "getActivityStatic";
-		// It is OK to return QtActivityBase as it's a descendant of Activity and
-		// Java will handle the type casting.
-		static const char * const c_result_name = "org/qt/core/QtActivityBase";
-	#elif defined(QPA_QT5)
-		//! \todo If we make another plugin for Qt 5, this place might need an update!
-		static const char * const c_class_name = "org/qtproject/qt5/android/QtNative";
-		static const char * const c_method_name = "activity";
-		static const char * const c_result_name = "android/app/Activity";
-	#else
-		#error "Unimplemented QPA case"
-	#endif
-	QJniObject theclass(c_class_name, false);
+	QJniObject theclass(c_activity_getter_class_name, false);
 	if (!theclass.jClass())
 	{
 		qCritical("QAndroid: Activity retriever class could not be accessed.");
 		return 0;
 	}
-	QScopedPointer<QJniObject> activity(theclass.callStaticObject(c_method_name, c_result_name));
+	QScopedPointer<QJniObject> activity(theclass.callStaticObject(c_activity_getter_method_name, c_activity_getter_result_name));
 	if (!activity)
 	{
 		qCritical("QAndroid: Failed to get Activity object.");
@@ -149,6 +150,14 @@ JNIEXPORT void JNICALL Java_ru_dublgis_qjnihelpers_ClassLoader_nativeJNIPreloadC
 	QJniEnvPtr jep(env);
 	QString qclassname = jep.QStringFromJString(classname);
 	jep.preloadClass(qclassname.toLatin1());
+
+	// During the first call of this function, we can also pre-load classes for our own use.
+	static bool first_call = true;
+	if (first_call)
+	{
+		jep.preloadClass(c_activity_getter_class_name);
+		first_call = false;
+	}
 }
 
 } // extern "C"

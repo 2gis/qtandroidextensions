@@ -892,7 +892,7 @@ QJniObject * QJniObject::callStaticParamObject(const char * method_name, const c
 
 int QJniObject::getIntField(const char* field_name)
 {
-	VERBOSE(qDebug("int QJniObject::GetInt(const char* fieldd_name) %p \"%s\"",this,field_name));
+	VERBOSE(qDebug("int QJniObject::getIntField(const char* fieldd_name) %p \"%s\"",this,field_name));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 	jfieldID fid = env->GetFieldID(class_, field_name, "I");
@@ -902,6 +902,25 @@ int QJniObject::getIntField(const char* field_name)
 		throw QJniFieldNotFoundException();
 	}
 	int result = (int)env->GetIntField(instance_, fid);
+	if (jep.clearException())
+	{
+		throw QJniJavaCallException();
+	}
+	return result;
+}
+
+float QJniObject::getFloatField(const char* field_name)
+{
+	VERBOSE(qDebug("int QJniObject::getFloatField(const char* fieldd_name) %p \"%s\"",this,field_name));
+	QJniEnvPtr jep;
+	JNIEnv* env = jep.env();
+	jfieldID fid = env->GetFieldID(class_, field_name, "F");
+	if (!fid)
+	{
+		qWarning("%s: method not found.", __FUNCTION__);
+		throw QJniFieldNotFoundException();
+	}
+	float result = (int)env->GetFloatField(instance_, fid);
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException();
