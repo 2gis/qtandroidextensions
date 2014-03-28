@@ -46,13 +46,32 @@
 class QAndroidDisplayMetrics: public QObject
 {
 	Q_OBJECT
+public:
+	enum Theme {
+		ThemeLDPI	= 0,
+		ThemeMDPI	= 1,
+		ThemeTVDPI	= 2,
+		ThemeHDPI	= 3,
+		ThemeXHDPI	= 4,
+		Theme400DPI	= 5,
+		ThemeXXDPI	= 6,
+		ThemeXXXDPI	= 7
+	};
+	Q_ENUMS(Theme)
+
+private:
 	Q_PROPERTY(float density READ density)
 	Q_PROPERTY(int densityDpi READ densityDpi)
-	Q_PROPERTY(int heightPixels READ heightPixels)
 	Q_PROPERTY(float scaledDensity READ scaledDensity)
-	Q_PROPERTY(int widthPixels READ widthPixels)
+	Q_PROPERTY(int densityFromDpi READ densityFromDpi)
+	Q_PROPERTY(float scaledDensityFromDpi READ scaledDensityFromDpi)
 	Q_PROPERTY(float xdpi READ xdpi)
 	Q_PROPERTY(float ydpi READ ydpi)
+	Q_PROPERTY(float realisticDpi READ realisticDpi)
+	Q_PROPERTY(int widthPixels READ widthPixels)
+	Q_PROPERTY(int heightPixels READ heightPixels)
+	Q_PROPERTY(Theme theme READ theme)
+
 public:
 	static const int
 		ANDROID_DENSITY_LOW		= 120,
@@ -71,6 +90,8 @@ public:
 	/*!
 	 * Size multiplier relative to size optimized for the default (medium) DPI (160).
 	 * As for 2014/03 the value seems to be varying from 0.75 to 3.
+	 * Note: some devices have wrong density value based on wrong physical DPI value.
+	 * It is safer to use densityFromDpi() or scaledDensityFromDpi().
 	 */
 	float density() const { return density_;  }
 
@@ -84,14 +105,44 @@ public:
 	/*!
 	 * Size multiplier relative to size optimized for the default (medium) DPI (160),
 	 * but also takes into account user's enlarged/reduced font setting.
+	 * See also comments for density().
 	 */
 	float scaledDensity() const { return scaledDensity_; }
 
-	//! Exact physical resolution of the screen.
+	Theme theme() const { return theme_; }
+
+	/*!
+	 * Same as density(), but the value is looked up from a table by densityDpi().
+	 * This is more reliable because some devices have wrong density value, but
+	 * logical DPI is always correct.
+	 */
+	float densityFromDpi() const { return densityFromDpi_; }
+
+	/*!
+	 * Same as density(), but the value is looked up from a table by densityDpi().
+	 * This is more reliable because some devices have wrong density value, but
+	 * logical DPI is always correct.
+	 */
+	float scaledDensityFromDpi() const { return scaledDensityFromDpi_; }
+
+	/*!
+	 * Exact physical resolution of the screen.
+	 * Maybe set to wrong value on some devices.
+	 */
 	float xdpi() const { return xdpi_; }
 
-	//! Exact physical resolution of the screen.
+	/*!
+	 * Exact physical resolution of the screen.
+	 * Maybe set to wrong value on some devices.
+	 */
 	float ydpi() const { return ydpi_; }
+
+	/*!
+	 * Returns the most probable value of physical screen DPI.
+	 * This is either average between xdpi and ydpi, or logical DPI if
+	 * it is too different from the reported physical DPI.
+	 */
+	float realisticDpi() const { return realisticDpi_; }
 
 	//! Pixel size of the screen
 	int widthPixels() const { return widthPixels_; }
@@ -103,9 +154,14 @@ private:
 	float density_;
 	int densityDpi_;
 	float scaledDensity_;
+	float densityFromDpi_;
+	float scaledDensityFromDpi_;
 	float xdpi_;
 	float ydpi_;
+	float realisticDpi_;
 	int widthPixels_;
 	int heightPixels_;
-
+	Theme theme_;
 };
+
+Q_DECLARE_METATYPE(QAndroidDisplayMetrics::Theme)

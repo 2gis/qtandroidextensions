@@ -40,13 +40,17 @@
 
 QAndroidDisplayMetrics::QAndroidDisplayMetrics(QObject * parent)
 	: QObject(parent)
-	, density_(0)
-	, densityDpi_(0)
-	, scaledDensity_(0)
-	, xdpi_(0)
-	, ydpi_(0)
-	, widthPixels_(0)
-	, heightPixels_(0)
+	, density_(1.0f)
+	, densityDpi_(160)
+	, scaledDensity_(1.0f)
+	, densityFromDpi_(1.0f)
+	, scaledDensityFromDpi_(1.0f)
+	, xdpi_(160.0f)
+	, ydpi_(160.0f)
+	, realisticDpi_(160.0f)
+	, widthPixels_(240)
+	, heightPixels_(240)
+	, theme_(ThemeMDPI)
 {
 	QJniObject metrics("android/util/DisplayMetrics", true);
 	{
@@ -55,6 +59,7 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(QObject * parent)
 		QScopedPointer<QJniObject> defaultdisplay(windowmanager->callObject("getDefaultDisplay", "android/view/Display"));
 		defaultdisplay->callParamVoid("getMetrics", "Landroid/util/DisplayMetrics;", metrics.jObject());
 	}
+
 	density_ = metrics.getFloatField("density");
 	densityDpi_ = metrics.getIntField("densityDpi");
 	heightPixels_ = metrics.getIntField("heightPixels");
@@ -64,10 +69,76 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(QObject * parent)
 	widthPixels_ = metrics.getIntField("widthPixels");
 	heightPixels_ = metrics.getIntField("heightPixels");
 
+	//
+	// Calculating theme
+	//
+	if (densityDpi_ < (ANDROID_DENSITY_LOW+ANDROID_DENSITY_MEDIUM)/2)
+		theme_ = ThemeLDPI;
+	else if(densityDpi_ < (ANDROID_DENSITY_MEDIUM+ANDROID_DENSITY_TV)/2)
+		theme_ = ThemeMDPI;
+	else if(densityDpi_ < (ANDROID_DENSITY_TV+ANDROID_DENSITY_HIGH)/2)
+		theme_ = ThemeTVDPI;
+	else if(densityDpi_ < (ANDROID_DENSITY_HIGH+ANDROID_DENSITY_XHIGH)/2)
+		theme_ = ThemeHDPI;
+	else if(densityDpi_ < (ANDROID_DENSITY_XHIGH+ANDROID_DENSITY_400)/2)
+		theme_ = ThemeXHDPI;
+	else if(densityDpi_ < (ANDROID_DENSITY_400+ANDROID_DENSITY_XXHIGH)/2)
+		theme_ = Theme400DPI;
+	else if(densityDpi_ < (ANDROID_DENSITY_XXHIGH+ANDROID_DENSITY_XXXHIGH)/2)
+		theme_ = ThemeXXDPI;
+	else
+		theme_ = ThemeXXXDPI;
+
+	//
+	// Calculating scaler from the theme
+	//
+	switch(theme_)
+	{
+	case ThemeLDPI:		densityFromDpi_ = 0.75f;	break;
+	case ThemeMDPI:		densityFromDpi_ = 1.00f;	break;
+	case ThemeTVDPI:	densityFromDpi_ = 1.33f;	break;
+	case ThemeHDPI:		densityFromDpi_ = 1.50f;	break;
+	case ThemeXHDPI:	densityFromDpi_ = 2.00f;	break;
+	case Theme400DPI:	densityFromDpi_ = 2.50f;	break; //! \fixme Unverified value!
+	case ThemeXXDPI:	densityFromDpi_ = 3.00f;	break;
+	case ThemeXXXDPI:	densityFromDpi_ = 4.00f;	break; //! \fixme Unverified value!
+	default:
+		Q_ASSERT(!"Theme value not listed!");
+		densityFromDpi_ = 1.0f;
+		break;
+	}
+
+	if (density_ > 0.0f)
+	{
+		scaledDensityFromDpi_ = densityFromDpi_ * (scaledDensity_ / density_);
+	}
+	else
+	{
+		scaledDensityFromDpi_ = densityFromDpi_;
+	}
+
+	realisticDpi_ = (xdpi_ + ydpi_) / 2.0f;
+	if (densityDpi_ > 0.0f)
+	{
+		float difference = realisticDpi_ / float(densityDpi_);
+		if (difference > 1.0f)
+			difference = 1.0f / difference;
+		if (difference < 0.75f)
+		{
+			qWarning()<<"Average hardware DPI is reported as"<<realisticDpi_<<"but physical DPI is"
+					  <<densityDpi_<<"(too different).";
+			realisticDpi_ = float(densityDpi_);
+		}
+	}
+
 	qDebug()<<"QAndroidDisplayMetrics: density ="<<density()<<"/ densityDpi ="<<densityDpi()
-		   <<"/ scaledDensity ="<<scaledDensity()
-		   <<"/ xdpi ="<<xdpi()<<"/ ydpi ="<<ydpi()
-		   <<"/ widthPixels ="<<widthPixels()<<"/ heightPixels ="<<heightPixels();
+			<<"/ scaledDensity ="<<scaledDensity()
+			<<"/ xdpi ="<<xdpi()<<"/ ydpi ="<<ydpi()
+			<<"/ realisticDpi ="<<realisticDpi_
+			<<"/ widthPixels ="<<widthPixels()<<"/ heightPixels ="<<heightPixels()
+			<<"/ Theme ="<<int(theme_)
+			<<"/ densityFromDpi ="<<densityFromDpi_
+			<<"/ scaledDensityFromDpi ="<<scaledDensityFromDpi_;
 }
 
 void QAndroidDisplayMetrics::preloadJavaClasses()
