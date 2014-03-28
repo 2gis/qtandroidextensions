@@ -101,7 +101,7 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(QObject * parent)
 	case ThemeXHDPI:	densityFromDpi_ = 2.00f;	break;
 	case Theme400DPI:	densityFromDpi_ = 2.50f;	break; //! \fixme Unverified value!
 	case ThemeXXDPI:	densityFromDpi_ = 3.00f;	break;
-	case ThemeXXXDPI:	densityFromDpi_ = 4.00f;	break; //! \fixme Unverified value!
+	case ThemeXXXDPI:	densityFromDpi_ = 4.00f;	break;
 	default:
 		Q_ASSERT(!"Theme value not listed!");
 		densityFromDpi_ = 1.0f;
