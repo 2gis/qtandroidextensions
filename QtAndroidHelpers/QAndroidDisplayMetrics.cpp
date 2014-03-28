@@ -42,11 +42,11 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(QObject * parent)
 	: QObject(parent)
 	, density_(0)
 	, densityDpi_(0)
-	, heightPixels_(0)
 	, scaledDensity_(0)
-	, widthPixels_(0)
 	, xdpi_(0)
 	, ydpi_(0)
+	, widthPixels_(0)
+	, heightPixels_(0)
 {
 	QJniObject metrics("android/util/DisplayMetrics", true);
 	{
@@ -59,13 +59,15 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(QObject * parent)
 	densityDpi_ = metrics.getIntField("densityDpi");
 	heightPixels_ = metrics.getIntField("heightPixels");
 	scaledDensity_ = metrics.getFloatField("scaledDensity");
-	widthPixels_ = metrics.getIntField("widthPixels");
 	xdpi_ = metrics.getFloatField("xdpi");
 	ydpi_ = metrics.getFloatField("ydpi");
-	qDebug()<<"QAndroidDisplayMetrics: density ="<<density_<<"/ densityDpi ="<<densityDpi_
-		   <<"/ scaledDensity ="<<scaledDensity_
-		   <<"/ xdpi ="<<xdpi_<<"/ ydpi ="<<ydpi_
-		   <<"/ widthPixels ="<<widthPixels_<<"/ heightPixels ="<<heightPixels_;
+	widthPixels_ = metrics.getIntField("widthPixels");
+	heightPixels_ = metrics.getIntField("heightPixels");
+
+	qDebug()<<"QAndroidDisplayMetrics: density ="<<density()<<"/ densityDpi ="<<densityDpi()
+		   <<"/ scaledDensity ="<<scaledDensity()
+		   <<"/ xdpi ="<<xdpi()<<"/ ydpi ="<<ydpi()
+		   <<"/ widthPixels ="<<widthPixels()<<"/ heightPixels ="<<heightPixels();
 }
 
 void QAndroidDisplayMetrics::preloadJavaClasses()

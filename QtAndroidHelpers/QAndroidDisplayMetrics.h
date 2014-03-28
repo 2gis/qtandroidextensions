@@ -37,6 +37,11 @@
 #include <QtCore/QString>
 #include <QtCore/QObject>
 
+/*!
+ * Access to Android's DisplayMetrics. The metrics are read from system API when the
+ * object is constructed.
+ * \see http://developer.android.com/reference/android/util/DisplayMetrics.html
+ */
 class QAndroidDisplayMetrics: public QObject
 {
 	Q_OBJECT
@@ -48,23 +53,58 @@ class QAndroidDisplayMetrics: public QObject
 	Q_PROPERTY(float xdpi READ xdpi)
 	Q_PROPERTY(float ydpi READ ydpi)
 public:
+	static const int
+		ANDROID_DENSITY_LOW		= 120,
+		ANDROID_DENSITY_DEFAULT = 160,
+		ANDROID_DENSITY_MEDIUM  = 160,
+		ANDROID_DENSITY_TV		= 213,
+		ANDROID_DENSITY_HIGH	= 240,
+		ANDROID_DENSITY_XHIGH	= 320,
+		ANDROID_DENSITY_400		= 400,
+		ANDROID_DENSITY_XXHIGH	= 480,
+		ANDROID_DENSITY_XXXHIGH	= 640;
+
 	QAndroidDisplayMetrics(QObject * parent = 0);
 	static void preloadJavaClasses();
 
+	/*!
+	 * Size multiplier relative to size optimized for the default (medium) DPI (160).
+	 * As for 2014/03 the value seems to be varying from 0.75 to 3.
+	 */
 	float density() const { return density_;  }
+
+	/*!
+	 * "Logical" resoultion of the screen.
+	 * This function should return value from one of the ANDROID_DENSITY_... constants
+	 * and can be used to select graphical resources.
+	 */
 	int densityDpi() const { return densityDpi_; }
-	int heightPixels() const { return density_; }
+
+	/*!
+	 * Size multiplier relative to size optimized for the default (medium) DPI (160),
+	 * but also takes into account user's enlarged/reduced font setting.
+	 */
 	float scaledDensity() const { return scaledDensity_; }
-	int widthPixels() const { return widthPixels_; }
+
+	//! Exact physical resolution of the screen.
 	float xdpi() const { return xdpi_; }
+
+	//! Exact physical resolution of the screen.
 	float ydpi() const { return ydpi_; }
+
+	//! Pixel size of the screen
+	int widthPixels() const { return widthPixels_; }
+
+	//! Pixel size of the screen
+	int heightPixels() const { return heightPixels_; }
 
 private:
 	float density_;
 	int densityDpi_;
-	int heightPixels_;
 	float scaledDensity_;
-	int widthPixels_;
 	float xdpi_;
 	float ydpi_;
+	int widthPixels_;
+	int heightPixels_;
+
 };
