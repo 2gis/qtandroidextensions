@@ -114,6 +114,10 @@ jobject JNICALL getActivity(JNIEnv *, jobject)
 
 void preloadJavaClass(const char * class_name)
 {
+	// Directly calling to Java_ru_dublgis_qjnihelpers_ClassLoader_nativeJNIPreloadClass seems to be
+	// not working properly in some situations (???)
+	// Also, it is nicer to have a single function to preload classed and single path to call it.
+	// So, let's call it through Java.
 	qDebug()<<__PRETTY_FUNCTION__<<class_name;
 	QJniEnvPtr jep;
 	if (jep.isClassPreloaded(class_name))
@@ -138,6 +142,8 @@ void preloadJavaClass(const char * class_name)
 // JNI entry points. Must be "C" because the function names should not be mangled.
 extern "C" {
 
+/*! This function does the actual pre-loading of a Java class. It can be called either from Java
+    via ClassLoader.callJNIPreloadClass() or from C++ main() thread as QAndroidQPAPluginGap.preloadJavaClass(). */
 JNIEXPORT void JNICALL Java_ru_dublgis_qjnihelpers_ClassLoader_nativeJNIPreloadClass(JNIEnv * env, jobject, jstring classname)
 {
 	QJniEnvPtr jep(env);
