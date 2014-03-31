@@ -37,11 +37,15 @@
 #pragma once
 #include <QtCore/QString>
 #include <QtCore/QObject>
+#include <QtCore/QMap>
 
 /*!
  * Access to Android's DisplayMetrics. The metrics are read from system API when the
  * object is constructed.
  * \see http://developer.android.com/reference/android/util/DisplayMetrics.html
+ * In addition to the values read straight from DisplayMetrics, the class provides
+ * some commonly used calculated / detected values, see: theme(), themeDirectoryName(),
+ * densityFromDpi(), scaledDensityFromDpi(), realisticDpi().
  */
 class QAndroidDisplayMetrics: public QObject
 {
@@ -71,6 +75,7 @@ private:
 	Q_PROPERTY(int widthPixels READ widthPixels)
 	Q_PROPERTY(int heightPixels READ heightPixels)
 	Q_PROPERTY(Theme theme READ theme)
+	Q_PROPERTY(QString themeDirectoryName READ themeDirectoryName)
 
 public:
 	static const int
@@ -111,6 +116,10 @@ public:
 
 	Theme theme() const { return theme_; }
 
+	static QString themeDirectoryName(Theme theme);
+
+	QString themeDirectoryName() const { return themeDirectoryName(theme()); }
+
 	/*!
 	 * Same as density(), but the value is looked up from a table by densityDpi().
 	 * This is more reliable because some devices have wrong density value, but
@@ -141,6 +150,8 @@ public:
 	 * Returns the most probable value of physical screen DPI.
 	 * This is either average between xdpi and ydpi, or logical DPI if
 	 * it is too different from the reported physical DPI.
+	 * This value works good for phones and tablets with wrong physical
+	 * DPI setting.
 	 */
 	float realisticDpi() const { return realisticDpi_; }
 

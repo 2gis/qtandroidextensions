@@ -136,7 +136,7 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(QObject * parent)
 			<<"/ xdpi ="<<xdpi()<<"/ ydpi ="<<ydpi()
 			<<"/ realisticDpi ="<<realisticDpi_
 			<<"/ widthPixels ="<<widthPixels()<<"/ heightPixels ="<<heightPixels()
-			<<"/ Theme ="<<int(theme_)
+			<<"/ Theme ="<<int(theme_)<<themeDirectoryName()
 			<<"/ densityFromDpi ="<<densityFromDpi_
 			<<"/ scaledDensityFromDpi ="<<scaledDensityFromDpi_;
 }
@@ -145,3 +145,22 @@ void QAndroidDisplayMetrics::preloadJavaClasses()
 {
 	QAndroidQPAPluginGap::preloadJavaClass("android/util/DisplayMetrics");
 }
+
+QString QAndroidDisplayMetrics::themeDirectoryName(Theme theme)
+{
+	switch(theme)
+	{
+	case ThemeLDPI:		return QLatin1String("ldpi");
+	case ThemeMDPI:		return QLatin1String("mdpi");
+	case ThemeTVDPI:	return QLatin1String("tvdpi");
+	case ThemeHDPI:		return QLatin1String("hdpi");
+	case ThemeXHDPI:	return QLatin1String("xhdpi");
+	case Theme400DPI:	return QLatin1String("400dpi");
+	case ThemeXXDPI:	return QLatin1String("xxdpi");
+	case ThemeXXXDPI:	return QLatin1String("xxxdpi");
+	default:
+		qWarning()<<"Unknown theme value:"<<theme;
+		return QString::null;
+	};
+}
+
