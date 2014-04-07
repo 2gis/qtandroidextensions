@@ -70,6 +70,9 @@ QAndroidConfiguration::QAndroidConfiguration(QObject * parent)
 		screen_size_ = ScreenSizeXLarge;
 	}
 
+	//! \todo Add reading of more fields here.
+
+	qDebug()<<"QAndroidConfiguration: screen layout is"<<screenLayout<<"=>"<<screen_size_<<", is tablet:"<<isTablet();
 }
 
 void QAndroidConfiguration::preloadJavaClasses()

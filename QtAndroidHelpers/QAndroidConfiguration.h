@@ -60,6 +60,7 @@ public:
 
 private:
 	Q_PROPERTY(ScreenSize screenSize READ screenSize)
+	Q_PROPERTY(bool isTablet READ isTablet)
 
 public:
 	QAndroidConfiguration(QObject * parent = 0);
@@ -82,6 +83,15 @@ public:
 	QString screenSizeName() const { return screenSizeName(screen_size_); }
 
 	ScreenSize screenSize() const { return screen_size_; }
+
+	/*!
+	 * This function returns true for "tablet-sized" screens. (Note that it may
+	 * also return true for other big srceens, like monitor, TV and etc.)
+	 * Note: an application should check both physical screen size and screen
+	 * resolution (e.g. as provided by QAndroidDisplayMetrics) before deciding
+	 * to enable tablet UI.
+	 */
+	bool isTablet() const { return screen_size_ >= ScreenSizeLarge; }
 
 private:
 	ScreenSize screen_size_;
