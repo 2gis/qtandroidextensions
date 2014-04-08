@@ -90,6 +90,8 @@ public:
 	 * Note: an application should check both physical screen size and screen
 	 * resolution (e.g. as provided by QAndroidDisplayMetrics) before deciding
 	 * to enable tablet UI.
+	 * Also, for Android < 3.0 it may be a good idea to refer to physical size
+	 * of the screen to determine if it's a tablet or not.
 	 */
 	bool isTablet() const { return screen_size_ >= ScreenSizeLarge; }
 
