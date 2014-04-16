@@ -231,7 +231,8 @@ public:
 	 * \return Pointer to a wrapper for the object returned by the call.
 	 * The wrapper should be deleted after use via 'delete'.
 	 */
-	QJniObject* callObject(const char* method_name, const char* objname);
+	QJniObject * callObject(const char* method_name, const char* objname);
+	QJniObject * callParamObject(const char * method_name, const char * objname, const char * param_signature, ...);
 
 	/*!
 	 * Call void method of the wrapped Java object with specified
@@ -268,10 +269,13 @@ public:
 	QJniObject * callStaticParamObject(const char * method_name, const char * objname, const char * param_signature, ...);
 
 	//! Get value of int field of the wrapped Java object
-	int getIntField(const char* field_name);
+	int getIntField(const char * field_name);
 
 	//! Get value of float field of the wrapped Java object
-	float getFloatField(const char* field_name);
+	float getFloatField(const char * field_name);
+
+	//! Get value of float field of the wrapped Java object
+	QJniObject * getObjectField(const char * field_name, const char * objname);
 
 	/*!
 	 * Call jstring method of the wrapped Java object and

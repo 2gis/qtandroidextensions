@@ -1,8 +1,10 @@
 
 HEADERS += \
     QAndroidConfiguration.h \
-    QAndroidDisplayMetrics.h
+    QAndroidDisplayMetrics.h \
+    QAndroidFilePaths.h
 
 SOURCES += \
     QAndroidConfiguration.cpp \
-    QAndroidDisplayMetrics.cpp
+    QAndroidDisplayMetrics.cpp \
+    QAndroidFilePaths.cpp

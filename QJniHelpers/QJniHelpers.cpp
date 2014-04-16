@@ -633,7 +633,7 @@ QJniObject * QJniObject::callObject(const char * method_name, const char * objna
 	QByteArray signature("()L");
 	signature += objname;
 	signature += ";";
-	VERBOSE(qDebug("QJniObject::CallObject: \"%s\", \"%s\"", method_name, signature.data()));
+	VERBOSE(qDebug("QJniObject::callObject: \"%s\", \"%s\"", method_name, signature.data()));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 	jmethodID mid = env->GetMethodID(class_, method_name, signature.data());
@@ -642,7 +642,7 @@ QJniObject * QJniObject::callObject(const char * method_name, const char * objna
 		qWarning("%s: method not found.", __FUNCTION__);
 		throw QJniMethodNotFoundException();
 	}
-	jobject object = env->CallObjectMethod(instance_,mid);
+	jobject object = env->CallObjectMethod(instance_, mid);
 	if (jep.clearException())
 	{
 		if (object)
@@ -654,6 +654,42 @@ QJniObject * QJniObject::callObject(const char * method_name, const char * objna
 	QJniObject * result = new QJniObject(object, true);
 	return result;
 }
+
+QJniObject * QJniObject::callParamObject(const char * method_name, const char * objname, const char * param_signature, ...)
+{
+	VERBOSE(qDebug("void QJniObject(%p)::callParamObject(\"%s\", \"%s\", \"%s\"...)", this, method_name, objname, param_signature));
+
+	va_list args;
+	QJniEnvPtr jep;
+	JNIEnv* env = jep.env();
+
+	QByteArray signature("(");
+	signature += param_signature;
+	signature += ")L";
+	signature += objname;
+	signature += ";";
+	jmethodID mid = env->GetMethodID(class_, method_name, signature.data());
+	if (!mid)
+	{
+		qWarning()<<"callParamObject: method"<<method_name<<"not found, sig ="<<signature;
+		throw QJniMethodNotFoundException();
+	}
+
+	va_start(args, param_signature);
+	jobject jret = env->CallObjectMethodV(instance_, mid, args);
+	va_end(args);
+	if (jep.clearException())
+	{
+		qWarning("void QJniObject(%p)::callParamObject(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
+		if (jret)
+		{
+			env->DeleteLocalRef(jret);
+		}
+		throw QJniJavaCallException();
+	}
+	return new QJniObject(jret, true);
+}
+
 
 void QJniObject::callStaticVoid(const char* method_name)
 {
@@ -890,7 +926,7 @@ QJniObject * QJniObject::callStaticParamObject(const char * method_name, const c
 	return new QJniObject(jret, true);
 }
 
-int QJniObject::getIntField(const char* field_name)
+int QJniObject::getIntField(const char * field_name)
 {
 	VERBOSE(qDebug("int QJniObject::getIntField(const char* fieldd_name) %p \"%s\"",this,field_name));
 	QJniEnvPtr jep;
@@ -898,7 +934,7 @@ int QJniObject::getIntField(const char* field_name)
 	jfieldID fid = env->GetFieldID(class_, field_name, "I");
 	if (!fid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: field not found.", field_name);
 		throw QJniFieldNotFoundException();
 	}
 	int result = (int)env->GetIntField(instance_, fid);
@@ -909,18 +945,18 @@ int QJniObject::getIntField(const char* field_name)
 	return result;
 }
 
-float QJniObject::getFloatField(const char* field_name)
+float QJniObject::getFloatField(const char * field_name)
 {
-	VERBOSE(qDebug("int QJniObject::getFloatField(const char* fieldd_name) %p \"%s\"",this,field_name));
+	VERBOSE(qDebug("int QJniObject::getFloatField(const char* field_name) %p \"%s\"",this,field_name));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 	jfieldID fid = env->GetFieldID(class_, field_name, "F");
 	if (!fid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: field not found.", field_name);
 		throw QJniFieldNotFoundException();
 	}
-	float result = (int)env->GetFloatField(instance_, fid);
+	float result = (float)env->GetFloatField(instance_, fid);
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException();
@@ -928,9 +964,37 @@ float QJniObject::getFloatField(const char* field_name)
 	return result;
 }
 
+QJniObject * QJniObject::getObjectField(const char* field_name, const char * objname)
+{
+	VERBOSE(qDebug("int QJniObject::getObjectField(const char * field_name, const char * objname) %p \"%s\" \"%s\"", this, field_name, objname));
+	QByteArray obj;
+	obj += "L";
+	obj += objname;
+	obj += ";";
+	QJniEnvPtr jep;
+	JNIEnv* env = jep.env();
+	jfieldID fid = env->GetFieldID(class_, field_name, obj.data());
+	if (!fid)
+	{
+		qWarning("%s: field not found.", field_name);
+		throw QJniFieldNotFoundException();
+	}
+	jobject jo = env->GetObjectField(instance_, fid);
+	if (jep.clearException())
+	{
+		if (jo)
+		{
+			env->DeleteLocalRef(jo);
+		}
+		throw QJniJavaCallException();
+	}
+	return new QJniObject(jo, true);
+}
+
+
 void QJniObject::callParamVoid(const char * method_name, const char * param_signature, ...)
 {
-	VERBOSE(qDebug("void QJniObject(%p)::CallParamVoid(\"%s\", \"%s\", ...)", this, method_name, param_signature));
+	VERBOSE(qDebug("void QJniObject(%p)::callParamVoid(\"%s\", \"%s\", ...)", this, method_name, param_signature));
 
 	va_list args;
 	QJniEnvPtr jep;
@@ -942,7 +1006,7 @@ void QJniObject::callParamVoid(const char * method_name, const char * param_sign
 	jmethodID mid = env->GetMethodID(class_, method_name, signature.data());
 	if (!mid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method not found.", method_name);
 		throw QJniMethodNotFoundException();
 	}
 
@@ -952,7 +1016,7 @@ void QJniObject::callParamVoid(const char * method_name, const char * param_sign
 
 	if (jep.clearException())
 	{
-		qWarning("void QJniObject(%p)::CallParamVoid(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
+		qWarning("void QJniObject(%p)::callParamVoid(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
 		throw QJniJavaCallException();
 	}
 }
