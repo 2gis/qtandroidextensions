@@ -42,6 +42,18 @@
 
 static QMutex paths_mutex_(QMutex::Recursive);
 
+const QLatin1String
+	QAndroidFilePaths::ANDROID_DIRECTORY_MUSIC("Music"),
+	QAndroidFilePaths::ANDROID_DIRECTORY_PODCASTS("Podcasts"),
+	QAndroidFilePaths::ANDROID_DIRECTORY_RINGTONES("Ringtones"),
+	QAndroidFilePaths::ANDROID_DIRECTORY_ALARMS("Alarms"),
+	QAndroidFilePaths::ANDROID_DIRECTORY_NOTIFICATIONS("Notifications"),
+	QAndroidFilePaths::ANDROID_DIRECTORY_PICTURES("Pictures"),
+	QAndroidFilePaths::ANDROID_DIRECTORY_MOVIES("Movies"),
+	QAndroidFilePaths::ANDROID_DIRECTORY_DOWNLOADS("Download"),
+	QAndroidFilePaths::ANDROID_DIRECTORY_DCIM("DCIM"),
+	QAndroidFilePaths::ANDROID_DIRECTORY_DOCUMENTS("Documents");
+
 const QString & QAndroidFilePaths::ApplicationFilesDirectory()
 {
 	// Activity.getApplication().getFilesDir().getPath().

@@ -45,9 +45,23 @@ namespace QAndroidFilePaths
      */
     const QString & ApplicationFilesDirectory();
 
+	// Constants for ExternalFilesDirectory().
+	extern const QLatin1String
+		ANDROID_DIRECTORY_MUSIC,
+		ANDROID_DIRECTORY_PODCASTS,
+		ANDROID_DIRECTORY_RINGTONES,
+		ANDROID_DIRECTORY_ALARMS,
+		ANDROID_DIRECTORY_NOTIFICATIONS,
+		ANDROID_DIRECTORY_PICTURES,
+		ANDROID_DIRECTORY_MOVIES,
+		ANDROID_DIRECTORY_DOWNLOADS,
+		ANDROID_DIRECTORY_DCIM,
+		ANDROID_DIRECTORY_DOCUMENTS;
+
     /*!
      * Activity.getExternalFilesDir().getPath().
-	 * Typically the path looks like: "/storage/emulated/0/Android/data/package.name/files".
+	 * \param type - empty or null string, or one of ANDROID_DIRECTORY_... constants.
+	 * For type == null, the path typically looks like: "/storage/emulated/0/Android/data/package.name/files".
      */
 	const QString & ExternalFilesDirectory(const QString & type = QString::null);
 
