@@ -174,9 +174,12 @@ abstract class OffscreenView
                 throw new IllegalStateException("OffscreenView layout should have 1 child!");
             }
             View child = getChildAt(0);
+            // This absolutely must be done, because this is what updates layout of overlays
+            // on some Android versions.
+            child.layout(view_left_, view_top_, view_left_+view_width_, view_top_+view_height_);
             if (getApiLevel() >= 11)
             {
-                // To child view does not overlap the keyboard
+                // Child view should not overlap with the keyboard
                 child.setLeft(0);
                 child.setTop(0);
                 child.setRight(view_width_);
@@ -184,10 +187,6 @@ abstract class OffscreenView
                 // Translate to real position
                 child.setX(view_left_);
                 child.setY(view_top_);
-            }
-            else
-            {
-                child.layout(view_left_, view_top_, view_left_+view_width_, view_top_+view_height_);
             }
 
         }
