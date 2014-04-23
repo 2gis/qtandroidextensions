@@ -212,43 +212,48 @@ class OffscreenEditText extends OffscreenView
             int w = right - left;
             if (changed && w != text_layout_width_)
             {
-                if (!single_line_)
-                {
-                    need_to_reflow_text_ = true;
-                }
-                need_to_reflow_hint_ = true;
                 text_layout_width_ = w;
+                reflowWorkaround();
+            }
+        }
 
-                // Can't reflow text or hint right now because it causes text selection
-                // markers to become "invincible" if they are visible. So let's post
-                // it for later.
-                (new Handler()).post(new Runnable(){
-                    @Override
-                    public void run(){
-                        // No need to reflow hint if it's not shown
-                        if (getText().length() > 0)
+        protected void reflowWorkaround()
+        {
+            if (!single_line_)
+            {
+                need_to_reflow_text_ = true;
+            }
+            need_to_reflow_hint_ = true;
+
+            // Can't reflow text or hint right now because it causes text selection
+            // markers to become "invincible" if they are visible. So let's post
+            // it for later.
+            (new Handler()).post(new Runnable(){
+                @Override
+                public void run(){
+                    // No need to reflow hint if it's not shown
+                    if (getText().length() > 0)
+                    {
+                        need_to_reflow_hint_ = false;
+                    }
+                    if (need_to_reflow_text_ || need_to_reflow_hint_)
+                    {
+                        // Text selection markers may obtain invicibility if we call setText()
+                        // or setHint(), so let's hide keyboard to be sure they are not there.
+                        uiHideKeyboardFromView();
+                        if (need_to_reflow_text_)
                         {
+                            setText(getText());
+                            need_to_reflow_text_ = false;
+                        }
+                        if (need_to_reflow_hint_)
+                        {
+                            setHint(getHint());
                             need_to_reflow_hint_ = false;
                         }
-                        if (need_to_reflow_text_ || need_to_reflow_hint_)
-                        {
-                            // Text selection markers may obtain invicibility if we call setText()
-                            // or setHint(), so let's hide keyboard to be sure they are not there.
-                            uiHideKeyboardFromView();
-                            if (need_to_reflow_text_)
-                            {
-                                setText(getText());
-                                need_to_reflow_text_ = false;
-                            }
-                            if (need_to_reflow_hint_)
-                            {
-                                setHint(getHint());
-                                need_to_reflow_hint_ = false;
-                            }
-                        }
                     }
-                });
-            }
+                }
+            });
         }
 
         @Override
@@ -550,6 +555,7 @@ class OffscreenEditText extends OffscreenView
             public void run(){
                 single_line_ = singleLine;
                 ((MyEditText)getView()).setSingleLine(singleLine);
+                ((MyEditText)getView()).reflowWorkaround();
             }
         });
     }
@@ -620,7 +626,9 @@ class OffscreenEditText extends OffscreenView
             @Override
             public void run(){
                 ((MyEditText)getView()).setHint(hint);
-                need_to_reflow_hint_ = false;
+                // This should not be done here:
+                //     need_to_reflow_hint_ = false;
+                // (Occasionally causes hint to be unreflown during startup.)
             }
         });
     }
