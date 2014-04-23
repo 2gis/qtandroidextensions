@@ -66,7 +66,6 @@ public slots:
 	void requestVisibleRect();
 
 signals:
-	void textureUpdated();
 	void backgroundColorChanged(QColor color);
 	void visibleRectReceived(int width, int height);
 	void globalLayoutChanged();
@@ -95,19 +94,4 @@ private:
 	bool mouse_tracking_;
 };
 
-/*!
- * Base class for renderer of any Android offscreen view.
- */
-class QAndroidOffscreenViewRenderer : public QObject, public QQuickFramebufferObject::Renderer
-{
-	Q_OBJECT
-public:
-	QAndroidOffscreenViewRenderer(QSharedPointer<QAndroidOffscreenView> aview);
-	void render();
-	QOpenGLFramebufferObject * createFramebufferObject(const QSize & size);
-protected slots:
-	void onTextureUpdated();
-protected:
-	QSharedPointer<QAndroidOffscreenView> aview_;
-};
 

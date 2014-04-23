@@ -38,6 +38,50 @@
 #include <QtQuick/QQuickWindow>
 #include "QQuickAndroidOffscreenView.h"
 
+namespace {
+
+class QAndroidOffscreenViewRenderer : public QQuickFramebufferObject::Renderer
+{
+public:
+	QAndroidOffscreenViewRenderer(QSharedPointer<QAndroidOffscreenView> aview);
+protected:
+	virtual void render();
+	virtual QOpenGLFramebufferObject * createFramebufferObject(const QSize & size);
+protected:
+	QSharedPointer<QAndroidOffscreenView> aview_;
+};
+
+QAndroidOffscreenViewRenderer::QAndroidOffscreenViewRenderer(QSharedPointer<QAndroidOffscreenView> aview)
+	: aview_(aview)
+{
+}
+
+void QAndroidOffscreenViewRenderer::render()
+{
+	qDebug()<<"SGEXP"<<__PRETTY_FUNCTION__;
+	// We can't use the texture in aview_ directly because it uses GL shader extension
+	// and custom transformation matrix, but we can draw the texture on the FBO texture.
+	// Fortunately, this is an extremely small operation comparing to the everything else
+	// we have to do.
+	aview_->paintGL(0, 0, aview_->size().width(), aview_->size().height(), true);
+}
+
+QOpenGLFramebufferObject * QAndroidOffscreenViewRenderer::createFramebufferObject(const QSize & size)
+{
+	qDebug()<<__FUNCTION__<<"Creating new surface, size ="<<size;
+	aview_->initializeGL();
+	aview_->resize(size);
+	QOpenGLFramebufferObjectFormat format;
+	format.setSamples(4);
+	return new QOpenGLFramebufferObject(size, format);
+}
+
+} // anonymous namespace
+
+
+
+
+
 QQuickAndroidOffscreenView::QQuickAndroidOffscreenView(QAndroidOffscreenView * aview)
 	: aview_(aview)
 	, is_interactive_(true) // TODO
@@ -57,7 +101,6 @@ QQuickAndroidOffscreenView::QQuickAndroidOffscreenView(QAndroidOffscreenView * a
 QQuickFramebufferObject::Renderer * QQuickAndroidOffscreenView::createRenderer() const
 {
 	QAndroidOffscreenViewRenderer * renderer = new QAndroidOffscreenViewRenderer(aview_);
-	connect(this, SIGNAL(textureUpdated()), renderer, SLOT(onTextureUpdated()));
 	// The View is hidden by default. It's a good time to update its visibility status.
 	const_cast<QQuickAndroidOffscreenView*>(this)->updateAndroidViewVisibility();
 	return renderer;
@@ -74,7 +117,12 @@ void QQuickAndroidOffscreenView::setBackgroundColor(QColor color)
 
 void QQuickAndroidOffscreenView::onTextureUpdated()
 {
-	emit textureUpdated();
+	qDebug()<<"SGEXP"<<__PRETTY_FUNCTION__;
+	update();
+	if (QQuickWindow * w = window())
+	{
+		w->update();
+	}
 }
 
 void QQuickAndroidOffscreenView::onVisibleRectReceived(int width, int height)
@@ -179,37 +227,4 @@ void QQuickAndroidOffscreenView::updateAndroidEnabled()
 {
 	qDebug()<<__PRETTY_FUNCTION__<<isEnabled();
 	aview_->setEnabled(isEnabled());
-}
-
-
-
-QAndroidOffscreenViewRenderer::QAndroidOffscreenViewRenderer(QSharedPointer<QAndroidOffscreenView> aview)
-	: aview_(aview)
-{
-}
-
-void QAndroidOffscreenViewRenderer::render()
-{
-	// We can't use the texture in aview_ directly because it uses GL shader extension
-	// and custom transformation matrix, but we can draw the texture on the FBO texture.
-	// Fortunately, this is an extremely small operation comparing to the everything else
-	// we have to do.
-	aview_->paintGL(0, 0, aview_->size().width(), aview_->size().height(), true);
-	update();
-}
-
-QOpenGLFramebufferObject * QAndroidOffscreenViewRenderer::createFramebufferObject(const QSize & size)
-{
-	qDebug()<<__FUNCTION__<<"Creating new surface, size ="<<size;
-	aview_->initializeGL();
-	aview_->resize(size);
-	QOpenGLFramebufferObjectFormat format;
-	format.setSamples(4);
-	return new QOpenGLFramebufferObject(size, format);
-}
-
-void QAndroidOffscreenViewRenderer::onTextureUpdated()
-{
-	// qDebug()<<__FUNCTION__<<"!!!!!!!!!!!!! ***** !!!!!!!!!!!!! ***** !!!!!!!!!!!!!! **** !!!!!!!!!!!!!!";
-	invalidateFramebufferObject();
 }
