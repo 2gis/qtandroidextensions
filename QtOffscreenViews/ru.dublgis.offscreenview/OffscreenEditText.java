@@ -301,6 +301,7 @@ class OffscreenEditText extends OffscreenView
         @Override
         public void onSelectionChanged(int selStart, int selEnd)
         {
+            super.onSelectionChanged(selStart, selEnd);
             synchronized(variables_mutex_)
             {
                 selection_start_ = selStart;
