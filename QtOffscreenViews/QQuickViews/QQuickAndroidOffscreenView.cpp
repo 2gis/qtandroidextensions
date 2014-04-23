@@ -58,7 +58,6 @@ QAndroidOffscreenViewRenderer::QAndroidOffscreenViewRenderer(QSharedPointer<QAnd
 
 void QAndroidOffscreenViewRenderer::render()
 {
-	qDebug()<<"SGEXP"<<__PRETTY_FUNCTION__;
 	// We can't use the texture in aview_ directly because it uses GL shader extension
 	// and custom transformation matrix, but we can draw the texture on the FBO texture.
 	// Fortunately, this is an extremely small operation comparing to the everything else
@@ -117,7 +116,6 @@ void QQuickAndroidOffscreenView::setBackgroundColor(QColor color)
 
 void QQuickAndroidOffscreenView::onTextureUpdated()
 {
-	qDebug()<<"SGEXP"<<__PRETTY_FUNCTION__;
 	update();
 	if (QQuickWindow * w = window())
 	{
