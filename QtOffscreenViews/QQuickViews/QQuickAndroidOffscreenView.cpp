@@ -116,11 +116,7 @@ void QQuickAndroidOffscreenView::setBackgroundColor(QColor color)
 
 void QQuickAndroidOffscreenView::onTextureUpdated()
 {
-	update();
-	if (QQuickWindow * w = window())
-	{
-		w->update();
-	}
+	QMetaObject::invokeMethod(this, "update", Qt::AutoConnection);
 }
 
 void QQuickAndroidOffscreenView::onVisibleRectReceived(int width, int height)
