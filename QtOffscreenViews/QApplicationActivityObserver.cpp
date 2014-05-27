@@ -52,16 +52,20 @@ QApplicationActivityObserver * QApplicationActivityObserver::instance()
 	}
 
 	// Installing event filter
-	static QCoreApplication * installed_for_app = 0;
-	QCoreApplication * app = QCoreApplication::instance();
-	if (app && installed_for_app != app)
+	static bool installed_filter = false;
+	if (!installed_filter)
 	{
-		app->installEventFilter(instance.data());
-		installed_for_app = app;
-	}
-	else
-	{
-		qWarning()<<__FUNCTION__<<"failed because QApplication instance doesn't exist.";
+		QCoreApplication * app = QCoreApplication::instance();
+		if (app)
+		{
+			app->installEventFilter(instance.data());
+			installed_filter = true;
+			qDebug()<<__FUNCTION__<<"Successfully installed event filter.";
+		}
+		else
+		{
+			qWarning()<<__FUNCTION__<<"installing event filter failed because QCoreApplication instance doesn't exist, will try later.";
+		}
 	}
 
 	return instance.data();
