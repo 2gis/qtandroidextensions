@@ -713,6 +713,14 @@ void QAndroidOffscreenView::hideKeyboard()
 	}
 }
 
+void QAndroidOffscreenView::showKeyboard()
+{
+	if (offscreen_view_)
+	{
+		offscreen_view_->callVoid("showKeyboard");
+	}
+}
+
 void QAndroidOffscreenView::setHideKeyboardOnFocusLoss(bool hide)
 {
 	if (offscreen_view_)
@@ -721,6 +729,13 @@ void QAndroidOffscreenView::setHideKeyboardOnFocusLoss(bool hide)
 	}
 }
 
+void QAndroidOffscreenView::setShowKeyboardOnFocusIn(bool show)
+{
+	if (offscreen_view_)
+	{
+		offscreen_view_->callVoid("setShowKeyboardOnFocusIn", jboolean(show));
+	}
+}
 void QAndroidOffscreenView::javaUpdate()
 {
 	// qDebug()<<__PRETTY_FUNCTION__<<view_object_name_;

@@ -215,6 +215,9 @@ public:
 	//! Make sure software keyboard is hidden for this control.
 	void hideKeyboard();
 
+	//! Make sure software keyboard is showed for this control.
+	void showKeyboard();
+
 	/*!
 	 * Set/cleaer the flag to hide software keyboard when focus is lost.
 	 * By default, the mode is enabled and keyboard slides away when focus goes from the View.
@@ -226,6 +229,12 @@ public:
 	 * goes to something which doesn't need it.
 	 */
 	void setHideKeyboardOnFocusLoss(bool hide);
+
+	/*!
+	 * Set/cleaer the flag to show software keyboard on focused.
+	 * By default, the mode is disabled.
+	 */
+	void setShowKeyboardOnFocusIn(bool show);
 
 	//
 	// Handling of user input events

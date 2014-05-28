@@ -130,6 +130,7 @@ abstract class OffscreenView
     private boolean is_attached_ = false;
     private boolean attaching_mode_ = true;
     private boolean hide_keyboard_on_focus_loss_ = true;
+    private boolean show_keyboard_on_focus_in_ = false;
     private int scroll_x_ = 0;
     private int scroll_y_ = 0;
 
@@ -949,6 +950,10 @@ abstract class OffscreenView
                         v.setFocusable(true);
                         v.setFocusableInTouchMode(true);
                         v.requestFocus();
+                        if (show_keyboard_on_focus_in_)
+                        {
+                            uiShowKeyboard();
+                        }
                     }
                     else
                     {
@@ -1014,10 +1019,52 @@ abstract class OffscreenView
         });
     }
 
+    protected void uiShowKeyboard()
+    {
+        try
+        {
+            final View v = getView();
+            if (v == null)
+            {
+                Log.e(TAG, " uiShowKeyboard: View is null");
+                return;
+            }
+            InputMethodManager imm = (InputMethodManager)v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm == null)
+            {
+                Log.w(TAG, " uiShowKeyboard: InputMethodManager is null");
+                return;
+            }
+            imm.showSoftInput(v, InputMethodManager.SHOW_IMPLICIT);
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG, " uiShowKeyboard: exception:", e);
+        }
+    }
+
+    // Called from C++ to show keyboard
+    public void showKeyboard()
+    {
+        runOnUiThread(new Runnable(){
+            @Override
+            public void run()
+            {
+                uiShowKeyboard();
+            }
+        });
+    }
+
     // Called from C++ to set hide_keyboard_on_focus_loss_ flag
     public void setHideKeyboardOnFocusLoss(boolean hide)
     {
         hide_keyboard_on_focus_loss_ = hide;
+    }
+
+    // Called from C++ to set hide_keyboard_on_focus_loss_ flag
+    public void setShowKeyboardOnFocusIn(boolean show)
+    {
+        show_keyboard_on_focus_in_ = show;
     }
 
     //! Called from C++ to change size of the view.
