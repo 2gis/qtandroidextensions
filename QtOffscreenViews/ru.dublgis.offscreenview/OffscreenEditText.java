@@ -93,6 +93,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.graphics.Canvas;
+import android.text.TextUtils;
 
 class OffscreenEditText extends OffscreenView
 {
@@ -757,6 +758,18 @@ class OffscreenEditText extends OffscreenView
             @Override
             public void run(){
                 ((MyEditText)getView()).setTransformationMethod(PasswordTransformationMethod.getInstance());
+            }
+        });
+    }
+
+    void setEllipsize(final int ellipsis)
+    {
+        final TextUtils.TruncateAt where = TextUtils.TruncateAt.values()[ellipsis];
+
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setEllipsize(where);
             }
         });
     }

@@ -443,6 +443,14 @@ void QAndroidOffscreenEditText::setPasswordMode()
 	}
 }
 
+void QAndroidOffscreenEditText::setEllipsize(TruncateAt ellipsis)
+{
+	if (QJniObject * view = offscreenView())
+	{
+		view->callVoid("setEllipsize", jint(ellipsis));
+	}
+}
+
 void QAndroidOffscreenEditText::selectAll()
 {
 	if (QJniObject * view = offscreenView())

@@ -257,6 +257,18 @@ public:
 	//! Set password mode.
 	void setPasswordMode();
 
+	// http://developer.android.com/reference/android/text/TextUtils.TruncateAt.html
+	enum TruncateAt
+	{
+		ANDROID_TRUNCATE_AT_START = 0,
+		ANDROID_TRUNCATE_AT_MIDDLE,
+		ANDROID_TRUNCATE_AT_END,
+		ANDROID_TRUNCATE_AT_MARQUEE
+	};
+
+	// Causes words in the text that are longer than the view is wide to be ellipsized instead of broken in the middle.
+	void setEllipsize(TruncateAt ellipsis);
+
 	//
 	// EditText methods
 	//
@@ -451,7 +463,6 @@ signals:
 	//	final void 	setAutoLinkMask(int mask)	//	Sets the autolink mask of the text.
 	//	void 	setCustomSelectionActionModeCallback(ActionMode.Callback actionModeCallback)	//	If provided, this ActionMode.Callback will be used to create the ActionMode when text selection is initiated in this View.
 	//	final void 	setEditableFactory(Editable.Factory factory)	//	Sets the Factory used to create new Editables.
-	//	void 	setEllipsize(TextUtils.TruncateAt where)	//	Causes words in the text that are longer than the view is wide to be ellipsized instead of broken in the middle.
 	//	void 	setEms(int ems)	//	Makes the TextView exactly this many ems wide
 	//	void 	setEnabled(boolean enabled)	//	Set the enabled state of this view.
 	//	void 	setError(CharSequence error)	//	Sets the right-hand compound drawable of the TextView to the "error" icon and sets an error message that will be displayed in a popup when the TextView has focus.
