@@ -239,8 +239,11 @@ class OffscreenEditText extends OffscreenView
                     if (need_to_reflow_text_ || need_to_reflow_hint_)
                     {
                         // Text selection markers may obtain invicibility if we call setText()
-                        // or setHint(), so let's hide keyboard to be sure they are not there.
-                        uiHideKeyboardFromView();
+                        // or setHint(), so let's hide selection markers to be sure they are not there.
+                        boolean focused = isFocused();
+                        setFocused(false);
+                        setFocused(focused);
+
                         if (need_to_reflow_text_)
                         {
                             setText(getText());
