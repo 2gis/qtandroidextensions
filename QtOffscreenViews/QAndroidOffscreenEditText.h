@@ -164,8 +164,24 @@ public:
 	//! Sets the padding.
 	void setPadding(int left, int top, int right, int bottom);
 
+	// http://developer.android.com/reference/android/graphics/Paint.html
+	static const int
+		ANDROID_PAINT_ANTI_ALIAS_FLAG			= 0x00000001,
+		ANDROID_PAINT_DEV_KERN_TEXT_FLAG		= 0x00000100,
+		ANDROID_PAINT_DITHER_FLAG			= 0x00000004,
+		ANDROID_PAINT_EMBEDDED_BITMAP_TEXT_FLAG	= 0x00000400,
+		ANDROID_PAINT_FAKE_BOLD_TEXT_FLAG		= 0x00000020,
+		ANDROID_PAINT_FILTER_BITMAP_FLAG		= 0x00000002,
+		ANDROID_PAINT_LINEAR_TEXT_FLAG		= 0x00000040,
+		ANDROID_PAINT_STRIKE_THRU_TEXT_FLAG		= 0x00000010,
+		ANDROID_PAINT_SUBPIXEL_TEXT_FLAG		= 0x00000080,
+		ANDROID_PAINT_UNDERLINE_TEXT_FLAG		= 0x00000008;
+
 	//! Sets flags on the Paint being used to display the text and reflows the text if they are different from the old flags.
 	void setPaintFlags(int flags);
+
+	//! Return the flags on the Paint being used to display the text.
+	int getPaintFlags();
 
 	//! Set the TextView so that when it takes focus, all the text is selected.
 	void setSelectAllOnFocus(bool selectAllOnFocus);
@@ -374,7 +390,6 @@ signals:
 	//	final MovementMethod 	getMovementMethod()
 	//	int 	getOffsetForPosition(float x, float y)	//	Get the character offset closest to the specified absolute position.
 	//	TextPaint 	getPaint()
-	//	int 	getPaintFlags()
 	//	String 	getPrivateImeOptions()	//	Get the private type of the content.
 	//	int 	getShadowColor()
 	//	float 	getShadowDx()
@@ -476,5 +491,8 @@ private:
 	friend void JNICALL Java_AndroidOffscreenEditText_nativeOnTextChanged(JNIEnv * env, jobject jo, jlong param, jstring str, jint start, jint before, jint count);
 	friend jboolean JNICALL Java_AndroidOffscreenEditText_nativeOnKey(JNIEnv * env, jobject jo, jlong param, jboolean down, jint keycode);
 	friend void JNICALL Java_AndroidOffscreenEditText_nativeOnEditorAction(JNIEnv *, jobject, jlong param, jint action);
+
+private:
+	int paint_flags_;
 };
 

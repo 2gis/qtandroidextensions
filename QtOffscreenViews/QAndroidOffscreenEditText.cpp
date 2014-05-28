@@ -88,6 +88,7 @@ Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnEditorAction(JN
 
 QAndroidOffscreenEditText::QAndroidOffscreenEditText(const QString & object_name, const QSize & def_size, QObject * parent)
 	: QAndroidOffscreenView(QLatin1String("OffscreenEditText"), object_name, def_size, parent)
+	, paint_flags_(ANDROID_PAINT_DEV_KERN_TEXT_FLAG | ANDROID_PAINT_ANTI_ALIAS_FLAG)
 {
 	setAttachingMode(true);
 	if (QJniObject * view = offscreenView())
@@ -304,8 +305,14 @@ void QAndroidOffscreenEditText::setPaintFlags(int flags)
 {
 	if (QJniObject * view = offscreenView())
 	{
+		paint_flags_ = flags;
 		view->callVoid("setPaintFlags", jint(flags));
 	}
+}
+
+int QAndroidOffscreenEditText::getPaintFlags()
+{
+	return paint_flags_;
 }
 
 void QAndroidOffscreenEditText::setSelectAllOnFocus(bool selectAllOnFocus)
