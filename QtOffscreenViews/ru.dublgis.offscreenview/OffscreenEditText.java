@@ -241,10 +241,11 @@ class OffscreenEditText extends OffscreenView
                     {
                         // Text selection markers may obtain invicibility if we call setText()
                         // or setHint(), so let's hide selection markers to be sure they are not there.
-                        boolean focused = isFocused();
-                        setFocused(false);
-                        setFocused(focused);
-
+                        if (isFocused())
+                        {
+                            setFocused(false);
+                            setFocused(true);
+                        }
                         if (need_to_reflow_text_)
                         {
                             setText(getText());
