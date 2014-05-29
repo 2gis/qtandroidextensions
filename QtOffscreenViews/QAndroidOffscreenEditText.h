@@ -258,16 +258,16 @@ public:
 	void setPasswordMode();
 
 	// http://developer.android.com/reference/android/text/TextUtils.TruncateAt.html
-	enum TruncateAt
+	enum AndroidTruncateAt
 	{
-		ANDROID_TRUNCATE_AT_START = 0,
-		ANDROID_TRUNCATE_AT_MIDDLE,
-		ANDROID_TRUNCATE_AT_END,
-		ANDROID_TRUNCATE_AT_MARQUEE
+		ANDROID_TRUNCATE_AT_START	= 0,
+		ANDROID_TRUNCATE_AT_MIDDLE	= 1,
+		ANDROID_TRUNCATE_AT_END		= 2,
+		ANDROID_TRUNCATE_AT_MARQUEE	= 3
 	};
 
 	// Causes words in the text that are longer than the view is wide to be ellipsized instead of broken in the middle.
-	void setEllipsize(TruncateAt ellipsis);
+	void setEllipsize(AndroidTruncateAt ellipsis);
 
 	//
 	// EditText methods
