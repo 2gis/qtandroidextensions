@@ -181,15 +181,11 @@ abstract class OffscreenView
             if (getApiLevel() >= 11)
             {
                 // Child view should not overlap with the keyboard
-                child.setLeft(0);
-                child.setTop(0);
-                child.setRight(view_width_);
-                child.setBottom(view_height_);
+                child.layout(0, 0, view_width_, view_height_);
                 // Translate to real position
                 child.setX(view_left_);
                 child.setY(view_top_);
             }
-
         }
     }
 
