@@ -258,6 +258,11 @@ public:
 	void callStaticParamVoid(const char * method_name, const char * param_signature, ...);
 	void callStaticVoid(const char * method_name, const QString & string);
 
+	jint callParamInt(const char* method_name, const char* param_signature, ...);
+	jlong callParamLong(const char* method_name, const char* param_signature, ...);
+	jfloat callParamFloat(const char* method_name, const char* param_signature, ...);
+	jdouble callParamDouble(const char* method_name, const char* param_signature, ...);
+
 	/*!
 	 * Call object static method of the wrapped Java class.
 	 * \param method_name - name of a static method which returns Java object.
@@ -273,6 +278,9 @@ public:
 
 	//! Get value of float field of the wrapped Java object
 	float getFloatField(const char * field_name);
+
+	void setIntField(const char * field_name, jint value);
+	void setBooleanField(const char * field_name, jboolean value);
 
 	//! Get value of float field of the wrapped Java object
 	QJniObject * getObjectField(const char * field_name, const char * objname);

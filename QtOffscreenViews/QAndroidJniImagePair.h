@@ -123,6 +123,16 @@ public:
 	 * will give QSize(1, 1).
 	 */
 	QSize size() const;
+
+	/*!
+	 * Load Android resource identified by integer id.
+	 */
+	bool loadResource(jint res_id);
+
+	/*!
+	 * Load Android resource identified by resource name.
+	 */
+	bool loadResource(const QString & res_name, const QString & category = QLatin1String("drawable"));
 protected:
 	//! Create Java-side bitmap of the given size for current bitness_.
 	QJniObject * createBitmap(const QSize & size);

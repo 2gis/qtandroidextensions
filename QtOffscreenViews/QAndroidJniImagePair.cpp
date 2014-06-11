@@ -334,5 +334,90 @@ QSize QAndroidJniImagePair::size() const
 	return mImageOnBitmap.size();
 }
 
+bool QAndroidJniImagePair::loadResource(jint res_id)
+{
+	try
+	{
+		QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+		QScopedPointer<QJniObject> resources(activity.callObject("getResources", "android/content/res/Resources"));
+		if (!resources)
+		{
+			qWarning()<<__FUNCTION__<<"Failed to find resources.";
+			return false;
+		}
 
+		// Decode Bitmap from resources
+		QJniObject ops("android/graphics/BitmapFactory$Options", true);
+		ops.setBooleanField("inScaled", 0);
+		ops.setIntField("inDensity", 0);
+		ops.setIntField("inTargetDensity", 0);
+		ops.setIntField("inScreenDensity", 0);
+		QJniObject bitmapfactory("android/graphics/BitmapFactory", false);
+		QScopedPointer<QJniObject> loadedbitmap(bitmapfactory.callStaticParamObject(
+			"decodeResource",
+			"android/graphics/Bitmap",
+			"Landroid/content/res/Resources;ILandroid/graphics/BitmapFactory$Options;",
+			resources->jObject(),
+			jint(res_id),
+			ops.jObject()));
+
+		// Get size of the decoded Bitmap
+		int w = loadedbitmap->callInt("getWidth"), h = loadedbitmap->callInt("getHeight");
+		qDebug()<<__FUNCTION__<<"Bitmap size is:"<<w<<"x"<<h;
+
+		// Resize our image pair
+		resize(w, h);
+
+		if (!mBitmap)
+		{
+			qWarning()<<__FUNCTION__<<"Failed to resize bitmap to"<<w<<"x"<<h;
+			return false;
+		}
+
+		// Draw the loaded Bitmap over our Bitmap
+		QJniObject canvas("android/graphics/Canvas", true);
+		canvas.callParamVoid("setBitmap", "Landroid/graphics/Bitmap;", mBitmap->jObject());
+		canvas.callParamVoid("drawBitmap", "Landroid/graphics/Bitmap;FFLandroid/graphics/Paint;",
+			loadedbitmap->jObject(), jfloat(0), jfloat(0), jobject(0));
+
+		return true;
+	}
+	catch(std::exception e)
+	{
+		qWarning()<<__FUNCTION__<<"Exception:"<<e.what();
+	}
+	return false;
+}
+
+bool QAndroidJniImagePair::loadResource(const QString & res_name, const QString & category)
+{
+	try
+	{
+		QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+		QScopedPointer<QJniObject> resources(activity.callObject("getResources", "android/content/res/Resources"));
+		if (!resources)
+		{
+			qWarning()<<__FUNCTION__<<"Failed to find resources.";
+			return false;
+		}
+		QString packagename = activity.callString("getPackageName");
+		jint res_id = resources->callParamInt(
+			"getIdentifier",
+			"Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;",
+			QJniLocalRef(res_name).jObject(),
+			QJniLocalRef(category).jObject(),
+			QJniLocalRef(packagename).jObject());
+		qDebug()<<"Resource id for"<<res_name<<"is"<<res_id;
+		if (res_id)
+		{
+			return loadResource(res_id);
+		}
+		qWarning()<<"Resource id for"<<res_name<<"was not found!";
+	}
+	catch(std::exception e)
+	{
+		qWarning()<<__FUNCTION__<<"Exception:"<<e.what();
+	}
+	return false;
+}
 
