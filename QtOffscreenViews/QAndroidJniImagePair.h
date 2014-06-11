@@ -126,11 +126,14 @@ public:
 
 	/*!
 	 * Load Android resource identified by integer id.
+	 * Note that the image will be in Android color order after loading; call
+	 * to convert32BitImageFromAndroidToQt() to fix that.
 	 */
 	bool loadResource(jint res_id);
 
 	/*!
 	 * Load Android resource identified by resource name.
+	 * See comments for loadResource(jint)!
 	 */
 	bool loadResource(const QString & res_name, const QString & category = QLatin1String("drawable"));
 protected:
