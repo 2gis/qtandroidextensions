@@ -35,6 +35,7 @@
 */
 
 #pragma once
+#include <QtCore/QObject>
 #include <QAndroidQPAPluginGap.h>
 
 namespace QAndroidScreenOrientation
@@ -61,18 +62,47 @@ namespace QAndroidScreenOrientation
 		ANDROID_SURFACE_ROTATION_180	= 2,
 		ANDROID_SURFACE_ROTATION_270	= 3;
 
-	int getRequestedOrientation(jobject activity = 0);
-	int getCurrentRotation(jobject activity = 0);
-	void setRequestedOrientation(jobject activity = 0);
+	//! Get currently requested screen orientation.
+	int getRequestedOrientation();
 
-	class OrientationLock
+	//! Request certain screen orientation.
+	void setRequestedOrientation(int orientation);
+
+	/*!
+	 * Get a fixed (not affected by sensor) screen orientation constant which
+	 * matches current actual screen orientation.
+	 * This is useful for locking screen in the current orientation for some time,
+	 * for example, during some application phases when screen rotation is not desirable.
+	 * Upon error, returns ANDROID_ACTIVITYINFO_SCREEN_ORIENTATION_UNSPECIFIED.
+	 */
+	int getCurrentFixedOrientation();
+
+
+	/*!
+	 * This is a helper class to lock screen in a certain orientation.
+	 */
+	class OrientationLock: public QObject
 	{
+		Q_OBJECT
 	public:
+		/*!
+		 * Creates a lock which keeps the screen in its orientaion of the moment of the locking.
+		 */
 		OrientationLock();
+
+		/*!
+		 * Creates a lock which locks the screen in a specified orientation.
+		 */
 		OrientationLock(int desired_orientation);
+
+		/*!
+		 * Restores requested orientation to the one prior to creating the lock.
+		 */
 		~OrientationLock();
 	protected:
 		int saved_orientation_;
+		bool locked_;
 	};
-}
+
+} // namespace QAndroidScreenOrientation
 

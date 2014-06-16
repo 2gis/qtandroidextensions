@@ -34,107 +34,160 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <QJniHelpers.h>
+#include "QAndroidDisplayMetrics.h"
 #include "QAndroidScreenOrientation.h"
 
+namespace QAndroidScreenOrientation {
 
-/*
+int getRequestedOrientation()
+{
+	QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+	jint result = activity.callInt("getRequestedOrientation");
+	// qDebug()<<"QAndroidScreenOrientation::getRequestedOrientation"<<result;
+	return int(result);
+}
 
-private static int mRestoreScreenOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+void setRequestedOrientation(int orientation)
+{
+	// qDebug()<<"QAndroidScreenOrientation::setRequestedOrientation"<<orientation;
+	QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+	activity.callVoid("setRequestedOrientation", jint(orientation));
+}
+
+int getCurrentFixedOrientation()
+{
+	try
+	{
+		QAndroidDisplayMetrics dm;
+		try
+		{
+			QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+			QScopedPointer<QJniObject> wm(activity.callObject("getWindowManager",  "android/view/WindowManager"));
+			if (!wm)
+			{
+				qWarning()<<"QAndroidScreenOrientation: could not get window manager";
+				throw std::exception();
+			}
+			QScopedPointer<QJniObject> display(wm->callObject("getDefaultDisplay", "android/view/Display"));
+			if (!display)
+			{
+				qWarning()<<"QAndroidScreenOrientation: could not get display";
+				throw std::exception();
+			}
+			int rotation = display->callInt("getRotation");
+			int orientation = ANDROID_ACTIVITYINFO_SCREEN_ORIENTATION_UNSPECIFIED;
+			if (((rotation == ANDROID_SURFACE_ROTATION_0 || rotation == ANDROID_SURFACE_ROTATION_180)
+					&& dm.heightPixels() > dm.widthPixels()) || // Not rotated or turned over & portrait
+				((rotation == ANDROID_SURFACE_ROTATION_90 || rotation == ANDROID_SURFACE_ROTATION_270)
+					&& dm.widthPixels() > dm.heightPixels())) // Rotated 90x & landscape
+			{
+				// Device's natural orientation is portrait:
+				switch (rotation)
+				{
+				case ANDROID_SURFACE_ROTATION_0:
+					qDebug()<<"QAndroidScreenOrientation: default=portrait, rotation=0 => portrait";
+					orientation = ANDROID_ACTIVITYINFO_SCREEN_ORIENTATION_PORTRAIT;
+					break;
+				case ANDROID_SURFACE_ROTATION_90:
+					qDebug()<<"QAndroidScreenOrientation: default=portrait, rotation=90 => landscape";
+					orientation = ANDROID_ACTIVITYINFO_SCREEN_ORIENTATION_LANDSCAPE;
+					break;
+				case ANDROID_SURFACE_ROTATION_180:
+					qDebug()<<"QAndroidScreenOrientation: default=portrait, rotation=180 => reverse portrait";
+					orientation = ANDROID_ACTIVITYINFO_SCREEN_ORIENTATION_REVERSE_PORTRAIT;
+					break;
+				case ANDROID_SURFACE_ROTATION_270:
+					qDebug()<<"QAndroidScreenOrientation: default=portrait, rotation=270 => reverse landscape";
+					orientation = ANDROID_ACTIVITYINFO_SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
+					break;
+				default:
+					qDebug()<<"QAndroidScreenOrientation: Unknown screen orientation (1):"<<rotation;
+					break;
+				}
+			}
+			else
+			{
+				// Device's natural orientation is landscape (or if the device is square):
+				switch (rotation)
+				{
+				case ANDROID_SURFACE_ROTATION_0:
+					qDebug()<<"QAndroidScreenOrientation default=landscape, rotation=0 => landscape";
+					orientation = ANDROID_ACTIVITYINFO_SCREEN_ORIENTATION_LANDSCAPE;
+					break;
+				case ANDROID_SURFACE_ROTATION_90:
+					qDebug()<<"QAndroidScreenOrientation default=landscape, rotation=90 => reverse portrait";
+					orientation = ANDROID_ACTIVITYINFO_SCREEN_ORIENTATION_REVERSE_PORTRAIT;
+					break;
+				case ANDROID_SURFACE_ROTATION_180:
+					qDebug()<<"QAndroidScreenOrientation default=landscape, rotation=180 => reverse landscape";
+					orientation = ANDROID_ACTIVITYINFO_SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
+					break;
+				case ANDROID_SURFACE_ROTATION_270:
+					qDebug()<<"QAndroidScreenOrientation default=landscape, rotation=270 => portrait";
+					orientation = ANDROID_ACTIVITYINFO_SCREEN_ORIENTATION_PORTRAIT;
+					break;
+				default:
+					qDebug()<<"QAndroidScreenOrientation Unknown screen orientation (2):"<<rotation;
+					break;
+				}
+			}
+			return orientation;
+		}
+		catch (const std::exception & e)
+		{
+			qWarning()<<"QAndroidScreenOrientation exception (2):"<<e.what();
+		}
+		// Totally fallback.
+		if (dm.heightPixels() <= dm.widthPixels())
+		{
+			return ANDROID_ACTIVITYINFO_SCREEN_ORIENTATION_PORTRAIT;
+		}
+		else
+		{
+			return ANDROID_ACTIVITYINFO_SCREEN_ORIENTATION_LANDSCAPE;
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qWarning()<<"QAndroidScreenOrientation exception (1):"<<e.what();
+	}
+	return ANDROID_ACTIVITYINFO_SCREEN_ORIENTATION_UNSPECIFIED;
+}
 
 
-        if (QtActivity.openGlMode() && !mShouldRestoreScreenOrientation) {
-            int ro = mActivity.getRequestedOrientation();
-            if (ro != ActivityInfo.SCREEN_ORIENTATION_NOSENSOR) {
-                mRestoreScreenOrientation = ro;
-                mShouldRestoreScreenOrientation = true;
-                Log.d(QtActivity.mTag, "Disabling screen rotation. Previous value: "+mRestoreScreenOrientation);
-                mActivity.setRequestedOrientation(getCurrentScreenOrientation(mActivity));
-            }
-        }
 
 
-            activity.setRequestedOrientation(mRestoreScreenOrientation);
+OrientationLock::OrientationLock():
+	saved_orientation_(getRequestedOrientation()),
+	locked_(false)
+{
+	if (saved_orientation_ != ANDROID_ACTIVITYINFO_SCREEN_ORIENTATION_NOSENSOR)
+	{
+		int o = getCurrentFixedOrientation();
+		if (o != ANDROID_ACTIVITYINFO_SCREEN_ORIENTATION_UNSPECIFIED)
+		{
+			setRequestedOrientation(o);
+			locked_ = true;
+			return;
+		}
+	}
+	qWarning()<<"QAndroidScreenOrientation::OrientationLock failed to lock current screen orientation.";
+}
 
+OrientationLock::OrientationLock(int desired_orientation):
+	saved_orientation_(getRequestedOrientation()),
+	locked_(true)
+{
+	setRequestedOrientation(desired_orientation);
+}
 
-    private int getCurrentScreenOrientation(Activity a)
-    {
-        // Thanks to StackOverflow for idea of this hack, somewhat bugfixed and refactored though.
-        try {
-            DisplayMetrics dm = null;
-            try {
-                dm = new DisplayMetrics();
-                a.getWindowManager().getDefaultDisplay().getMetrics(dm);
-                int rotation = a.getWindowManager().getDefaultDisplay().getRotation();
-                int orientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
-                if (((rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180)
-                        && dm.heightPixels > dm.widthPixels) || // Not rotated or turned over & portrait
-                    ((rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) 
-                        && dm.widthPixels > dm.heightPixels)) // Rotated 90x & landscape
-                {
-                    // Device's natural orientation is portrait:
-                    switch (rotation)
-                    {
-                        case Surface.ROTATION_0:
-                            Log.d(QtActivity.mTag, "RSZ getCurrentScreenOrientation default=portrait, rotation=0 => portrait");
-                            orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-                            break;
-                        case Surface.ROTATION_90:
-                            Log.d(QtActivity.mTag, "RSZ getCurrentScreenOrientation default=portrait, rotation=90 => landscape");
-                            orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-                            break;
-                        case Surface.ROTATION_180:
-                            Log.d(QtActivity.mTag, "RSZ getCurrentScreenOrientation default=portrait, rotation=180 => reverse portrait");
-                            orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
-                            break;
-                        case Surface.ROTATION_270:
-                            Log.d(QtActivity.mTag, "RSZ getCurrentScreenOrientation default=portrait, rotation=270 => reverse landscape");
-                            orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
-                            break;
-                        default:
-                            Log.w(QtActivity.mTag, "RSZ getCurrentScreenOrientation Unknown screen orientation (1): "+rotation);
-                            break;
-                    }
-                }
-                else
-                {
-                    // Device's natural orientation is landscape (or if the device is square):
-                    switch (rotation)
-                    {
-                        case Surface.ROTATION_0:
-                            Log.d(QtActivity.mTag, "RSZ getCurrentScreenOrientation default=landscape, rotation=0 => landscape");
-                            orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-                            break;
-                        case Surface.ROTATION_90:
-                            Log.d(QtActivity.mTag, "RSZ getCurrentScreenOrientation default=landscape, rotation=90 => reverse portrait");
-                            orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
-                            break;
-                        case Surface.ROTATION_180:
-                            Log.d(QtActivity.mTag, "RSZ getCurrentScreenOrientation default=landscape, rotation=180 => reverse landscape");
-                            orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
-                            break;
-                        case Surface.ROTATION_270:
-                            Log.d(QtActivity.mTag, "RSZ getCurrentScreenOrientation default=landscape, rotation=270 => portrait");
-                            orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-                            break;
-                        default:
-                            Log.w(QtActivity.mTag, "RSZ getCurrentScreenOrientation Unknown screen orientation (2): "+rotation);
-                            break;
-                    }
-                }
-                return orientation;
-            } catch (Exception e) {
-                Log.e(QtActivity.mTag, "RSZ getCurrentScreenOrientation exception (2): "+e);
-            }
-            if (dm == null)
-                return ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
-            if (dm.heightPixels <= dm.widthPixels)
-                return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-            else
-                return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-        } catch (Exception e) {
-            Log.e(QtActivity.mTag, "RSZ getCurrentScreenOrientation exception (1): "+e);
-        }
-        return ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
-    }
+OrientationLock::~OrientationLock()
+{
+	if (locked_)
+	{
+		setRequestedOrientation(saved_orientation_);
+	}
+}
 
-*/
+} // namespace QAndroidScreenOrientation
