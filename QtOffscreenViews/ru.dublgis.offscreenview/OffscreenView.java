@@ -83,7 +83,6 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-import android.view.ViewTreeObserver;
 import android.view.KeyEvent;
 import android.view.KeyCharacterMap;
 import android.view.Menu;
@@ -350,15 +349,6 @@ abstract class OffscreenView
                     }
                     layout_.addView(view);
                     uiAttachViewToQtScreen();
-
-                    // Add layout listener
-                    view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener(){
-                        @Override
-                        public void onGlobalLayout()
-                        {
-                            nativeGlobalLayoutChanged(getNativePtr());
-                        }
-                    });
 
                     // Process command queue
                     synchronized(view_existence_mutex_)
@@ -1482,5 +1472,4 @@ abstract class OffscreenView
     public native Activity getActivity();
     public native void nativeViewCreated(long nativeptr);
     public native void nativeOnVisibleRect(long nativeptr, int left, int top, int right, int bottom);
-    public native void nativeGlobalLayoutChanged(long nativeptr);
 }

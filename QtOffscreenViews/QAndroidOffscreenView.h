@@ -305,22 +305,10 @@ signals:
 	 */
 	void visibleRectReceived(int width, int height);
 
-	/*!
-	 * A notification on global relayout on Java side.
-	 * Basically it wraps ViewTreeObserver.OnGlobalLayoutListener::onGlobalLayout() signal.
-	 * It is emitted in many situations: when screen is rotated, when software keyboard
-	 * opens and closes, and also when layout of items inside of the View changes, for example,
-	 * for EditText it is emitted as user types text.
-	 * A common use case is to connect it to requestVisibleRect(), catch visibleRectReceived()
-	 * and scroll page to make sure current text editor is positioned correctly.
-	 */
-	void globalLayoutChanged();
-
 private slots:
 	void javaUpdate();
 	void javaViewCreated();
 	void javaVisibleRectReceived(int left, int top, int right, int bottom);
-	void javaGlobalLayoutChanged();
 
 private:
 	const QImage * getPreviousBitmapBuffer(bool convert_from_android_format);
@@ -368,7 +356,6 @@ private:
 	friend void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv * env, jobject jo, jlong param);
 	friend void JNICALL Java_OffscreenView_nativeViewCreated(JNIEnv *, jobject, jlong param);
 	friend void JNICALL Java_OffscreenView_onVisibleRect(JNIEnv *, jobject, jlong param, int left, int top, int right, int bottom);
-	friend void JNICALL Java_OffscreenView_globalLayoutChanged(JNIEnv *, jobject, jlong param);
 };
 
 int QColorToAndroidColor(const QColor & color);
