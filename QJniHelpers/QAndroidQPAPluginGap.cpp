@@ -93,8 +93,8 @@ JavaVM * detectJavaVM()
 
 jobject JNICALL getActivity(JNIEnv *, jobject)
 {
-	QJniObject theclass(c_activity_getter_class_name, false);
-	if (!theclass.jClass())
+	QJniClass theclass(c_activity_getter_class_name);
+	if (!theclass)
 	{
 		qCritical("QAndroid: Activity retriever class could not be accessed.");
 		return 0;
@@ -131,7 +131,7 @@ void preloadJavaClass(const char * class_name)
 	static const char * const c_class_name = "ru/dublgis/qjnihelpers/ClassLoader";
 	static const char * const c_method_name = "callJNIPreloadClass";
 	#if defined(QPA_QT4GRYM)
-		QJniObject(c_class_name, false).callStaticVoid(c_method_name, class_name);
+		QJniClass(c_class_name).callStaticVoid(c_method_name, class_name);
 	#elif defined(QPA_QT5)
 		QAndroidJniObject::callStaticMethod<void>(c_class_name, c_method_name, "(Ljava/lang/String;)V",
 			QJniLocalRef(jep, class_name).jObject());

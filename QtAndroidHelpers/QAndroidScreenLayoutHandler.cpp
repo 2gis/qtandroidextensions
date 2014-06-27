@@ -62,24 +62,8 @@ QAndroidScreenLayoutHandler::QAndroidScreenLayoutHandler(QObject * parent)
 	preloadJavaClasses();
 
 	// Creating Java object
-	// \todo add support constructos with parameters to QJniObject
-	QJniEnvPtr jep;
-	JNIEnv* env = jep.env();
-	jclass cls = jep.findClass(c_full_class_name_);
-	if (cls == 0)
-	{
-		qWarning()<<"Could not find class "<<c_full_class_name_;
-		return;
-	}
-	jmethodID mid_init = env->GetMethodID(cls, "<init>", "(J)V");
-	if (!mid_init)
-	{
-	  qWarning()<<"Constructor not found";
-	  return;
-	}
-
-	screen_layout_handler_.reset(new QJniObject(
-		env->NewObject(cls, mid_init, jlong(reinterpret_cast<void*>(this))), true));
+	screen_layout_handler_.reset(new QJniObject(c_full_class_name_, "J",
+		jlong(reinterpret_cast<void*>(this))));
 }
 
 QAndroidScreenLayoutHandler::~QAndroidScreenLayoutHandler()
@@ -122,7 +106,7 @@ void QAndroidScreenLayoutHandler::preloadJavaClasses()
 
 		QAndroidQPAPluginGap::preloadJavaClass(c_full_class_name_);
 
-		QJniObject ov(c_full_class_name_, false);
+		QJniClass ov(c_full_class_name_);
 		static const JNINativeMethod methods[] = {
 			{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity},
 			{"nativeGlobalLayoutChanged", "(J)V", (void*)Java_ScreenLayoutHandler_globalLayoutChanged},

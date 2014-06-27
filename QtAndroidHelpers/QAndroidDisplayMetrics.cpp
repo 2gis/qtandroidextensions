@@ -52,7 +52,7 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(QObject * parent)
 	, heightPixels_(240)
 	, theme_(ThemeMDPI)
 {
-	QJniObject metrics("android/util/DisplayMetrics", true);
+	QJniObject metrics("android/util/DisplayMetrics", "");
 	{
 		QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
 		QScopedPointer<QJniObject> windowmanager(activity.callObject("getWindowManager", "android/view/WindowManager"));

@@ -170,10 +170,7 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	// system_class_.reset(new QJniObject("java/lang/System", false));
 
 	qDebug()<<__PRETTY_FUNCTION__<<"Creating object of"<<view_class_name_<<"tid"<<gettid();
-	offscreen_view_.reset(new QJniObject(
-		view_class_name_.toLatin1()
-		, true // Keep ownership
-	));
+	offscreen_view_.reset(new QJniObject(view_class_name_.toLatin1().data(), ""));
 
 	if (offscreen_view_ && offscreen_view_->jObject())
 	{
@@ -237,7 +234,7 @@ void QAndroidOffscreenView::preloadJavaClasses()
 		QAndroidQPAPluginGap::preloadJavaClass("ru/dublgis/offscreenview/OffscreenView");
 		QAndroidJniImagePair::preloadJavaClasses();
 
-		QJniObject ov("ru/dublgis/offscreenview/OffscreenView", false);
+		QJniClass ov("ru/dublgis/offscreenview/OffscreenView");
 		static const JNINativeMethod methods[] = {
 			{"nativeUpdate", "(J)V", (void*)Java_OffscreenView_nativeUpdate},
 			{"nativeViewCreated", "(J)V", (void*)Java_OffscreenView_nativeViewCreated},
@@ -252,7 +249,7 @@ static int getApiLevel()
 {
 	try
 	{
-		return QJniObject("ru/dublgis/offscreenview/OffscreenView", false).callStaticInt("getApiLevel");
+		return QJniClass("ru/dublgis/offscreenview/OffscreenView").callStaticInt("getApiLevel");
 	}
 	catch(QJniBaseException & e)
 	{

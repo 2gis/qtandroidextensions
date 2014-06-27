@@ -149,9 +149,9 @@ protected:
 	bool doResize(const QSize & size);
 
 private:
-	QJniObject qjniimagepairclass_;
+	QJniClass qjniimagepairclass_;
 	QScopedPointer<QJniObject> mBitmap;
-    QImage mImageOnBitmap;
+	QImage mImageOnBitmap;
 	int bitness_;
 };
 

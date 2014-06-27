@@ -72,9 +72,9 @@ static QImage::Format qtImageFormatForBitness(int bitness)
 }
 
 QAndroidJniImagePair::QAndroidJniImagePair(int bitness)
-	: qjniimagepairclass_("ru/dublgis/offscreenview/QJniImagePair", false)
+	: qjniimagepairclass_("ru/dublgis/offscreenview/QJniImagePair")
 	, mBitmap()
-    , mImageOnBitmap()
+	, mImageOnBitmap()
 	, bitness_(bitness)
 {
 	dispose();
@@ -101,7 +101,7 @@ void QAndroidJniImagePair::dispose()
 
 QJniObject * QAndroidJniImagePair::createBitmap(const QSize & size)
 {
-	if (qjniimagepairclass_.jClass() == 0)
+	if (!qjniimagepairclass_)
 	{
 		qCritical()<<"QJniImagePair class is null!";
 		return 0;
@@ -347,12 +347,12 @@ bool QAndroidJniImagePair::loadResource(jint res_id)
 		}
 
 		// Decode Bitmap from resources
-		QJniObject ops("android/graphics/BitmapFactory$Options", true);
+		QJniObject ops("android/graphics/BitmapFactory$Options", "");
 		ops.setBooleanField("inScaled", 0);
 		ops.setIntField("inDensity", 0);
 		ops.setIntField("inTargetDensity", 0);
 		ops.setIntField("inScreenDensity", 0);
-		QJniObject bitmapfactory("android/graphics/BitmapFactory", false);
+		QJniClass bitmapfactory("android/graphics/BitmapFactory");
 		QScopedPointer<QJniObject> loadedbitmap(bitmapfactory.callStaticParamObject(
 			"decodeResource",
 			"android/graphics/Bitmap",
@@ -375,7 +375,7 @@ bool QAndroidJniImagePair::loadResource(jint res_id)
 		}
 
 		// Draw the loaded Bitmap over our Bitmap
-		QJniObject canvas("android/graphics/Canvas", true);
+		QJniObject canvas("android/graphics/Canvas", "");
 		canvas.callParamVoid("setBitmap", "Landroid/graphics/Bitmap;", mBitmap->jObject());
 		canvas.callParamVoid("drawBitmap", "Landroid/graphics/Bitmap;FFLandroid/graphics/Paint;",
 			loadedbitmap->jObject(), jfloat(0), jfloat(0), jobject(0));

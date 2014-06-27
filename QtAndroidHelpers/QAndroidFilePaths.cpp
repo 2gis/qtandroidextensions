@@ -94,7 +94,7 @@ const QString & QAndroidFilePaths::ExternalStorageDirectory()
 	static QString path;
 	if (path.isEmpty())
 	{
-		QJniObject environment("android/os/Environment", false);
+		QJniClass environment("android/os/Environment");
 		QScopedPointer<QJniObject> externalstoragedir(environment.callStaticObject("getExternalStorageDirectory", "java/io/File"));
 		path = externalstoragedir->callString("getPath");
 	}
@@ -108,7 +108,7 @@ const QString & QAndroidFilePaths::DownloadCacheDirectory()
 	static QString path;
 	if (path.isEmpty())
 	{
-		QJniObject environment("android/os/Environment", false);
+		QJniClass environment("android/os/Environment");
 		QScopedPointer<QJniObject> externalstoragedir(environment.callStaticObject("getDownloadCacheDirectory", "java/io/File"));
 		path = externalstoragedir->callString("getPath");
 	}

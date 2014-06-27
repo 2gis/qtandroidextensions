@@ -165,6 +165,80 @@ private:
 	Q_DISABLE_COPY(QJniEnvPtr)
 };
 
+
+class QJniObject;
+
+class QJniClass
+{
+public:
+	//! Create fully uninitialized QJniClass.
+	QJniClass();
+
+	/*!
+	 * Create a wrapper for class 'clazz'.
+	 */
+	QJniClass(jclass clazz);
+
+	/*!
+	 * Same as QJniObject(jclass clazz) but
+	 * the class is specified by its name.
+	 */
+	QJniClass(const char * full_class_name);
+
+	//! Create QJniClass for jobject.
+	QJniClass(jobject object);
+
+	QJniClass(const QJniClass &other);
+
+	virtual ~QJniClass();
+
+	//! Call void static method of the wrapped Java class
+	void callStaticVoid(const char * method_name);
+	jint callStaticInt(const char * method_name);
+	jlong callStaticLong(const char * method_name);
+	bool callStaticBoolean(const char * method_name);
+	void callStaticParamVoid(const char * method_name, const char * param_signature, ...);
+	void callStaticVoid(const char * method_name, const QString & string);
+
+	/*!
+	 * Call object static method of the wrapped Java class.
+	 * \param method_name - name of a static method which returns Java object.
+	 * \param
+	 * \return Pointer to a wrapper for the object returned by the call.
+	 * The wrapper should be deleted after use via 'delete'.
+	 */
+	QJniObject * callStaticObject(const char* method_name, const char* objname);
+	QJniObject * callStaticParamObject(const char * method_name, const char * objname, const char * param_signature, ...);
+
+	/*!
+	 * Call static jstring method of the wrapped Java class and
+	 * return the result as a QString.
+	 */
+	QString callStaticString(const char* method_name);
+
+	//! Register native method in the wrapped class
+	bool registerNativeMethod(const char* name, const char* signature, void* ptr);
+
+	/*!
+	 * Register native methods in the wrapped class.
+	 * \param sizeof_methods_list is the size of the whole array pointed by methods_list,
+	 * not count of the methods to register!
+	 */
+	bool registerNativeMethods(const JNINativeMethod * methods_list, size_t sizeof_methods_list);
+
+	QJniClass & operator=(const QJniClass &other);
+
+	operator jclass() const { return class_; }
+	operator bool() const { return class_ != 0; }
+
+protected:
+	void init(JNIEnv* env, jclass clazz);
+	void clear(JNIEnv* env);
+
+protected:
+	jclass class_;
+};
+
 /*!
  * Convenience wrapper for Java objects (and classes)
  * to provide cleaner and more object-oriented access to them.
@@ -172,6 +246,9 @@ private:
 class QJniObject
 {
 public:
+	//! Create fully uninitialized QJniObject.
+	QJniObject();
+
 	/*!
 	 * Create QJniObject wrapper around specified jobject.
 	 * \param take_ownership means "delete local ref of this object
@@ -183,18 +260,9 @@ public:
 
 	/*!
 	 * Create a wrapper for a new instance of class 'clazz'.
-	 * \param create - set to true to create object instance immediately.
+	 * \param param_signature - signature for parameter of constructor.
 	 */
-	QJniObject(jclass clazz, bool create=true);
-
-	/*!
-	 * Same as QJniObject(jclass clazz, bool create) but
-	 * the class is specified by its name.
-	 */
-	QJniObject(const char * full_class_name, bool create=true);
-
-	//! Create fully uninitialized QJniObject.
-	QJniObject();
+	QJniObject(const QJniClass &clazz, const char* param_signature, ...);
 
 	virtual ~QJniObject();
 
@@ -250,28 +318,10 @@ public:
 	void callVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3, const QString & string4);
 	void callVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3, const QString & string4, const QString & string5);
 
-	//! Call void static method of the wrapped Java class
-	void callStaticVoid(const char * method_name);
-	jint callStaticInt(const char * method_name);
-	jlong callStaticLong(const char * method_name);
-	bool callStaticBoolean(const char * method_name);
-	void callStaticParamVoid(const char * method_name, const char * param_signature, ...);
-	void callStaticVoid(const char * method_name, const QString & string);
-
 	jint callParamInt(const char* method_name, const char* param_signature, ...);
 	jlong callParamLong(const char* method_name, const char* param_signature, ...);
 	jfloat callParamFloat(const char* method_name, const char* param_signature, ...);
 	jdouble callParamDouble(const char* method_name, const char* param_signature, ...);
-
-	/*!
-	 * Call object static method of the wrapped Java class.
-	 * \param method_name - name of a static method which returns Java object.
-	 * \param
-	 * \return Pointer to a wrapper for the object returned by the call.
-	 * The wrapper should be deleted after use via 'delete'.
-	 */
-	QJniObject * callStaticObject(const char* method_name, const char* objname);
-	QJniObject * callStaticParamObject(const char * method_name, const char * objname, const char * param_signature, ...);
 
 	//! Get value of int field of the wrapped Java object
 	int getIntField(const char * field_name);
@@ -292,41 +342,28 @@ public:
 	QString callString(const char* method_name);
 
 	/*!
-	 * Call static jstring method of the wrapped Java class and
-	 * return the result as a QString.
-	 */
-	QString callStaticString(const char* method_name);
-
-	/*!
 	 * Get value of jstring field of the wrapped Java object and
 	 * return the result as a QString.
 	 */
 	QString getString(const char* field_name);
 
-	//! Register native method in the wrapped class
-	bool registerNativeMethod(const char* name, const char* signature, void* ptr);
+	//! Get QJniClass for wrapped object
+	QJniClass & getClass() { return class_; }
+	
+	operator jobject() const { return instance_; }
+	operator bool() const { return instance_ != 0; }
 
-	/*!
-	 * Register native methods in the wrapped class.
-	 * \param sizeof_methods_list is the size of the whole array pointed by methods_list,
-	 * not count of the methods to register!
-	 */
-	bool registerNativeMethods(const JNINativeMethod * methods_list, size_t sizeof_methods_list);
-
+	//! \deprecated
 	//! Get JNI reference to the wrapped Java object
-	jobject jObject() { return instance_; }
-
-	//! Get JNI reference to the wrapped Java class
-	jclass jClass() { return class_; }
+	jobject jObject() { return static_cast<jobject>(*this); }
 
 protected:
 	void init(JNIEnv* env, jobject instance);
-	void init(JNIEnv* env, jclass class_to_instantiate, bool create);
-	void init(JNIEnv* env, const char* full_class_name, bool create);
 
 protected:
+	QJniClass class_;
 	jobject instance_;
-	jclass class_;
+
 private:
 	Q_DISABLE_COPY(QJniObject)
 };
