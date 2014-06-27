@@ -589,6 +589,33 @@ QString QJniClass::callStaticString(const char *method_name)
 	return ret;
 }
 
+QJniObject * QJniClass::getStaticObjectField(const char *field_name, const char * objname)
+{
+	VERBOSE(qDebug("int QJniObject::getStaticObjectField(const char * field_name, const char * objname) %p \"%s\" \"%s\"", this, field_name, objname));
+	QByteArray obj;
+	obj += "L";
+	obj += objname;
+	obj += ";";
+	QJniEnvPtr jep;
+	JNIEnv* env = jep.env();
+	jfieldID fid = env->GetStaticFieldID(checkedClass(), field_name, obj.data());
+	if (!fid)
+	{
+		qWarning("%s: field not found.", field_name);
+		throw QJniFieldNotFoundException();
+	}
+	jobject jo = env->GetStaticObjectField(jclass(), fid);
+	if (jep.clearException())
+	{
+		if (jo)
+		{
+			env->DeleteLocalRef(jo);
+		}
+		throw QJniJavaCallException();
+	}
+	return new QJniObject(jo, true);
+}
+
 QJniObject* QJniClass::callStaticObject(const char * method_name, const char * objname)
 {
 	VERBOSE(qDebug("QJniClass::CallStaticObject(\"%s\",\"%s\")", method_name, objname));
@@ -1260,7 +1287,7 @@ QJniObject * QJniObject::getObjectField(const char* field_name, const char * obj
 		}
 		throw QJniJavaCallException();
 	}
-	return new QJniObject(jo, true);;
+	return new QJniObject(jo, true);
 }
 
 

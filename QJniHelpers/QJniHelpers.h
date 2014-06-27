@@ -233,6 +233,8 @@ public:
 	 */
 	QString callStaticString(const char* method_name);
 
+	QJniObject * getStaticObjectField(const char *field_name, const char * objname);
+
 	//! Register native method in the wrapped class
 	bool registerNativeMethod(const char* name, const char* signature, void* ptr);
 

@@ -72,8 +72,7 @@ static QImage::Format qtImageFormatForBitness(int bitness)
 }
 
 QAndroidJniImagePair::QAndroidJniImagePair(int bitness)
-	: qjniimagepairclass_("ru/dublgis/offscreenview/QJniImagePair")
-	, mBitmap()
+	: mBitmap()
 	, mImageOnBitmap()
 	, bitness_(bitness)
 {
@@ -86,7 +85,8 @@ QAndroidJniImagePair::~QAndroidJniImagePair()
 
 void QAndroidJniImagePair::preloadJavaClasses()
 {
-	QAndroidQPAPluginGap::preloadJavaClass("ru/dublgis/offscreenview/QJniImagePair");
+	QAndroidQPAPluginGap::preloadJavaClass("android/graphics/Bitmap");
+	QAndroidQPAPluginGap::preloadJavaClass("android/graphics/Bitmap$Config");
 }
 
 void QAndroidJniImagePair::dispose()
@@ -101,16 +101,32 @@ void QAndroidJniImagePair::dispose()
 
 QJniObject * QAndroidJniImagePair::createBitmap(const QSize & size)
 {
-	if (!qjniimagepairclass_)
-	{
-		qCritical()<<"QJniImagePair class is null!";
-		return 0;
-	}
+	qDebug()<<"createBitmap:"<<size.width()<<"size.height()"<<size.height()<<"Bits:"<<bitness_;
 	try
 	{
-		return qjniimagepairclass_.callStaticParamObject(
-			"createBitmap", "android/graphics/Bitmap", "III",
-			jint(size.width()), jint(size.height()), jint(bitness_));
+		QJniClass bitmapconfig("android/graphics/Bitmap$Config");
+		QScopedPointer<QJniObject> fmt; // enum Bitmap.Config
+		switch(bitness_)
+		{
+		case 16:
+			fmt.reset(bitmapconfig.getStaticObjectField("RGB_565", "android/graphics/Bitmap$Config"));
+			break;
+		case 32:
+			fmt.reset(bitmapconfig.getStaticObjectField("ARGB_8888", "android/graphics/Bitmap$Config"));
+			break;
+		default:
+			qWarning()<<"createBitmap: Invalid pixel bit depth:"<<bitness_;
+			return 0;
+		}
+		Q_ASSERT(fmt);
+		QJniObject * result = QJniClass("android/graphics/Bitmap").callStaticParamObject(
+			"createBitmap", "android/graphics/Bitmap", "IILandroid/graphics/Bitmap$Config;",
+			jint(size.width()), jint(size.height()), fmt->jObject());
+		if (!result)
+		{
+			qWarning()<<"createBitmap: failed to create bitmap:"<<size.width()<<"size.height()"<<size.height()<<"Bits:"<<bitness_;
+		}
+		return result;
 	}
 	catch(QJniBaseException & e)
 	{
