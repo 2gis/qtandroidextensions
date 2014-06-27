@@ -185,6 +185,10 @@ private:
 
 class QJniObject;
 
+
+/*!
+ * Convenience wrapper for Java classes to provide cleaner and more object-oriented access to them.
+ */
 class QJniClass
 {
 public:
@@ -194,12 +198,11 @@ public:
 	QJniClass(jclass clazz);
 
 	/*!
-	 * Same as QJniObject(jclass clazz) but
-	 * the class is specified by its name.
+	 * Create a wrapper for class 'full_class_name'.
 	 */
 	QJniClass(const char * full_class_name);
 
-	//! Create QJniClass for jobject.
+	//! Create QJniClass for the jobject.
 	QJniClass(jobject object);
 
 	QJniClass(const QJniClass &other);
@@ -257,9 +260,9 @@ private:
 	jclass class_;
 };
 
+
 /*!
- * Convenience wrapper for Java objects (and classes)
- * to provide cleaner and more object-oriented access to them.
+ * Convenience wrapper for Java objects to provide cleaner and more object-oriented access to them.
  */
 class QJniObject: public QJniClass
 {

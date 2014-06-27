@@ -659,9 +659,7 @@ QJniClass & QJniClass::operator=(const QJniClass &other)
 {
 	if (this != &other)
 	{
-		QJniEnvPtr jep;
-		clearClass(jep.env());
-		initClass(jep.env(), other.jClass());
+		initClass(QJniEnvPtr().env(), other.jClass());
 	}
 	return *this;
 }
