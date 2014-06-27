@@ -98,7 +98,7 @@ QAndroidOffscreenEditText::QAndroidOffscreenEditText(const QString & object_name
 			{"nativeOnKey", "(JZI)Z", (void*)Java_AndroidOffscreenEditText_nativeOnKey},
 			{"nativeOnEditorAction", "(JI)V", (void*)Java_AndroidOffscreenEditText_nativeOnEditorAction}
 		};
-		view->getClass().registerNativeMethods(methods, sizeof(methods));
+		view->registerNativeMethods(methods, sizeof(methods));
 	}
 }
 

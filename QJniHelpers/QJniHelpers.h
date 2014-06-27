@@ -46,42 +46,51 @@
 class QJniBaseException: public std::exception
 {
 public:
-	QJniBaseException(){}
+	QJniBaseException();
 	virtual const char * what() const throw();
+protected:
+	QJniBaseException(bool quiet);
 };
 
-class QJniThreadAttachException: public std::exception
+class QJniThreadAttachException: public QJniBaseException
 {
 public:
-	QJniThreadAttachException(){}
+	QJniThreadAttachException();
 	virtual const char * what() const throw();
 };
 
 class QJniClassNotFoundException: public QJniBaseException
 {
 public:
-	QJniClassNotFoundException(){}
+	QJniClassNotFoundException();
+	virtual const char * what() const throw();
+};
+
+class QJniClassNotSetException: public QJniBaseException
+{
+public:
+	QJniClassNotSetException();
 	virtual const char * what() const throw();
 };
 
 class QJniMethodNotFoundException: public QJniBaseException
 {
 public:
-	QJniMethodNotFoundException(){}
+	QJniMethodNotFoundException();
 	virtual const char * what() const throw();
 };
 
 class QJniFieldNotFoundException: public QJniBaseException
 {
 public:
-	QJniFieldNotFoundException(){}
+	QJniFieldNotFoundException();
 	virtual const char * what() const throw();
 };
 
 class QJniJavaCallException: public QJniBaseException
 {
 public:
-	QJniJavaCallException(){}
+	QJniJavaCallException();
 	virtual const char * what() const throw();
 };
 
@@ -92,6 +101,14 @@ public:
 class QJniEnvPtr
 {	
 public:
+	/*!
+	 * \param env can be 0, then the constructor gets env for current thread,
+	 *  and attaches current thread to JNI if necessary.
+	 *  QJniEnvPtr always contains a valid JNIEnv pointer or exception is thrown.
+	 *  If attaching the thread has been made, it is correctly detached when
+	 *  it exits.
+	 * \throw Throws QJniThreadAttachException if attaching to thread failed.
+	 */
 	QJniEnvPtr(JNIEnv * env = 0);
 	~QJniEnvPtr();
 
@@ -171,9 +188,6 @@ class QJniObject;
 class QJniClass
 {
 public:
-	//! Create fully uninitialized QJniClass.
-	QJniClass();
-
 	/*!
 	 * Create a wrapper for class 'clazz'.
 	 */
@@ -228,14 +242,18 @@ public:
 
 	QJniClass & operator=(const QJniClass &other);
 
-	operator jclass() const { return class_; }
 	operator bool() const { return class_ != 0; }
 
-protected:
-	void init(JNIEnv* env, jclass clazz);
-	void clear(JNIEnv* env);
+	//! Get JNI reference to the wrapped Java class.
+	jclass jClass() const { return class_; }
 
 protected:
+	void initClass(JNIEnv* env, jclass clazz);
+	void clearClass(JNIEnv* env);
+
+	inline jclass checkedClass() { if (!class_) throw QJniClassNotSetException(); return class_; }
+
+private:
 	jclass class_;
 };
 
@@ -243,12 +261,9 @@ protected:
  * Convenience wrapper for Java objects (and classes)
  * to provide cleaner and more object-oriented access to them.
  */
-class QJniObject
+class QJniObject: public QJniClass
 {
 public:
-	//! Create fully uninitialized QJniObject.
-	QJniObject();
-
 	/*!
 	 * Create QJniObject wrapper around specified jobject.
 	 * \param take_ownership means "delete local ref of this object
@@ -256,13 +271,19 @@ public:
 	 * Note that this implies the instance is a valid local ref,
 	 * not global one or whatever.
 	 */
-	QJniObject(jobject instance, bool take_ownership = false);
+	QJniObject(jobject instance, bool take_ownership);
 
 	/*!
 	 * Create a wrapper for a new instance of class 'clazz'.
 	 * \param param_signature - signature for parameter of constructor.
 	 */
-	QJniObject(const QJniClass &clazz, const char* param_signature, ...);
+	QJniObject(const QJniClass &clazz, const char* param_signature = 0, ...);
+
+	/*!
+	 * Create a wrapper for a new instance of class 'class name'.
+	 * \param param_signature - signature for parameter of constructor.
+	 */
+	QJniObject(const char* class_name, const char* param_signature = 0, ...);
 
 	virtual ~QJniObject();
 
@@ -347,21 +368,15 @@ public:
 	 */
 	QString getString(const char* field_name);
 
-	//! Get QJniClass for wrapped object
-	QJniClass & getClass() { return class_; }
-	
-	operator jobject() const { return instance_; }
 	operator bool() const { return instance_ != 0; }
 
-	//! \deprecated
 	//! Get JNI reference to the wrapped Java object
-	jobject jObject() { return static_cast<jobject>(*this); }
+	jobject jObject() const { return instance_; }
 
 protected:
-	void init(JNIEnv* env, jobject instance);
+	void initObject(JNIEnv* env, jobject instance);
 
 protected:
-	QJniClass class_;
 	jobject instance_;
 
 private:
@@ -399,11 +414,11 @@ public:
 
 	~QJniLocalRef();
 
-	operator jobject() { return local_; }
-	operator jstring() { return (jstring)local_; }
-	operator jclass() { return (jclass)local_; }
-	jobject jObject() { return local_; }
-	operator QString() { return QJniEnvPtr(env_).JStringToQString(operator jstring()); }
+	operator jobject() const { return local_; }
+	operator jstring() const { return (jstring)local_; }
+	operator jclass() const { return (jclass)local_; }
+	jobject jObject() const { return local_; }
+	operator QString() const { return QJniEnvPtr(env_).JStringToQString(operator jstring()); }
 
 private:
 	jobject local_;

@@ -228,7 +228,7 @@ QAndroidOffscreenWebView::QAndroidOffscreenWebView(const QString & object_name, 
 	if (QJniObject * ov = offscreenView())
 	{
 		qDebug()<<__PRETTY_FUNCTION__<<"Registering"<<sizeof(methods)/sizeof(JNINativeMethod)<<"JNI methods for WebView";
-		bool ok = ov->getClass().registerNativeMethods(methods, sizeof(methods));
+		bool ok = ov->registerNativeMethods(methods, sizeof(methods));
 		if (!ok)
 		{
 			qCritical()<<"Failed to register native methods!";
