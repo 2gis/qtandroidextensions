@@ -347,14 +347,14 @@ class OffscreenEditText extends OffscreenView
 
     public void setText(final String text)
     {
+        synchronized(text_)
+        {
+            text_ = text;
+        }
         runViewAction(new Runnable(){
             @Override
             public void run(){
                 ((MyEditText)getView()).setText(text);
-                synchronized(text_)
-                {
-                    text_ = text;
-                }
                 need_to_reflow_text_ = false;
             }
         });
