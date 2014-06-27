@@ -395,12 +395,14 @@ bool QJniEnvPtr::clearException(bool describe)
 /////////////////////////////////////////////////////////////////////////////
 
 QJniClass::QJniClass(jclass clazz)
+	: class_(0)
 {
 	QJniEnvPtr jep;
 	initClass(jep.env(), clazz);
 }
 
 QJniClass::QJniClass(const char * full_class_name)
+	: class_(0)
 {
 	QJniEnvPtr jep;
 	jclass cls = jep.findClass(full_class_name); // this is a preloaded global ref, we don't need to delete it as a local ref
@@ -419,6 +421,7 @@ QJniClass::QJniClass(const char * full_class_name)
 }
 
 QJniClass::QJniClass(jobject object)
+	: class_(0)
 {
 	QJniEnvPtr jep;
 	// Note: class is expected to be a valid ref during the whole lifetime of the object.
@@ -427,6 +430,7 @@ QJniClass::QJniClass(jobject object)
 }
 
 QJniClass::QJniClass(const QJniClass &other)
+	: class_(0)
 {
 	QJniEnvPtr jep;
 	initClass(jep.env(), other.class_);

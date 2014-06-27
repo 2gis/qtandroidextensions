@@ -260,7 +260,7 @@ static int getApiLevel()
 
 bool QAndroidOffscreenView::openGlTextureSupportedOnJavaSide()
 {
-	return getApiLevel() >= 15; // Android 4.0.3+
+	return false ; // SGEXPgetApiLevel() >= 15; // Android 4.0.3+
 }
 
 bool QAndroidOffscreenView::nonAttachingModeSupported()
