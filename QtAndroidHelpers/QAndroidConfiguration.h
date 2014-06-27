@@ -99,4 +99,6 @@ private:
 	ScreenSize screen_size_;
 };
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 Q_DECLARE_METATYPE(QAndroidConfiguration::ScreenSize)
+#endif
