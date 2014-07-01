@@ -104,27 +104,35 @@ QJniObject * QAndroidJniImagePair::createBitmap(const QSize & size)
 	qDebug()<<"createBitmap:"<<size.width()<<"size.height()"<<size.height()<<"Bits:"<<bitness_;
 	try
 	{
-		QJniClass bitmapconfig("android/graphics/Bitmap$Config");
-		QScopedPointer<QJniObject> fmt; // enum Bitmap.Config
+		const char * format_name = 0;
 		switch(bitness_)
 		{
 		case 16:
-			fmt.reset(bitmapconfig.getStaticObjectField("RGB_565", "android/graphics/Bitmap$Config"));
+			format_name = "RGB_565";
 			break;
 		case 32:
-			fmt.reset(bitmapconfig.getStaticObjectField("ARGB_8888", "android/graphics/Bitmap$Config"));
+			format_name = "ARGB_8888";
 			break;
 		default:
 			qWarning()<<"createBitmap: Invalid pixel bit depth:"<<bitness_;
 			return 0;
 		}
-		Q_ASSERT(fmt);
+		qDebug()<<"createBitmap: selecting format"<<format_name;
+		QJniClass bitmapconfig("android/graphics/Bitmap$Config");
+		QScopedPointer<QJniObject> fmt(bitmapconfig.getStaticObjectField(format_name, "android/graphics/Bitmap$Config"));
+		if (!fmt)
+		{
+			qWarning()<<"createBitmap: failed to get bimap format:"<<format_name;
+			return 0;
+		}
+		qDebug()<<"createBitmap: calling Java createBitmap(). Fmt ="<<fmt.data();
 		QJniObject * result = QJniClass("android/graphics/Bitmap").callStaticParamObject(
 			"createBitmap", "android/graphics/Bitmap", "IILandroid/graphics/Bitmap$Config;",
 			jint(size.width()), jint(size.height()), fmt->jObject());
 		if (!result)
 		{
-			qWarning()<<"createBitmap: failed to create bitmap:"<<size.width()<<"size.height()"<<size.height()<<"Bits:"<<bitness_;
+			qWarning()<<"createBitmap: failed to create bitmap:"
+				<<size.width()<<"size.height()"<<size.height()<<"Bits:"<<bitness_;
 		}
 		return result;
 	}

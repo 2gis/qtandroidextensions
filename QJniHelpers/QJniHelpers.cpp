@@ -604,7 +604,7 @@ QJniObject * QJniClass::getStaticObjectField(const char *field_name, const char 
 		qWarning("%s: field not found.", field_name);
 		throw QJniFieldNotFoundException();
 	}
-	jobject jo = env->GetStaticObjectField(jclass(), fid);
+	jobject jo = env->GetStaticObjectField(jClass(), fid);
 	if (jep.clearException())
 	{
 		if (jo)
