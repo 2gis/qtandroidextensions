@@ -231,6 +231,8 @@ void QAndroidOffscreenView::preloadJavaClasses()
 	{
 		preloaded_ = true;
 
+		QApplicationActivityObserver::instance();
+
 		QAndroidQPAPluginGap::preloadJavaClass("ru/dublgis/offscreenview/OffscreenView");
 		QAndroidJniImagePair::preloadJavaClasses();
 
