@@ -80,18 +80,18 @@ void QApplicationActivityObserver::setApplicationActive(bool active)
 	}
 }
 
-bool QApplicationActivityObserver::eventFilter(QObject * obj, QEvent * event)
+bool QApplicationActivityObserver::eventFilter(QObject * obj, QEvent * evnt)
 {
-	if (event->type() == QEvent::ApplicationActivate)
+	if (evnt->type() == QEvent::ApplicationActivate)
 	{
 		// qDebug()<<__PRETTY_FUNCTION__<<"ACTIVE!";
 		QMetaObject::invokeMethod(this, "setApplicationActive", Qt::QueuedConnection, Q_ARG(bool,true));
 	}
-	else if (event->type() == QEvent::ApplicationDeactivate)
+	else if (evnt->type() == QEvent::ApplicationDeactivate)
 	{
 		// qDebug()<<__PRETTY_FUNCTION__<<"DEACTIVATE!";
 		QMetaObject::invokeMethod(this, "setApplicationActive", Qt::QueuedConnection, Q_ARG(bool,false));
 	}
-	return QObject::eventFilter(obj, event);
+	return QObject::eventFilter(obj, evnt);
 }
 
