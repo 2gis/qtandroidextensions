@@ -264,6 +264,12 @@ public:
 	//! Return the scrolled top position of this view.
 	int getScrollY();
 
+	//! Return the width measurement information for this view as computed by the most recent call to measure(int, int).
+	int getMeasuredWidth();
+
+	//! Return the height measurement information for this view as computed by the most recent call to measure(int, int).
+	int getMeasuredHeight();
+
 	//! \todo Add multi-touch support!
 
 public slots:

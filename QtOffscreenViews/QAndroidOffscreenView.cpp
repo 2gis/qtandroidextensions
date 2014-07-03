@@ -824,6 +824,24 @@ int QAndroidOffscreenView::getScrollY()
 	return 0;
 }
 
+int QAndroidOffscreenView::getMeasuredWidth()
+{
+	if (offscreen_view_)
+	{
+		return offscreen_view_->callInt("getMeasuredWidth");
+	}
+	return -1;
+}
+
+int QAndroidOffscreenView::getMeasuredHeight()
+{
+	if (offscreen_view_)
+	{
+		return offscreen_view_->callInt("getMeasuredHeight");
+	}
+	return -1;
+}
+
 void QAndroidOffscreenView::resize(const QSize & newsize)
 {
 	QSize size = newsize;

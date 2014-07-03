@@ -132,6 +132,8 @@ abstract class OffscreenView
     private boolean show_keyboard_on_focus_in_ = false;
     private int scroll_x_ = 0;
     private int scroll_y_ = 0;
+    private int measured_width_ = -1;
+    private int measured_height_ = -1;
 
     // Variables to inform C++ about last painted texture / control size
     private int last_painted_width_ = 0;
@@ -162,6 +164,14 @@ abstract class OffscreenView
                 throw new IllegalStateException("OffscreenView layout should have 1 child!");
             }
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+            View child = getChildAt(0);
+            measureChild(child, widthMeasureSpec, heightMeasureSpec);
+            synchronized(view_variables_mutex_)
+            {
+                measured_width_ = child.getMeasuredWidth();
+                measured_height_ = child.getMeasuredHeight();
+            }
         }
 
         @Override
@@ -1179,6 +1189,21 @@ abstract class OffscreenView
         }
     }
 
+    public int getMeasuredWidth()
+    {
+        synchronized(view_variables_mutex_)
+        {
+            return measured_width_;
+        }
+    }
+
+    public int getMeasuredHeight()
+    {
+        synchronized(view_variables_mutex_)
+        {
+            return measured_height_;
+        }
+    }
     // C++ function called from Java to tell that the texture has new contents.
     // abstract public native void nativeUpdate(long nativeptr);
 
