@@ -78,6 +78,7 @@ QAndroidConfiguration::QAndroidConfiguration(QObject * parent)
 
 void QAndroidConfiguration::preloadJavaClasses()
 {
+	QAndroidQPAPluginGap::preloadJavaClasses();
 	// QAndroidQPAPluginGap::preloadJavaClass("android/util/DisplayMetrics");
 }
 

@@ -117,6 +117,7 @@ const QString & QAndroidFilePaths::DownloadCacheDirectory()
 
 void QAndroidFilePaths::preloadJavaClasses()
 {
+	QAndroidQPAPluginGap::preloadJavaClasses();
 	QAndroidQPAPluginGap::preloadJavaClass("android/os/Environment");
 
 	/*qDebug()<<"QAndroidFilePaths"<<"APPDIR:"<<ApplicationFilesDirectory();

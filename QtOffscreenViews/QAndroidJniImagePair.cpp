@@ -85,6 +85,7 @@ QAndroidJniImagePair::~QAndroidJniImagePair()
 
 void QAndroidJniImagePair::preloadJavaClasses()
 {
+	QAndroidQPAPluginGap::preloadJavaClasses();
 	QAndroidQPAPluginGap::preloadJavaClass("android/graphics/Bitmap");
 	QAndroidQPAPluginGap::preloadJavaClass("android/graphics/Bitmap$Config");
 }

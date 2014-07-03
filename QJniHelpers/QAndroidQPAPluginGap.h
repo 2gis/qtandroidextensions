@@ -62,5 +62,7 @@ namespace QAndroidQPAPluginGap {
 	 */
 	void preloadJavaClass(const char * class_name);
 
+	void preloadJavaClasses();
+
 } // namespace QAndroidQPAPluginGap
 

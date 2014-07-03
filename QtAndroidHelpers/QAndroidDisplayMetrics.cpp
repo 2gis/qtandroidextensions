@@ -143,6 +143,7 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(QObject * parent)
 
 void QAndroidDisplayMetrics::preloadJavaClasses()
 {
+	QAndroidQPAPluginGap::preloadJavaClasses();
 	QAndroidQPAPluginGap::preloadJavaClass("android/util/DisplayMetrics");
 }
 

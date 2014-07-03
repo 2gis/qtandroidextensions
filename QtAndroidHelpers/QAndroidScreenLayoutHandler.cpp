@@ -104,6 +104,7 @@ void QAndroidScreenLayoutHandler::preloadJavaClasses()
 	{
 		preloaded_ = true;
 
+		QAndroidQPAPluginGap::preloadJavaClasses();
 		QAndroidQPAPluginGap::preloadJavaClass(c_full_class_name_);
 
 		QJniClass ov(c_full_class_name_);

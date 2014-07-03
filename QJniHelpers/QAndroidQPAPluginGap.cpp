@@ -146,6 +146,11 @@ void preloadJavaClass(const char * class_name)
 	#endif
 }
 
+void preloadJavaClasses()
+{
+	preloadJavaClass(c_activity_getter_class_name);
+}
+
 } // namespace QAndroidQPAPluginGap
 
 // JNI entry points. Must be "C" because the function names should not be mangled.
