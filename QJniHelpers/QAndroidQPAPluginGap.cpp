@@ -93,24 +93,32 @@ JavaVM * detectJavaVM()
 
 jobject JNICALL getActivity(JNIEnv *, jobject)
 {
-	QJniClass theclass(c_activity_getter_class_name);
-	if (!theclass)
+	try
 	{
-		qCritical("QAndroid: Activity retriever class could not be accessed.");
+		QJniClass theclass(c_activity_getter_class_name);
+		if (!theclass)
+		{
+			qCritical()<<"QAndroid: Activity retriever class could not be accessed.";
+			return 0;
+		}
+		QScopedPointer<QJniObject> activity(theclass.callStaticObject(c_activity_getter_method_name, c_activity_getter_result_name));
+		if (!activity)
+		{
+			qCritical()<<"QAndroid: Failed to get Activity object.";
+			return 0;
+		}
+		if (!activity->jObject())
+		{
+			qCritical()<<"QAndroid: Java instance of the Activity is 0.";
+			return 0;
+		}
+		return QJniEnvPtr().env()->NewLocalRef(activity->jObject());
+	}
+	catch(const std::exception & e)
+	{
+		qCritical()<<"QAndroid: getActivity exception:"<<e.what();
 		return 0;
 	}
-	QScopedPointer<QJniObject> activity(theclass.callStaticObject(c_activity_getter_method_name, c_activity_getter_result_name));
-	if (!activity)
-	{
-		qCritical("QAndroid: Failed to get Activity object.");
-		return 0;
-	}
-	if (!activity->jObject())
-	{
-		qCritical("QAndroid: Java instance of the Activity is 0.");
-		return 0;
-	}
-	return QJniEnvPtr().env()->NewLocalRef(activity->jObject());
 }
 
 void preloadJavaClass(const char * class_name)

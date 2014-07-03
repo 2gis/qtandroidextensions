@@ -363,6 +363,11 @@ bool QAndroidJniImagePair::loadResource(jint res_id)
 	try
 	{
 		QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+		if (!activity.jObject())
+		{
+			qWarning()<<__FUNCTION__<<"Failed to get activity.";
+			return false;
+		}
 		QScopedPointer<QJniObject> resources(activity.callObject("getResources", "android/content/res/Resources"));
 		if (!resources)
 		{
@@ -418,6 +423,11 @@ bool QAndroidJniImagePair::loadResource(const QString & res_name, const QString 
 	try
 	{
 		QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+		if (!activity.jObject())
+		{
+			qWarning()<<__FUNCTION__<<"Failed to get activity.";
+			return false;
+		}
 		QScopedPointer<QJniObject> resources(activity.callObject("getResources", "android/content/res/Resources"));
 		if (!resources)
 		{
