@@ -37,6 +37,7 @@
 #include <QAndroidQPAPluginGap.h>
 #include "QAndroidOffscreenWebView.h"
 
+//! Convert nativeptr from Java to AndroidOffscreenWebView.
 static inline QAndroidOffscreenWebView * AOWW(jlong nativeptr)
 {
 	if (nativeptr)
@@ -166,7 +167,7 @@ Q_DECL_EXPORT jobject JNICALL Java_shouldInterceptRequest(JNIEnv * env, jobject 
 	{
 		return wv->shouldInterceptRequest(env, jo, url);
 	}
-	return 0;
+	return 0; // Not intercepting request
 }
 
 // public native boolean shouldOverrideKeyEvent(long nativeptr, KeyEvent event);
@@ -176,7 +177,7 @@ Q_DECL_EXPORT jboolean JNICALL Java_shouldOverrideKeyEvent(JNIEnv * env, jobject
 	{
 		return wv->shouldOverrideKeyEvent(env, jo, event);
 	}
-	return 0;
+	return JNI_FALSE;
 }
 
 // public native boolean shouldOverrideUrlLoading(long nativeptr, String url);
@@ -186,7 +187,7 @@ Q_DECL_EXPORT jboolean JNICALL Java_shouldOverrideUrlLoading(JNIEnv * env, jobje
 	{
 		wv->shouldOverrideUrlLoading(env, jo, url);
 	}
-	return 0;
+	return JNI_FALSE;
 }
 
 Q_DECL_EXPORT void JNICALL Java_onContentHeightReceived(JNIEnv *, jobject, jlong nativeptr, jint height)

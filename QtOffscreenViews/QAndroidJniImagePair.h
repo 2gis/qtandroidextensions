@@ -128,6 +128,7 @@ public:
 	 * Load Android resource identified by integer id.
 	 * Note that the image will be in Android color order after loading; call
 	 * to convert32BitImageFromAndroidToQt() to fix that.
+	 * \return true if loaded successfully and false on error. Not throwing exceptions.
 	 */
 	bool loadResource(jint res_id);
 
@@ -137,7 +138,10 @@ public:
 	 */
 	bool loadResource(const QString & res_name, const QString & category = QLatin1String("drawable"));
 protected:
-	//! Create Java-side bitmap of the given size for current bitness_.
+	/*!
+	 * Create Java-side bitmap of the given size for current bitness_.
+	 * \return Returns JNI object or 0.
+	 */
 	QJniObject * createBitmap(const QSize & size);
 
 	/*!

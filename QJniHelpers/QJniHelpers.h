@@ -46,52 +46,46 @@
 class QJniBaseException: public std::exception
 {
 public:
-	QJniBaseException();
+	QJniBaseException(const char * message = 0);
 	virtual const char * what() const throw();
-protected:
-	QJniBaseException(bool quiet);
+private:
+	const char * message_;
 };
 
 class QJniThreadAttachException: public QJniBaseException
 {
 public:
 	QJniThreadAttachException();
-	virtual const char * what() const throw();
 };
 
 class QJniClassNotFoundException: public QJniBaseException
 {
 public:
 	QJniClassNotFoundException();
-	virtual const char * what() const throw();
 };
 
 class QJniClassNotSetException: public QJniBaseException
 {
 public:
 	QJniClassNotSetException();
-	virtual const char * what() const throw();
 };
 
 class QJniMethodNotFoundException: public QJniBaseException
 {
 public:
 	QJniMethodNotFoundException();
-	virtual const char * what() const throw();
 };
 
 class QJniFieldNotFoundException: public QJniBaseException
 {
 public:
 	QJniFieldNotFoundException();
-	virtual const char * what() const throw();
 };
 
 class QJniJavaCallException: public QJniBaseException
 {
 public:
 	QJniJavaCallException();
-	virtual const char * what() const throw();
 };
 
 
@@ -142,7 +136,7 @@ public:
 	/*!
 	 * \brief Get a global reference to a Java class.
 	 * \param name - full name of the class, e.g.: "ru/dublgis/offscreenview/OffscreenWebView".
-	 * \return
+	 * \return jclass or 0 if class not found.
 	 */
 	jclass findClass(const char * name);
 
@@ -153,7 +147,7 @@ public:
 
 	/*!
 	 * \brief Convert QString into jstring.
-	 * \return Java String reference. Don't forget to call DeleteLocalRef on the returned reference!
+	 * \return Java String reference or 0. Don't forget to call DeleteLocalRef on the returned reference.
 	 */
 	jstring JStringFromQString(const QString & qstring);
 	jstring QStringToJString(const QString & qstring) { return JStringFromQString(qstring); }

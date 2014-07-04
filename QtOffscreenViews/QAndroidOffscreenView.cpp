@@ -257,7 +257,7 @@ static int getApiLevel()
 	catch(QJniBaseException & e)
 	{
 		qCritical()<<"getApiLevel exception:"<<e.what();
-		return 0;
+		return 0; // Unknown API level, app should assume the lowest possible level.
 	}
 }
 
@@ -458,7 +458,7 @@ const QImage * QAndroidOffscreenView::getPreviousBitmapBuffer(bool convert_from_
 {
 	if (!view_painted_)
 	{
-		return 0;
+		return 0; // No previous buffer
 	}
 	const QImage * result = 0;
 	if (convert_from_android_format)
@@ -470,13 +470,13 @@ const QImage * QAndroidOffscreenView::getPreviousBitmapBuffer(bool convert_from_
 		const QAndroidJniImagePair & pair = (last_qt_buffer_ == 0)? bitmap_a_: bitmap_b_;
 		if (!pair.isAllocated())
 		{
-			return 0;
+			return 0; // No previous buffer
 		}
 		result = &pair.qImage();
 	}
 	if (result->isNull())
 	{
-		return 0;
+		return 0; // No previous buffer
 	}
 	return result;
 }
@@ -530,7 +530,7 @@ const QImage * QAndroidOffscreenView::getBitmapBuffer(bool * out_texture_updated
 	else
 	{
 		// qDebug()<<__PRETTY_FUNCTION__<<"Returning 0!";
-		return 0;
+		return 0;  // No buffer created
 	}
 }
 
@@ -787,7 +787,7 @@ QJniObject * QAndroidOffscreenView::getView()
 	{
 		return offscreen_view_->callObject("getView", "android/view/View");
 	}
-	return 0;
+	return 0; // View not created yet
 }
 
 void QAndroidOffscreenView::mouse(int android_action, int x, int y, long long timestamp_uptime_millis)
@@ -812,7 +812,7 @@ int QAndroidOffscreenView::getScrollX()
 	{
 		return offscreen_view_->callInt("getScrollX");
 	}
-	return 0;
+	return 0; // No scroll yet
 }
 
 int QAndroidOffscreenView::getScrollY()
@@ -821,7 +821,7 @@ int QAndroidOffscreenView::getScrollY()
 	{
 		return offscreen_view_->callInt("getScrollY");
 	}
-	return 0;
+	return 0; // No scroll yet
 }
 
 int QAndroidOffscreenView::getMeasuredWidth()

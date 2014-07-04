@@ -116,7 +116,7 @@ QJniObject * QAndroidJniImagePair::createBitmap(const QSize & size)
 			break;
 		default:
 			qWarning()<<"createBitmap: Invalid pixel bit depth:"<<bitness_;
-			return 0;
+			return 0; // Not throwing an exception
 		}
 		qDebug()<<"createBitmap: selecting format"<<format_name;
 		QJniClass bitmapconfig("android/graphics/Bitmap$Config");
@@ -124,7 +124,7 @@ QJniObject * QAndroidJniImagePair::createBitmap(const QSize & size)
 		if (!fmt)
 		{
 			qWarning()<<"createBitmap: failed to get bimap format:"<<format_name;
-			return 0;
+			return 0; // Not throwing an exception
 		}
 		qDebug()<<"createBitmap: calling Java createBitmap(). Fmt ="<<fmt.data();
 		QJniObject * result = QJniClass("android/graphics/Bitmap").callStaticParamObject(
@@ -140,7 +140,7 @@ QJniObject * QAndroidJniImagePair::createBitmap(const QSize & size)
 	catch(QJniBaseException & e)
 	{
 		qCritical()<<"Failed to create bitmap:"<<e.what();
-		return 0;
+		return 0; // Not throwing an exception
 	}
 }
 
@@ -364,11 +364,6 @@ bool QAndroidJniImagePair::loadResource(jint res_id)
 	try
 	{
 		QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
-		if (!activity.jObject())
-		{
-			qWarning()<<__FUNCTION__<<"Failed to get activity.";
-			return false;
-		}
 		QScopedPointer<QJniObject> resources(activity.callObject("getResources", "android/content/res/Resources"));
 		if (!resources)
 		{
@@ -424,11 +419,6 @@ bool QAndroidJniImagePair::loadResource(const QString & res_name, const QString 
 	try
 	{
 		QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
-		if (!activity.jObject())
-		{
-			qWarning()<<__FUNCTION__<<"Failed to get activity.";
-			return false;
-		}
 		QScopedPointer<QJniObject> resources(activity.callObject("getResources", "android/content/res/Resources"));
 		if (!resources)
 		{

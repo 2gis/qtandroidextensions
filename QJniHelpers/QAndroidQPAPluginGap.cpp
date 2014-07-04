@@ -36,7 +36,7 @@
 #include <qconfig.h>
 #include <QDebug>
 #include <QScopedPointer>
-#include "QJniHelpers.h"
+#include "QAndroidQPAPluginGap.h"
 
 #if QT_VERSION < 0x050000 && defined(QJNIHELPERS_GRYM)
 	#define QPA_QT4GRYM
@@ -80,6 +80,11 @@
 
 namespace QAndroidQPAPluginGap {
 
+QAndroidSpecificJniException::QAndroidSpecificJniException(const char * message)
+	: QJniBaseException(message? message: "Android-specific JNI exception.")
+{
+}
+
 JavaVM * detectJavaVM()
 {
 	#if defined(QPA_QT4GRYM)
@@ -93,32 +98,21 @@ JavaVM * detectJavaVM()
 
 jobject JNICALL getActivity(JNIEnv *, jobject)
 {
-	try
+	QJniClass theclass(c_activity_getter_class_name);
+	if (!theclass)
 	{
-		QJniClass theclass(c_activity_getter_class_name);
-		if (!theclass)
-		{
-			qCritical()<<"QAndroid: Activity retriever class could not be accessed.";
-			return 0;
-		}
-		QScopedPointer<QJniObject> activity(theclass.callStaticObject(c_activity_getter_method_name, c_activity_getter_result_name));
-		if (!activity)
-		{
-			qCritical()<<"QAndroid: Failed to get Activity object.";
-			return 0;
-		}
-		if (!activity->jObject())
-		{
-			qCritical()<<"QAndroid: Java instance of the Activity is 0.";
-			return 0;
-		}
-		return QJniEnvPtr().env()->NewLocalRef(activity->jObject());
+		throw QAndroidSpecificJniException("QAndroid: Activity retriever class could not be accessed.");
 	}
-	catch(const std::exception & e)
+	QScopedPointer<QJniObject> activity(theclass.callStaticObject(c_activity_getter_method_name, c_activity_getter_result_name));
+	if (!activity)
 	{
-		qCritical()<<"QAndroid: getActivity exception:"<<e.what();
-		return 0;
+		throw QAndroidSpecificJniException("QAndroid: Failed to get Activity object.");
 	}
+	if (!activity->jObject())
+	{
+		throw QAndroidSpecificJniException("QAndroid: Java instance of the Activity is 0.");
+	}
+	return QJniEnvPtr().env()->NewLocalRef(activity->jObject());
 }
 
 void preloadJavaClass(const char * class_name)

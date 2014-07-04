@@ -65,7 +65,7 @@ Q_DECL_EXPORT jboolean JNICALL Java_AndroidOffscreenEditText_nativeOnKey(JNIEnv 
 		}
 	}
 	qWarning()<<__FUNCTION__<<"Zero param!";
-	return 0;
+	return JNI_FALSE;
 }
 
 Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnEditorAction(JNIEnv *, jobject, jlong param, jint action)
@@ -481,7 +481,7 @@ int QAndroidOffscreenEditText::getSelectionStart()
 	{
 		return view->callInt("getSelectionStart");
 	}
-	return 0;
+	return 0; // No selection start
 }
 
 int QAndroidOffscreenEditText::getSelectionEnd()
@@ -490,7 +490,7 @@ int QAndroidOffscreenEditText::getSelectionEnd()
 	{
 		return view->callInt("getSelectionEnd");
 	}
-	return 0;
+	return 0; // No selection end
 }
 
 void QAndroidOffscreenEditText::setTextColor(const QColor & color)

@@ -103,7 +103,7 @@ QGLShaderProgram * QOpenGLTextureHolder::GetBlitProgram(GLenum target)
 	#if !defined(QT_OPENGL_ES_2)
 		qFatal("GetBlitProgram should not be called if not using OpenGL ES 2.");
 		Q_UNUSED(target);
-		return 0;
+		return 0; // Not supported by current GL version!
 	#else
 		QSharedPointer<QGLShaderProgram> & blit_program_ptr = blit_programs_[target];
 		if (!blit_program_ptr.isNull())

@@ -104,88 +104,45 @@ QJniEnvPtrThreadDetacher::~QJniEnvPtrThreadDetacher()
 #endif
 
 
-QJniBaseException::QJniBaseException()
+QJniBaseException::QJniBaseException(const char * message)
+	: message_(message? message: "JNI: Java exception.")
 {
 	qDebug()<<"QJniHelpers: throwing an exception:"<<what();
-}
-
-QJniBaseException::QJniBaseException(bool quiet)
-{
-	if (!quiet)
-	{
-		qDebug()<<"QJniHelpers: throwing an exception:"<<what();
-	}
 }
 
 const char * QJniBaseException::what() const throw()
 {
-	return "JNI: Java exception.";
+	return message_;
 }
 
-
-QJniThreadAttachException::QJniThreadAttachException(): QJniBaseException(true)
+QJniThreadAttachException::QJniThreadAttachException()
+	: QJniBaseException("JNI: Thread attaching exception.")
 {
-	qDebug()<<"QJniHelpers: throwing an exception:"<<what();
 }
 
-const char * QJniThreadAttachException::what() const throw()
+QJniClassNotFoundException::QJniClassNotFoundException()
+	: QJniBaseException("JNI: Java class not found.")
 {
-	return "JNI: Thread attaching exception.";
 }
 
-
-QJniClassNotFoundException::QJniClassNotFoundException(): QJniBaseException(true)
+QJniClassNotSetException::QJniClassNotSetException()
+	: QJniBaseException("JNI: Java class is null.")
 {
-	qDebug()<<"QJniHelpers: throwing an exception:"<<what();
 }
 
-const char * QJniClassNotFoundException::what() const throw()
+QJniMethodNotFoundException::QJniMethodNotFoundException()
+	: QJniBaseException("JNI: Java method not found.")
 {
-	return "JNI: Java class not found.";
 }
 
-
-QJniClassNotSetException::QJniClassNotSetException(): QJniBaseException(true)
+QJniFieldNotFoundException::QJniFieldNotFoundException()
+	: QJniBaseException("JNI: Java field not found.")
 {
-	qDebug()<<"QJniHelpers: throwing an exception:"<<what();
 }
 
-const char * QJniClassNotSetException::what() const throw()
+QJniJavaCallException::QJniJavaCallException()
+	: QJniBaseException("JNI: Java method raised an unhandled exception.")
 {
-	return "JNI: Java class is null.";
-}
-
-
-QJniMethodNotFoundException::QJniMethodNotFoundException(): QJniBaseException(true)
-{
-	qDebug()<<"QJniHelpers: throwing an exception:"<<what();
-}
-
-const char * QJniMethodNotFoundException::what() const throw()
-{
-	return "JNI: Java method not found.";
-}
-
-
-QJniFieldNotFoundException::QJniFieldNotFoundException(): QJniBaseException(true)
-{
-	qDebug()<<"QJniHelpers: throwing an exception:"<<what();
-}
-
-const char * QJniFieldNotFoundException::what() const throw()
-{
-	return "JNI: Java field not found.";
-}
-
-
-QJniJavaCallException::QJniJavaCallException(): QJniBaseException(true)
-{
-	qDebug()<<"QJniHelpers: throwing an exception:"<<what();
-}
-
-const char * QJniJavaCallException::what() const throw()
-{
-	return "JNI: Java method raised an unhandled exception.";
 }
 
 
@@ -336,13 +293,13 @@ void QJniEnvPtr::setJavaVM(JNIEnv* env)
 	env->GetJavaVM(&g_JavaVm);
 }
 
-jstring QJniEnvPtr::JStringFromQString(const QString& str)
+jstring QJniEnvPtr::JStringFromQString(const QString & str)
 {
 	jstring ret = env_->NewString(str.utf16(), str.length());
 	if (clearException())
 	{
 		qWarning("Failed to convert QString to jstring.");
-		return 0;
+		return 0; // Not throwing an exception here
 	}
 	return ret;
 }
@@ -647,7 +604,7 @@ QJniObject* QJniClass::callStaticObject(const char * method_name, const char * o
 	}
 	if (jret == 0)
 	{
-		return 0;
+		return 0; // Not an exception
 	}
 	return new QJniObject(jret, true);
 }

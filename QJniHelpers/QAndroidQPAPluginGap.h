@@ -35,13 +35,19 @@
 */
 
 #pragma once
-#include <jni.h>
+#include "QJniHelpers.h"
 
 /*!
  * This namespace contains some functions which screen differences between various
  * Android QPA plugin implementations.
  */
 namespace QAndroidQPAPluginGap {
+
+	class QAndroidSpecificJniException: public QJniBaseException
+	{
+	public:
+		QAndroidSpecificJniException(const char * message);
+	};
 
 	/*!
 	 * Return pointer to JavaVM using helpers available in current QPA plug-in.
