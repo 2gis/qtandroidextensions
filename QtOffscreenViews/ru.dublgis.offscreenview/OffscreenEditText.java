@@ -141,10 +141,12 @@ class OffscreenEditText extends OffscreenView
             // all these custom vendors backrounds.
             if (getApiLevel() >= 16)
             {
+                Log.i(TAG, "MyEditText constructor: using API >= 16 method (setBackground)");
                 setBackground(null);
             }
             else
             {
+                Log.i(TAG, "MyEditText constructor: using API < 16 method (setBackgroundDrawable)");
                 setBackgroundDrawable(null);
             }
         }

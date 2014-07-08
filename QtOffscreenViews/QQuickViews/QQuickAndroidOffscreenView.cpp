@@ -72,6 +72,7 @@ QOpenGLFramebufferObject * QAndroidOffscreenViewRenderer::createFramebufferObjec
 	aview_->resize(size);
 	QOpenGLFramebufferObjectFormat format;
 	format.setSamples(4);
+	// format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 	return new QOpenGLFramebufferObject(size, format);
 }
 
@@ -207,7 +208,7 @@ void QQuickAndroidOffscreenView::updateAndroidViewPosition()
 	// Note: x() and y() return coordinates of the item within parent, i.e. we don't
 	// need them. We only need in-scene coordinates.
 	QPointF scenepos = mapToScene(QPointF(0, 0));
-	qDebug()<<__PRETTY_FUNCTION__<<scenepos.x()<<scenepos.y();
+	// qDebug()<<__PRETTY_FUNCTION__<<scenepos.x()<<scenepos.y();
 	aview_->setPosition(qRound(scenepos.x()), qRound(scenepos.y()));
 }
 
