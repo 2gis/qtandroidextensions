@@ -46,6 +46,12 @@
 	#define VERBOSE(x)
 #endif
 
+/////////////////////////////////////////////////////////////////////////////
+// Private Stuff
+/////////////////////////////////////////////////////////////////////////////
+
+namespace {
+
 //! Data type to keep list of JNI references to Java classes ever preloaded or loaded.
 typedef QMap<QString, jclass> PreloadedClasses;
 
@@ -76,11 +82,6 @@ static PreloadedClasses g_PreloadedClasses;
 static QThreadStorage<QJniEnvPtrThreadDetacher*> g_JavaThreadDetacher;
 static QJniClassUnloader g_class_unloader_;
 
-
-/////////////////////////////////////////////////////////////////////////////
-// Exceptions
-/////////////////////////////////////////////////////////////////////////////
-
 QJniEnvPtrThreadDetacher::~QJniEnvPtrThreadDetacher()
 {
 	if (g_JavaVm)
@@ -103,6 +104,12 @@ QJniEnvPtrThreadDetacher::~QJniEnvPtrThreadDetacher()
 	}
 #endif
 
+} // anonymous namespace
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Exceptions
+/////////////////////////////////////////////////////////////////////////////
 
 QJniBaseException::QJniBaseException(const char * message)
 	: message_(message? message: "JNI: Java exception.")
