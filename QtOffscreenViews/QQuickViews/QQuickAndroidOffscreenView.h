@@ -37,19 +37,18 @@
 #pragma once
 #include <QSharedPointer>
 #include <QFocusEvent>
-#include <QtQuick/QQuickFramebufferObject>
+#include <QtQuick/QQuickItem>
 #include <QAndroidOffscreenView.h>
 
 /*!
  * Base class for any Android offscreen view.
  */
-class QQuickAndroidOffscreenView : public QQuickFramebufferObject
+class QQuickAndroidOffscreenView : public QQuickItem
 {
     Q_OBJECT
 	Q_PROPERTY(QColor backgroundColor READ getBackgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged)
 public:
 	QQuickAndroidOffscreenView(QAndroidOffscreenView * aview);
-	virtual Renderer * createRenderer() const;
 
 	QColor getBackgroundColor() const { return androidView()->fillColor(); }
 	void setBackgroundColor(QColor color);
@@ -81,6 +80,8 @@ protected:
 	virtual void mouseReleaseEvent(QMouseEvent * event);
 	virtual void itemChange(ItemChange change, const ItemChangeData & value);
 
+	QSGNode * updatePaintNode(QSGNode * node, UpdatePaintNodeData * nodedata);
+
 protected slots:
 	virtual void updateAndroidViewVisibility();
 	virtual void updateAndroidEnabled();
@@ -92,6 +93,7 @@ private:
 	QSharedPointer<QAndroidOffscreenView> aview_;
 	bool is_interactive_;
 	bool mouse_tracking_;
+	bool redraw_texture_needed_;
 };
 
 

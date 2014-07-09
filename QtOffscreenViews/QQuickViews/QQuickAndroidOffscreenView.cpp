@@ -34,46 +34,57 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <QtGui/QOpenGLFramebufferObject>
+#include <QtGui/QtGui>
+#include <QtQuick/QSGTransformNode>
+#include <QtQuick/QSGSimpleTextureNode>
 #include <QtQuick/QQuickWindow>
 #include "QQuickAndroidOffscreenView.h"
 
 namespace {
 
-class QAndroidOffscreenViewRenderer : public QQuickFramebufferObject::Renderer
+class TexureHolderNode
+	: public QSGSimpleTextureNode
 {
 public:
-	QAndroidOffscreenViewRenderer(QSharedPointer<QAndroidOffscreenView> aview);
-protected:
-	virtual void render();
-	virtual QOpenGLFramebufferObject * createFramebufferObject(const QSize & size);
-protected:
-	QSharedPointer<QAndroidOffscreenView> aview_;
+	TexureHolderNode() {}
+	QScopedPointer<QOpenGLFramebufferObject> fbo_;
 };
 
-QAndroidOffscreenViewRenderer::QAndroidOffscreenViewRenderer(QSharedPointer<QAndroidOffscreenView> aview)
-	: aview_(aview)
+static void ClearOpenGLState()
 {
-}
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-void QAndroidOffscreenViewRenderer::render()
-{
-	// We can't use the texture in aview_ directly because it uses GL shader extension
-	// and custom transformation matrix, but we can draw the texture on the FBO texture.
-	// Fortunately, this is an extremely small operation comparing to the everything else
-	// we have to do.
-	aview_->paintGL(0, 0, aview_->size().width(), aview_->size().height(), true);
-}
+	GLint maxAttribs;
+	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxAttribs);
+	for (GLuint i = 0; GLint(i) < maxAttribs; ++i)
+	{
+		glVertexAttribPointer(i, 4, GL_FLOAT, GL_FALSE, 0, 0); //-V112
+		glDisableVertexAttribArray(i);
+	}
 
-QOpenGLFramebufferObject * QAndroidOffscreenViewRenderer::createFramebufferObject(const QSize & size)
-{
-	qDebug()<<__FUNCTION__<<"Creating new surface, size ="<<size;
-	aview_->initializeGL();
-	aview_->resize(size);
-	QOpenGLFramebufferObjectFormat format;
-	format.setSamples(4);
-	// format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-	return new QOpenGLFramebufferObject(size, format);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_STENCIL_TEST);
+	glDisable(GL_SCISSOR_TEST);
+
+	glColorMask(true, true, true, true);
+	glClearColor(0, 0, 0, 0);
+
+	glDepthMask(true);
+	glDepthFunc(GL_LESS);
+	glClearDepthf(1);
+
+	glStencilMask(0xff);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	glStencilFunc(GL_ALWAYS, 0, 0xff);
+
+	glDisable(GL_BLEND);
+	glBlendFunc(GL_ONE, GL_ZERO);
+
+	glUseProgram(0);
 }
 
 } // anonymous namespace
@@ -85,7 +96,9 @@ QQuickAndroidOffscreenView::QQuickAndroidOffscreenView(QAndroidOffscreenView * a
 	: aview_(aview)
 	, is_interactive_(true) // TODO
 	, mouse_tracking_(false)
+	, redraw_texture_needed_(true)
 {
+	setFlag(QQuickItem::ItemHasContents, true);
 	setAcceptedMouseButtons(Qt::LeftButton);
 	connect(aview_.data(), SIGNAL(updated()), this, SLOT(onTextureUpdated()));
 	connect(this, SIGNAL(xChanged()), this, SLOT(updateAndroidViewPosition()));
@@ -95,14 +108,6 @@ QQuickAndroidOffscreenView::QQuickAndroidOffscreenView(QAndroidOffscreenView * a
 	connect(aview_.data(), SIGNAL(visibleRectReceived(int,int)), this, SLOT(onVisibleRectReceived(int,int)));
 	connect(aview_.data(), SIGNAL(globalLayoutChanged()), this, SLOT(onGlobalLayoutChanged()));
 	aview_->setAttachingMode(is_interactive_);
-}
-
-QQuickFramebufferObject::Renderer * QQuickAndroidOffscreenView::createRenderer() const
-{
-	QAndroidOffscreenViewRenderer * renderer = new QAndroidOffscreenViewRenderer(aview_);
-	// The View is hidden by default. It's a good time to update its visibility status.
-	const_cast<QQuickAndroidOffscreenView*>(this)->updateAndroidViewVisibility();
-	return renderer;
 }
 
 void QQuickAndroidOffscreenView::setBackgroundColor(QColor color)
@@ -116,6 +121,7 @@ void QQuickAndroidOffscreenView::setBackgroundColor(QColor color)
 
 void QQuickAndroidOffscreenView::onTextureUpdated()
 {
+	redraw_texture_needed_ = true;
 	QMetaObject::invokeMethod(this, "update", Qt::AutoConnection);
 }
 
@@ -132,14 +138,14 @@ void QQuickAndroidOffscreenView::onGlobalLayoutChanged()
 void QQuickAndroidOffscreenView::focusInEvent(QFocusEvent * event)
 {
 	// qDebug()<<__PRETTY_FUNCTION__;
-	QQuickFramebufferObject::focusInEvent(event);
+	QQuickItem::focusInEvent(event);
 	aview_->setFocused(true);
 }
 
 void QQuickAndroidOffscreenView::focusOutEvent(QFocusEvent * event)
 {
 	// qDebug()<<__PRETTY_FUNCTION__;
-	QQuickFramebufferObject::focusOutEvent(event);
+	QQuickItem::focusOutEvent(event);
 	aview_->setFocused(false);
 }
 
@@ -191,7 +197,91 @@ void QQuickAndroidOffscreenView::itemChange(QQuickItem::ItemChange change, const
 	{
 		QMetaObject::invokeMethod(this, "updateAndroidViewPosition", Qt::QueuedConnection);
 	}*/
-	return QQuickFramebufferObject::itemChange(change, value);
+	return QQuickItem::itemChange(change, value);
+}
+
+QSGNode * QQuickAndroidOffscreenView::updatePaintNode(QSGNode * node, UpdatePaintNodeData * nodedata)
+{
+	Q_UNUSED(nodedata);
+
+	// Initialize GL if necessary
+	if (aview_ && !aview_->isIntialized())
+	{
+		aview_->initializeGL();
+		if (aview_->isIntialized())
+		{
+			aview_->resize(QSize(width(), height()));
+			updateAndroidViewVisibility();
+			updateAndroidViewPosition();
+		}
+	}
+
+	// ********************************************************************************************
+	// Note: in theory, we could feed our texture right into the node, but unfortunately the Qt
+	// classes don't have the functionality to use a read-only texture id.
+	// So this would require writing our own implementation of textured SG node with black jack
+	// and kittens from scratch.
+	// As I don't have time for that right now, let's just live with drawing our texture over Qt
+	// texture. It doesn't cost that much performance.
+	// ********************************************************************************************
+
+	// Create our painting node
+	TexureHolderNode * n = static_cast<TexureHolderNode *>(node);
+	if (!n) // Мы ещё не создавали узел
+	{
+		if (width() <= 0 || height() <= 0)
+		{
+			return nullptr;
+		}
+		n = new TexureHolderNode();
+	}
+
+	// Remove buffer if it has wrong size
+	if (n->fbo_ && (n->fbo_->width() != width() || n->fbo_->height() != height()))
+	{
+		n->fbo_.reset();
+	}
+
+	// Create new buffer if necessary
+	if (n->fbo_.isNull())
+	{
+		QSize fboSize(qMax<int>(1, int(width())), qMax<int>(1, int(height())));
+		QOpenGLFramebufferObjectFormat format;
+		format.setAttachment(QOpenGLFramebufferObject::NoAttachment); // CombinedDepthStencil
+		n->fbo_.reset(new QOpenGLFramebufferObject(fboSize, format));
+		n->setTexture(
+			window()->createTextureFromId(
+				n->fbo_->texture(),
+				n->fbo_->size(),
+				0)); // QQuickWindow::TextureHasAlphaChannel
+		n->setFiltering(QSGTexture::Nearest);
+		n->setRect(0, 0, width(), height());
+		redraw_texture_needed_ = true;
+	}
+
+	if (redraw_texture_needed_)
+	{
+		redraw_texture_needed_ = false;
+		n->fbo_->bind();
+		{
+			glViewport(0, 0, n->fbo_->width(), n->fbo_->height());
+			ClearOpenGLState();
+			if (aview_)
+			{
+				aview_->paintGL(0, 0, width(), height(), true);
+			}
+			else
+			{
+				QColor c = getBackgroundColor();
+				glClearColor(c.redF(), c.greenF(), c.blueF(), c.alphaF());
+				glClear(GL_COLOR_BUFFER_BIT);
+			}
+		}
+		n->fbo_->bindDefault();
+		n->markDirty(QSGNode::DirtyMaterial);
+	}
+
+	return n;
 }
 
 void QQuickAndroidOffscreenView::updateAndroidViewVisibility()
