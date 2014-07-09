@@ -106,7 +106,6 @@ QQuickAndroidOffscreenView::QQuickAndroidOffscreenView(QAndroidOffscreenView * a
 	connect(this, SIGNAL(enabledChanged()), this, SLOT(updateAndroidEnabled()));
 	connect(this, SIGNAL(visibleChanged()), this, SLOT(updateAndroidViewVisibility()));
 	connect(aview_.data(), SIGNAL(visibleRectReceived(int,int)), this, SLOT(onVisibleRectReceived(int,int)));
-	connect(aview_.data(), SIGNAL(globalLayoutChanged()), this, SLOT(onGlobalLayoutChanged()));
 	aview_->setAttachingMode(is_interactive_);
 }
 
@@ -130,9 +129,13 @@ void QQuickAndroidOffscreenView::onVisibleRectReceived(int width, int height)
 	emit visibleRectReceived(width, height);
 }
 
-void QQuickAndroidOffscreenView::onGlobalLayoutChanged()
+void QQuickAndroidOffscreenView::geometryChanged(const QRectF & new_geometry, const QRectF & old_geometry)
 {
-	emit globalLayoutChanged();
+	QQuickItem::geometryChanged(new_geometry, old_geometry);
+	if (new_geometry.size() != old_geometry.size())
+	{
+		aview_->resize(new_geometry.size().toSize());
+	}
 }
 
 void QQuickAndroidOffscreenView::focusInEvent(QFocusEvent * event)
@@ -210,9 +213,9 @@ QSGNode * QQuickAndroidOffscreenView::updatePaintNode(QSGNode * node, UpdatePain
 		aview_->initializeGL();
 		if (aview_->isIntialized())
 		{
-			aview_->resize(QSize(width(), height()));
 			updateAndroidViewVisibility();
 			updateAndroidViewPosition();
+			aview_->resize(QSize(width(), height()));
 		}
 	}
 

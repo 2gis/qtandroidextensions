@@ -67,12 +67,12 @@ public slots:
 signals:
 	void backgroundColorChanged(QColor color);
 	void visibleRectReceived(int width, int height);
-	void globalLayoutChanged();
 
 protected:
 	QAndroidOffscreenView * androidView() { return aview_.data(); }
 	const QAndroidOffscreenView * androidView() const { return aview_.data(); }
 
+	virtual void geometryChanged(const QRectF & new_geometry, const QRectF & old_geometry);
 	virtual void focusInEvent(QFocusEvent * event);
 	virtual void focusOutEvent(QFocusEvent * event);
 	virtual void mouseMoveEvent(QMouseEvent * event);
@@ -87,7 +87,6 @@ protected slots:
 	virtual void updateAndroidEnabled();
 	virtual void onTextureUpdated();
 	virtual void onVisibleRectReceived(int width, int height);
-	virtual void onGlobalLayoutChanged();
 
 private:
 	QSharedPointer<QAndroidOffscreenView> aview_;
