@@ -203,10 +203,17 @@ void QQuickAndroidOffscreenView::itemChange(QQuickItem::ItemChange change, const
 QSGNode * QQuickAndroidOffscreenView::updatePaintNode(QSGNode * node, UpdatePaintNodeData * nodedata)
 {
 	Q_UNUSED(nodedata);
+
+	// Initialize GL if necessary
 	if (aview_ && !aview_->isIntialized())
 	{
 		aview_->initializeGL();
-		aview_->resize(QSize(width(), height()));
+		if (aview_->isIntialized())
+		{
+			aview_->resize(QSize(width(), height()));
+			updateAndroidViewVisibility();
+			updateAndroidViewPosition();
+		}
 	}
 
 	// Create our painting node
@@ -226,7 +233,7 @@ QSGNode * QQuickAndroidOffscreenView::updatePaintNode(QSGNode * node, UpdatePain
 		n->fbo_.reset();
 	}
 
-	// Create new buffer if needed
+	// Create new buffer if necessary
 	if (n->fbo_.isNull())
 	{
 		QSize fboSize(qMax<int>(1, int(width())), qMax<int>(1, int(height())));
