@@ -395,9 +395,22 @@ static inline void clearGlRect(int l, int b, int w, int h, const QColor & fill_c
 void QAndroidOffscreenView::paintGL(int l, int b, int w, int h, bool reverse_y)
 {
 	glViewport(l, b, w, h);
+	if (updateGLTextureInHolder())
+	{
+		tex_.blitTexture(
+			QRect(QPoint(0, 0), QSize(w, h)) // target rect (relatively to viewport)
+			, QRect(QPoint(0, 0), QSize(w, h)) // source rect (in texture)
+			, reverse_y);
+	}
+	else
+	{
+		// View is not ready, just fill the area with the fill color.
+		clearGlRect(l, b, w, h, fill_color_);
+	}
+}
 
-#if 1 // (Enable/disable painting of the texture)
-
+bool QAndroidOffscreenView::updateGLTextureInHolder()
+{
 	//
 	// GL texture + GL in Qt
 	//
@@ -408,44 +421,24 @@ void QAndroidOffscreenView::paintGL(int l, int b, int w, int h, bool reverse_y)
 			bool texture_updated_ok = updateGlTexture();
 			if (!texture_updated_ok && !texture_received_)
 			{
-				clearGlRect(l, b, w, h, fill_color_);
-				return;
+				return false;
+			}
+			if (tex_.getTextureSize().width() != last_texture_width_
+				|| tex_.getTextureSize().height() != last_texture_height_)
+			{
+				return false;
 			}
 		}
-		if (tex_.getTextureSize().width() != last_texture_width_
-			|| tex_.getTextureSize().height() != last_texture_height_)
-		{
-			// qDebug()<<__FUNCTION__<<"Last painted texture size doesn't match expected texture size.";
-			clearGlRect(l, b, w, h, fill_color_);
-			return;
-		}
-		tex_.blitTexture(
-			QRect(QPoint(0, 0), QSize(w, h)) // target rect (relatively to viewport)
-			, QRect(QPoint(0, 0), QSize(w, h)) // source rect (in texture)
-			, reverse_y);
-		return;
+		return true;
 	}
-
 	//
 	// Bitmap texture + GL in Qt
 	//
 	if (bitmap_a_.isAllocated())
 	{
-		if (updateBitmapToGlTexture())
-		{
-			// We don't have to check for texture size match because Bitmaps are
-			// destroyed and re-created on resize. (Also Java side checks for the match.)
-			tex_.blitTexture(
-				QRect(QPoint(0, 0), QSize(w, h)) // target rect (relatively to viewport)
-				, QRect(QPoint(0, 0), QSize(w, h)) // source rect (in texture)
-				, reverse_y);
-			return;
-		}
+		return updateBitmapToGlTexture();
 	}
-#endif
-
-	// View is not ready, just fill the area with the fill color.
-	clearGlRect(l, b, w, h, fill_color_);
+	return false;
 }
 
 // Public version

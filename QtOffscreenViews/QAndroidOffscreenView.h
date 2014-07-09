@@ -129,6 +129,22 @@ public:
 	virtual void paintGL(int l, int b, int w, int h, bool reverse_y);
 
 	/*!
+	 * Makes sure that the GL texture holder contains actual image, if possible.
+	 * This function should only be called if \ref getGLTextureHolder() is used to access
+	 * the texure directly. It is not needed to call it when using paintGL().
+	 * Note: in Bitmap+GL mode this function may cause re-allocation of GL texture.
+	 */
+	bool updateGLTextureInHolder();
+
+	/*!
+	 * Access \ref QOpenGLTextureHolder for reading texture id or other properties
+	 * for direct painting without using \ref paintGL().
+	 * \ref updateGLTextureInHolder() should be called to make sure that the texture
+	 * contains actual image.
+	 */
+	const QOpenGLTextureHolder & getGLTextureHolder() const { return tex_; }
+
+	/*!
 	 * Used in Bitmap mode. Instead of paintGL(), get current bitmap buffer
 	 * using getBitmapBuffer() and paint it by yourself.
 	 * The image buffer is guaranteed to be unmodified until the next call to getBitmapBuffer().
