@@ -46,6 +46,10 @@
 #include "QAndroidJniImagePair.h"
 #include "QAndroidOffscreenView.h"
 
+// Set in QAndroidOffsceenView::initializeGL.
+static bool s_have_to_adjust_size_to_pot = true;
+static QSize s_max_gl_size;
+
 //! Calculate smallest power of 2 which is greater than x.
 static int potSize(int x, int max_possible)
 {
@@ -140,7 +144,6 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	, bitmap_b_(32)
 	, bitmaps_mutex_(QMutex::Recursive)
 	, size_(defsize)
-	, max_gl_size_(0, 0)
 	, fill_color_(Qt::white)
 	, need_update_texture_(false)
 	, view_painted_(false)
@@ -151,7 +154,6 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	, view_created_(false)
 	, last_texture_width_(0)
 	, last_texture_height_(0)
-	, have_to_adjust_size_to_pot_(false)
 {
 	connect(QApplicationActivityObserver::instance(), SIGNAL(applicationActiveStateChanged()), this, SLOT(updateAndroidViewVisibility()));
 
@@ -279,37 +281,71 @@ void QAndroidOffscreenView::initializeGL()
 		return;
 	}
 
-	bool gl_texture_mode_supported = openGlTextureSupportedOnJavaSide();
+	static bool s_capabilities_checked = false;
+	static bool s_gl_texture_mode_supported = false;
+	static bool s_blacklisted_renderer = false;
 
-	// Some older devices don't support non-power of 2 OES textures.
-	// (IMG textures seem to be supported by all GLES2 devices, but not OES.)
-	// We have to detect that and keep that in mind.
+	if (!s_capabilities_checked)
 	{
-		QByteArray extensions((const char *)glGetString(GL_EXTENSIONS));
-		have_to_adjust_size_to_pot_ = !extensions.contains("GL_OES_texture_npot");
-		qDebug()<<((!have_to_adjust_size_to_pot_)?
-			"GL_OES_texture_npot is available." :
-			"GL_OES_texture_npot extension not found, cannot use full GL mode.");
-	}
+		// Check that we have enough API level
+		s_gl_texture_mode_supported = openGlTextureSupportedOnJavaSide();
 
-	// Detecting max possible size of texture.
-	{
-		GLint maxdims[2] = {0, 0};
-		GLint maxtextsz = 0;
-		glGetIntegerv(GL_MAX_VIEWPORT_DIMS, maxdims);
-		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxtextsz);
-		max_gl_size_ = QSize(qMin(maxdims[0], maxtextsz), qMin(maxdims[1], maxtextsz));
+		// Some older devices don't support non-power of 2 OES textures.
+		// (IMG textures seem to be supported by all GLES2 devices, but not OES.)
+		// We have to detect that and keep that in mind.
+		{
+			QByteArray extensions((const char *)glGetString(GL_EXTENSIONS));
+			s_have_to_adjust_size_to_pot = !extensions.contains("GL_OES_texture_npot");
+			qDebug()<<((!s_have_to_adjust_size_to_pot)?
+				"GL_OES_texture_npot is available." :
+				"GL_OES_texture_npot extension not found, cannot use full GL mode.");
+		}
+
+		// Checking blacklisted video drivers
+		const char * renderer_string = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+		if (renderer_string)
+		{
+			static const char * const bad[] =
+			{
+				"Adreno 200",
+				"Adreno (TM) 200",
+				0
+			};
+			for(const char * const * p = bad; *p; ++p)
+			{
+				if (!strcmp(renderer_string, *p))
+				{
+					s_blacklisted_renderer = true;
+					break;
+				}
+			}
+		}
+
+		// Detecting max possible size of texture.
+		{
+			GLint maxdims[2] = {0, 0};
+			GLint maxtextsz = 0;
+			glGetIntegerv(GL_MAX_VIEWPORT_DIMS, maxdims);
+			glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxtextsz);
+			s_max_gl_size = QSize(qMin(maxdims[0], maxtextsz), qMin(maxdims[1], maxtextsz));
+		}
+
+		qDebug()<<"OffscreenView's OpenGL check result: renderer ="<<((renderer_string)?renderer_string:"!!! EMPTY !!!")
+			<<"Blacklist:"<<s_blacklisted_renderer<<"API support:"<<s_gl_texture_mode_supported
+			<<"Max dimensions:"<<s_max_gl_size;
+
+		s_capabilities_checked = true;
 	}
 
 	// Good time to compile shaders. We don't need to compile GL_TEXTURE_EXTERNAL_OES
 	// shaders if we are not working in full GL mode.
-	QOpenGLTextureHolder::initializeGL(gl_texture_mode_supported);
+	QOpenGLTextureHolder::initializeGL(s_gl_texture_mode_supported);
 
 	// Automatically fall back to Bitmap + GL mode if pure GL is not available.
-	// Note: we could also support have_to_adjust_size_to_pot_ in pure GL, but it doesn't seem
+	// Note: we could also support s_have_to_adjust_size_to_pot in pure GL, but it doesn't seem
 	// necessary as pure GL requires API >= 15 which means newer devices and newer drivers,
 	// so such situation doesn't seem probable.
-	if (!gl_texture_mode_supported || have_to_adjust_size_to_pot_)
+	if (!s_gl_texture_mode_supported || s_have_to_adjust_size_to_pot || s_blacklisted_renderer)
 	{
 		qDebug()<<__PRETTY_FUNCTION__<<"OpenGL mode is not supported on this device, will initialize for internal Bitmap mode.";
 		initializeBitmap();
@@ -329,7 +365,7 @@ void QAndroidOffscreenView::initializeGL()
 		qDebug()<<__PRETTY_FUNCTION__;
 
 		// Check for max texture size and limit control size
-		size_ = QSize(qMin(max_gl_size_.width(), size_.width()), qMin(max_gl_size_.height(), size_.height()));
+		size_ = QSize(qMin(s_max_gl_size.width(), size_.width()), qMin(s_max_gl_size.height(), size_.height()));
 		tex_.setTextureSize(size_);
 
 		offscreen_view_->callParamVoid("SetTexture", "I", jint(tex_.getTexture()));
@@ -352,7 +388,7 @@ void QAndroidOffscreenView::initializeBitmap()
 		return;
 	}
 	qDebug()<<__PRETTY_FUNCTION__;
-	QSize bitmapsize = (have_to_adjust_size_to_pot_)? potSize(size_, max_gl_size_): size_;
+	QSize bitmapsize = (s_have_to_adjust_size_to_pot)? potSize(size_, s_max_gl_size): size_;
 	bitmap_a_.resize(bitmapsize);
 	bitmap_b_.resize(bitmapsize);
 	last_qt_buffer_ = -1;
@@ -838,9 +874,9 @@ int QAndroidOffscreenView::getMeasuredHeight()
 void QAndroidOffscreenView::resize(const QSize & newsize)
 {
 	QSize size = newsize;
-	if (!max_gl_size_.isEmpty())
+	if (!s_max_gl_size.isEmpty())
 	{
-		size = QSize(qMin(size.width(), max_gl_size_.width()), qMin(size.height(), max_gl_size_.height()));
+		size = QSize(qMin(size.width(), s_max_gl_size.width()), qMin(size.height(), s_max_gl_size.height()));
 	}
 
 	if (size_ != size)
@@ -851,7 +887,7 @@ void QAndroidOffscreenView::resize(const QSize & newsize)
 			QMutexLocker locker(&bitmaps_mutex_);
 			if (bitmap_a_.isAllocated())
 			{
-				QSize bitmapsize = (have_to_adjust_size_to_pot_)? potSize(size_, max_gl_size_): size_;
+				QSize bitmapsize = (s_have_to_adjust_size_to_pot)? potSize(size_, s_max_gl_size): size_;
 				bitmap_a_.resize(bitmapsize);
 				bitmap_b_.resize(bitmapsize);
 				bitmap_a_.fill(fill_color_, true);

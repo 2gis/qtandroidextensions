@@ -362,7 +362,6 @@ private:
 
 	QScopedPointer<QJniObject> offscreen_view_;
 	QSize size_;
-	QSize max_gl_size_;
 	QColor fill_color_;
 	volatile bool need_update_texture_;
 	volatile bool view_painted_;
@@ -372,7 +371,6 @@ private:
 	bool is_enabled_;
 	volatile mutable bool view_created_; //!< Cache for isCreated()
 	int last_texture_width_, last_texture_height_;
-	bool have_to_adjust_size_to_pot_;
 private:
 	Q_DISABLE_COPY(QAndroidOffscreenView)
 	friend void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv * env, jobject jo, jlong param);
