@@ -12,4 +12,4 @@ build.xml
 local.properties
 project.properties
 proguard-project.txt
-
+*.orig
