@@ -216,6 +216,15 @@ QSGNode * QQuickAndroidOffscreenView::updatePaintNode(QSGNode * node, UpdatePain
 		}
 	}
 
+	// ********************************************************************************************
+	// Note: in theory, we could feed our texture right into the node, but unfortunately the Qt
+	// classes don't have the functionality to use a read-only texture id.
+	// So this would require writing our own implementation of textured SG node with black jack
+	// and kittens from scratch.
+	// As I don't have time for that right now, let's just live with drawing our texture over Qt
+	// texture. It doesn't cost that much performance.
+	// ********************************************************************************************
+
 	// Create our painting node
 	TexureHolderNode * n = static_cast<TexureHolderNode *>(node);
 	if (!n) // Мы ещё не создавали узел
@@ -249,6 +258,7 @@ QSGNode * QQuickAndroidOffscreenView::updatePaintNode(QSGNode * node, UpdatePain
 		n->setRect(0, 0, width(), height());
 		redraw_texture_needed_ = true;
 	}
+
 	if (redraw_texture_needed_)
 	{
 		redraw_texture_needed_ = false;
