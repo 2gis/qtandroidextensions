@@ -34,7 +34,7 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package ru.dublgis.offscreenview;
+package ru.dublgis.androidhelpers;
 
 import android.app.Activity;
 import android.util.Log;
