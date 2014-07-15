@@ -69,6 +69,9 @@ public:
 
 	/*!
 	 * Show basic dialog with a message and one, two or three buttons: positive, negative and neutral.
+	 * \param pause - the function will not return until the dialog is closed. (Use resultButton()
+	 *  to determine which button has been clicked.) Setting this to true also implies lock_rotation.
+	 * \param lock_rotation - set to true to disable screen rotation while the dialog is active.
 	 */
 	Q_INVOKABLE void showMessage(
 		const QString & title,
@@ -76,6 +79,23 @@ public:
 		const QString & positive_button_text,
 		const QString & negative_button_text,
 		const QString & neutral_button_text,
+		bool pause,
+		bool lock_rotation = false);
+
+	//! This is a convenience wrapper for the full version.
+	Q_INVOKABLE void showMessage(
+		const QString & title,
+		const QString & explanation,
+		const QString & positive_button_text,
+		const QString & negative_button_text,
+		bool pause,
+		bool lock_rotation = false);
+
+	//! This is a convenience wrapper for the full version.
+	Q_INVOKABLE void showMessage(
+		const QString & title,
+		const QString & explanation,
+		const QString & positive_button_text,
 		bool pause,
 		bool lock_rotation = false);
 

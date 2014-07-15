@@ -93,7 +93,14 @@ void QAndroidDialog::preloadJavaClasses()
 	}
 }
 
-void QAndroidDialog::showMessage(const QString & title, const QString & explanation, const QString & positive_button_text, const QString & negative_button_text, const QString & neutral_button_text, bool pause, bool lock_rotation)
+void QAndroidDialog::showMessage(
+	const QString & title,
+	const QString & explanation,
+	const QString & positive_button_text,
+	const QString & negative_button_text,
+	const QString & neutral_button_text,
+	bool pause,
+	bool lock_rotation)
 {
 	if (dialog_helper_)
 	{
@@ -117,6 +124,27 @@ void QAndroidDialog::showMessage(const QString & title, const QString & explanat
 	{
 		qCritical()<<"Failed to show message because DialogHelper instance not created!";
 	}
+}
+
+void QAndroidDialog::showMessage(
+	const QString & title,
+	const QString & explanation,
+	const QString & positive_button_text,
+	const QString & negative_button_text,
+	bool pause,
+	bool lock_rotation)
+{
+	showMessage(title, explanation, positive_button_text, negative_button_text, QString::null, pause, lock_rotation);
+}
+
+void QAndroidDialog::showMessage(
+	const QString & title,
+	const QString & explanation,
+	const QString & positive_button_text,
+	bool pause,
+	bool lock_rotation)
+{
+	showMessage(title, explanation, positive_button_text, QString::null, QString::null, pause, lock_rotation);
 }
 
 void QAndroidDialog::showMessageCallback(int button)
