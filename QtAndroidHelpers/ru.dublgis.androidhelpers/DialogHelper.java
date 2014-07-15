@@ -68,7 +68,7 @@ public class DialogHelper
         }
     }
 
-    public void showMessage(final String title, final String explanation, final String buttonText,
+    public void showMessage(final String title, final String explanation, final String positiveButtonText,
         final String negativeButtonText, final String neutralButtonText, final boolean loop, final int lockOrientation)
     {
         final Activity a = getActivity();
@@ -147,7 +147,10 @@ public class DialogHelper
                     }
                 };
 
-                builder.setPositiveButton(buttonText, listener);
+                if (positiveButtonText != null && !positiveButtonText.isEmpty())
+                {
+                    builder.setPositiveButton(positiveButtonText, listener);
+                }
                 if (negativeButtonText != null && !negativeButtonText.isEmpty())
                 {
                     builder.setNegativeButton(negativeButtonText, listener);

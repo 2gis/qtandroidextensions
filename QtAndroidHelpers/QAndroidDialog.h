@@ -68,21 +68,40 @@ public:
 	Q_INVOKABLE void setDeleteSelfOnClose(bool del) { delete_self_on_close_ = del; }
 
 	/*!
-	 * Show basic dialog with a message and one button or two buttons: positive and negative.
+	 * Show basic dialog with a message and one, two or three buttons: positive, negative and neutral.
 	 */
-	Q_INVOKABLE void showMessage(const QString & title, const QString & explanation, const QString & button_text, const QString & negative_button_text, const QString & neutral_button_text, bool pause, bool lock_rotation = false);
+	Q_INVOKABLE void showMessage(
+		const QString & title,
+		const QString & explanation,
+		const QString & positive_button_text,
+		const QString & negative_button_text,
+		const QString & neutral_button_text,
+		bool pause,
+		bool lock_rotation = false);
+
+	Q_INVOKABLE int resultButton() const { return result_button_; }
 
 signals:
-	//! Dialog is closed by click on any button.
-	void closed();
+	//! Dialog has been closed by click on the positive button.
+	void positiveClicked();
 
-	//! Dialog is closed by click on any button, with the button id specified. If dialog has been cancelled, button is 0.
+	//! Dialog has been closed by click on the negative button.
+	void negativeClicked();
+
+	//! Dialog has been closed by click on the neutral button.
+	void neutralClicked();
+
+	//! Dialog has been cancelled.
+	void cancelled();
+
+	/*!
+	 * Dialog has been closed by click on any button or cancelling.
+	 * If it has been cancelled, then button is 0.
+	 */
 	void closed(int button);
 
-	void positiveClicked();
-	void negativeClicked();
-	void neutralClicked();
-	void cancelled();
+	//! Dialog has been closed.
+	void closed();
 
 private:
 	void showMessageCallback(int button);
@@ -90,6 +109,7 @@ private:
 private:
 	QScopedPointer<QJniObject> dialog_helper_;
 	bool delete_self_on_close_;
+	int result_button_;
 
 	friend Q_DECL_EXPORT void JNICALL Java_DialogHelper_DialogHelper_showMessageCallback(JNIEnv *, jobject, jlong param, jint button);
 };

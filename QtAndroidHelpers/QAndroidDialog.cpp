@@ -58,6 +58,7 @@ Q_DECL_EXPORT void JNICALL Java_DialogHelper_DialogHelper_showMessageCallback(JN
 QAndroidDialog::QAndroidDialog(QObject * parent)
 	: QObject(parent)
 	, delete_self_on_close_(false)
+	, result_button_(0)
 {
 	dialog_helper_.reset(new QJniObject(c_full_class_name_, "J", (jlong)this));
 	if (!dialog_helper_->jObject())
@@ -92,7 +93,7 @@ void QAndroidDialog::preloadJavaClasses()
 	}
 }
 
-void QAndroidDialog::showMessage(const QString & title, const QString & explanation, const QString & button_text, const QString & negative_button_text, const QString & neutral_button_text, bool pause, bool lock_rotation)
+void QAndroidDialog::showMessage(const QString & title, const QString & explanation, const QString & positive_button_text, const QString & negative_button_text, const QString & neutral_button_text, bool pause, bool lock_rotation)
 {
 	if (dialog_helper_)
 	{
@@ -105,7 +106,7 @@ void QAndroidDialog::showMessage(const QString & title, const QString & explanat
 			"Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZI",
 			QJniLocalRef(title).jObject(),
 			QJniLocalRef(explanation).jObject(),
-			QJniLocalRef(button_text).jObject(),
+			QJniLocalRef(positive_button_text).jObject(),
 			QJniLocalRef(negative_button_text).jObject(),
 			QJniLocalRef(neutral_button_text).jObject(),
 			jboolean(pause),
@@ -121,6 +122,8 @@ void QAndroidDialog::showMessage(const QString & title, const QString & explanat
 void QAndroidDialog::showMessageCallback(int button)
 {
 	qDebug()<<__FUNCTION__<<button;
+
+	result_button_ = button;
 
 	switch(button)
 	{
