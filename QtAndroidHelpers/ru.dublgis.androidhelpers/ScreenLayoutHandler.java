@@ -50,7 +50,7 @@ public class ScreenLayoutHandler implements ViewTreeObserver.OnGlobalLayoutListe
 
     public ScreenLayoutHandler(long native_ptr)
     {
-        Log.i(TAG, "ScreenLayoutHandler OBconstructor");
+        Log.i(TAG, "ScreenLayoutHandler constructor");
         native_ptr_ = native_ptr;
         subscribeToLayoutEvents();
     }
