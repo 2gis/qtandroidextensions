@@ -231,7 +231,7 @@ public:
 	//! Make sure software keyboard is hidden for this control.
 	void hideKeyboard();
 
-	//! Make sure software keyboard is showed for this control.
+	//! Make sure software keyboard is shown for this control.
 	void showKeyboard();
 
 	/*!

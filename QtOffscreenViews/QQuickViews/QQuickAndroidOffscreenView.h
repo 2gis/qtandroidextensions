@@ -64,6 +64,12 @@ public slots:
 
 	void requestVisibleRect();
 
+	//! Make sure software keyboard is hidden for this control.
+	void hideKeyboard() { androidView()->hideKeyboard(); }
+
+	//! Make sure software keyboard is shown for this control.
+	void showKeyboard() { androidView()->showKeyboard(); }
+
 signals:
 	void backgroundColorChanged(QColor color);
 	void visibleRectReceived(int width, int height);
