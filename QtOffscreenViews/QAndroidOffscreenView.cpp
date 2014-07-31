@@ -155,7 +155,12 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	, last_texture_width_(0)
 	, last_texture_height_(0)
 {
-	connect(QApplicationActivityObserver::instance(), SIGNAL(applicationActiveStateChanged()), this, SLOT(updateAndroidViewVisibility()));
+	connect(
+		QApplicationActivityObserver::instance(),
+		SIGNAL(applicationActiveStateChanged()),
+		this,
+		SLOT(updateAndroidViewVisibility()),
+		Qt::DirectConnection);
 
 	preloadJavaClasses();
 

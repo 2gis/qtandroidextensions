@@ -90,7 +90,7 @@ bool QApplicationActivityObserver::eventFilter(QObject * obj, QEvent * evnt)
 	else if (evnt->type() == QEvent::ApplicationDeactivate)
 	{
 		// qDebug()<<__PRETTY_FUNCTION__<<"DEACTIVATE!";
-		QMetaObject::invokeMethod(this, "setApplicationActive", Qt::QueuedConnection, Q_ARG(bool,false));
+		setApplicationActive(false);
 	}
 	return QObject::eventFilter(obj, evnt);
 }
