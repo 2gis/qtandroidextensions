@@ -159,7 +159,7 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 		QApplicationActivityObserver::instance(),
 		SIGNAL(applicationActiveStateChanged()),
 		this,
-		SLOT(updateAndroidViewVisibility()),
+		SLOT(applicationActivityStatusChanged()),
 		Qt::DirectConnection);
 
 	preloadJavaClasses();
@@ -615,6 +615,11 @@ void QAndroidOffscreenView::invalidate()
 	{
 		offscreen_view_->callVoid("invalidateOffscreenView");
 	}
+}
+
+void QAndroidOffscreenView::applicationActivityStatusChanged()
+{
+	updateAndroidViewVisibility();
 }
 
 void QAndroidOffscreenView::updateAndroidViewVisibility()

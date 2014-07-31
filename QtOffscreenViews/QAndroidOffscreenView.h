@@ -297,6 +297,9 @@ public slots:
 	//! Tell Android View to repaint.
 	virtual void invalidate();
 
+	//! Catch application activity status changes from the app activity observer.
+	virtual void applicationActivityStatusChanged();
+
 	//! Update Android View visibility from visibility of the Qt View and activity of Qt application.
 	virtual void updateAndroidViewVisibility();
 
