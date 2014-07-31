@@ -634,15 +634,26 @@ abstract class OffscreenView
                 View v = getView();
                 if (v != null)
                 {
-                    if (!visible)
-                    {
-                        uiDetachViewFromQtScreen();
-                    }
                     int vis = last_visibility_? View.VISIBLE: View.INVISIBLE;
-                    v.setVisibility(vis);
-                    if (visible && attaching_mode_)
+                    if (vis != v.getVisibility())
                     {
-                        uiAttachViewToQtScreen();
+                        if (!visible)
+                        {
+                            uiDetachViewFromQtScreen();
+                        }
+                        v.setVisibility(vis);
+                        if (visible)
+                        {
+                            if (attaching_mode_)
+                            {
+                                uiAttachViewToQtScreen();
+                            }
+                            invalidateOffscreenView();
+                        }
+                    }
+                    else
+                    {
+                        Log.i(TAG, "setVisible: skipping double setting to "+visible+" for "+object_name_);
                     }
                 }
             }
@@ -731,14 +742,40 @@ abstract class OffscreenView
         boolean result = false;
         synchronized(texture_mutex_)
         {
+            // Skip painting in certain conditions.
             // Note: with a null View we will continue, but will only fill
             // background with the fill color.
-            if (rendering_surface_ == null || getNativePtr() == 0)
+
+            // Normal situation (rendering surface is not created yet, this is OK as we do all asynchronously).
+            if (rendering_surface_ == null)
             {
-                Log.i(TAG, "doDrawViewOnTexture: surface or native ptr is null. native_ptr = "+getNativePtr()
-                    +", surface: "+((rendering_surface_ == null)?"null":"not null"));
+                // Log.i(TAG, "doDrawViewOnTexture: surface is null: "+object_name_);
                 return false;
             }
+
+            // C++ part is not set or already lost (may happen during init/deinit).
+            if (getNativePtr() == 0)
+            {
+                Log.i(TAG, "doDrawViewOnTexture: native ptr is null: "+object_name_);
+                return false;
+            }
+
+            // Thou shalt not paint while app is miminized, or GL may freak out and the app will hang
+            // with black screen.
+            if (!last_visibility_)
+            {
+                Log.i(TAG, "doDrawViewOnTexture: skipping paint for invisible view: "+object_name_);
+                return false;
+            }
+
+            View v = getView();
+            if (v != null && v.getVisibility() != View.VISIBLE)
+            {
+                // Note: setVisible()'s lambda will schedule one more paint after the view will become visible.
+                Log.i(TAG, "doDrawViewOnTexture: skipping paint because view visibility did not apply yet: "+object_name_);
+                return false;
+            }
+
             try
             {
                 // long t = System.nanoTime();
@@ -751,7 +788,6 @@ abstract class OffscreenView
                 {
                     try
                     {
-                        View v = getView();
                         if (v != null)
                         {
                             // Log.i(TAG, "doDrawViewOnTexture view size:"+v.getWidth()+"x"+v.getHeight());
@@ -789,7 +825,6 @@ abstract class OffscreenView
                     }
 
                     rendering_surface_.unlockCanvas(canvas);
-
                     // t = System.nanoTime() - t;
                     // Tell C++ part that we have a new image
                     nativeUpdate(getNativePtr());
@@ -1367,7 +1402,7 @@ abstract class OffscreenView
             }
             catch(Exception e)
             {
-                Log.e(TAG, "Failed to lock canvas", e);
+                Log.e(TAG, "Failed to lock canvas for "+object_name_, e);
                 return null;
             }
         }
