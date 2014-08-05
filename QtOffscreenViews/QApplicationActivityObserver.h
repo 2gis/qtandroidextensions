@@ -64,12 +64,16 @@ public:
 
 private slots:
 	/*!
-	 * Sets activity flag and emits applicationActive; this function
-	 * is usually called from main window.
+	 * Sets current application activity status and emits applicationActiveStateChanged().
 	 */
 	void setApplicationActive(bool active);
 
 signals:
+	/*!
+	 * Signals application status change.
+	 * Please note that this signal may be emitted from different threads, depending
+	 * on Qt version & Android plugin. Make sure to use proper connection type.
+	 */
 	void applicationActiveStateChanged();
 
 protected:

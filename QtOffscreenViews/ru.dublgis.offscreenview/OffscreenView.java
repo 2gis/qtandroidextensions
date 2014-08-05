@@ -409,6 +409,7 @@ abstract class OffscreenView
             {
                 return false;
             }
+            Log.i(TAG, "uiAttachViewToQtScreen "+object_name_);
             if (layout_ == null)
             {
                 Log.e(TAG, "Failed to insert "+object_name_+" into the ViewGroup because View is null!");
@@ -440,6 +441,7 @@ abstract class OffscreenView
      */
     private boolean uiDetachViewFromQtScreen()
     {
+        Log.i(TAG, "uiDetachViewFromQtScreen "+object_name_);
         uiHideKeyboardFromView();
         try
         {

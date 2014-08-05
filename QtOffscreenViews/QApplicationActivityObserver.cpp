@@ -75,6 +75,7 @@ void QApplicationActivityObserver::setApplicationActive(bool active)
 {
 	if (active != is_active_)
 	{
+		qDebug()<<"QApplicationActivityObserver::setApplicationActive"<<active;
 		is_active_ = active;
 		emit applicationActiveStateChanged();
 	}
@@ -84,12 +85,10 @@ bool QApplicationActivityObserver::eventFilter(QObject * obj, QEvent * evnt)
 {
 	if (evnt->type() == QEvent::ApplicationActivate)
 	{
-		// qDebug()<<__PRETTY_FUNCTION__<<"ACTIVE!";
 		QMetaObject::invokeMethod(this, "setApplicationActive", Qt::QueuedConnection, Q_ARG(bool,true));
 	}
 	else if (evnt->type() == QEvent::ApplicationDeactivate)
 	{
-		// qDebug()<<__PRETTY_FUNCTION__<<"DEACTIVATE!";
 		setApplicationActive(false);
 	}
 	return QObject::eventFilter(obj, evnt);
