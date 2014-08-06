@@ -228,6 +228,8 @@ public:
 	QString callStaticString(const char* method_name);
 
 	QJniObject * getStaticObjectField(const char *field_name, const char * objname);
+	QString getStaticStringField(const char *field_name);
+	jint getStaticIntField(const char *field_name);
 
 	//! Register native method in the wrapped class
 	bool registerNativeMethod(const char* name, const char* signature, void* ptr);
@@ -354,6 +356,8 @@ public:
 
 	//! Get value of float field of the wrapped Java object
 	QJniObject * getObjectField(const char * field_name, const char * objname);
+
+	QString getStringField(const char * field_name);
 
 	/*!
 	 * Call jstring method of the wrapped Java object and

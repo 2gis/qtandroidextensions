@@ -555,7 +555,7 @@ QString QJniClass::callStaticString(const char *method_name)
 
 QJniObject * QJniClass::getStaticObjectField(const char *field_name, const char * objname)
 {
-	VERBOSE(qDebug("int QJniObject::getStaticObjectField(const char * field_name, const char * objname) %p \"%s\" \"%s\"", this, field_name, objname));
+	VERBOSE(qDebug("int QJniObject::getStaticObjectField(const char * field_name, const char * objname) %p \"%s\"", this, field_name, objname));
 	QByteArray obj;
 	obj += "L";
 	obj += objname;
@@ -578,6 +578,44 @@ QJniObject * QJniClass::getStaticObjectField(const char *field_name, const char 
 		throw QJniJavaCallException();
 	}
 	return new QJniObject(jo, true);
+}
+
+QString QJniClass::getStaticStringField(const char *field_name)
+{
+	VERBOSE(qDebug("int QJniObject::getStaticStringField(const char * field_name) %p \"%s\"", this, field_name));
+	QJniEnvPtr jep;
+	JNIEnv* env = jep.env();
+	jfieldID fid = env->GetStaticFieldID(checkedClass(), field_name, "Ljava/lang/String;");
+	if (!fid)
+	{
+		qWarning("%s: field not found.", field_name);
+		throw QJniFieldNotFoundException();
+	}
+	QString ret = QJniLocalRef(env, env->GetStaticObjectField(class_, fid));
+	if (jep.clearException())
+	{
+		throw QJniJavaCallException();
+	}
+	return ret;
+}
+
+jint QJniClass::getStaticIntField(const char *field_name)
+{
+	VERBOSE(qDebug("int QJniObject::getStaticIntField(const char * field_name) %p \"%s\"", this, field_name));
+	QJniEnvPtr jep;
+	JNIEnv* env = jep.env();
+	jfieldID fid = env->GetStaticFieldID(checkedClass(), field_name, "I");
+	if (!fid)
+	{
+		qWarning("%s: field not found.", field_name);
+		throw QJniFieldNotFoundException();
+	}
+	jint result = env->GetStaticIntField(jClass(), fid);
+	if (jep.clearException())
+	{
+		throw QJniJavaCallException();
+	}
+	return result;
 }
 
 QJniObject* QJniClass::callStaticObject(const char * method_name, const char * objname)
@@ -1254,6 +1292,24 @@ QJniObject * QJniObject::getObjectField(const char* field_name, const char * obj
 	return new QJniObject(jo, true);
 }
 
+QString QJniObject::getStringField(const char * field_name)
+{
+	VERBOSE(qDebug("int QJniObject::getStringField(const char * field_name) %p \"%s\"", this, field_name));
+	QJniEnvPtr jep;
+	JNIEnv* env = jep.env();
+	jfieldID fid = env->GetFieldID(checkedClass(), field_name, "Ljava/lang/String;");
+	if (!fid)
+	{
+		qWarning("%s: field not found.", field_name);
+		throw QJniFieldNotFoundException();
+	}
+	QString ret = QJniLocalRef(env, env->GetObjectField(instance_, fid));
+	if (jep.clearException())
+	{
+		throw QJniJavaCallException();
+	}
+	return ret;
+}
 
 void QJniObject::callParamVoid(const char * method_name, const char * param_signature, ...)
 {
