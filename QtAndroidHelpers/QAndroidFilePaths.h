@@ -77,6 +77,11 @@ namespace QAndroidFilePaths
      */
     const QString & DownloadCacheDirectory();
 
+	/*!
+	 * Activity.getExternalCacheDir().getPath().
+	 */
+	const QString & ExternalCacheDirectory();
+
 	void preloadJavaClasses();
 
 } // namespace QAndroidFilePaths
