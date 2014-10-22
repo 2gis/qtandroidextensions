@@ -60,6 +60,7 @@ QAndroidDialog::QAndroidDialog(QObject * parent)
 	, delete_self_on_close_(false)
 	, result_button_(0)
 {
+	preloadJavaClasses();
 	dialog_helper_.reset(new QJniObject(c_full_class_name_, "J", (jlong)this));
 	if (!dialog_helper_->jObject())
 	{

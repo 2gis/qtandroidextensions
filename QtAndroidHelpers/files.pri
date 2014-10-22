@@ -5,7 +5,8 @@ HEADERS += \
     QAndroidDisplayMetrics.h \
     QAndroidFilePaths.h \
     QAndroidScreenOrientation.h \
-    QAndroidScreenLayoutHandler.h
+    QAndroidScreenLayoutHandler.h \
+    QAndroidToast.h
 
 SOURCES += \
     QAndroidConfiguration.cpp \
@@ -13,4 +14,5 @@ SOURCES += \
     QAndroidDisplayMetrics.cpp \
     QAndroidFilePaths.cpp \
     QAndroidScreenOrientation.cpp \
-    QAndroidScreenLayoutHandler.cpp
+    QAndroidScreenLayoutHandler.cpp \
+    QAndroidToast.cpp
