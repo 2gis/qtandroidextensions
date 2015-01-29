@@ -200,6 +200,7 @@ Q_DECL_EXPORT void JNICALL Java_onContentHeightReceived(JNIEnv *, jobject, jlong
 
 QAndroidOffscreenWebView::QAndroidOffscreenWebView(const QString & object_name, const QSize & def_size, QObject * parent)
 	: QAndroidOffscreenView(QLatin1String("OffscreenWebView"), object_name, def_size, parent)
+	, ignore_ssl_errors_(false)
 {
 	static const JNINativeMethod methods[] = {
 		//
@@ -360,6 +361,7 @@ void QAndroidOffscreenWebView::onPageStarted(JNIEnv *, jobject, jobject url, job
 
 void QAndroidOffscreenWebView::onReceivedError(JNIEnv *, jobject, int errorCode, jobject description, jobject failingUrl)
 {
+	qDebug() << "QAndroidOffscreenWebView::onReceivedError" << errorCode;
 	Q_UNUSED(errorCode);
 	Q_UNUSED(description);
 	Q_UNUSED(failingUrl);
@@ -382,7 +384,15 @@ void QAndroidOffscreenWebView::onReceivedLoginRequest(JNIEnv *, jobject, jobject
 void QAndroidOffscreenWebView::onReceivedSslError(JNIEnv *, jobject, jobject handler, jobject error)
 {
 	Q_UNUSED(error);
-	QJniObject(handler, false).callVoid("cancel");
+	qDebug() << "QAndroidOffscreenWebView::onReceivedSslError" << QString(QJniLocalRef(QJniObject(error, false).callString("toString")));
+	if (ignore_ssl_errors_)
+	{
+		QJniObject(handler, false).callVoid("proceed");
+	}
+	else
+	{
+		QJniObject(handler, false).callVoid("cancel");
+	}
 }
 
 void QAndroidOffscreenWebView::onScaleChanged(JNIEnv *, jobject, float oldScale, float newScale)
@@ -394,6 +404,7 @@ void QAndroidOffscreenWebView::onScaleChanged(JNIEnv *, jobject, float oldScale,
 void QAndroidOffscreenWebView::onTooManyRedirects(JNIEnv *, jobject, jobject cancelMsg, jobject continueMsg)
 {
 	Q_UNUSED(continueMsg);
+	qDebug() << "QAndroidOffscreenWebView::onTooManyRedirects";
 	QJniObject(cancelMsg, false).callVoid("sendToTarget");
 }
 
@@ -414,10 +425,11 @@ jboolean QAndroidOffscreenWebView::shouldOverrideKeyEvent(JNIEnv *, jobject, job
 	return 0;
 }
 
-jboolean QAndroidOffscreenWebView::shouldOverrideUrlLoading(JNIEnv *, jobject, jobject url)
+jboolean QAndroidOffscreenWebView::shouldOverrideUrlLoading(JNIEnv * env, jobject, jobject url)
 {
 	// Doing OffscreenWebView.loadUrl(url).
 	// This should always be done for Chrome to avoid opening links in external browser.
+	qDebug() << "QAndroidOffscreenWebView::shouldOverrideUrlLoading" << QJniEnvPtr(env).JStringToQString(static_cast<jstring>(url));
 	QJniObject * aview = QAndroidOffscreenView::getView();
 	if (aview)
 	{

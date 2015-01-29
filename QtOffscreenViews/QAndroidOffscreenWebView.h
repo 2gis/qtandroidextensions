@@ -42,6 +42,7 @@ class QAndroidOffscreenWebView
 	: public QAndroidOffscreenView
 {
 	Q_OBJECT
+	Q_PROPERTY(bool ignoreSslErrors READ getIgnoreSslErrors WRITE setIgnoreSslErrors)
 public:
 	QAndroidOffscreenWebView(const QString & object_name, const QSize & def_size, QObject * parent = 0);
 	virtual ~QAndroidOffscreenWebView();
@@ -75,6 +76,9 @@ public:
 
 	//! Will emit contentHeightReceived(int) after done.
 	bool requestContentHeight();
+
+	bool getIgnoreSslErrors() const { return ignore_ssl_errors_; }
+	void setIgnoreSslErrors(bool ignore) { ignore_ssl_errors_ = ignore; }
 
 	/*
 	Unimplemented WebView functions:
@@ -253,4 +257,7 @@ protected:
 	//
 	virtual void onContentHeightReceived(int height);
 	friend Q_DECL_EXPORT void JNICALL Java_onContentHeightReceived(JNIEnv * env, jobject jo, jlong nativeptr, jint height);
+
+private:
+	bool ignore_ssl_errors_;
 };

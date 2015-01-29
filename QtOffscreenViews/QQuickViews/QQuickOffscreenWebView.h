@@ -41,8 +41,12 @@
 class QQuickAndroidOffscreenWebView: public QQuickAndroidOffscreenView
 {
 	Q_OBJECT
+	Q_PROPERTY(bool ignoreSslErrors READ getIgnoreSslErrors WRITE setIgnoreSslErrors)
 public:
 	QQuickAndroidOffscreenWebView();
+
+	bool getIgnoreSslErrors() const { return androidWebView()->getIgnoreSslErrors(); }
+	void setIgnoreSslErrors(bool ignore) { androidWebView()->setIgnoreSslErrors(ignore); }
 
 protected:
 	QAndroidOffscreenWebView * androidWebView() { return static_cast<QAndroidOffscreenWebView*>(androidView()); }
