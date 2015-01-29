@@ -95,7 +95,7 @@ import android.graphics.Canvas;
 
 class OffscreenWebView extends OffscreenView
 {
-	// http://developer.android.com/reference/android/webkit/WebView.html
+    // http://developer.android.com/reference/android/webkit/WebView.html
     class MyWebView extends WebView
     {
         private class MyWebViewClient extends WebViewClient

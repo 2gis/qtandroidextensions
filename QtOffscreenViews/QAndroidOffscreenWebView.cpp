@@ -337,7 +337,7 @@ void QAndroidOffscreenWebView::doUpdateVisitedHistory(JNIEnv *, jobject, jobject
 void QAndroidOffscreenWebView::onFormResubmission(JNIEnv *, jobject, jobject dontResend, jobject resend)
 {
 	Q_UNUSED(resend);
-	QJniObject(dontResend).callVoid("sendToTarget");
+	QJniObject(dontResend, false).callVoid("sendToTarget");
 }
 
 void QAndroidOffscreenWebView::onLoadResource(JNIEnv *, jobject, jobject url)
@@ -369,7 +369,7 @@ void QAndroidOffscreenWebView::onReceivedHttpAuthRequest(JNIEnv *, jobject, jobj
 {
 	Q_UNUSED(host);
 	Q_UNUSED(realm);
-	QJniObject(handler).callVoid("cancel");
+	QJniObject(handler, false).callVoid("cancel");
 }
 
 void QAndroidOffscreenWebView::onReceivedLoginRequest(JNIEnv *, jobject, jobject realm, jobject account, jobject args)
@@ -382,7 +382,7 @@ void QAndroidOffscreenWebView::onReceivedLoginRequest(JNIEnv *, jobject, jobject
 void QAndroidOffscreenWebView::onReceivedSslError(JNIEnv *, jobject, jobject handler, jobject error)
 {
 	Q_UNUSED(error);
-	QJniObject(handler).callVoid("cancel");
+	QJniObject(handler, false).callVoid("cancel");
 }
 
 void QAndroidOffscreenWebView::onScaleChanged(JNIEnv *, jobject, float oldScale, float newScale)
@@ -394,7 +394,7 @@ void QAndroidOffscreenWebView::onScaleChanged(JNIEnv *, jobject, float oldScale,
 void QAndroidOffscreenWebView::onTooManyRedirects(JNIEnv *, jobject, jobject cancelMsg, jobject continueMsg)
 {
 	Q_UNUSED(continueMsg);
-	QJniObject(cancelMsg).callVoid("sendToTarget");
+	QJniObject(cancelMsg, false).callVoid("sendToTarget");
 }
 
 void QAndroidOffscreenWebView::onUnhandledKeyEvent(JNIEnv *, jobject, jobject event)
