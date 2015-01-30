@@ -42,6 +42,9 @@ QQuickAndroidOffscreenWebView::QQuickAndroidOffscreenWebView()
 	connect(androidWebView(), SIGNAL(pageStarted()), this, SLOT(wwPageStarted()));
 	connect(androidWebView(), SIGNAL(pageFinished()), this, SLOT(wwPageFinished()));
 	connect(androidWebView(), SIGNAL(contentHeightReceived(int)), this, SLOT(wwContentHeightReceived(int)));
+	connect(androidWebView(), SIGNAL(canGoBackReceived(bool)), this, SLOT(wwCanGoBackReceived(bool)));
+	connect(androidWebView(), SIGNAL(canGoForwardReceived(bool)), this, SLOT(wwCanGoForwardReceived(bool)));
+	connect(androidWebView(), SIGNAL(canGoBackOrForwardReceived(bool,int)), this, SLOT(wwCanGoBackOrForwardReceived(bool,int)));
 }
 
 void QQuickAndroidOffscreenWebView::wwPageStarted()
@@ -58,3 +61,20 @@ void QQuickAndroidOffscreenWebView::wwContentHeightReceived(int height)
 {
 	emit contentHeightReceived(height);
 }
+
+void QQuickAndroidOffscreenWebView::wwCanGoBackReceived(bool can)
+{
+	emit canGoBackReceived(can);
+}
+
+void QQuickAndroidOffscreenWebView::wwCanGoForwardReceived(bool can)
+{
+	emit canGoForwardReceived(can);
+}
+
+void QQuickAndroidOffscreenWebView::wwCanBackOrForwardReceived(bool can, int steps)
+{
+	emit canGoBackOrForwardReceived(can, steps);
+}
+
+

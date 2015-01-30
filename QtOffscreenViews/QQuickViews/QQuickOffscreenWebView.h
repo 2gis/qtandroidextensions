@@ -59,14 +59,27 @@ public slots:
 	void loadDataWithBaseURL(const QString & baseUrl, const QString & data, const QString & mimeType, const QString & encoding, const QString & historyUrl) { androidWebView()->loadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl); }
 	void requestContentHeight() { androidWebView()->requestContentHeight(); }
 
+	void requestCanGoBack() { androidWebView()->requestCanGoBack(); }
+	void goBack() { androidWebView()->goBack(); }
+	void requestCanGoForward() { androidWebView()->requestCanGoForward(); }
+	void goForward() { androidWebView()->goForward(); }
+	void requestCanGoBackOrForward(int steps) { androidWebView()->requestCanGoBackOrForward(steps); }
+	void goBackOrForward(int steps) { androidWebView()->goBackOrForward(steps); }
+
 signals:
 	void pageStarted();
 	void pageFinished();
 	void contentHeightReceived(int height);
+	void canGoBackReceived(bool can);
+	void canGoForwardReceived(bool can);
+	void canGoBackOrForwardReceived(bool can, int steps);
 
 protected slots:
 	virtual void wwPageStarted();
 	virtual void wwPageFinished();
 	virtual void wwContentHeightReceived(int height);
+	virtual void wwCanGoBackReceived(bool can);
+	virtual void wwCanGoForwardReceived(bool can);
+	virtual void wwCanBackOrForwardReceived(bool can, int steps);
 };
 

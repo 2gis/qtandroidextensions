@@ -77,6 +77,18 @@ public:
 	//! Will emit contentHeightReceived(int) after done.
 	bool requestContentHeight();
 
+	//! Gets whether this WebView has a back history item.
+	void requestCanGoBack();
+	void goBack();
+
+	//! Gets whether the page can go back or forward the given number of steps.
+	void requestCanGoBackOrForward(int steps);
+	void goBackOrForward(int steps);
+
+	//! Gets whether this WebView has a forward history item.
+	void requestCanGoForward();
+	void goForward();
+
 	bool getIgnoreSslErrors() const { return ignore_ssl_errors_; }
 	void setIgnoreSslErrors(bool ignore) { ignore_ssl_errors_ = ignore; }
 
@@ -84,9 +96,6 @@ public:
 	Unimplemented WebView functions:
 
 	void addJavascriptInterface(Object object, String name) // Injects the supplied Java object into this WebView.
-	boolean canGoBack() // Gets whether this WebView has a back history item.
-	boolean canGoBackOrForward(int steps) // Gets whether the page can go back or forward the given number of steps.
-	boolean canGoForward() // Gets whether this WebView has a forward history item.
 	void 	clearCache(boolean includeDiskFiles) // Clears the resource cache.
 	void 	clearFormData() // Removes the autocomplete popup from the currently focused form field, if present.
 	void 	clearHistory() // Tells this WebView to clear its internal back/forward list.
@@ -116,9 +125,6 @@ public:
 	WebSettings getSettings() // Gets the WebSettings object used to control the settings for this WebView.
 	String 	getTitle() // Gets the title for the current page.
 	String 	getUrl() // Gets the URL for the current page.
-	void 	goBack() // Goes back in the history of this WebView.
-	void 	goBackOrForward(int steps) // Goes to the history item that is the number of steps away from the current item.
-	void 	goForward() // Goes forward in the history of this WebView.
 	void 	invokeZoomPicker() // Invokes the graphical zoom picker widget for this WebView.
 	boolean isPrivateBrowsingEnabled() // Gets whether private browsing is enabled in this WebView.
 	InputConnection onCreateInputConnection(EditorInfo outAttrs) // Create a new InputConnection for an InputMethod to interact with the view.
@@ -210,6 +216,9 @@ signals:
 	void pageStarted();
 	void pageFinished();
 	void contentHeightReceived(int height);
+	void canGoBackReceived(bool can);
+	void canGoForwardReceived(bool can);
+	void canGoBackOrForwardReceived(bool can, int steps);
 
 protected:
 	//
@@ -256,7 +265,15 @@ protected:
 	// Own callbacks
 	//
 	virtual void onContentHeightReceived(int height);
+	virtual void onCanGoBackReceived(bool can);
+	virtual void onCanGoForwardReceived(bool can);
+	virtual void onCanGoBackOrForwardReceived(bool can, int steps);
+
 	friend Q_DECL_EXPORT void JNICALL Java_onContentHeightReceived(JNIEnv * env, jobject jo, jlong nativeptr, jint height);
+	friend Q_DECL_EXPORT void JNICALL Java_onCanGoBackReceived(JNIEnv * env, jobject jo, jlong nativeptr, jboolean can);
+	friend Q_DECL_EXPORT void JNICALL Java_onCanGoForwardReceived(JNIEnv * env, jobject jo, jlong nativeptr, jboolean can);
+	friend Q_DECL_EXPORT void JNICALL Java_onCanGoBackOrForwardReceived(JNIEnv * env, jobject jo, jlong nativeptr, jboolean can, jint steps);
+
 
 private:
 	bool ignore_ssl_errors_;

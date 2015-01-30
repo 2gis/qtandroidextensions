@@ -198,6 +198,30 @@ Q_DECL_EXPORT void JNICALL Java_onContentHeightReceived(JNIEnv *, jobject, jlong
 	}
 }
 
+Q_DECL_EXPORT void JNICALL Java_onCanGoBackReceived(JNIEnv * env, jobject jo, jlong nativeptr, jboolean can)
+{
+	if (QAndroidOffscreenWebView * wv = AOWW(nativeptr))
+	{
+		wv->onCanGoBackReceived(can);
+	}
+}
+
+Q_DECL_EXPORT void JNICALL Java_onCanGoForwardReceived(JNIEnv * env, jobject jo, jlong nativeptr, jboolean can)
+{
+	if (QAndroidOffscreenWebView * wv = AOWW(nativeptr))
+	{
+		wv->onCanGoForwardReceived(can);
+	}
+}
+
+Q_DECL_EXPORT void JNICALL Java_onCanGoBackOrForwardReceived(JNIEnv * env, jobject jo, jlong nativeptr, jboolean can, jint steps)
+{
+	if (QAndroidOffscreenWebView * wv = AOWW(nativeptr))
+	{
+		wv->onCanGoBackOrForwardReceived(can, steps);
+	}
+}
+
 QAndroidOffscreenWebView::QAndroidOffscreenWebView(const QString & object_name, const QSize & def_size, QObject * parent)
 	: QAndroidOffscreenView(QLatin1String("OffscreenWebView"), object_name, def_size, parent)
 	, ignore_ssl_errors_(false)
@@ -225,7 +249,10 @@ QAndroidOffscreenWebView::QAndroidOffscreenWebView(const QString & object_name, 
 		//
 		// Own callbacks
 		//
-		{"onContentHeightReceived", "(JI)V", (void*)Java_onContentHeightReceived}
+		{"onContentHeightReceived", "(JI)V", (void*)Java_onContentHeightReceived},
+		{"onCanGoBackReceived", "(JZ)V", (void*)Java_onCanGoBackReceived},
+		{"onCanGoForwardReceived", "(JZ)V", (void*)Java_onCanGoForwardReceived},
+		{"onCanGoBackOrForwardtReceived", "(JZI)V", (void*)Java_onCanGoBackOrForwardReceived}
 	};
 	if (QJniObject * ov = offscreenView())
 	{
@@ -315,15 +342,67 @@ bool QAndroidOffscreenWebView::loadDataWithBaseURL(const QString & baseUrl, cons
 
 bool QAndroidOffscreenWebView::requestContentHeight()
 {
+}
+
+void QAndroidOffscreenWebView::requestCanGoBack()
+{
 	QJniObject * view = offscreenView();
 	if (view)
 	{
-		return view->callBool("requestContentHeight");
+		view->callVoid("requestCanGoBack");
+		return;
 	}
-	qWarning("QAndroidOffscreenWebView: Attempt to requestContentHeight when View is null.");
-	return false;
+	qWarning("QAndroidOffscreenWebView: Attempt to requestCanGoBack when View is null.");
+	emit canGoBackReceived(false);
 }
 
+void QAndroidOffscreenWebView::goBack()
+{
+	if (QJniObject * view = offscreenView())
+	{
+		view->callVoid("goBack");
+	}
+}
+
+void QAndroidOffscreenWebView::requestCanGoForward()
+{
+	QJniObject * view = offscreenView();
+	if (view)
+	{
+		view->callVoid("requestCanGoForward");
+		return;
+	}
+	qWarning("QAndroidOffscreenWebView: Attempt to requestCanGoForward when View is null.");
+	emit canGoForwardReceived(false);
+}
+
+void QAndroidOffscreenWebView::goForward()
+{
+	if (QJniObject * view = offscreenView())
+	{
+		view->callVoid("goForward");
+	}
+}
+
+void QAndroidOffscreenWebView::requestCanGoBackOrForward(int steps)
+{
+	QJniObject * view = offscreenView();
+	if (view)
+	{
+		view->callVoid("requestCanGoBackOrForward", static_cast<jint>(steps));
+		return;
+	}
+	qWarning("QAndroidOffscreenWebView: Attempt to requestCanGoBackOrForward when View is null.");
+	emit canGoBackOrForwardReceived(false, steps);
+}
+
+void QAndroidOffscreenWebView::goBackOrForward(int steps)
+{
+	if (QJniObject * view = offscreenView())
+	{
+		view->callVoid("goForward", static_cast<jint>(steps));
+	}
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // WebViewClient
@@ -410,6 +489,7 @@ void QAndroidOffscreenWebView::onTooManyRedirects(JNIEnv *, jobject, jobject can
 
 void QAndroidOffscreenWebView::onUnhandledKeyEvent(JNIEnv *, jobject, jobject event)
 {
+	qDebug() << "QAndroidOffscreenWebView::onUnhandledKeyEvent" << QJniObject(event, false).callInt("getKeyCode");
 	Q_UNUSED(event);
 }
 
@@ -446,4 +526,19 @@ jboolean QAndroidOffscreenWebView::shouldOverrideUrlLoading(JNIEnv * env, jobjec
 void QAndroidOffscreenWebView::onContentHeightReceived(int height)
 {
 	emit contentHeightReceived(height);
+}
+
+void QAndroidOffscreenWebView::onCanGoBackReceived(bool can)
+{
+	emit canGoBackReceived(can);
+}
+
+void QAndroidOffscreenWebView::onCanGoForwardReceived(bool can)
+{
+	emit canGoForwardReceived(can);
+}
+
+void QAndroidOffscreenWebView::onCanGoBackOrForwardReceived(bool can, int steps)
+{
+	emit canGoBackOrForwardReceived(can, steps);
 }

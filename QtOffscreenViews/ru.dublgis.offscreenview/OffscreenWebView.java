@@ -368,6 +368,78 @@ class OffscreenWebView extends OffscreenView
         return true;
     }
 
+    // From C++
+    public void requestCanGoBack()
+    {
+        runViewAction(new Runnable() {
+            @Override
+            public void run()
+            {
+                onCanGoBackReceived(getNativePtr(), ((MyWebView)getView()).canGoBack());
+            }
+        });
+    }
+
+    // From C++
+    public void goBack()
+    {
+        runViewAction(new Runnable() {
+            @Override
+            public void run()
+            {
+                ((MyWebView)getView()).goBack();
+            }
+        });
+    }
+
+    // From C++
+    public void requestCanGoForward()
+    {
+        runViewAction(new Runnable() {
+            @Override
+            public void run()
+            {
+                onCanGoForwardReceived(getNativePtr(), ((MyWebView)getView()).canGoForward());
+            }
+        });
+    }
+
+    // From C++
+    public void goForward()
+    {
+        runViewAction(new Runnable() {
+            @Override
+            public void run()
+            {
+                ((MyWebView)getView()).goForward();
+            }
+        });
+    }
+
+    // From C++
+    public void requestCanGoBackOrForward(final int steps)
+    {
+        runViewAction(new Runnable() {
+            @Override
+            public void run()
+            {
+                onCanGoBackOrForwardReceived(getNativePtr(), ((MyWebView)getView()).canGoBackOrForward(steps), steps);
+            }
+        });
+    }
+
+    // From C++
+    public void goBackOrForward(final int steps)
+    {
+        runViewAction(new Runnable() {
+            @Override
+            public void run()
+            {
+                ((MyWebView)getView()).goBackOrForward(steps);
+            }
+        });
+    }
+
     // WebViewClient
     public native void doUpdateVisitedHistory(long nativeptr, String url, boolean isReload);
     public native void onFormResubmission(long nativeptr, Message dontResend, Message resend);
@@ -387,6 +459,8 @@ class OffscreenWebView extends OffscreenView
 
     // Own callbacks
     public native void onContentHeightReceived(long nativeptr, int height);
-
+    public native void onCanGoBackReceived(long nativeptr, boolean can);
+    public native void onCanGoForwardReceived(long nativeptr, boolean can);
+    public native void onCanGoBackOrForwardReceived(long nativeptr, boolean can, int steps);
 }
 
