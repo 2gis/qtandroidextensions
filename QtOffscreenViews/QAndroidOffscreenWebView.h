@@ -203,7 +203,6 @@ public:
 	boolean onJsConfirm(WebView view, String url, String message, JsResult result) // Tell the client to display a confirm dialog to the user.
 	boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) // Tell the client to display a prompt dialog to the user.
 	boolean onJsTimeout() // This method was deprecated in API level 17. This method is no longer supported and will not be invoked.
-	void 	onProgressChanged(WebView view, int newProgress) // Tell the host application the current progress of loading a page.
 	void 	onReceivedIcon(WebView view, Bitmap icon) // Notify the host application of a new favicon for the current page.
 	void 	onReceivedTitle(WebView view, String title) // Notify the host application of a change in the document title.
 	void 	onReceivedTouchIconUrl(WebView view, String url, boolean precomposed) // Notify the host application of the url for an apple-touch-icon.
@@ -221,6 +220,8 @@ signals:
 	void canGoBackReceived(bool can);
 	void canGoForwardReceived(bool can);
 	void canGoBackOrForwardReceived(bool can, int steps);
+
+	void progressChanged(int percent);
 
 protected:
 	//
@@ -262,6 +263,18 @@ protected:
 	friend Q_DECL_EXPORT jobject JNICALL Java_shouldInterceptRequest(JNIEnv * env, jobject jo, jlong nativeptr, jobject url);
 	friend Q_DECL_EXPORT jboolean JNICALL Java_shouldOverrideKeyEvent(JNIEnv * env, jobject jo, jlong nativeptr, jobject event);
 	friend Q_DECL_EXPORT jboolean JNICALL Java_shouldOverrideUrlLoading(JNIEnv * env, jobject jo, jlong nativeptr, jobject url);
+
+
+	//
+	// WebChromiumClient functions.
+	//
+	virtual void onProgressChanged(JNIEnv *, jobject, jobject webview, jint newProgress);
+
+	//
+	// WebChromiumClient JNI wrappers.
+	//
+	friend Q_DECL_EXPORT void JNICALL Java_onProgressChanged(JNIEnv * env, jobject j, jlong nativeptr, jobject webview, jint newProgress);
+
 
 	//
 	// Own callbacks

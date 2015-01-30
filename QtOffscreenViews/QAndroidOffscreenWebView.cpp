@@ -190,6 +190,14 @@ Q_DECL_EXPORT jboolean JNICALL Java_shouldOverrideUrlLoading(JNIEnv * env, jobje
 	return JNI_FALSE;
 }
 
+Q_DECL_EXPORT void JNICALL Java_onProgressChanged(JNIEnv * env, jobject jo, jlong nativeptr, jobject webview, jint newProgress)
+{
+	if (QAndroidOffscreenWebView * wv = AOWW(nativeptr))
+	{
+		wv->onProgressChanged(env, jo, webview, newProgress);
+	}
+}
+
 Q_DECL_EXPORT void JNICALL Java_onContentHeightReceived(JNIEnv *, jobject, jlong nativeptr, jint height)
 {
 	if (QAndroidOffscreenWebView * wv = AOWW(nativeptr))
@@ -245,6 +253,11 @@ QAndroidOffscreenWebView::QAndroidOffscreenWebView(const QString & object_name, 
 		{"shouldInterceptRequest", "(JLjava/lang/String;)Landroid/webkit/WebResourceResponse;", (void*)Java_shouldInterceptRequest},
 		{"shouldOverrideKeyEvent", "(JLandroid/view/KeyEvent;)Z", (void*)Java_shouldOverrideKeyEvent},
 		{"shouldOverrideUrlLoading", "(JLjava/lang/String;)Z", (void*)Java_shouldOverrideUrlLoading},
+
+		//
+		// WebChromiumClient Methods
+		//
+		{"onProgressChanged", "(JLandroid/webkit/WebView;I)V", (void*)Java_onProgressChanged},
 
 		//
 		// Own callbacks
@@ -404,6 +417,7 @@ void QAndroidOffscreenWebView::goBackOrForward(int steps)
 	}
 }
 
+
 /////////////////////////////////////////////////////////////////////////////
 // WebViewClient
 /////////////////////////////////////////////////////////////////////////////
@@ -533,6 +547,16 @@ jboolean QAndroidOffscreenWebView::shouldOverrideUrlLoading(JNIEnv * env, jobjec
 	return 0;
 }
 
+
+/////////////////////////////////////////////////////////////////////////////
+// WebChromiumClient
+/////////////////////////////////////////////////////////////////////////////
+
+void QAndroidOffscreenWebView::onProgressChanged(JNIEnv *, jobject, jobject webview, jint newProgress)
+{
+	Q_UNUSED(webview);
+	emit progressChanged(newProgress);
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // Own callbacks

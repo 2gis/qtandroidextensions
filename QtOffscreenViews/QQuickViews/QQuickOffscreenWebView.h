@@ -75,6 +75,7 @@ signals:
 	void canGoBackReceived(bool can);
 	void canGoForwardReceived(bool can);
 	void canGoBackOrForwardReceived(bool can, int steps);
+	void progressChanged(int progress);
 
 protected slots:
 	virtual void wwPageStarted();
@@ -85,5 +86,6 @@ protected slots:
 	virtual void wwCanGoBackReceived(bool can);
 	virtual void wwCanGoForwardReceived(bool can);
 	virtual void wwCanBackOrForwardReceived(bool can, int steps);
+	virtual void wwProgressChanged(int progress);
 };
 

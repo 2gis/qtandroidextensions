@@ -88,6 +88,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.WebChromeClient;
 import android.webkit.WebResourceResponse;
 import android.webkit.HttpAuthHandler;
 import android.webkit.SslErrorHandler;
@@ -132,11 +133,18 @@ class OffscreenWebView extends OffscreenView
             public boolean shouldOverrideUrlLoading(WebView view, String url) { return OffscreenWebView.this.shouldOverrideUrlLoading(getNativePtr(), url); }
         }
 
+        private class MyWebChromeClient extends WebChromeClient
+        {
+            @Override
+            public void onProgressChanged(WebView view, int newProgress) { OffscreenWebView.this.onProgressChanged(getNativePtr(), view, newProgress); }
+        }
+
         public MyWebView(Context context)
         {
             super(context);
             Log.i(TAG, "MyWebView constructor");
             setWebViewClient(new MyWebViewClient());
+            setWebChromeClient(new MyWebChromeClient());
 
             // Fill in default properties
             setHorizontalScrollBarEnabled(false);
@@ -456,6 +464,9 @@ class OffscreenWebView extends OffscreenView
     public native WebResourceResponse shouldInterceptRequest(long nativeptr, String url);
     public native boolean shouldOverrideKeyEvent(long nativeptr, KeyEvent event);
     public native boolean shouldOverrideUrlLoading(long nativeptr, String url);
+
+    // WebChromeClient
+    public native void onProgressChanged(long nativeptr, WebView view, int newProgress);
 
     // Own callbacks
     public native void onContentHeightReceived(long nativeptr, int height);

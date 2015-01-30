@@ -47,6 +47,7 @@ QQuickAndroidOffscreenWebView::QQuickAndroidOffscreenWebView()
 	connect(androidWebView(), SIGNAL(canGoBackOrForwardReceived(bool,int)), this, SLOT(wwCanGoBackOrForwardReceived(bool,int)));
 	connect(androidWebView(), SIGNAL(receivedError(int, const QString &, const QString &)), this, SLOT(wwReceivedError(int, const QString &, const QString &)));
 	connect(androidWebView(), SIGNAL(receivedSslError(int, const QString &)), this, SLOT(wwReceivedSslError(int, const QString &)));
+	connect(androidWebView(), SIGNAL(progressChanged(int)), this, SLOT(wwProgressChanged(int)));
 }
 
 void QQuickAndroidOffscreenWebView::wwPageStarted()
@@ -87,4 +88,9 @@ void QQuickAndroidOffscreenWebView::wwReceivedError(int errorCode, const QString
 void QQuickAndroidOffscreenWebView::wwReceivedSslError(int primaryError, const QString & failingUrl)
 {
 	emit receivedSslError(primaryError, failingUrl);
+}
+
+void QQuickAndroidOffscreenWebView::wwProgressChanged(int progress)
+{
+	emit progressChanged(progress);
 }
