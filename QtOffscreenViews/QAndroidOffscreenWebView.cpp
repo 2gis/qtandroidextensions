@@ -439,17 +439,17 @@ void QAndroidOffscreenWebView::onLoadResource(JNIEnv *, jobject, jobject url)
 	Q_UNUSED(url);
 }
 
-void QAndroidOffscreenWebView::onPageFinished(JNIEnv *, jobject, jobject url)
+void QAndroidOffscreenWebView::onPageFinished(JNIEnv * env, jobject, jobject url)
 {
-	Q_UNUSED(url);
 	emit pageFinished();
+	emit pageFinished(QJniEnvPtr(env).JStringToQString(static_cast<jstring>(url)));
 }
 
-void QAndroidOffscreenWebView::onPageStarted(JNIEnv *, jobject, jobject url, jobject favicon)
+void QAndroidOffscreenWebView::onPageStarted(JNIEnv * env, jobject, jobject url, jobject favicon)
 {
-	Q_UNUSED(url);
 	Q_UNUSED(favicon);
 	emit pageStarted();
+	emit pageStarted(QJniEnvPtr(env).JStringToQString(static_cast<jstring>(url)));
 }
 
 void QAndroidOffscreenWebView::onReceivedError(JNIEnv * env, jobject, int errorCode, jobject description, jobject failingUrl)
@@ -538,7 +538,7 @@ jboolean QAndroidOffscreenWebView::shouldOverrideUrlLoading(JNIEnv * env, jobjec
 {
 	// Doing OffscreenWebView.loadUrl(url).
 	// This should always be done for Chrome to avoid opening links in external browser.
-	qDebug() << "QAndroidOffscreenWebView::shouldOverrideUrlLoading" << QJniEnvPtr(env).JStringToQString(static_cast<jstring>(url));
+	// qDebug() << "QAndroidOffscreenWebView::shouldOverrideUrlLoading" << QJniEnvPtr(env).JStringToQString(static_cast<jstring>(url));
 	QJniObject * aview = QAndroidOffscreenView::getView();
 	if (aview)
 	{

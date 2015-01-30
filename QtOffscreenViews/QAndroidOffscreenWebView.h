@@ -213,7 +213,9 @@ public:
 
 signals:
 	void pageStarted();
+	void pageStarted(const QString & url);
 	void pageFinished();
+	void pageFinished(const QString & url);
 	void receivedError(int errorCode, const QString & description, const QString & failingUrl);
 	void receivedSslError(int primaryError, const QString & failingUrl);
 	void contentHeightReceived(int height);

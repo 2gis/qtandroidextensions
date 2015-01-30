@@ -67,8 +67,8 @@ public slots:
 	void goBackOrForward(int steps) { androidWebView()->goBackOrForward(steps); }
 
 signals:
-	void pageStarted();
-	void pageFinished();
+	void pageStarted(const QString & url);
+	void pageFinished(const QString & url);
 	void receivedError(int errorCode, const QString & description, const QString & failingUrl);
 	void receivedSslError(int primaryError, const QString & failingUrl);
 	void contentHeightReceived(int height);
@@ -78,8 +78,8 @@ signals:
 	void progressChanged(int progress);
 
 protected slots:
-	virtual void wwPageStarted();
-	virtual void wwPageFinished();
+	virtual void wwPageStarted(const QString & url);
+	virtual void wwPageFinished(const QString & url);
 	virtual void wwReceivedError(int errorCode, const QString & description, const QString & failingUrl);
 	virtual void wwReceivedSslError(int primaryError, const QString & failingUrl);
 	virtual void wwContentHeightReceived(int height);

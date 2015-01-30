@@ -39,8 +39,8 @@
 QQuickAndroidOffscreenWebView::QQuickAndroidOffscreenWebView()
 	: QQuickAndroidOffscreenView(new QAndroidOffscreenWebView("WebViewInQuick", QSize(512, 512)))
 {
-	connect(androidWebView(), SIGNAL(pageStarted()), this, SLOT(wwPageStarted()));
-	connect(androidWebView(), SIGNAL(pageFinished()), this, SLOT(wwPageFinished()));
+	connect(androidWebView(), SIGNAL(pageStarted(const QString &)), this, SLOT(wwPageStarted(const QString &)));
+	connect(androidWebView(), SIGNAL(pageFinished(const QString &)), this, SLOT(wwPageFinished(const QString &)));
 	connect(androidWebView(), SIGNAL(contentHeightReceived(int)), this, SLOT(wwContentHeightReceived(int)));
 	connect(androidWebView(), SIGNAL(canGoBackReceived(bool)), this, SLOT(wwCanGoBackReceived(bool)));
 	connect(androidWebView(), SIGNAL(canGoForwardReceived(bool)), this, SLOT(wwCanGoForwardReceived(bool)));
@@ -50,14 +50,14 @@ QQuickAndroidOffscreenWebView::QQuickAndroidOffscreenWebView()
 	connect(androidWebView(), SIGNAL(progressChanged(int)), this, SLOT(wwProgressChanged(int)));
 }
 
-void QQuickAndroidOffscreenWebView::wwPageStarted()
+void QQuickAndroidOffscreenWebView::wwPageStarted(const QString & url)
 {
-	emit pageStarted();
+	emit pageStarted(url);
 }
 
-void QQuickAndroidOffscreenWebView::wwPageFinished()
+void QQuickAndroidOffscreenWebView::wwPageFinished(const QString & url)
 {
-	emit pageFinished();
+	emit pageFinished(url);
 }
 
 void QQuickAndroidOffscreenWebView::wwContentHeightReceived(int height)
