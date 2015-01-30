@@ -438,12 +438,18 @@ void QAndroidOffscreenWebView::onPageStarted(JNIEnv *, jobject, jobject url, job
 	emit pageStarted();
 }
 
-void QAndroidOffscreenWebView::onReceivedError(JNIEnv *, jobject, int errorCode, jobject description, jobject failingUrl)
+void QAndroidOffscreenWebView::onReceivedError(JNIEnv * env, jobject, int errorCode, jobject description, jobject failingUrl)
 {
 	qDebug() << "QAndroidOffscreenWebView::onReceivedError" << errorCode;
-	Q_UNUSED(errorCode);
-	Q_UNUSED(description);
-	Q_UNUSED(failingUrl);
+	try
+	{
+		QJniEnvPtr e(env);
+		emit receivedError(errorCode, e.JStringToQString(static_cast<jstring>(description)), e.JStringToQString(static_cast<jstring>(failingUrl)));
+	}
+	catch(const std::exception & e)
+	{
+		qWarning() << "QAndroidOffscreenWebView::onReceivedError exception: " << e.what();
+	}
 }
 
 void QAndroidOffscreenWebView::onReceivedHttpAuthRequest(JNIEnv *, jobject, jobject handler, jobject host, jobject realm)
@@ -462,8 +468,17 @@ void QAndroidOffscreenWebView::onReceivedLoginRequest(JNIEnv *, jobject, jobject
 
 void QAndroidOffscreenWebView::onReceivedSslError(JNIEnv *, jobject, jobject handler, jobject error)
 {
-	Q_UNUSED(error);
-	qDebug() << "QAndroidOffscreenWebView::onReceivedSslError" << QString(QJniLocalRef(QJniObject(error, false).callString("toString")));
+	try
+	{
+		QJniObject err(error, false);
+		// qDebug() << "QAndroidOffscreenWebView::onReceivedSslError" << err.callString("toString");
+		emit receivedSslError(err.callInt("getPrimaryError"), err.callString("getUrl"));
+	}
+	catch(const std::exception & e)
+	{
+		qWarning() << "QAndroidOffscreenWebView::onReceivedSslError exception: " << e.what();
+	}
+
 	if (ignore_ssl_errors_)
 	{
 		QJniObject(handler, false).callVoid("proceed");

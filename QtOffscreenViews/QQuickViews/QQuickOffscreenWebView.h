@@ -69,6 +69,8 @@ public slots:
 signals:
 	void pageStarted();
 	void pageFinished();
+	void receivedError(int errorCode, const QString & description, const QString & failingUrl);
+	void receivedSslError(int primaryError, const QString & failingUrl);
 	void contentHeightReceived(int height);
 	void canGoBackReceived(bool can);
 	void canGoForwardReceived(bool can);
@@ -77,6 +79,8 @@ signals:
 protected slots:
 	virtual void wwPageStarted();
 	virtual void wwPageFinished();
+	virtual void wwReceivedError(int errorCode, const QString & description, const QString & failingUrl);
+	virtual void wwReceivedSslError(int primaryError, const QString & failingUrl);
 	virtual void wwContentHeightReceived(int height);
 	virtual void wwCanGoBackReceived(bool can);
 	virtual void wwCanGoForwardReceived(bool can);
