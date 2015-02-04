@@ -83,6 +83,7 @@ import android.view.KeyCharacterMap;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.View.OnTouchListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -139,17 +140,38 @@ class OffscreenWebView extends OffscreenView
             public void onProgressChanged(WebView view, int newProgress) { OffscreenWebView.this.onProgressChanged(getNativePtr(), view, newProgress); }
         }
 
+        private class MyOnTouchListener implements View.OnTouchListener
+        {
+            @Override
+            public boolean onTouch(View v, MotionEvent event)
+            {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                    case MotionEvent.ACTION_UP:
+                        if (v.isFocusable() && !v.hasFocus()) {
+                            Log.i(TAG, "MyWebView.MyOnTouchListener: requesting focus.");
+                            v.requestFocus();
+                        }
+                        break;
+                }
+                return false;
+            }
+        }
+
         public MyWebView(Context context)
         {
             super(context);
             Log.i(TAG, "MyWebView constructor");
             setWebViewClient(new MyWebViewClient());
             setWebChromeClient(new MyWebChromeClient());
+            setOnTouchListener(new MyOnTouchListener());
 
             // Fill in default properties
             setHorizontalScrollBarEnabled(false);
             setVerticalScrollBarEnabled(true);
+
             getSettings().setJavaScriptEnabled(true);
+            // getSettings().setUseWideViewPort(true);
 
             // No positive effect found
             // setPersistentDrawingCache(PERSISTENT_ALL_CACHES);
