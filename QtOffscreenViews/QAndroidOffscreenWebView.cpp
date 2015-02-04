@@ -265,7 +265,7 @@ QAndroidOffscreenWebView::QAndroidOffscreenWebView(const QString & object_name, 
 		{"onContentHeightReceived", "(JI)V", (void*)Java_onContentHeightReceived},
 		{"onCanGoBackReceived", "(JZ)V", (void*)Java_onCanGoBackReceived},
 		{"onCanGoForwardReceived", "(JZ)V", (void*)Java_onCanGoForwardReceived},
-		{"onCanGoBackOrForwardtReceived", "(JZI)V", (void*)Java_onCanGoBackOrForwardReceived}
+		{"onCanGoBackOrForwardReceived", "(JZI)V", (void*)Java_onCanGoBackOrForwardReceived}
 	};
 	if (QJniObject * ov = offscreenView())
 	{
