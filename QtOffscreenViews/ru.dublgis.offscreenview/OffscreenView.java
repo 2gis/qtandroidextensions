@@ -990,7 +990,7 @@ abstract class OffscreenView
                     }
                     else
                     {
-                        boolean was_focused = v.isFocused();
+                        // boolean was_focused = v.isFocused();
                         v.setFocusable(false);
                         v.setFocusableInTouchMode(false);
                         v.clearFocus();
