@@ -83,6 +83,7 @@ import android.view.KeyCharacterMap;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.View.OnFocusChangeListener;
 import android.view.View.OnTouchListener;
 import android.view.Window;
 import android.view.WindowManager;
@@ -93,6 +94,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebResourceResponse;
 import android.webkit.HttpAuthHandler;
 import android.webkit.SslErrorHandler;
+import android.view.inputmethod.InputMethodManager;
 import android.graphics.Canvas;
 
 class OffscreenWebView extends OffscreenView
@@ -145,12 +147,31 @@ class OffscreenWebView extends OffscreenView
             @Override
             public boolean onTouch(View v, MotionEvent event)
             {
-                switch (event.getAction()) {
+                /*Log.i(TAG, "MyWebView.MyOnTouchListener: isFocusable = " +
+                    ((MyWebView)OffscreenWebView.this.getView()).isFocusable() +
+                    ", hasFocus = " + ((MyWebView)OffscreenWebView.this.getView()).hasFocus() +
+                    " Subview: isFocusable = " + v.isFocusable() + ", isFocusableInTouchMode = " + v.isFocusableInTouchMode() +
+                    ", hasFocus = " + v.hasFocus());*/
+                switch (event.getAction())
+                {
                     case MotionEvent.ACTION_DOWN:
                     case MotionEvent.ACTION_UP:
-                        if (v.isFocusable() && !v.hasFocus()) {
-                            Log.i(TAG, "MyWebView.MyOnTouchListener: requesting focus.");
-                            v.requestFocus();
+                        if (v.isFocusable())
+                        {
+                            if(!v.hasFocus())
+                            {
+                                Log.i(TAG, "MyWebView.MyOnTouchListener [" + event.getAction() + "]: requesting focus.");
+                                // v.requestFocusFromTouch();
+                                v.requestFocus();
+                            }
+                            else
+                            {
+                                Log.i(TAG, "MyWebView.MyOnTouchListener [" + event.getAction() + "]: already has focus.");
+                            }
+                        }
+                        else
+                        {
+                            Log.i(TAG, "MyWebView.MyOnTouchListener[" + event.getAction() + "]: not focusable item.");
                         }
                         break;
                 }
@@ -166,6 +187,15 @@ class OffscreenWebView extends OffscreenView
             setWebChromeClient(new MyWebChromeClient());
             setOnTouchListener(new MyOnTouchListener());
 
+            /* setOnFocusChangeListener(new OnFocusChangeListener()
+                {
+                    @Override
+                    public void onFocusChange(View v, boolean hasFocus)
+                    {
+                        Log.i(TAG, "OffscreenWebView focus change: " + hasFocus);
+                    }
+                }); */
+
             // Fill in default properties
             setHorizontalScrollBarEnabled(false);
             setVerticalScrollBarEnabled(true);
@@ -176,6 +206,10 @@ class OffscreenWebView extends OffscreenView
             // No positive effect found
             // setPersistentDrawingCache(PERSISTENT_ALL_CACHES);
             // setAlwaysDrawnWithCacheEnabled(true);
+
+            // Useless experiments
+            // setShowKeyboardOnFocusIn(false);
+            // setHideKeyboardOnFocusLoss(false);
         }
 
         public void setOffscreenViewVisible(boolean visible)
