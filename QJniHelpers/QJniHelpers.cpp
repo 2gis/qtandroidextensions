@@ -504,7 +504,7 @@ bool QJniClass::callStaticBoolean(const char* method_name)
 
 void QJniClass::callStaticParamVoid(const char * method_name, const char * param_signature, ...)
 {
-	VERBOSE(qDebug("void QJniClass(%p)::CallParamVoid(\"%s\", \"%s\", ...)", this, method_name, param_signature));
+	VERBOSE(qDebug("void QJniClass(%p)::CallStaticParamVoid(\"%s\", \"%s\", ...)", this, method_name, param_signature));
 	va_list args;
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
@@ -524,9 +524,93 @@ void QJniClass::callStaticParamVoid(const char * method_name, const char * param
 	va_end(args);
 	if (jep.clearException())
 	{
-		qWarning("void QJniClass(%p)::CallParamVoid(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
+		qWarning("void QJniClass(%p)::CallStaticParamVoid(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
 		throw QJniJavaCallException();
 	}
+}
+
+bool QJniClass::callStaticParamBoolean(const char * method_name, const char * param_signature, ...)
+{
+	VERBOSE(qDebug("void QJniClass(%p)::CallStaticParamBoolean(\"%s\", \"%s\", ...)", this, method_name, param_signature));
+	va_list args;
+	QJniEnvPtr jep;
+	JNIEnv* env = jep.env();
+
+	QByteArray signature("(");
+	signature += param_signature;
+	signature += ")Z";
+	jmethodID mid = env->GetStaticMethodID(checkedClass(), method_name, signature.data());
+	if (!mid)
+	{
+		qWarning("%s: method not found.", __FUNCTION__);
+		throw QJniMethodNotFoundException();
+	}
+
+	va_start(args, param_signature);
+	bool result = env->CallStaticBooleanMethodV(jClass(), mid, args);
+	va_end(args);
+	if (jep.clearException())
+	{
+		qWarning("void QJniClass(%p)::CallStatucParamBoolean(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
+		throw QJniJavaCallException();
+	}
+	return result;
+}
+
+jint QJniClass::callStaticParamInt(const char * method_name, const char * param_signature, ...)
+{
+	VERBOSE(qDebug("void QJniClass(%p)::CallStaticParamInt(\"%s\", \"%s\", ...)", this, method_name, param_signature));
+	va_list args;
+	QJniEnvPtr jep;
+	JNIEnv* env = jep.env();
+
+	QByteArray signature("(");
+	signature += param_signature;
+	signature += ")I";
+	jmethodID mid = env->GetStaticMethodID(checkedClass(), method_name, signature.data());
+	if (!mid)
+	{
+		qWarning("%s: method not found.", __FUNCTION__);
+		throw QJniMethodNotFoundException();
+	}
+
+	va_start(args, param_signature);
+	jint result = env->CallStaticIntMethodV(jClass(), mid, args);
+	va_end(args);
+	if (jep.clearException())
+	{
+		qWarning("void QJniClass(%p)::CallStatucParamInt(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
+		throw QJniJavaCallException();
+	}
+	return result;
+}
+
+QString QJniClass::callStaticParamString(const char * method_name, const char * param_signature, ...)
+{
+	VERBOSE(qDebug("void QJniClass(%p)::CallStaticParamString(\"%s\", \"%s\", ...)", this, method_name, param_signature));
+	va_list args;
+	QJniEnvPtr jep;
+	JNIEnv* env = jep.env();
+
+	QByteArray signature("(");
+	signature += param_signature;
+	signature += ")Ljava/lang/String;";
+	jmethodID mid = env->GetStaticMethodID(checkedClass(), method_name, signature.data());
+	if (!mid)
+	{
+		qWarning("%s: method not found.", __FUNCTION__);
+		throw QJniMethodNotFoundException();
+	}
+
+	va_start(args, param_signature);
+	QString ret = QJniLocalRef(env, env->CallStaticObjectMethodV(jClass(), mid, args));
+	va_end(args);
+	if (jep.clearException())
+	{
+		qWarning("void QJniClass(%p)::CallStatucParamString(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
+		throw QJniJavaCallException();
+	}
+	return ret;
 }
 
 void QJniClass::callStaticVoid(const char* method_name, const QString & string)

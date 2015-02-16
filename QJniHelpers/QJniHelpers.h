@@ -209,6 +209,9 @@ public:
 	jlong callStaticLong(const char * method_name);
 	bool callStaticBoolean(const char * method_name);
 	void callStaticParamVoid(const char * method_name, const char * param_signature, ...);
+	bool callStaticParamBoolean(const char * method_name, const char * param_signature, ...);
+	jint callStaticParamInt(const char * method_name, const char * param_signature, ...);
+	QString callStaticParamString(const char * method_name, const char * param_signature, ...);
 	void callStaticVoid(const char * method_name, const QString & string);
 
 	/*!

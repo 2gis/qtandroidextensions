@@ -6,7 +6,8 @@ HEADERS += \
     QAndroidFilePaths.h \
     QAndroidScreenOrientation.h \
     QAndroidScreenLayoutHandler.h \
-    QAndroidToast.h
+    QAndroidToast.h \
+    QAndroidDesktopUtils.h
 
 SOURCES += \
     QAndroidConfiguration.cpp \
@@ -15,4 +16,5 @@ SOURCES += \
     QAndroidFilePaths.cpp \
     QAndroidScreenOrientation.cpp \
     QAndroidScreenLayoutHandler.cpp \
-    QAndroidToast.cpp
+    QAndroidToast.cpp \
+    QAndroidDesktopUtils.cpp
