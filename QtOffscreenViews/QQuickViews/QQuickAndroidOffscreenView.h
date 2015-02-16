@@ -35,8 +35,8 @@
 */
 
 #pragma once
-#include <QSharedPointer>
-#include <QFocusEvent>
+#include <QtCore/QSharedPointer>
+#include <QtGui/QFocusEvent>
 #include <QtQuick/QQuickItem>
 #include <QAndroidOffscreenView.h>
 

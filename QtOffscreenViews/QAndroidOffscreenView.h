@@ -35,11 +35,11 @@
 */
 
 #pragma once
-#include <QColor>
-#include <QSize>
-#include <QRect>
-#include <QScopedPointer>
-#include <QMutex>
+#include <QtGui/QColor>
+#include <QtCore/QSize>
+#include <QtCore/QRect>
+#include <QtCore/QScopedPointer>
+#include <QtCore/QMutex>
 #include <QJniHelpers.h>
 #include "QAndroidJniImagePair.h"
 #include "QOpenGLTextureHolder.h"
