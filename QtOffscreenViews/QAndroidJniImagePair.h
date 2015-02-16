@@ -39,9 +39,9 @@
 
 #pragma once
 #include <jni.h>
-#include <QImage>
-#include <QSize>
-#include <QScopedPointer>
+#include <QtGui/QImage>
+#include <QtCore/QSize>
+#include <QtCore/QScopedPointer>
 #include <QAndroidQPAPluginGap.h>
 #include <QJniHelpers.h>
 

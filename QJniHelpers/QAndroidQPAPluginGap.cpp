@@ -47,7 +47,7 @@
 #endif
 
 #if defined(QPA_QT5)
-	#include <QtAndroidExtras>
+	#include <QtAndroidExtras/QtAndroidExtras>
 #endif
 
 #include "QAndroidQPAPluginGap.h"
@@ -58,7 +58,7 @@
 	// Exported from QtAndroidCore
 	extern JavaVM * qt_android_get_java_vm();
 #elif QT_VERSION >= 0x050000
-	#include <QAndroidJniEnvironment>
+	#include <QtAndroidExtras/QAndroidJniEnvironment>
 #else
 	#error "Unimplemented QPA case"
 #endif

@@ -37,11 +37,11 @@
 
 #pragma once
 #include <jni.h>
-#include <QString>
-#include <QDebug>
-#include <QMutex>
-#include <QMutexLocker>
-#include <QThreadStorage>
+#include <QtCore/QString>
+#include <QtCore/QDebug>
+#include <QtCore/QMutex>
+#include <QtCore/QMutexLocker>
+#include <QtCore/QThreadStorage>
 
 class QJniBaseException: public std::exception
 {
