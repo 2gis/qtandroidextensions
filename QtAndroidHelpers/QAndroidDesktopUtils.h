@@ -50,9 +50,7 @@ bool isInternetActive();
 // for possible returned values.
 int getNetworkType();
 
-// Show generic "send to" menu
 bool sendTo(const QString & chooser_caption, const QString & text, const QString & content_type);
-
 bool sendSMS(const QString & number, const QString & text);
 bool sendEmail(const QString & to, const QString & subject, const QString & body);
 bool openURL(const QString & url);
@@ -66,6 +64,10 @@ QString getCountry();
 QString getAndroidId();
 QString getBuildSerial();
 QStringList getInstalledAppsList();
+
+// This function tries to find out some string which uniquely identifies this device.
+// If it's not available on the device it returns an empty string.
+QString getUniqueDeviceId();
 
 } // namespace QAndroidDesktopUtils
 

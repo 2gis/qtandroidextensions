@@ -199,6 +199,51 @@ QStringList getInstalledAppsList()
 	return list.split(QChar('\n'), QString::SkipEmptyParts);
 }
 
+QString getUniqueDeviceId()
+{
+	static bool device_id_initialized = false;
+	static QString device_id;
+
+	if (!device_id_initialized)
+	{
+		device_id_initialized = true;
+
+		// Best option is to use telephony hardware ID (IMEI).
+		QString telephony_id = getTelephonyDeviceId();
+		if (!telephony_id.isEmpty())
+		{
+			device_id = QLatin1String("Tel.Id:") + telephony_id;
+		}
+		else
+		{
+			// Device serial number (Android 2.3+), should be available on all
+			// devices without telephony id.
+			QString build_serial = getBuildSerial();
+			if (!build_serial.isEmpty())
+			{
+				device_id = QLatin1String("Build:") + build_serial;
+			}
+			else
+			{
+				// The last option: use ANDROID_ID which is generated when device
+				// is connected to Google account. Reset on device reset.
+				// Broken on some Android 2.2 devices.
+				QString android_id = getAndroidId();
+				if (!android_id.isEmpty())
+				{
+					device_id = QLatin1String("Android Id:") + android_id;
+				}
+				else
+				{
+					device_id = QString::null;
+				}
+			}
+		}
+	}
+	return device_id;
+}
+
+
 } // namespace QAndroidDesktopUtils
 
 
