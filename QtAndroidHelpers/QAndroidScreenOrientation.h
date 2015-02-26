@@ -57,10 +57,14 @@ namespace QAndroidScreenOrientation
 		ANDROID_ACTIVITYINFO_SCREEN_ORIENTATION_USER_PORTRAIT		= 12; // API 18
 
 	static const int
-		ANDROID_SURFACE_ROTATION_0		= 0,
-		ANDROID_SURFACE_ROTATION_90		= 1,
-		ANDROID_SURFACE_ROTATION_180	= 2,
-		ANDROID_SURFACE_ROTATION_270	= 3;
+		ANDROID_SURFACE_ROTATION_UNDEFINED	= -1,
+		ANDROID_SURFACE_ROTATION_0			=  0,
+		ANDROID_SURFACE_ROTATION_90			=  1,
+		ANDROID_SURFACE_ROTATION_180		=  2,
+		ANDROID_SURFACE_ROTATION_270		=  3;
+
+	//! Get current surface rotation as defined by android Display.getRotation()
+	int getSurfaceRotation();
 
 	//! Get currently requested screen orientation.
 	int getRequestedOrientation();

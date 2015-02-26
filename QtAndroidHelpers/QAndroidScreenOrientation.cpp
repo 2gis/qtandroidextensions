@@ -55,6 +55,38 @@ void setRequestedOrientation(int orientation)
 	activity.callVoid("setRequestedOrientation", jint(orientation));
 }
 
+
+int getSurfaceRotation()
+{
+	int rotation = ANDROID_SURFACE_ROTATION_UNDEFINED;
+
+	try 
+	{
+		QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+		QScopedPointer<QJniObject> wm(activity.callObject("getWindowManager",  "android/view/WindowManager"));
+		if (!wm)
+		{
+			qWarning() << "QAndroidScreenOrientation: could not get window manager";
+			throw std::exception();
+		}
+		QScopedPointer<QJniObject> display(wm->callObject("getDefaultDisplay", "android/view/Display"));
+		if (!display)
+		{
+			qWarning() << "QAndroidScreenOrientation: could not get display";
+			throw std::exception();
+		}
+		
+		rotation = display->callInt("getRotation");
+	}
+	catch (const std::exception & e)
+	{
+		qWarning() << "QAndroidScreenOrientation exception (3):" << e.what();
+	}
+
+	return rotation;
+}
+
+
 int getCurrentFixedOrientation()
 {
 	try
@@ -62,20 +94,8 @@ int getCurrentFixedOrientation()
 		QAndroidDisplayMetrics dm;
 		try
 		{
-			QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
-			QScopedPointer<QJniObject> wm(activity.callObject("getWindowManager",  "android/view/WindowManager"));
-			if (!wm)
-			{
-				qWarning()<<"QAndroidScreenOrientation: could not get window manager";
-				throw std::exception();
-			}
-			QScopedPointer<QJniObject> display(wm->callObject("getDefaultDisplay", "android/view/Display"));
-			if (!display)
-			{
-				qWarning()<<"QAndroidScreenOrientation: could not get display";
-				throw std::exception();
-			}
-			int rotation = display->callInt("getRotation");
+			int rotation = getSurfaceRotation();
+
 			int orientation = ANDROID_ACTIVITYINFO_SCREEN_ORIENTATION_UNSPECIFIED;
 			if (((rotation == ANDROID_SURFACE_ROTATION_0 || rotation == ANDROID_SURFACE_ROTATION_180)
 					&& dm.heightPixels() > dm.widthPixels()) || // Not rotated or turned over & portrait
