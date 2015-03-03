@@ -13,13 +13,13 @@
   modification, are permitted provided that the following conditions are met:
 
   * Redistributions of source code must retain the above copyright notice,
-	this list of conditions and the following disclaimer.
+    this list of conditions and the following disclaimer.
   * Redistributions in binary form must reproduce the above copyright notice,
-	this list of conditions and the following disclaimer in the documentation
-	and/or other materials provided with the distribution.
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
   * Neither the name of the DoubleGIS, LLC nor the names of its contributors
-	may be used to endorse or promote products derived from this software
-	without specific prior written permission.
+    may be used to endorse or promote products derived from this software
+    without specific prior written permission.
 
   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -61,6 +61,30 @@ namespace QAndroidQPAPluginGap {
 	 * \return Returns local JNI reference to the Activity object.
 	 */
 	jobject JNICALL getActivity(JNIEnv * env = 0, jobject jo = 0);
+
+	void setCustomContext(jobject context);
+
+	/*!
+	 * Returns custom context if it's set, or null if it's not set.
+	 * \param env, jo are not used and only needed so the function could be set as native
+	 *  method in Java object and called from there over JNI.*
+	 */
+	jobject JNICALL getCustomContext(JNIEnv * env = 0, jobject jo = 0);
+
+	/*!
+	 * Returns custom context if it's set, or activity if it's not set.
+	 * \param env, jo are not used and only needed so the function could be set as native
+	 *  method in Java object and called from there over JNI.*
+	 */
+	jobject JNICALL getCurrentContext(JNIEnv * env = 0, jobject jo = 0);
+
+	class Context: public QJniObject
+	{
+	public:
+		Context();
+	private:
+		Q_DISABLE_COPY(Context)
+	};
 
 	/*!
 	 * This function should be called from main thread to pre-load Java class, so

@@ -55,7 +55,7 @@ void preloadJavaClasses()
 bool isInternetActive()
 {
 	QJniClass du(c_full_class_name_);
-	QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+	QAndroidQPAPluginGap::Context activity;
 	jint result = du.callStaticParamInt("isInternetActive", "Landroid/content/Context;", activity.jObject());
 	if (result == 0)
 	{
@@ -74,14 +74,14 @@ bool isInternetActive()
 int getNetworkType()
 {
 	QJniClass du(c_full_class_name_);
-	QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+	QAndroidQPAPluginGap::Context activity;
 	return static_cast<int>(du.callStaticParamInt("getNetworkType", "Landroid/content/Context;", activity.jObject()));
 }
 
 bool sendTo(const QString & chooser_caption, const QString & text, const QString & content_type)
 {
 	QJniClass du(c_full_class_name_);
-	QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticParamBoolean("sendTo", "Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;",
 		activity.jObject(),
 		QJniLocalRef(chooser_caption).jObject(),
@@ -92,7 +92,7 @@ bool sendTo(const QString & chooser_caption, const QString & text, const QString
 bool sendSMS(const QString & number, const QString & text)
 {
 	QJniClass du(c_full_class_name_);
-	QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticParamBoolean("sendSMS", "Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;",
 		activity.jObject(),
 		QJniLocalRef(number).jObject(),
@@ -102,7 +102,7 @@ bool sendSMS(const QString & number, const QString & text)
 bool sendEmail(const QString & to, const QString & subject, const QString & body)
 {
 	QJniClass du(c_full_class_name_);
-	QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticParamBoolean("sendEmail", "Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;",
 		activity.jObject(),
 		QJniLocalRef(to).jObject(),
@@ -113,7 +113,7 @@ bool sendEmail(const QString & to, const QString & subject, const QString & body
 bool openURL(const QString & url)
 {
 	QJniClass du(c_full_class_name_);
-	QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticParamBoolean("openURL", "Landroid/content/Context;Ljava/lang/String;",
 		activity.jObject(),
 		QJniLocalRef(url).jObject());
@@ -122,7 +122,7 @@ bool openURL(const QString & url)
 bool openFile(const QString & fileName, const QString & mimeType)
 {
 	QJniClass du(c_full_class_name_);
-	QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticParamBoolean("openFile", "Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;",
 		activity.jObject(),
 		QJniLocalRef(fileName).jObject(),
@@ -132,7 +132,7 @@ bool openFile(const QString & fileName, const QString & mimeType)
 bool installApk(const QString & apk)
 {
 	QJniClass du(c_full_class_name_);
-	QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticParamBoolean("installApk", "Landroid/content/Context;Ljava/lang/String;",
 		activity.jObject(),
 		QJniLocalRef(apk).jObject());
@@ -141,7 +141,7 @@ bool installApk(const QString & apk)
 void uninstallApk(const QString & packagename)
 {
 	QJniClass du(c_full_class_name_);
-	QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+	QAndroidQPAPluginGap::Context activity;
 	du.callStaticParamVoid("uninstallApk", "Landroid/content/Context;Ljava/lang/String;",
 		activity.jObject(),
 		QJniLocalRef(packagename).jObject());
@@ -150,7 +150,7 @@ void uninstallApk(const QString & packagename)
 bool callNumber(const QString & number)
 {
 	QJniClass du(c_full_class_name_);
-	QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticParamBoolean("callNumber", "Landroid/content/Context;Ljava/lang/String;",
 		activity.jObject(),
 		QJniLocalRef(number).jObject());
@@ -159,42 +159,42 @@ bool callNumber(const QString & number)
 QString getTelephonyDeviceId()
 {
 	QJniClass du(c_full_class_name_);
-	QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticParamString("getTelephonyDeviceId", "Landroid/content/Context;", activity.jObject());
 }
 
 QString getDisplayCountry()
 {
 	QJniClass du(c_full_class_name_);
-	QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticParamString("getDisplayCountry", "Landroid/content/Context;", activity.jObject());
 }
 
 QString getCountry()
 {
 	QJniClass du(c_full_class_name_);
-	QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticParamString("getCountry", "Landroid/content/Context;", activity.jObject());
 }
 
 QString getAndroidId()
 {
 	QJniClass du(c_full_class_name_);
-	QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticParamString("getAndroidId", "Landroid/content/Context;", activity.jObject());
 }
 
 QString getBuildSerial()
 {
 	QJniClass du(c_full_class_name_);
-	QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticString("getBuildSerial");
 }
 
 QStringList getInstalledAppsList()
 {
 	QJniClass du(c_full_class_name_);
-	QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+	QAndroidQPAPluginGap::Context activity;
 	QString list = du.callStaticParamString("getInstalledAppsList", "Landroid/content/Context;", activity.jObject());
 	return list.split(QChar('\n'), QString::SkipEmptyParts);
 }

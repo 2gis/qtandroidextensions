@@ -61,7 +61,7 @@ const QString & QAndroidFilePaths::ApplicationFilesDirectory()
 	static QString path;
 	if (path.isEmpty())
 	{
-		QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+		QAndroidQPAPluginGap::Context activity;
 		QScopedPointer<QJniObject> application(activity.callObject("getApplication", "android/app/Application"));
 		QScopedPointer<QJniObject> filesdir(application->callObject("getFilesDir", "java/io/File"));
 		path = filesdir->callString("getPath");
@@ -76,7 +76,7 @@ const QString & QAndroidFilePaths::ExternalFilesDirectory(const QString & type)
 	static QString path;
 	if (path.isEmpty())
 	{
-		QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+		QAndroidQPAPluginGap::Context activity;
 		QScopedPointer<QJniObject> externalfilesdir(activity.callParamObject(
 				"getExternalFilesDir",
 				"java/io/File",
@@ -122,7 +122,7 @@ const QString & QAndroidFilePaths::ExternalCacheDirectory()
 	static QString path;
 	if (path.isEmpty())
 	{
-		QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+		QAndroidQPAPluginGap::Context activity;
 		QScopedPointer<QJniObject> externalfilesdir(activity.callObject(
 			"getExternalCacheDir",
 			"java/io/File"));

@@ -42,7 +42,7 @@ namespace QAndroidScreenOrientation {
 
 int getRequestedOrientation()
 {
-	QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+	QAndroidQPAPluginGap::Context activity;
 	jint result = activity.callInt("getRequestedOrientation");
 	// qDebug()<<"QAndroidScreenOrientation::getRequestedOrientation"<<result;
 	return int(result);
@@ -51,7 +51,7 @@ int getRequestedOrientation()
 void setRequestedOrientation(int orientation)
 {
 	// qDebug()<<"QAndroidScreenOrientation::setRequestedOrientation"<<orientation;
-	QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+	QAndroidQPAPluginGap::Context activity;
 	activity.callVoid("setRequestedOrientation", jint(orientation));
 }
 
@@ -62,7 +62,7 @@ int getSurfaceRotation()
 
 	try 
 	{
-		QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+		QAndroidQPAPluginGap::Context activity;
 		QScopedPointer<QJniObject> wm(activity.callObject("getWindowManager",  "android/view/WindowManager"));
 		if (!wm)
 		{

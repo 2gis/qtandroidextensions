@@ -46,7 +46,7 @@ void showToast(const QString & text, bool length_long)
 	QJniClass(c_full_class_name_).callStaticParamVoid(
 		"showToast",
 		"Landroid/app/Activity;Ljava/lang/String;I",
-		QJniObject(QAndroidQPAPluginGap::getActivity(), true).jObject(),
+		QAndroidQPAPluginGap::Context().jObject(),
 		QJniLocalRef(text).jObject(),
 		jint((length_long)? ANDROID_TOAST_LENGTH_LONG: ANDROID_TOAST_LENGTH_SHORT));
 }

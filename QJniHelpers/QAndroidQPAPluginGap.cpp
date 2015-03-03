@@ -13,13 +13,13 @@
   modification, are permitted provided that the following conditions are met:
 
   * Redistributions of source code must retain the above copyright notice,
-	this list of conditions and the following disclaimer.
+    this list of conditions and the following disclaimer.
   * Redistributions in binary form must reproduce the above copyright notice,
-	this list of conditions and the following disclaimer in the documentation
-	and/or other materials provided with the distribution.
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
   * Neither the name of the DoubleGIS, LLC nor the names of its contributors
-	may be used to endorse or promote products derived from this software
-	without specific prior written permission.
+    may be used to endorse or promote products derived from this software
+    without specific prior written permission.
 
   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -115,6 +115,44 @@ jobject JNICALL getActivity(JNIEnv *, jobject)
 	return QJniEnvPtr().env()->NewLocalRef(activity->jObject());
 }
 
+static QScopedPointer<QJniObject> custom_context_;
+
+void setCustomContext(jobject context)
+{
+	if (context)
+	{
+		custom_context_.reset(new QJniObject(context, true));
+	}
+	else
+	{
+		custom_context_.reset();
+	}
+}
+
+jobject JNICALL getCustomContext(JNIEnv *, jobject)
+{
+	if (custom_context_)
+	{
+		return custom_context_->jObject();
+	}
+	return 0;
+}
+
+jobject JNICALL getCurrentContext(JNIEnv * env, jobject)
+{
+	if (jobject ret = getCustomContext())
+	{
+		QJniEnvPtr jep(env);
+		return jep.env()->NewLocalRef(ret);
+	}
+	return getActivity();
+}
+
+Context::Context():
+	QJniObject(getCurrentContext(), true)
+{
+}
+
 void preloadJavaClass(const char * class_name)
 {
 	// Directly calling to Java_ru_dublgis_qjnihelpers_ClassLoader_nativeJNIPreloadClass seems to be
@@ -151,7 +189,7 @@ void preloadJavaClasses()
 extern "C" {
 
 /*! This function does the actual pre-loading of a Java class. It can be called either from Java
-    via ClassLoader.callJNIPreloadClass() or from C++ main() thread as QAndroidQPAPluginGap.preloadJavaClass(). */
+	via ClassLoader.callJNIPreloadClass() or from C++ main() thread as QAndroidQPAPluginGap.preloadJavaClass(). */
 JNIEXPORT void JNICALL Java_ru_dublgis_qjnihelpers_ClassLoader_nativeJNIPreloadClass(JNIEnv * env, jobject, jstring classname)
 {
 	QJniEnvPtr jep(env);

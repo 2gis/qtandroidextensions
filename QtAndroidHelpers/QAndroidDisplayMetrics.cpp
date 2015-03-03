@@ -54,7 +54,7 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(QObject * parent)
 {
 	QJniObject metrics("android/util/DisplayMetrics", "");
 	{
-		QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+		QAndroidQPAPluginGap::Context activity;
 		QScopedPointer<QJniObject> windowmanager(activity.callObject("getWindowManager", "android/view/WindowManager"));
 		QScopedPointer<QJniObject> defaultdisplay(windowmanager->callObject("getDefaultDisplay", "android/view/Display"));
 		defaultdisplay->callParamVoid("getMetrics", "Landroid/util/DisplayMetrics;", metrics.jObject());

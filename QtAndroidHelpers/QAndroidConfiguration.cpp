@@ -42,7 +42,7 @@ QAndroidConfiguration::QAndroidConfiguration(QObject * parent)
 	: QObject(parent)
 	, screen_size_(ScreenSizeUndefined)
 {
-	QJniObject activity(QAndroidQPAPluginGap::getActivity(), true);
+	QAndroidQPAPluginGap::Context activity;
 	QScopedPointer<QJniObject> resources(activity.callObject("getResources", "android/content/res/Resources"));
 	QScopedPointer<QJniObject> configuration(resources->callObject("getConfiguration", "android/content/res/Configuration"));
 
