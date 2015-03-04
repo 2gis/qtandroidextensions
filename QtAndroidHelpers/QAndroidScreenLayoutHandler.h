@@ -42,6 +42,7 @@
 
 /*!
  * A class for notification on global relayout on Java side.
+ * NOTE: this class doesn't work without Activity, i.e. from a non-GUI app / Service and etc.
  */
 class QAndroidScreenLayoutHandler: public QObject
 {

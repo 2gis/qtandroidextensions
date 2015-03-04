@@ -49,6 +49,8 @@
  * dialog->setDeleteSelfOnClose(true);
  * dialog->showMessage(...);
  *
+ * NOTE: this class doesn't work without Activity, i.e. from a non-GUI app / Service and etc.
+ *
  */
 class QAndroidDialog: public QObject
 {
