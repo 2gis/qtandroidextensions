@@ -334,6 +334,7 @@ public:
 	void callParamVoid(const char* method_name, const char* param_signature, ...);
 	void callVoid(const char * method_name, jint x);
 	void callVoid(const char * method_name, jlong x);
+	void callVoid(const char * method_name, jlong x1, jlong x2);
 	void callVoid(const char * method_name, jboolean x);
 	void callVoid(const char * method_name, jfloat x);
 	void callVoid(const char * method_name, jdouble x);

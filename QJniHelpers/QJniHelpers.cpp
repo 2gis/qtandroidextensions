@@ -1434,6 +1434,11 @@ void QJniObject::callVoid(const char * method_name, jlong x)
 	callParamVoid(method_name, "J", x);
 }
 
+void QJniObject::callVoid(const char * method_name, jlong x1, jlong x2)
+{
+	callParamVoid(method_name, "JJ", x1, x2);
+}
+
 void QJniObject::callVoid(const char * method_name, jboolean x)
 {
 	callParamVoid(method_name, "Z", x);
