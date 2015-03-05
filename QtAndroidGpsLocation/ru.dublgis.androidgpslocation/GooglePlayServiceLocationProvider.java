@@ -35,7 +35,7 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package ru.dublgis.androidhelpers;
+package ru.dublgis.androidgpslocation;
 
 import android.app.Activity;
 import android.util.Log;

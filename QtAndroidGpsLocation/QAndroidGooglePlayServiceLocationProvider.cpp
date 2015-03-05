@@ -39,7 +39,7 @@
 #include <QtPositioning/QGeoPositionInfo>
 
 
-static const char *c_full_class_name_ = "ru/dublgis/androidhelpers/GooglePlayServiceLocationProvider";
+static const char *c_full_class_name_ = "ru/dublgis/androidgpslocation/GooglePlayServiceLocationProvider";
 
 
 
