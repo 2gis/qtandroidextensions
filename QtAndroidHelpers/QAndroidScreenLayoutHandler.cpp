@@ -54,7 +54,7 @@ Q_DECL_EXPORT void JNICALL Java_ScreenLayoutHandler_globalLayoutChanged(JNIEnv *
 }
 
 
-static const char *c_full_class_name_ = "ru/dublgis/androidhelpers/ScreenLayoutHandler";
+static const char * const c_full_class_name_ = "ru/dublgis/androidhelpers/ScreenLayoutHandler";
 
 QAndroidScreenLayoutHandler::QAndroidScreenLayoutHandler(QObject * parent)
 	: QObject(parent)
