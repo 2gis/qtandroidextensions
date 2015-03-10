@@ -97,12 +97,8 @@ Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationStatus
 		{
 			void * vp = reinterpret_cast<void*>(param);
 			QAndroidGooglePlayServiceLocationProvider * proxy = reinterpret_cast<QAndroidGooglePlayServiceLocationProvider*>(vp);
-			
-			if (proxy)
-			{
-				proxy->onStatusChanged(state);
-				return;
-			}
+			proxy->onStatusChanged(state);
+			return;
 		}
 		else
 		{
@@ -125,13 +121,9 @@ Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationReciev
 		{
 			void * vp = reinterpret_cast<void*>(param);
 			QAndroidGooglePlayServiceLocationProvider * proxy = reinterpret_cast<QAndroidGooglePlayServiceLocationProvider*>(vp);
-			
-			if (proxy)
-			{
-				QGeoPositionInfo posInfo = positionInfoFromJavaLocation(env, location);
-				proxy->onLocationRecieved(posInfo, initial);
-				return;
-			}
+			QGeoPositionInfo posInfo = positionInfoFromJavaLocation(env, location);
+			proxy->onLocationRecieved(posInfo, initial);
+			return;
 		}
 		else
 		{
@@ -206,6 +198,7 @@ void QAndroidGooglePlayServiceLocationProvider::preloadJavaClasses()
 			QAndroidQPAPluginGap::preloadJavaClasses();
 			QAndroidQPAPluginGap::preloadJavaClass(c_full_class_name_);
 
+			qDebug() << "Pre-loading Java classes for Google Play Services positioning...";
 			QJniClass ov(c_full_class_name_);
 			static const JNINativeMethod methods[] = {
 				{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity},
@@ -257,7 +250,16 @@ bool QAndroidGooglePlayServiceLocationProvider::isAvailable()
 
 	try 
 	{
-		return QJniClass(c_full_class_name_).callStaticParamBoolean("isAvailable", "Landroid/app/Activity;", QAndroidQPAPluginGap::getActivity()); 
+		qDebug() << "Checking for Google Play Services positioning availability...";
+		QJniClass clazz(c_full_class_name_);
+		if (!clazz.jClass())
+		{
+			qWarning() << "Failed to instantiate: " << c_full_class_name_;
+			return false;
+		}
+		jboolean result = clazz.callStaticParamBoolean("isAvailable", "Landroid/app/Activity;", QAndroidQPAPluginGap::Context().jObject());
+		qDebug() << "....GP positioning availability result:" << result;
+		return result;
 	}
 	catch (const QJniBaseException &e)
 	{

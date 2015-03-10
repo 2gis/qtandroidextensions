@@ -72,10 +72,11 @@ public:
 	void setUpdateInterval(int64_t reqiredInterval, int64_t minimumInterval);
 	QGeoPositionInfo lastKnownPosition() const;
 
+	static void preloadJavaClasses();
+
 private:
 	void onStatusChanged(int status);
 	void onLocationRecieved(const QGeoPositionInfo &location, jboolean initial);
-	static void preloadJavaClasses();
 
 private:
 	Q_DISABLE_COPY(QAndroidGooglePlayServiceLocationProvider)
