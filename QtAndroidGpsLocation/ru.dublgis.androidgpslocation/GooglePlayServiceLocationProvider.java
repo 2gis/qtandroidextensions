@@ -176,8 +176,6 @@ public class GooglePlayServiceLocationProvider
 	{
 		Log.i(TAG, "Connected to GoogleApiClient");
 
-		googleApiClientStatus(native_ptr_, STATUS_CONNECTED);
-
 		if (mCurrentLocation == null) 
 		{
 			try
@@ -195,9 +193,12 @@ public class GooglePlayServiceLocationProvider
 			googleApiClientLocation(native_ptr_, mCurrentLocation, true);
 		}
 
-		if (mRequestingLocationUpdates) {
+		if (mRequestingLocationUpdates) 
+		{
 			startLocationUpdates();
 		}
+
+		googleApiClientStatus(native_ptr_, STATUS_CONNECTED);
 	}
 
 

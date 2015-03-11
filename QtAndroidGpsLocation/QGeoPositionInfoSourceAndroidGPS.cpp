@@ -194,11 +194,11 @@ void QGeoPositionInfoSourceAndroidGPS::onStatusChanged(int status)
 	switch (status)
 	{
 		case QAndroidGooglePlayServiceLocationProvider::S_DISCONNECTED:
-			newErrorCode = QGeoPositionInfoSource::NoError;
+			newErrorCode = QGeoPositionInfoSource::ClosedError;
 			break;
 
 		case QAndroidGooglePlayServiceLocationProvider::S_CONNECTED:
-			newErrorCode = QGeoPositionInfoSource::ClosedError;
+			newErrorCode = QGeoPositionInfoSource::NoError;
 			break;
 
 		default:
