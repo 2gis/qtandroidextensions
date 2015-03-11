@@ -190,7 +190,10 @@ public class GooglePlayServiceLocationProvider
 			}
 		}
 
-		googleApiClientLocation(native_ptr_, mCurrentLocation, true);
+		if (null != mCurrentLocation)
+		{
+			googleApiClientLocation(native_ptr_, mCurrentLocation, true);
+		}
 
 		if (mRequestingLocationUpdates) {
 			startLocationUpdates();
@@ -260,7 +263,11 @@ public class GooglePlayServiceLocationProvider
 	public void onLocationChanged(Location location) 
 	{
 		mCurrentLocation = location;
-		googleApiClientLocation(native_ptr_, location, false);
+
+		if (null != mCurrentLocation)
+		{
+			googleApiClientLocation(native_ptr_, location, false);
+		}
 	}
 
 

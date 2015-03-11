@@ -389,8 +389,11 @@ QJniClass::QJniClass(jobject object)
 {
 	QJniEnvPtr jep;
 	// Note: class is expected to be a valid ref during the whole lifetime of the object.
-	QJniLocalRef clazz(jep.env(), jep.env()->GetObjectClass(object));
-	initClass(jep.env(), clazz);
+	if (object)
+	{
+		QJniLocalRef clazz(jep.env(), jep.env()->GetObjectClass(object));
+		initClass(jep.env(), clazz);
+	}
 }
 
 QJniClass::QJniClass(const QJniClass &other)

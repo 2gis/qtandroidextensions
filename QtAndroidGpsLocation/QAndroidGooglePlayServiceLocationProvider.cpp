@@ -115,6 +115,11 @@ Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationStatus
 
 Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationRecieved(JNIEnv * env, jobject, jlong param, jobject location, jboolean initial)
 {
+	if (0x0 == location)
+	{
+		return;
+	}
+
 	try
 	{
 		if (param)
