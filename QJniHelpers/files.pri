@@ -1,9 +1,13 @@
 android-g++ {
+
+    INCLUDEPATH += $$PWD
+    QT += androidextras
+
     HEADERS += \
-        QJniHelpers.h \
-        QAndroidQPAPluginGap.h \
+        $$PWD/QJniHelpers.h \
+        $$PWD/QAndroidQPAPluginGap.h \
 
     SOURCES += \
-        QJniHelpers.cpp \
-        QAndroidQPAPluginGap.cpp
+        $$PWD/QJniHelpers.cpp \
+        $$PWD/QAndroidQPAPluginGap.cpp
 }

@@ -1,20 +1,25 @@
 
+android-g++ {
+
+INCLUDEPATH += $$PWD
+
 HEADERS += \
-    QAndroidConfiguration.h \
-    QAndroidDialog.h \
-    QAndroidDisplayMetrics.h \
-    QAndroidFilePaths.h \
-    QAndroidScreenOrientation.h \
-    QAndroidScreenLayoutHandler.h \
-    QAndroidToast.h \
-    QAndroidDesktopUtils.h
+    $$PWD/QAndroidConfiguration.h \
+    $$PWD/QAndroidDialog.h \
+    $$PWD/QAndroidDisplayMetrics.h \
+    $$PWD/QAndroidFilePaths.h \
+    $$PWD/QAndroidScreenOrientation.h \
+    $$PWD/QAndroidScreenLayoutHandler.h \
+    $$PWD/QAndroidToast.h \
+    $$PWD/QAndroidDesktopUtils.h
 
 SOURCES += \
-    QAndroidConfiguration.cpp \
-    QAndroidDialog.cpp \
-    QAndroidDisplayMetrics.cpp \
-    QAndroidFilePaths.cpp \
-    QAndroidScreenOrientation.cpp \
-    QAndroidScreenLayoutHandler.cpp \
-    QAndroidToast.cpp \
-    QAndroidDesktopUtils.cpp
+    $$PWD/QAndroidConfiguration.cpp \
+    $$PWD/QAndroidDialog.cpp \
+    $$PWD/QAndroidDisplayMetrics.cpp \
+    $$PWD/QAndroidFilePaths.cpp \
+    $$PWD/QAndroidScreenOrientation.cpp \
+    $$PWD/QAndroidScreenLayoutHandler.cpp \
+    $$PWD/QAndroidToast.cpp \
+    $$PWD/QAndroidDesktopUtils.cpp
+}

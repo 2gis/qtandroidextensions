@@ -1,9 +1,14 @@
 
+android-g++ {
+
+INCLUDEPATH += $$PWD
+
 HEADERS += \
-    QAndroidGooglePlayServiceLocationProvider.h \
-    QGeoPositionInfoSourceAndroidGPS.h
+	$$PWD/QAndroidGooglePlayServiceLocationProvider.h \
+	$$PWD/QGeoPositionInfoSourceAndroidGPS.h
 
 SOURCES += \
-    QAndroidGooglePlayServiceLocationProvider.cpp \
-    QGeoPositionInfoSourceAndroidGPS.cpp  
+	$$PWD/QAndroidGooglePlayServiceLocationProvider.cpp \
+	$$PWD/QGeoPositionInfoSourceAndroidGPS.cpp
 
+}
