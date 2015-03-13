@@ -55,6 +55,14 @@ public:
 		S_CONNECTED = 1,
 	};
 
+	enum enPriority
+	{
+		PRIORITY_HIGH_ACCURACY            = 0x00000064, /// the most accurate locations available
+		PRIORITY_BALANCED_POWER_ACCURACY  = 0x00000066, /// "block" level accuracy.
+		PRIORITY_LOW_POWER                = 0x00000068, /// "city" level accuracy.
+		PRIORITY_NO_POWER                 = 0x00000069, /// the best accuracy possible with zero additional power consumption.
+	};
+
 public:
 	QAndroidGooglePlayServiceLocationProvider(QObject * parent = 0);
 	virtual ~QAndroidGooglePlayServiceLocationProvider();
@@ -70,6 +78,7 @@ signals:
 public:
 	static bool isAvailable();
 	void setUpdateInterval(int64_t reqiredInterval, int64_t minimumInterval);
+	void setPriority(enPriority priority);
 	QGeoPositionInfo lastKnownPosition() const;
 
 	static void preloadJavaClasses();
@@ -90,6 +99,7 @@ private:
 
 	int64_t reqiredInterval_; 
 	int64_t minimumInterval_;
+	enPriority priority_;
 };
 
 

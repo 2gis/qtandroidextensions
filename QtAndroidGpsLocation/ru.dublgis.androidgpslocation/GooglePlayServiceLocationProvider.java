@@ -63,12 +63,13 @@ public class GooglePlayServiceLocationProvider
 			  implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener
 {
 	public static final String TAG = "Grym/GooglePlayServiceLocationProvider";
-	public final static int STATUS_DISCONNECTED		  = 0;
-	public final static int STATUS_CONNECTED			 = 1;
+	public final static int STATUS_DISCONNECTED		= 0;
+	public final static int STATUS_CONNECTED		= 1;
 
 	private long native_ptr_ = 0;
 	private long mUpdateInterval = 1000;
 	private long mUpdateIntervalFastest = mUpdateInterval / 2;
+	private int mPriority = LocationRequest.PRIORITY_NO_POWER;
 
 	protected GoogleApiClient mGoogleApiClient;
 	protected Location mCurrentLocation;
@@ -164,10 +165,11 @@ public class GooglePlayServiceLocationProvider
 
 	protected void createLocationRequest() 
 	{
+		Log.i(TAG, "createLocationRequest with priority " + mPriority);
 		mLocationRequest = new LocationRequest();
 		mLocationRequest.setInterval(mUpdateInterval);
 		mLocationRequest.setFastestInterval(mUpdateIntervalFastest);
-		mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+		mLocationRequest.setPriority(mPriority);
 	}
 
 
@@ -272,10 +274,8 @@ public class GooglePlayServiceLocationProvider
 	}
 
 
-	public void requestGoogleApiClientLocationUpdatesStart(long interval, long minimum_interval) 
+	public void requestGoogleApiClientLocationUpdatesStart(final int priority, final long interval, final long minimum_interval) 
 	{
-		final long interval_f = interval;
-		final long minimum_interval_f = minimum_interval;
 
 		runOnUiThread(new Runnable() 
 		{
@@ -283,8 +283,9 @@ public class GooglePlayServiceLocationProvider
 			{
 				if (!mRequestingLocationUpdates) 
 				{
-					mUpdateInterval = interval_f;
-					mUpdateIntervalFastest = minimum_interval_f;
+					mUpdateInterval = interval;
+					mUpdateIntervalFastest = minimum_interval;
+					mPriority = priority;
 					createLocationRequest();
 					mRequestingLocationUpdates = true;
 					startLocationUpdates();

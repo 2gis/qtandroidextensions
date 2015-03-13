@@ -61,7 +61,7 @@ public:
 	void setUpdateInterval(int msec);
 	QGeoPositionInfo lastKnownPosition(bool fromSatellitePositioningMethodsOnly = false) const;
 	PositioningMethods supportedPositioningMethods() const;
-	void setPreferredPositioningMethods(PositioningMethods methods);
+	void setPreferredPositioningMethods(const PositioningMethods methods);
 	int minimumUpdateInterval() const;
 	Error error() const;
 

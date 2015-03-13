@@ -145,7 +145,8 @@ Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationReciev
 QAndroidGooglePlayServiceLocationProvider::QAndroidGooglePlayServiceLocationProvider(QObject * parent)
 	: QObject(parent),
 	reqiredInterval_(1500),
-	minimumInterval_(1000)
+	minimumInterval_(1000),
+	priority_(PRIORITY_NO_POWER)
 {
 	preloadJavaClasses();
 
@@ -224,6 +225,12 @@ void QAndroidGooglePlayServiceLocationProvider::preloadJavaClasses()
 }
 
 
+void QAndroidGooglePlayServiceLocationProvider::setPriority(enPriority priority)
+{
+	priority_ = priority;
+}
+
+
 void QAndroidGooglePlayServiceLocationProvider::setUpdateInterval(int64_t reqiredInterval, int64_t minimumInterval)
 {
 	reqiredInterval_ = reqiredInterval;
@@ -235,7 +242,7 @@ void QAndroidGooglePlayServiceLocationProvider::startUpdates()
 {
 	if (handler_)
 	{
-		handler_->callVoid("requestGoogleApiClientLocationUpdatesStart", reqiredInterval_, minimumInterval_);
+		handler_->callParamVoid("requestGoogleApiClientLocationUpdatesStart", "IJJ", (int32_t)priority_, reqiredInterval_, minimumInterval_);
 	}
 }
 

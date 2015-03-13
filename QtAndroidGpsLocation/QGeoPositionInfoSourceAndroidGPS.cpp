@@ -52,8 +52,8 @@ QGeoPositionInfoSourceAndroidGPS::QGeoPositionInfoSourceAndroidGPS(QObject * par
 {
 	qRegisterMetaType< QGeoPositionInfo >();
 
-	setPreferredPositioningMethods(AllPositioningMethods);
 	regularProvider_ = new QAndroidGooglePlayServiceLocationProvider(this);
+	setPreferredPositioningMethods(NonSatellitePositioningMethods);
 
 	if (regularProvider_)
 	{
@@ -85,12 +85,30 @@ void QGeoPositionInfoSourceAndroidGPS::startUpdates()
 		return;
 	}
 
-	if (preferredPositioningMethods() == 0) 
+	Q_ASSERT(regularProvider_);
+	const PositioningMethods methods = preferredPositioningMethods();
+
+	if (methods == 0) 
 	{
 		m_error = UnknownSourceError;
 		emit QGeoPositionInfoSource::error(m_error);
 		return;
 	}
+
+	QAndroidGooglePlayServiceLocationProvider::enPriority priority = QAndroidGooglePlayServiceLocationProvider::PRIORITY_NO_POWER;
+
+	if (QGeoPositionInfoSource::NonSatellitePositioningMethods & methods)
+	{
+		priority = QAndroidGooglePlayServiceLocationProvider::PRIORITY_BALANCED_POWER_ACCURACY;
+	}
+
+	if (QGeoPositionInfoSource::SatellitePositioningMethods & methods)
+	{
+		priority = QAndroidGooglePlayServiceLocationProvider::PRIORITY_HIGH_ACCURACY;
+	}
+
+	regularProvider_->setPriority(priority);
+
 
 	updatesRunning_ = true;
 
@@ -135,12 +153,15 @@ QGeoPositionInfo QGeoPositionInfoSourceAndroidGPS::lastKnownPosition(bool fromSa
 }
 
 
-void QGeoPositionInfoSourceAndroidGPS::setPreferredPositioningMethods(PositioningMethods methods)
+void QGeoPositionInfoSourceAndroidGPS::setPreferredPositioningMethods(const PositioningMethods methods)
 {
-	PositioningMethods previousPreferredPositioningMethods = preferredPositioningMethods();
+	const PositioningMethods previousPreferredPositioningMethods = preferredPositioningMethods();
 	QGeoPositionInfoSource::setPreferredPositioningMethods(methods);
 	if (previousPreferredPositioningMethods == preferredPositioningMethods())
+	{
 		return;
+	}
+
 
 	if (updatesRunning_)
 	{
