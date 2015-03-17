@@ -37,7 +37,9 @@
 package ru.dublgis.androidhelpers;
 
 import java.lang.Thread;
-import android.app.Activity;
+import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -46,11 +48,12 @@ public class ToastHelper
 {
     public static final String TAG = "Grym/ToastHelper";
 
-    public static void showToast(final Activity a, final String text, final int duration)
+    public static void showToast(final Context a, final String text, final int duration)
     {
         try
         {
-            a.runOnUiThread(new Runnable() {
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(new Runnable() {
                @Override
                public void run() {
                    Toast toast = Toast.makeText(a, text, duration);
