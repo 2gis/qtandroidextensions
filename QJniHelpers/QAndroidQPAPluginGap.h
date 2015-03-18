@@ -71,6 +71,8 @@ namespace QAndroidQPAPluginGap {
 	 */
 	jobject JNICALL getCustomContext(JNIEnv * env = 0, jobject jo = 0);
 
+	bool customContextSet();
+
 	/*!
 	 * Returns custom context if it's set, or activity if it's not set.
 	 * \param env, jo are not used and only needed so the function could be set as native

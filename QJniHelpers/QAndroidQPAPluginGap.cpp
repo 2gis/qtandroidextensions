@@ -138,6 +138,11 @@ jobject JNICALL getCustomContext(JNIEnv *, jobject)
 	return 0;
 }
 
+bool customContextSet()
+{
+	return (custom_context_)? true: false;
+}
+
 jobject JNICALL getCurrentContext(JNIEnv * env, jobject)
 {
 	if (jobject ret = getCustomContext())

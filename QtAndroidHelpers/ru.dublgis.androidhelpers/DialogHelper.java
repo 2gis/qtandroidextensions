@@ -41,11 +41,14 @@ import java.util.concurrent.Semaphore;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.DialogInterface;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.os.Looper;
+import android.os.Handler;
 
 public class DialogHelper
 {
@@ -69,10 +72,29 @@ public class DialogHelper
     }
 
     public void showMessage(final String title, final String explanation, final String positiveButtonText,
-        final String negativeButtonText, final String neutralButtonText, final boolean loop, final int lockOrientation)
+        final String negativeButtonText, final String neutralButtonText, final boolean loop, final int lockOrientation, final boolean in_activity)
     {
-        final Activity a = getActivity();
-        final boolean ui_thread = Thread.currentThread().getId() == a.getMainLooper().getThread().getId();
+        // getActivity() crashes if we are not in Activity. Also it queries Qt Java function
+        // which might be misbehaving one day when we work from a service. So it is safer
+        // to have the in_activity flag.
+        // Further we don't use in_activity but check a for null to determine the way we go.
+        final Activity a = (in_activity)? getActivity(): null;
+
+        // Print some words of wisdom
+        if (a == null && in_activity)
+        {
+            Log.e(TAG, "ERROR: DialogHelper.showMessage() has been called with in_activity flag set but getActivity() returned null.");
+        }
+        if (a == null && lockOrientation != -1)
+        {
+            Log.e(TAG, "ERROR: DialogHelper.showMessage() will not lock screen orientation because it's not used from Activity.");
+        }
+
+        final Context context = (a != null)? (Context)a: getContext();
+        final boolean ui_thread = (a != null)? Thread.currentThread().getId() == a.getMainLooper().getThread().getId(): false;
+
+        // Creating a runnable which creates the dialog. Then we will run it on the right thread
+        // and in the right context.
         Runnable runnable = new Runnable(){
             @Override
             public void run()
@@ -80,7 +102,7 @@ public class DialogHelper
                 int orientation = -1;
                 try
                 {
-                    if (lockOrientation != -1)
+                    if (lockOrientation != -1 && a != null)
                     {
                         orientation = a.getRequestedOrientation();
                         a.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
@@ -91,7 +113,9 @@ public class DialogHelper
                     Log.e(TAG, "showMessage: exception (1): "+e);
                 }
                 final int restore_orientation = orientation;
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+                // Now let's build the dialog
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
                 builder.setTitle(title);
                 builder.setMessage(explanation);
 
@@ -101,7 +125,7 @@ public class DialogHelper
                     {
                         try
                         {
-                            if (lockOrientation != -1)
+                            if (lockOrientation != -1 && a != null)
                             {
                                 a.setRequestedOrientation(restore_orientation);
                             }
@@ -127,7 +151,7 @@ public class DialogHelper
                     {
                         try
                         {
-                            if (lockOrientation != -1)
+                            if (lockOrientation != -1 && a != null)
                             {
                                 a.setRequestedOrientation(restore_orientation);
                             }
@@ -161,15 +185,43 @@ public class DialogHelper
                 }
                 builder.setOnCancelListener(cancel_listener);
 
-                builder.show();
-
-                if (loop && ui_thread)
+                // Displaying the dialog.
+                try
                 {
-                    Log.i(TAG, "Waiting for the dialog in UI thread.");
-                    Looper.loop();
+                    AlertDialog dlg = builder.create();
+                    if (a == null)
+                    {
+                        // Please note that this requires a permission in your AndroidManifest.xml to work:
+                        // <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+                        dlg.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+                    }
+                    dlg.show();
+                    // If we are in the UI thread we wait for the dialog right here
+                    // while running the message loop.
+                    if (loop && ui_thread)
+                    {
+                        Log.i(TAG, "Waiting for the dialog in UI thread.");
+                        Looper.loop();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Log.e(TAG, "Failed to display dialog: " + e);
+                    if (lockOrientation != -1 && a != null)
+                    {
+                        a.setRequestedOrientation(restore_orientation);
+                    }
+                    if (loop && !ui_thread)
+                    {
+                        semaphore_.release();
+                    }
                 }
             }
         };
+
+        //
+        // Displaying the dialog using the runnable which we just created above.
+        //
         if (!ui_thread)
         {
             Log.i(TAG, "Non-UI thread mode.");
@@ -179,7 +231,17 @@ public class DialogHelper
                 {
                     semaphore_.acquire();
                 }
-                a.runOnUiThread(runnable);
+
+                if (a != null)
+                {
+                    a.runOnUiThread(runnable);
+                }
+                else
+                {
+                    Handler handler = new Handler(Looper.getMainLooper());
+                    handler.post(runnable);
+                }
+
                 if (loop)
                 {
                     semaphore_.acquire();
@@ -199,5 +261,6 @@ public class DialogHelper
     }
 
     public native Activity getActivity();
+    public native Context getContext();
     public native void showMessageCallback(long nativeptr, int button);
 }

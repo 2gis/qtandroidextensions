@@ -87,6 +87,7 @@ void QAndroidDialog::preloadJavaClasses()
 		QJniClass ov(c_full_class_name_);
 		static const JNINativeMethod methods[] = {
 			{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity},
+			{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContext},
 			{"showMessageCallback", "(JI)V", (void*)Java_DialogHelper_DialogHelper_showMessageCallback},
 		};
 		ov.registerNativeMethods(methods, sizeof(methods));
@@ -109,16 +110,20 @@ void QAndroidDialog::showMessage(
 		{
 			lock_rotation = true;
 		}
-		int orientation = (lock_rotation)? QAndroidScreenOrientation::getCurrentFixedOrientation(): -1;
+		// TODO: We can't read or lock orientation when we don't have an activity.
+		// Currently, we check it via customContextSet(), but this might not always be the right way.
+		bool in_activity = !QAndroidQPAPluginGap::customContextSet();
+		int orientation = (lock_rotation && in_activity)? QAndroidScreenOrientation::getCurrentFixedOrientation(): -1;
 		dialog_helper_->callParamVoid("showMessage",
-			"Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZI",
+			"Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZIZ",
 			QJniLocalRef(title).jObject(),
 			QJniLocalRef(explanation).jObject(),
 			QJniLocalRef(positive_button_text).jObject(),
 			QJniLocalRef(negative_button_text).jObject(),
 			QJniLocalRef(neutral_button_text).jObject(),
 			jboolean(pause),
-			jint(orientation)
+			jint(orientation),
+			jboolean(in_activity)
 		);
 	}
 	else

@@ -49,7 +49,9 @@
  * dialog->setDeleteSelfOnClose(true);
  * dialog->showMessage(...);
  *
- * NOTE: this class doesn't work without Activity, i.e. from a non-GUI app / Service and etc.
+ * NOTE: this class can work with or without Activity but to display dialogs from non-Activity
+ * context one needs a permission in the AndroidManifest.xml:
+ * <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
  *
  */
 class QAndroidDialog: public QObject
