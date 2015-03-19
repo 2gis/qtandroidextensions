@@ -199,13 +199,21 @@ JNIEXPORT void JNICALL Java_ru_dublgis_qjnihelpers_ClassLoader_nativeJNIPreloadC
 {
 	QJniEnvPtr jep(env);
 	QString qclassname = jep.QStringFromJString(classname);
-	jep.preloadClass(qclassname.toLatin1());
+	bool ok = jep.preloadClass(qclassname.toLatin1());
+	if (!ok)
+	{
+		qCritical() << "Failed to preload Java class:" << qclassname;
+	}
 
 	// During the first call of this function, we can also pre-load classes for our own use.
 	static bool first_call = true;
 	if (first_call)
 	{
-		jep.preloadClass(c_activity_getter_class_name);
+		bool mok = jep.preloadClass(c_activity_getter_class_name);
+		if (!mok)
+		{
+			qCritical() << "Failed to preload Java class:" << qclassname;
+		}
 		first_call = false;
 	}
 }
