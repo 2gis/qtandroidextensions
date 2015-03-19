@@ -61,9 +61,9 @@ const QString & QAndroidFilePaths::ApplicationFilesDirectory()
 	static QString path;
 	if (path.isEmpty())
 	{
-		QAndroidQPAPluginGap::Context activity;
-		QScopedPointer<QJniObject> application(activity.callObject("getApplication", "android/app/Application"));
-		QScopedPointer<QJniObject> filesdir(application->callObject("getFilesDir", "java/io/File"));
+		QAndroidQPAPluginGap::Context context;
+		QScopedPointer<QJniObject> app_context(context.callObject("getApplicationContext", "android/content/Context"));
+		QScopedPointer<QJniObject> filesdir(app_context->callObject("getFilesDir", "java/io/File"));
 		path = filesdir->callString("getPath");
 	}
 	return path;
@@ -135,6 +135,7 @@ void QAndroidFilePaths::preloadJavaClasses()
 {
 	QAndroidQPAPluginGap::preloadJavaClasses();
 	QAndroidQPAPluginGap::preloadJavaClass("android/os/Environment");
+	QAndroidQPAPluginGap::preloadJavaClass("android/content/Context");
 
 	/*qDebug()<<"QAndroidFilePaths"<<"APPDIR:"<<ApplicationFilesDirectory();
 	qDebug()<<"QAndroidFilePaths"<<"EXTFDIR:"<<ExternalFilesDirectory();
