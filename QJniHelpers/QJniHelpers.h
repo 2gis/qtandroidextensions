@@ -93,7 +93,7 @@ public:
 
 //! Basic functionality to get JNIEnv valid for current thread and scope.
 class QJniEnvPtr
-{	
+{
 public:
 	/*!
 	 * \param env can be 0, then the constructor gets env for current thread,
@@ -166,7 +166,7 @@ public:
 	 * \return Returns false if there was no exceptions.
 	 */
 	bool clearException(bool describe = true);
-	
+
 public:
 	static void setJavaVM(JavaVM*);
 	static void setJavaVM(JNIEnv*);
@@ -422,8 +422,8 @@ public:
 	~QJniLocalRef();
 
 	operator jobject() const { return local_; }
-	operator jstring() const { return (jstring)local_; }
-	operator jclass() const { return (jclass)local_; }
+	operator jstring() const { return static_cast<jstring>(local_); }
+	operator jclass() const { return static_cast<jclass>(local_); }
 	jobject jObject() const { return local_; }
 	operator QString() const { return QJniEnvPtr(env_).JStringToQString(operator jstring()); }
 
