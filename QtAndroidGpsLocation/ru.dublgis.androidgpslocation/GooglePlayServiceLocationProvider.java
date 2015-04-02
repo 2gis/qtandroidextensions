@@ -166,10 +166,19 @@ public class GooglePlayServiceLocationProvider
 	protected void createLocationRequest() 
 	{
 		Log.i(TAG, "createLocationRequest with priority " + mPriority);
-		mLocationRequest = new LocationRequest();
-		mLocationRequest.setInterval(mUpdateInterval);
-		mLocationRequest.setFastestInterval(mUpdateIntervalFastest);
-		mLocationRequest.setPriority(mPriority);
+
+		try 
+		{
+			mLocationRequest = new LocationRequest();
+			mLocationRequest.setInterval(mUpdateInterval);
+			mLocationRequest.setFastestInterval(mUpdateIntervalFastest);
+			mLocationRequest.setPriority(mPriority);
+		}
+		catch(Exception e)
+		{
+			Log.e(TAG, e.getMessage());
+			mLocationRequest = null;
+		}
 	}
 
 
@@ -204,7 +213,7 @@ public class GooglePlayServiceLocationProvider
 	}
 
 
-	protected void startLocationUpdates() 
+	protected synchronized void startLocationUpdates() 
 	{
 		try 
 		{
