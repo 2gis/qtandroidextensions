@@ -71,6 +71,7 @@ public slots:
 	void showKeyboard() { androidView()->showKeyboard(); }
 
 signals:
+	void viewCreated();
 	void backgroundColorChanged(QColor color);
 	void visibleRectReceived(int width, int height);
 
@@ -93,6 +94,7 @@ protected slots:
 	virtual void updateAndroidEnabled();
 	virtual void onTextureUpdated();
 	virtual void onVisibleRectReceived(int width, int height);
+	virtual void onViewCreated();
 
 private:
 	QSharedPointer<QAndroidOffscreenView> aview_;

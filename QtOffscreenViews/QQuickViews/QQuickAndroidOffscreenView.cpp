@@ -106,6 +106,7 @@ QQuickAndroidOffscreenView::QQuickAndroidOffscreenView(QAndroidOffscreenView * a
 	connect(this, SIGNAL(enabledChanged()), this, SLOT(updateAndroidEnabled()));
 	connect(this, SIGNAL(visibleChanged()), this, SLOT(updateAndroidViewVisibility()));
 	connect(aview_.data(), SIGNAL(visibleRectReceived(int,int)), this, SLOT(onVisibleRectReceived(int,int)));
+	connect(aview_.data(), SIGNAL(viewCreated()), this, SLOT(onViewCreated()));
 	aview_->setAttachingMode(is_interactive_);
 }
 
@@ -314,4 +315,10 @@ void QQuickAndroidOffscreenView::updateAndroidEnabled()
 {
 	qDebug()<<__PRETTY_FUNCTION__<<isEnabled();
 	aview_->setEnabled(isEnabled());
+}
+
+void QQuickAndroidOffscreenView::onViewCreated()
+{
+	qDebug()<<__PRETTY_FUNCTION__;
+	emit viewCreated();
 }
