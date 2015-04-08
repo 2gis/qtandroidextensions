@@ -41,6 +41,7 @@
 #include "QAndroidFilePaths.h"
 
 static QMutex paths_mutex_(QMutex::Recursive);
+static const char * const c_directorieshelper_class_ = "ru/dublgis/androidhelpers/DirectoriesHelper";
 
 const QLatin1String
 	QAndroidFilePaths::ANDROID_DIRECTORY_MUSIC("Music"),
@@ -99,8 +100,7 @@ const QStringList & QAndroidFilePaths::ExternalFilesDirectories(const QString & 
 		}
 		else
 		{
-			QJniClass helpers("ru/dublgis/androidhelpers/DirectoriesHelper");
-			QString paths = helpers.callStaticParamString(
+			QString paths = QJniClass(c_directorieshelper_class_).callStaticParamString(
 				"getExternalFilesDirs",
 				"Landroid/content/Context;Ljava/lang/String;",
 				QAndroidQPAPluginGap::Context().jObject(),
@@ -157,15 +157,15 @@ const QString & QAndroidFilePaths::ExternalCacheDirectory()
 
 void QAndroidFilePaths::preloadJavaClasses()
 {
-	QAndroidQPAPluginGap::preloadJavaClasses();
-	QAndroidQPAPluginGap::preloadJavaClass("android/os/Environment");
-	QAndroidQPAPluginGap::preloadJavaClass("android/content/Context");
-	QAndroidQPAPluginGap::preloadJavaClass("ru/dublgis/androidhelpers/DirectoriesHelper");
-
-	/*qDebug()<<"QAndroidFilePaths"<<"APPDIR:"<<ApplicationFilesDirectory();
-	qDebug()<<"QAndroidFilePaths"<<"EXTFDIR:"<<ExternalFilesDirectory();
-	qDebug()<<"QAndroidFilePaths"<<"EXTSTORAGE:"<<ExternalStorageDirectory();
-	qDebug()<<"QAndroidFilePaths"<<"DLCACHE:"<<DownloadCacheDirectory();*/
+	static bool s_preloaded = false;
+	if (!s_preloaded)
+	{
+		s_preloaded = true;
+		QAndroidQPAPluginGap::preloadJavaClasses();
+		QAndroidQPAPluginGap::preloadJavaClass("android/os/Environment");
+		QAndroidQPAPluginGap::preloadJavaClass("android/content/Context");
+		QAndroidQPAPluginGap::preloadJavaClass(c_directorieshelper_class_);
+	}
 }
 
 
