@@ -155,6 +155,39 @@ const QString & QAndroidFilePaths::ExternalCacheDirectory()
 	return path;
 }
 
+QAndroidFilePaths::StatFs QAndroidFilePaths::GetStatFs(const QString & path)
+{
+	QAndroidFilePaths::StatFs result;
+	try
+	{
+		QJniObject stat("android/os/StatFs", "Ljava/lang/String;", QJniLocalRef(path).jObject());
+		quint64 avail_blocks = 0, total_blocks = 0, free_blocks = 0, block_size = 0;
+		if (QAndroidQPAPluginGap::apiLevel() >= 18)
+		{
+			avail_blocks = static_cast<quint64>(stat.callLong("getAvailableBlocksLong"));
+			total_blocks = static_cast<quint64>(stat.callLong("getBlockCountLong"));
+			free_blocks = static_cast<quint64>(stat.callLong("getFreeBlocksLong"));
+			block_size = static_cast<quint64>(stat.callLong("getBlockSizeLong"));
+		}
+		else
+		{
+			avail_blocks = static_cast<quint64>(stat.callInt("getAvailableBlocks"));
+			total_blocks = static_cast<quint64>(stat.callInt("getBlockCount"));
+			free_blocks = static_cast<quint64>(stat.callInt("getFreeBlocks"));
+			block_size = static_cast<quint64>(stat.callInt("getBlockSize"));
+		}
+		result.total_bytes = block_size * total_blocks;
+		result.available_bytes = block_size * avail_blocks;
+		result.free_bytes = block_size * free_blocks;
+		result.block_size = block_size;
+	}
+	catch (std::exception & e)
+	{
+		qWarning() << "Failed to stat FS:" << path << "Exception:" << e.what();
+	}
+	return result;
+}
+
 void QAndroidFilePaths::preloadJavaClasses()
 {
 	static bool s_preloaded = false;
@@ -163,6 +196,7 @@ void QAndroidFilePaths::preloadJavaClasses()
 		s_preloaded = true;
 		QAndroidQPAPluginGap::preloadJavaClasses();
 		QAndroidQPAPluginGap::preloadJavaClass("android/os/Environment");
+		QAndroidQPAPluginGap::preloadJavaClass("android/os/StatFs");
 		QAndroidQPAPluginGap::preloadJavaClass("android/content/Context");
 		QAndroidQPAPluginGap::preloadJavaClass(c_directorieshelper_class_);
 	}

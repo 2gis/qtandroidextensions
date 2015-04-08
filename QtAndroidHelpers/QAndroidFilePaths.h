@@ -89,6 +89,24 @@ namespace QAndroidFilePaths
 	 */
 	const QString & ExternalCacheDirectory();
 
+	struct StatFs
+	{
+		quint64 total_bytes;
+		quint64 available_bytes;
+		quint64 free_bytes;
+		quint64 block_size;
+
+		StatFs():
+			total_bytes(0),
+			available_bytes(0),
+			free_bytes(0),
+			block_size(0)
+		{
+		}
+	};
+
+	StatFs GetStatFs(const QString & path);
+
 	void preloadJavaClasses();
 
 } // namespace QAndroidFilePaths
