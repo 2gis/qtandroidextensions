@@ -13,13 +13,13 @@
   modification, are permitted provided that the following conditions are met:
 
   * Redistributions of source code must retain the above copyright notice,
-    this list of conditions and the following disclaimer.
+	this list of conditions and the following disclaimer.
   * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
   * Neither the name of the DoubleGIS, LLC nor the names of its contributors
-    may be used to endorse or promote products derived from this software
-    without specific prior written permission.
+	may be used to endorse or promote products derived from this software
+	without specific prior written permission.
 
   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -39,11 +39,11 @@
 
 namespace QAndroidFilePaths
 {
-    /*!
-     * Activity.getApplication().getFilesDir().getPath().
+	/*!
+	 * Activity.getApplication().getFilesDir().getPath().
 	 * Typically the path looks like: "/data/data/package.name/files".
-     */
-    const QString & ApplicationFilesDirectory();
+	 */
+	const QString & ApplicationFilesDirectory();
 
 	// Constants for ExternalFilesDirectory().
 	extern const QLatin1String
@@ -58,24 +58,31 @@ namespace QAndroidFilePaths
 		ANDROID_DIRECTORY_DCIM,
 		ANDROID_DIRECTORY_DOCUMENTS;
 
-    /*!
-     * Activity.getExternalFilesDir().getPath().
+	/*!
+	 * Context.getExternalFilesDir().getPath().
 	 * \param type - empty or null string, or one of ANDROID_DIRECTORY_... constants.
 	 * For type == null, the path typically looks like: "/storage/emulated/0/Android/data/package.name/files".
-     */
+	 */
 	const QString & ExternalFilesDirectory(const QString & type = QString::null);
 
-    /*!
+	/*!
+	 * Context.getExternalFilesDirs()
+	 * API >= 19. For API < 19 a list with ExternalFilesDirectory is returned.
+	 * \param type - empty or null string, or one of ANDROID_DIRECTORY_... constants.
+	 */
+	const QStringList & ExternalFilesDirectories(const QString & type = QString::null);
+
+	/*!
 	 * Environment.getExternalStorageDirectory(type).getPath().
 	 * Typically the path looks like: "/storage/emulated/0".
-     */
+	 */
 	const QString & ExternalStorageDirectory();
 
-    /*!
-     * Environment.getDownloadCacheDirectory().getPath().
+	/*!
+	 * Environment.getDownloadCacheDirectory().getPath().
 	 * Typically the path looks like: "/cache".
-     */
-    const QString & DownloadCacheDirectory();
+	 */
+	const QString & DownloadCacheDirectory();
 
 	/*!
 	 * Activity.getExternalCacheDir().getPath().

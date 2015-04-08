@@ -13,13 +13,13 @@
   modification, are permitted provided that the following conditions are met:
 
   * Redistributions of source code must retain the above copyright notice,
-    this list of conditions and the following disclaimer.
+	this list of conditions and the following disclaimer.
   * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
   * Neither the name of the DoubleGIS, LLC nor the names of its contributors
-    may be used to endorse or promote products derived from this software
-    without specific prior written permission.
+	may be used to endorse or promote products derived from this software
+	without specific prior written permission.
 
   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -78,13 +78,37 @@ const QString & QAndroidFilePaths::ExternalFilesDirectory(const QString & type)
 	{
 		QAndroidQPAPluginGap::Context activity;
 		QScopedPointer<QJniObject> externalfilesdir(activity.callParamObject(
-				"getExternalFilesDir",
-				"java/io/File",
-				"Ljava/lang/String;",
-				(type.isEmpty())? jstring(0): QJniLocalRef(type).operator jstring()));
+			"getExternalFilesDir",
+			"java/io/File",
+			"Ljava/lang/String;",
+			(type.isEmpty())? jstring(0): QJniLocalRef(type).operator jstring()));
 		path = externalfilesdir->callString("getPath");
 	}
 	return path;
+}
+
+const QStringList & QAndroidFilePaths::ExternalFilesDirectories(const QString & type)
+{
+	QMutexLocker locker(&paths_mutex_);
+	static QStringList dirs;
+	if (dirs.isEmpty())
+	{
+		if (QAndroidQPAPluginGap::apiLevel() < 19)
+		{
+			dirs.push_back(ExternalFilesDirectory(type));
+		}
+		else
+		{
+			QJniClass helpers("ru/dublgis/androidhelpers/DirectoriesHelper");
+			QString paths = helpers.callStaticParamString(
+				"getExternalFilesDirs",
+				"Landroid/content/Context;Ljava/lang/String;",
+				QAndroidQPAPluginGap::Context().jObject(),
+				(type.isEmpty())? jstring(0): QJniLocalRef(type).operator jstring());
+			dirs = paths.split(QLatin1Char('\n'), QString::SkipEmptyParts);
+		}
+	}
+	return dirs;
 }
 
 const QString & QAndroidFilePaths::ExternalStorageDirectory()
@@ -136,6 +160,7 @@ void QAndroidFilePaths::preloadJavaClasses()
 	QAndroidQPAPluginGap::preloadJavaClasses();
 	QAndroidQPAPluginGap::preloadJavaClass("android/os/Environment");
 	QAndroidQPAPluginGap::preloadJavaClass("android/content/Context");
+	QAndroidQPAPluginGap::preloadJavaClass("ru/dublgis/androidhelpers/DirectoriesHelper");
 
 	/*qDebug()<<"QAndroidFilePaths"<<"APPDIR:"<<ApplicationFilesDirectory();
 	qDebug()<<"QAndroidFilePaths"<<"EXTFDIR:"<<ExternalFilesDirectory();
