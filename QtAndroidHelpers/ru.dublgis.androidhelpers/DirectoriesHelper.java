@@ -47,13 +47,29 @@ public class DirectoriesHelper
     // API 19+
     public static String getExternalFilesDirs(final Context context, final String type)
     {
-        File[] files = context.getExternalFilesDirs(type);
-        String ret = "";
-        for (File f: files)
+        if (context == null)
         {
-            ret += f.getPath();
-            ret += "\n";
+            Log.e(TAG, "Null context in getExternalFilesDirs");
+            return "";
         }
-        return ret;
+        try
+        {
+            File[] files = context.getExternalFilesDirs(type);
+            String ret = "";
+            for (File f: files)
+            {
+                if (f != null)
+                {
+                    ret += f.getPath();
+                    ret += "\n";
+                }
+            }
+            return ret;
+        }
+        catch (Exception e)
+        {
+            Log.e(TAG, "Exception in getExternalFilesDirs", e);
+            return "";
+        }
     }
 }

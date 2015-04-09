@@ -36,6 +36,7 @@
 
 #include <QtCore/QMutex>
 #include <QtCore/QMutexLocker>
+#include <QtCore/QFile>
 #include <QJniHelpers.h>
 #include <QAndroidQPAPluginGap.h>
 #include "QAndroidFilePaths.h"
@@ -104,8 +105,13 @@ const QStringList & QAndroidFilePaths::ExternalFilesDirectories(const QString & 
 				"getExternalFilesDirs",
 				"Landroid/content/Context;Ljava/lang/String;",
 				QAndroidQPAPluginGap::Context().jObject(),
-				(type.isEmpty())? jstring(0): QJniLocalRef(type).operator jstring());
+				(type.isEmpty())? jobject(0): QJniLocalRef(type).jObject());
 			dirs = paths.split(QLatin1Char('\n'), QString::SkipEmptyParts);
+			if (dirs.isEmpty())
+			{
+				qWarning() << "Failed to get dirs from getExternalFilesDirs(), falling back to getExternalFilesDir().";
+				dirs.push_back(ExternalFilesDirectory(type));
+			}
 		}
 	}
 	return dirs;
@@ -158,6 +164,11 @@ const QString & QAndroidFilePaths::ExternalCacheDirectory()
 QAndroidFilePaths::StatFs QAndroidFilePaths::GetStatFs(const QString & path)
 {
 	QAndroidFilePaths::StatFs result;
+	if (path.isEmpty())
+	{
+		qWarning() << "GetStatFs() called with empty path.";
+		return result;
+	}
 	try
 	{
 		QJniObject stat("android/os/StatFs", "Ljava/lang/String;", QJniLocalRef(path).jObject());
