@@ -69,6 +69,8 @@ public slots:
 
 	//! Make sure software keyboard is shown for this control.
 	void showKeyboard() { androidView()->showKeyboard(); }
+	
+	void setHideKeyboardOnFocusLoss(bool hide) { androidView()->setHideKeyboardOnFocusLoss(hide); }
 
 signals:
 	void viewCreated();
