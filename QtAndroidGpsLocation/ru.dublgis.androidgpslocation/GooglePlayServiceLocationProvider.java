@@ -51,6 +51,7 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.location.LocationListener;
@@ -65,6 +66,7 @@ public class GooglePlayServiceLocationProvider
 	public static final String TAG = "Grym/GooglePlayServiceLocationProvider";
 	public final static int STATUS_DISCONNECTED		= 0;
 	public final static int STATUS_CONNECTED		= 1;
+	public final static int STATUS_ERROR			= 2;
 
 	private long native_ptr_ = 0;
 	private long mUpdateInterval = 1000;
@@ -219,8 +221,22 @@ public class GooglePlayServiceLocationProvider
 		{
 			if (mGoogleApiClient.isConnected()) 
 			{
-				 PendingResult<Status> result = LocationServices.FusedLocationApi.requestLocationUpdates(
+				PendingResult<Status> result = LocationServices.FusedLocationApi.requestLocationUpdates(
 						mGoogleApiClient, mLocationRequest, this);
+
+				result.setResultCallback(new ResultCallback<Status>()
+					{
+						@Override
+						public void onResult(Status result)
+						{
+							Log.i(TAG, "startLocationUpdates result = " + result);
+							googleApiClientStatus(native_ptr_, result.isSuccess() ? STATUS_CONNECTED : STATUS_ERROR);
+						}
+					});
+			}
+			else
+			{
+				mGoogleApiClient.connect();
 			}
 		}
 		catch(Exception e)

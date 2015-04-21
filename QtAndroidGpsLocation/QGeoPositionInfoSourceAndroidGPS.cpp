@@ -39,6 +39,7 @@
 #include <QtPositioning/QGeoPositionInfo>
 #include <QAndroidQPAPluginGap.h>
 #include "QAndroidGooglePlayServiceLocationProvider.h"
+#include "QLocationManagerProvidersListener.h"
 
 
 Q_DECLARE_METATYPE(QGeoPositionInfo)
@@ -52,8 +53,15 @@ QGeoPositionInfoSourceAndroidGPS::QGeoPositionInfoSourceAndroidGPS(QObject * par
 {
 	qRegisterMetaType< QGeoPositionInfo >();
 
+	providersListener_ = new QLocationManagerProvidersListener(this);
 	regularProvider_ = new QAndroidGooglePlayServiceLocationProvider(this);
 	setPreferredPositioningMethods(NonSatellitePositioningMethods);
+
+	if (providersListener_)
+	{
+		QObject::connect(providersListener_, SIGNAL(providersChange(bool)),
+							this, SLOT(onProvidersChange(bool)));
+	}
 
 	if (regularProvider_)
 	{
@@ -90,12 +98,11 @@ void QGeoPositionInfoSourceAndroidGPS::startUpdates()
 
 	if (methods == 0) 
 	{
-		m_error = UnknownSourceError;
-		emit QGeoPositionInfoSource::error(m_error);
+		setError(UnknownSourceError);
 		return;
 	}
 
-	QAndroidGooglePlayServiceLocationProvider::enPriority priority = QAndroidGooglePlayServiceLocationProvider::PRIORITY_NO_POWER;
+	QAndroidGooglePlayServiceLocationProvider::enPriority priority = QAndroidGooglePlayServiceLocationProvider::PRIORITY_LOW_POWER;
 
 	if (QGeoPositionInfoSource::NonSatellitePositioningMethods & methods)
 	{
@@ -109,12 +116,16 @@ void QGeoPositionInfoSourceAndroidGPS::startUpdates()
 
 	regularProvider_->setPriority(priority);
 
-
 	updatesRunning_ = true;
 
 	Q_ASSERT(regularProvider_);
 	regularProvider_->setUpdateInterval(updateInterval(), minimumUpdateInterval());
 	regularProvider_->startUpdates();
+
+	if (!providersListener_->IsActiveProvidersEnabled())
+	{
+		setError(QGeoPositionInfoSource::ClosedError);
+	}
 }
 
 
@@ -162,7 +173,6 @@ void QGeoPositionInfoSourceAndroidGPS::setPreferredPositioningMethods(const Posi
 		return;
 	}
 
-
 	if (updatesRunning_)
 	{
 		reconfigureRunningSystem();
@@ -180,6 +190,13 @@ int QGeoPositionInfoSourceAndroidGPS::minimumUpdateInterval() const
 {
 	return 1000;
 }
+
+void QGeoPositionInfoSourceAndroidGPS::setError(Error error)
+{
+	m_error = error;
+	emit QGeoPositionInfoSource::error(m_error);
+}
+
 
 QGeoPositionInfoSource::Error QGeoPositionInfoSourceAndroidGPS::error() const
 {
@@ -203,8 +220,20 @@ void QGeoPositionInfoSourceAndroidGPS::processRegularPositionUpdate(const QGeoPo
 
 void QGeoPositionInfoSourceAndroidGPS::locationProviderDisabled()
 {
-	m_error = QGeoPositionInfoSource::ClosedError;
-	emit QGeoPositionInfoSource::error(m_error);
+	setError(QGeoPositionInfoSource::ClosedError);
+}
+
+
+void QGeoPositionInfoSourceAndroidGPS::onProvidersChange(bool status)
+{
+	if (!status)
+	{
+		locationProviderDisabled();
+	}
+	else
+	{
+		setError(QGeoPositionInfoSource::NoError);
+	}
 }
 
 
@@ -215,6 +244,7 @@ void QGeoPositionInfoSourceAndroidGPS::onStatusChanged(int status)
 	switch (status)
 	{
 		case QAndroidGooglePlayServiceLocationProvider::S_DISCONNECTED:
+		case QAndroidGooglePlayServiceLocationProvider::S_ERROR:
 			newErrorCode = QGeoPositionInfoSource::ClosedError;
 			break;
 
@@ -227,10 +257,14 @@ void QGeoPositionInfoSourceAndroidGPS::onStatusChanged(int status)
 			break;
 	};
 
+	if (!providersListener_->IsActiveProvidersEnabled())
+	{
+		newErrorCode = QGeoPositionInfoSource::ClosedError;
+	}
+
 	if (m_error != newErrorCode)
 	{
-		m_error = newErrorCode;
-		emit QGeoPositionInfoSource::error(m_error);
+		setError(newErrorCode);
 	}
 }
 

@@ -33,74 +33,35 @@
   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
   THE POSSIBILITY OF SUCH DAMAGE.
 */
+  
+#pragma once 
 
-#pragma once
 
 #include <QObject>
 #include <QJniHelpers.h>
-#include <QtPositioning/QGeoPositionInfo>
-  
 
-/*!
- * A class for geting location from Google Play Services
- */
-class QAndroidGooglePlayServiceLocationProvider: public QObject
+
+
+class QLocationManagerProvidersListener : public QObject
 {
 	Q_OBJECT
+	
+public:
+	QLocationManagerProvidersListener(QObject * parent = 0);
+	virtual ~QLocationManagerProvidersListener();
 
 public:
-	enum enStatus
-	{
-		S_DISCONNECTED = 0,
-		S_CONNECTED = 1,
-		S_ERROR = 2,
-	};
-
-	enum enPriority
-	{
-		PRIORITY_HIGH_ACCURACY            = 0x00000064, /// the most accurate locations available
-		PRIORITY_BALANCED_POWER_ACCURACY  = 0x00000066, /// "block" level accuracy.
-		PRIORITY_LOW_POWER                = 0x00000068, /// "city" level accuracy.
-		PRIORITY_NO_POWER                 = 0x00000069, /// the best accuracy possible with zero additional power consumption.
-	};
-
-public:
-	QAndroidGooglePlayServiceLocationProvider(QObject * parent = 0);
-	virtual ~QAndroidGooglePlayServiceLocationProvider();
-
-public slots:
-	void startUpdates();
-	void stopUpdates();
+	static void preloadJavaClasses();
+	bool IsActiveProvidersEnabled();
 
 signals:
-	void statusChanged(int);
-	void locationRecieved(const QGeoPositionInfo&);
-
-public:
-	static bool isAvailable();
-	void setUpdateInterval(int64_t reqiredInterval, int64_t minimumInterval);
-	void setPriority(enPriority priority);
-	QGeoPositionInfo lastKnownPosition() const;
-
-	static void preloadJavaClasses();
+	void providersChange(bool);
 
 private:
-	void onStatusChanged(int status);
-	void onLocationRecieved(const QGeoPositionInfo &location, jboolean initial);
-
-private:
-	Q_DISABLE_COPY(QAndroidGooglePlayServiceLocationProvider)
-	friend void JNICALL Java_GooglePlayServiceLocationProvider_locationRecieved(JNIEnv * env, jobject, jlong param, jobject location, jboolean initial);
-	friend void JNICALL Java_GooglePlayServiceLocationProvider_locationStatus(JNIEnv * env, jobject, jlong param, jint state);
+	void onProvidersChange();
+	friend void JNICALL Java_onProvidersChange(JNIEnv * env, jobject, jlong param);
 
 private:
 	QScopedPointer<QJniObject> handler_;
-	QGeoPositionInfo lastLocation_;
-	mutable QMutex lastLocationSync_;
-
-	int64_t reqiredInterval_; 
-	int64_t minimumInterval_;
-	enPriority priority_;
 };
-
 

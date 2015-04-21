@@ -6,7 +6,7 @@
 
   Distrbuted under The BSD License
 
-  Copyright (c) 2015, DoubleGIS, LLC.
+  Copyright (c) 2014, DoubleGIS, LLC.
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -34,60 +34,70 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#pragma once
+package ru.dublgis.androidgpslocation;
 
-#include <QtPositioning/QGeoPositionInfoSource>
+import android.location.LocationManager;
+import android.location.Criteria;
+import android.util.Log;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.BroadcastReceiver;
 
 
-class QAndroidGooglePlayServiceLocationProvider;
-class QLocationManagerProvidersListener;
 
 
-/*!
- * A class for geting location from Google Play Services
- */
-class QGeoPositionInfoSourceAndroidGPS : public QGeoPositionInfoSource
+public class LocationManagerProvidersListener extends BroadcastReceiver
 {
-	Q_OBJECT
+	static final String TAG = "Grym/LocationManagerProvidersListener";
+	long native_ptr_ = 0;
 
-public:
-	QGeoPositionInfoSourceAndroidGPS(QObject * parent = 0);
-	virtual ~QGeoPositionInfoSourceAndroidGPS();
 
-public:
-	static bool isAvailable();
+	public LocationManagerProvidersListener(long native_ptr)
+	{
+		native_ptr_ = native_ptr;
+		getActivity().registerReceiver(this, new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION));
+	}
 
-public:
-	// From QGeoPositionInfoSource
-	void setUpdateInterval(int msec);
-	QGeoPositionInfo lastKnownPosition(bool fromSatellitePositioningMethodsOnly = false) const;
-	PositioningMethods supportedPositioningMethods() const;
-	void setPreferredPositioningMethods(const PositioningMethods methods);
-	int minimumUpdateInterval() const;
-	Error error() const;
 
-public Q_SLOTS:
-	virtual void startUpdates();
-	virtual void stopUpdates();
+	//! Called from C++ to notify us that the associated C++ object is being destroyed.
+	public void cppDestroyed()
+	{
+		native_ptr_ = 0;
+	}
 
-	virtual void requestUpdate(int timeout = 0);
 
-	void processRegularPositionUpdate(const QGeoPositionInfo& location);
+	public void onReceive( Context context, Intent intent )
+	{
+		onProvidersChange(native_ptr_);
+	}
 
-	void locationProviderDisabled();
-	void onStatusChanged(int);
 
-	void onProvidersChange(bool);
+	public boolean IsActiveProvidersEnabled()
+	{
+		boolean ret = false;
 
-private:
-	void reconfigureRunningSystem();
-	void setError(Error error);
+		try 
+		{
+			final LocationManager lm = 
+				(LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 
-private:
-	QAndroidGooglePlayServiceLocationProvider *regularProvider_;
-	QLocationManagerProvidersListener *providersListener_;
-	bool updatesRunning_;
-	Error m_error;
-};
+			String provider = lm.getBestProvider(new Criteria(), true);
+			ret = (provider != null) && !provider.isEmpty() && !LocationManager.PASSIVE_PROVIDER.equals(provider);
+		}
+		catch(Exception e) 
+		{
+			Log.e(TAG, "LocationManager failed" + e.getMessage());
+			e.printStackTrace();
+		}
 
+		return ret;
+	}
+
+
+	public native Activity getActivity();
+	public native void onProvidersChange(long nativeptr);
+}
 
