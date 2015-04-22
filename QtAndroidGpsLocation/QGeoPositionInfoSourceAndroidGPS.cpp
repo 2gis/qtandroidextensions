@@ -49,7 +49,8 @@ QGeoPositionInfoSourceAndroidGPS::QGeoPositionInfoSourceAndroidGPS(QObject * par
 	QGeoPositionInfoSource(parent),
 	m_error(NoError),
 	regularProvider_(NULL),
-	updatesRunning_(false)
+	updatesRunning_(false),
+	activeProvidersDisabled_(false)
 {
 	qRegisterMetaType< QGeoPositionInfo >();
 
@@ -61,6 +62,8 @@ QGeoPositionInfoSourceAndroidGPS::QGeoPositionInfoSourceAndroidGPS(QObject * par
 	{
 		QObject::connect(providersListener_, SIGNAL(providersChange(bool)),
 							this, SLOT(onProvidersChange(bool)));
+
+		onProvidersChange(providersListener_->IsActiveProvidersEnabled());
 	}
 
 	if (regularProvider_)
@@ -122,10 +125,7 @@ void QGeoPositionInfoSourceAndroidGPS::startUpdates()
 	regularProvider_->setUpdateInterval(updateInterval(), minimumUpdateInterval());
 	regularProvider_->startUpdates();
 
-	if (!providersListener_->IsActiveProvidersEnabled())
-	{
-		setError(QGeoPositionInfoSource::ClosedError);
-	}
+	onProvidersChange(providersListener_->IsActiveProvidersEnabled());
 }
 
 
@@ -200,6 +200,11 @@ void QGeoPositionInfoSourceAndroidGPS::setError(Error error)
 
 QGeoPositionInfoSource::Error QGeoPositionInfoSourceAndroidGPS::error() const
 {
+	if (activeProvidersDisabled_)
+	{
+		return QGeoPositionInfoSource::ClosedError;
+	}
+
 	return m_error;
 }
 
@@ -226,14 +231,8 @@ void QGeoPositionInfoSourceAndroidGPS::locationProviderDisabled()
 
 void QGeoPositionInfoSourceAndroidGPS::onProvidersChange(bool status)
 {
-	if (!status)
-	{
-		locationProviderDisabled();
-	}
-	else
-	{
-		setError(QGeoPositionInfoSource::NoError);
-	}
+	activeProvidersDisabled_ = !status;
+	emit QGeoPositionInfoSource::error(error());
 }
 
 
@@ -256,11 +255,6 @@ void QGeoPositionInfoSourceAndroidGPS::onStatusChanged(int status)
 			newErrorCode = QGeoPositionInfoSource::UnknownSourceError;
 			break;
 	};
-
-	if (!providersListener_->IsActiveProvidersEnabled())
-	{
-		newErrorCode = QGeoPositionInfoSource::ClosedError;
-	}
 
 	if (m_error != newErrorCode)
 	{

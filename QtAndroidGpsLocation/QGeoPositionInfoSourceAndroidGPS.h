@@ -88,6 +88,7 @@ private:
 	QLocationManagerProvidersListener *providersListener_;
 	bool updatesRunning_;
 	Error m_error;
+	bool activeProvidersDisabled_;
 };
 
 
