@@ -168,10 +168,10 @@ void preloadJavaClass(const char * class_name)
 	QJniEnvPtr jep;
 	if (jep.isClassPreloaded(class_name))
 	{
-		qDebug()<<"Class already pre-loaded:"<<class_name;
+		// qDebug()<<"Class already pre-loaded:"<<class_name;
 		return;
 	}
-	qDebug()<<"Pre-loading:"<<class_name;
+	// qDebug()<<"Pre-loading:"<<class_name;
 
 	static const char * const c_class_name = "ru/dublgis/qjnihelpers/ClassLoader";
 	static const char * const c_method_name = "callJNIPreloadClass";

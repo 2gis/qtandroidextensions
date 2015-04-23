@@ -206,7 +206,7 @@ JNIEnv* QJniEnvPtr::env() const
 
 bool QJniEnvPtr::preloadClass(const char * class_name)
 {
-	qWarning("Preloading class \"%s\"", class_name);
+	VERBOSE(qDebug("Preloading class \"%s\"", class_name));
 	QJniLocalRef clazz(env_, env_->FindClass(class_name)); // jclass
 	if (clearException() || clazz.jObject() == 0)
 	{
