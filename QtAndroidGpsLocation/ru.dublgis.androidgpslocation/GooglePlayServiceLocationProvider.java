@@ -236,7 +236,10 @@ public class GooglePlayServiceLocationProvider
 			}
 			else
 			{
-				mGoogleApiClient.connect();
+				if (mGoogleApiClient != null && !mGoogleApiClient.isConnecting())
+				{
+					mGoogleApiClient.connect();
+				}
 			}
 		}
 		catch(Exception e)
@@ -265,12 +268,15 @@ public class GooglePlayServiceLocationProvider
 	@Override
 	public void onConnectionSuspended(int cause) 
 	{
-		Log.i(TAG, "Connection suspended");
+		Log.i(TAG, "Connection suspended, cause = " + cause);
 		googleApiClientStatus(native_ptr_, STATUS_DISCONNECTED);
 		
 		try
 		{
-			mGoogleApiClient.connect();
+			if (mGoogleApiClient != null && !mGoogleApiClient.isConnected() && !mGoogleApiClient.isConnecting())
+			{
+				mGoogleApiClient.connect();
+			}
 		}
 		catch(Exception e)
 		{
