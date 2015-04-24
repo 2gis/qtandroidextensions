@@ -117,6 +117,13 @@ class WifiLocker
 	public void Unlock()
 	{
 		Log.i(TAG, "Unlock");
+
+		if (null == mWifiLock)
+		{
+			Log.e(TAG, "no mWifiLock");
+			return;
+		}
+
 		mWifiLock.release();
 	}
 
