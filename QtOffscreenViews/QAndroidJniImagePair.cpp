@@ -102,7 +102,7 @@ void QAndroidJniImagePair::dispose()
 
 QJniObject * QAndroidJniImagePair::createBitmap(const QSize & size)
 {
-	qDebug()<<"createBitmap:"<<size.width()<<"size.height()"<<size.height()<<"Bits:"<<bitness_;
+	// qDebug()<<"createBitmap:"<<size.width()<<"size.height()"<<size.height()<<"Bits:"<<bitness_;
 	try
 	{
 		const char * format_name = 0;
@@ -118,7 +118,7 @@ QJniObject * QAndroidJniImagePair::createBitmap(const QSize & size)
 			qWarning()<<"createBitmap: Invalid pixel bit depth:"<<bitness_;
 			return 0; // Not throwing an exception
 		}
-		qDebug()<<"createBitmap: selecting format"<<format_name;
+		// qDebug()<<"createBitmap: selecting format"<<format_name;
 		QJniClass bitmapconfig("android/graphics/Bitmap$Config");
 		QScopedPointer<QJniObject> fmt(bitmapconfig.getStaticObjectField(format_name, "android/graphics/Bitmap$Config"));
 		if (!fmt)
@@ -126,7 +126,7 @@ QJniObject * QAndroidJniImagePair::createBitmap(const QSize & size)
 			qWarning()<<"createBitmap: failed to get bimap format:"<<format_name;
 			return 0; // Not throwing an exception
 		}
-		qDebug()<<"createBitmap: calling Java createBitmap(). Fmt ="<<fmt.data();
+		// qDebug()<<"createBitmap: calling Java createBitmap(). Fmt ="<<fmt.data();
 		QJniObject * result = QJniClass("android/graphics/Bitmap").callStaticParamObject(
 			"createBitmap", "android/graphics/Bitmap", "IILandroid/graphics/Bitmap$Config;",
 			jint(size.width()), jint(size.height()), fmt->jObject());
@@ -146,7 +146,7 @@ QJniObject * QAndroidJniImagePair::createBitmap(const QSize & size)
 
 bool QAndroidJniImagePair::doResize(const QSize & size)
 {
-	qDebug()<<"QAndroidJniImagePair::resize (static) tid:"<<gettid()<<"new size:"<<size;
+	// qDebug()<<"QAndroidJniImagePair::resize (static) tid:"<<gettid()<<"new size:"<<size;
 
 	if (size.width() < 1 || size.height() < 1)
 	{
@@ -217,8 +217,8 @@ bool QAndroidJniImagePair::doResize(const QSize & size)
 				  <<"is different than the requested size:"<<size.width()<<"x"<<size.height();
 	}
 
-    qDebug()<<"AndroidBitmapInfo: width:"<<bwidth<<"height:"<<bheight
-            <<"stride:"<<bstride<<"QImage::format:"<<static_cast<int>(format);
+    //qDebug()<<"AndroidBitmapInfo: width:"<<bwidth<<"height:"<<bheight
+    //        <<"stride:"<<bstride<<"QImage::format:"<<static_cast<int>(format);
 
     //
     // Lock Android bitmap's pixels so we could create a QImage over it
@@ -246,8 +246,8 @@ bool QAndroidJniImagePair::doResize(const QSize & size)
     // that uses an existing memory buffer, data. The width and height
     // must be specified in pixels. bytesPerLine specifies the number
     // of bytes per line (stride)."
-    qDebug()<<"Constructing QImage buffer:"<<bwidth<<"x"<<bheight
-            <<bstride<<static_cast<int>(format);
+    //qDebug()<<"Constructing QImage buffer:"<<bwidth<<"x"<<bheight
+    //        <<bstride<<static_cast<int>(format);
 	mImageOnBitmap = QImage(
 		static_cast<uchar*>(ptr),
 		bwidth,

@@ -77,7 +77,7 @@ static QSize potSize(const QSize & size, const QSize & maxsize)
 	{
 		result = QSize(potSize(size.width(), 0x40000000), potSize(size.height(), 0x40000000));
 	}
-	qDebug()<<__FUNCTION__<<"In:"<<size<<"Max:"<<maxsize<<"Result:"<<result;
+	// qDebug()<<__FUNCTION__<<"In:"<<size<<"Max:"<<maxsize<<"Result:"<<result;
 	return result;
 }
 
