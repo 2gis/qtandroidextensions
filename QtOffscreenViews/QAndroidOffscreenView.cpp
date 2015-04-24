@@ -357,8 +357,6 @@ void QAndroidOffscreenView::initializeGL()
 	}
 	else
 	{
-		qDebug()<<__PRETTY_FUNCTION__;
-
 		tex_.allocateTexture(GL_TEXTURE_EXTERNAL_OES);
 
 		if (!offscreen_view_)
@@ -366,8 +364,6 @@ void QAndroidOffscreenView::initializeGL()
 			qWarning("Cannot initialize QAndroidOffscreenView because OffscreenView object was not created!");
 			return;
 		}
-
-		qDebug()<<__PRETTY_FUNCTION__;
 
 		// Check for max texture size and limit control size
 		size_ = QSize(qMin(s_max_gl_size.width(), size_.width()), qMin(s_max_gl_size.height(), size_.height()));
@@ -392,7 +388,7 @@ void QAndroidOffscreenView::initializeBitmap()
 		qWarning("Cannot initialize QAndroidOffscreenView because OffscreenView object was not created!");
 		return;
 	}
-	qDebug()<<__PRETTY_FUNCTION__;
+	// qDebug()<<__PRETTY_FUNCTION__;
 	QSize bitmapsize = (s_have_to_adjust_size_to_pot)? potSize(size_, s_max_gl_size): size_;
 	bitmap_a_.resize(bitmapsize);
 	bitmap_b_.resize(bitmapsize);
