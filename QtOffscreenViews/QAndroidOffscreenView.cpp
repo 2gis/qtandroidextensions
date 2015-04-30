@@ -314,6 +314,10 @@ void QAndroidOffscreenView::initializeGL()
 			{
 				"Adreno 200",
 				"Adreno (TM) 200",
+				"Adreno 203",
+				"Adreno (TM) 203",
+				"Adreno 205",
+				"Adreno (TM) 205",
 				0
 			};
 			for(const char * const * p = bad; *p; ++p)
