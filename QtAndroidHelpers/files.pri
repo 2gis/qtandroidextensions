@@ -4,6 +4,13 @@ android-g++ {
 INCLUDEPATH += $$PWD
 
 HEADERS += \
+    $$PWD/QAndroidScreenLocker.h \
+    $$PWD/QAndroidWiFiLocker.h \
+    $$PWD/QLocks/QLockBase.h  \
+    $$PWD/QLocks/QLockedObjectBase_p.h  \
+    $$PWD/QLocks/QLockedObject.h  \
+    $$PWD/QLocks/QLockHandler_p.h  \
+    $$PWD/QLocks/QLock_p.h \
     $$PWD/QAndroidConfiguration.h \
     $$PWD/QAndroidDialog.h \
     $$PWD/QAndroidDisplayMetrics.h \
@@ -14,6 +21,11 @@ HEADERS += \
     $$PWD/QAndroidDesktopUtils.h
 
 SOURCES += \
+    $$PWD/QAndroidScreenLocker.cpp \
+    $$PWD/QAndroidWiFiLocker.cpp \
+    $$PWD/QLocks/QLock.cpp  \
+    $$PWD/QLocks/QLockedObject.cpp  \
+    $$PWD/QLocks/QLockHandler.cpp \
     $$PWD/QAndroidConfiguration.cpp \
     $$PWD/QAndroidDialog.cpp \
     $$PWD/QAndroidDisplayMetrics.cpp \
