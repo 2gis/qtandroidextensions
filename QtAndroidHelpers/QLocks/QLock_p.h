@@ -37,17 +37,22 @@
 #pragma once
 
 #include "QLockedObjectBase_p.h"
+#include "QLockBase.h"
 
 
 namespace QLocks
 {
-	class QLock : public QLockBase
+	class QLock : public QObject, public QLockBase
 	{
+		Q_OBJECT
 		Q_DISABLE_COPY(QLock)
-		
+
 	public:
 		QLock(LockedObjShared_t handler);
 		virtual ~QLock();
+
+	private slots:
+		void onApplicationStateChanged(Qt::ApplicationState state);
 
 	private:
 		LockedObjWeak_t handler_;

@@ -34,6 +34,7 @@
     THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <QApplication>
 #include "QLockBase.h"
 #include "QLock_p.h"
 #include "QLockedObjectBase_p.h"
@@ -44,6 +45,10 @@ namespace QLocks
 	QLock::QLock(LockedObjShared_t handler) :
 		handler_(handler)
 	{
+		QObject::connect(
+				QApplication::instance(), SIGNAL(applicationStateChanged(Qt::ApplicationState)),
+				this,						SLOT(onApplicationStateChanged(Qt::ApplicationState)));
+
 		handler->lock();
 	}
 
@@ -53,6 +58,24 @@ namespace QLocks
 		LockedObjShared_t obj = handler_.toStrongRef();
 
 		if (obj)
+		{
+			obj->unlock();
+		}
+	}
+
+
+	void QLock::onApplicationStateChanged(Qt::ApplicationState state)
+	{
+		LockedObjShared_t obj = handler_.toStrongRef();
+
+		if (!obj)
+			return;
+
+		if (Qt::ApplicationActive == state)
+		{
+			obj->lock();
+		}
+		else
 		{
 			obj->unlock();
 		}
