@@ -100,7 +100,18 @@ class ScreenLocker
 			return false;
 		}
 
-		mLock.acquire();
+		try 
+		{
+			if (!mLock.isHeld())
+			{
+				mLock.acquire();
+			}
+		}
+		catch (Exception e)
+		{
+			Log.e(TAG, "Failed to acquire lock: " + e);
+		}
+
 		return IsLocked();
 	}
 
@@ -116,7 +127,24 @@ class ScreenLocker
 	public void Unlock()
 	{
 		Log.i(TAG, "Unlock");
-		mLock.release();
+
+		if (null == mLock)
+		{
+			Log.e(TAG, "no mLock");
+			return;
+		}
+
+		try 
+		{
+			if (mLock.isHeld())
+			{
+				mLock.release();
+			}
+		}
+		catch (Exception e)
+		{
+			Log.e(TAG, "Failed to release lock: " + e);
+		}
 	}
 
 

@@ -45,7 +45,7 @@ class WifiLocker
 {
 	public static final String TAG = "Grym/WifiLocker";
 	private long native_ptr_ = 0;
-	private WifiManager.WifiLock mWifiLock = null;
+	private WifiManager.WifiLock mLock = null;
 
 
 	public WifiLocker(long native_ptr)
@@ -74,7 +74,7 @@ class WifiLocker
 				int mode = android.os.Build.VERSION.SDK_INT >= 12 ?
 				WifiManager.WIFI_MODE_FULL_HIGH_PERF :
 				WifiManager.WIFI_MODE_FULL;
-				mWifiLock = wifiManager.createWifiLock(mode, TAG);
+				mLock = wifiManager.createWifiLock(mode, TAG);
 			}
 			else
 			{
@@ -90,25 +90,36 @@ class WifiLocker
 
 	public boolean Lock()
 	{
-		if (null == mWifiLock)
+		if (null == mLock)
 		{
 			createLock();
 		}
 
-		if (null == mWifiLock)
+		if (null == mLock)
 		{
-			Log.e(TAG, "no mWifiLock");
+			Log.e(TAG, "no mLock");
 			return false;
 		}
 
-		mWifiLock.acquire();
+		try 
+		{
+			if (!mLock.isHeld())
+			{
+				mLock.acquire();
+			}
+		}
+		catch (Exception e)
+		{
+			Log.e(TAG, "Failed to acquire lock: " + e);
+		}
+
 		return IsLocked();
 	}
 
 
 	public boolean IsLocked()
 	{
-		boolean ret = mWifiLock != null && mWifiLock.isHeld();
+		boolean ret = mLock != null && mLock.isHeld();
 		Log.i(TAG, "IsLocked = " + ret);
 		return ret;
 	}
@@ -118,13 +129,23 @@ class WifiLocker
 	{
 		Log.i(TAG, "Unlock");
 
-		if (null == mWifiLock)
+		if (null == mLock)
 		{
-			Log.e(TAG, "no mWifiLock");
+			Log.e(TAG, "no mLock");
 			return;
 		}
 
-		mWifiLock.release();
+		try 
+		{
+			if (mLock.isHeld())
+			{
+				mLock.release();
+			}
+		}
+		catch (Exception e)
+		{
+			Log.e(TAG, "Failed to release lock: " + e);
+		}
 	}
 
 	public native Context getContext();
