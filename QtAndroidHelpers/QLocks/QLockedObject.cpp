@@ -59,7 +59,8 @@ namespace QLocks
 
 		if (!lock)
 		{
-			lock.reset(new QLocks::QLock(handler_));
+			lock = QLockPointer(new QLocks::QLock(handler_));
+			lock_ = lock;
 		}
 
 		return lock;
