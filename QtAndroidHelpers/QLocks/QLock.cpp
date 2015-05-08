@@ -34,7 +34,7 @@
     THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include "QLockBase.h"
 #include "QLock_p.h"
 #include "QLockedObjectBase_p.h"
