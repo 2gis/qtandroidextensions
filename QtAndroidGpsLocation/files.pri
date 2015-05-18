@@ -4,12 +4,12 @@ android-g++ {
 INCLUDEPATH += $$PWD
 
 HEADERS += \
-	$$PWD/LocationManagerProvidersListener.h \
+	$$PWD/QLocationManagerProvidersListener.h \
 	$$PWD/QAndroidGooglePlayServiceLocationProvider.h \
 	$$PWD/QGeoPositionInfoSourceAndroidGPS.h
 
 SOURCES += \
-	$$PWD/LocationManagerProvidersListener.cpp \
+	$$PWD/QLocationManagerProvidersListener.cpp \
 	$$PWD/QAndroidGooglePlayServiceLocationProvider.cpp \
 	$$PWD/QGeoPositionInfoSourceAndroidGPS.cpp
 
