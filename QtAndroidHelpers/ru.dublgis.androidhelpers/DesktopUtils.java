@@ -167,18 +167,29 @@ public class DesktopUtils
         }
     }
 
-    public static boolean sendEmail(final Context ctx, final String to, final String subject, final String body)
+    public static boolean sendEmail(final Context ctx, final String to, final String subject, final String body, final String attach_file)
     {
-        //Log.d(tag, "Will send email \""+body+"\" with subject \""+subject+"\" to  \""+to+"\"");
+        Log.d(tag, "SGEXP Will send email with subject \"" +
+            subject + "\" to \"" + to + "\" with attach_file = \"" + attach_file + "\"");
         try
         {
+            // TODO: support multiple recipients
+            String[] recipients = new String[]{to};
+
             Intent i = new Intent(Intent.ACTION_SEND);
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             i.setType("message/rfc822");
-            i.putExtra(Intent.EXTRA_EMAIL, new String[]{to});
+            i.putExtra(Intent.EXTRA_EMAIL, recipients);
             i.putExtra(Intent.EXTRA_SUBJECT, subject);
             i.putExtra(Intent.EXTRA_TEXT, body);
-            Intent chooser = Intent.createChooser(i, null/*"Select email application."*/);
+            if (attach_file != null && attach_file.length() > 0)
+            {
+                i.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(attach_file)));
+            }
+            Intent chooser = Intent.createChooser(
+                i,
+                null // "Select email application."
+            );
             chooser.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             ctx.startActivity(chooser);
             return true;

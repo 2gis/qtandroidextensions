@@ -52,7 +52,7 @@ int getNetworkType();
 
 bool sendTo(const QString & chooser_caption, const QString & text, const QString & content_type);
 bool sendSMS(const QString & number, const QString & text);
-bool sendEmail(const QString & to, const QString & subject, const QString & body);
+bool sendEmail(const QString & to, const QString & subject, const QString & body, const QString & attach_file = QString::null);
 bool openURL(const QString & url);
 bool openFile(const QString & fileName, const QString & mimeType);
 bool installApk(const QString & apk);

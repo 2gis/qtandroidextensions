@@ -99,15 +99,16 @@ bool sendSMS(const QString & number, const QString & text)
 		QJniLocalRef(text).jObject());
 }
 
-bool sendEmail(const QString & to, const QString & subject, const QString & body)
+bool sendEmail(const QString & to, const QString & subject, const QString & body, const QString & attach_file)
 {
 	QJniClass du(c_full_class_name_);
 	QAndroidQPAPluginGap::Context activity;
-	return du.callStaticParamBoolean("sendEmail", "Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;",
+	return du.callStaticParamBoolean("sendEmail", "Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;",
 		activity.jObject(),
 		QJniLocalRef(to).jObject(),
 		QJniLocalRef(subject).jObject(),
-		QJniLocalRef(body).jObject());
+		QJniLocalRef(body).jObject(),
+		QJniLocalRef(attach_file).jObject());
 }
 
 bool openURL(const QString & url)
