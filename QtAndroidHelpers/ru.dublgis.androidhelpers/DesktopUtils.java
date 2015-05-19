@@ -169,8 +169,8 @@ public class DesktopUtils
 
     public static boolean sendEmail(final Context ctx, final String to, final String subject, final String body, final String attach_file)
     {
-        Log.d(tag, "SGEXP Will send email with subject \"" +
-            subject + "\" to \"" + to + "\" with attach_file = \"" + attach_file + "\"");
+        //Log.d(tag, "Will send email with subject \"" +
+        //    subject + "\" to \"" + to + "\" with attach_file = \"" + attach_file + "\"");
         try
         {
             // TODO: support multiple recipients
