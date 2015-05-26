@@ -125,11 +125,11 @@ void QAndroidCompass::preloadJavaClasses()
 }
 
 
-void QAndroidCompass::start(int32_t delayMks /*= -1*/)
+void QAndroidCompass::start(int32_t delayUs /*= -1*/, int32_t latencyUs /*= -1*/)
 {
 	if (handler_)
 	{
-		handler_->callParamVoid("start", "I", delayMks);
+		handler_->callParamVoid("start", "II", delayUs, latencyUs);
 	}
 }
 

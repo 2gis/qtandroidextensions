@@ -77,7 +77,10 @@ public class CompassProvider implements SensorEventListener
 	}
 
 
-	public void start(int delayMksec)
+	private static final int advancedListenerApiLevel = 19;
+
+
+	public void start(int samplingPeriodUs, int maxReportLatencyUs)
 	{
 		if (null == mSensorManager || null == mOrientation)
 		{
@@ -85,18 +88,47 @@ public class CompassProvider implements SensorEventListener
 			return;
 		}
 
-		if (delayMksec < 0)
+		/* API 9, not 19. That is not a mistake. */
+		if ((android.os.Build.VERSION.SDK_INT < 9) || (samplingPeriodUs < 0))
 		{
-			delayMksec = SensorManager.SENSOR_DELAY_NORMAL;
+			samplingPeriodUs = SensorManager.SENSOR_DELAY_UI;
 		}
+
+		boolean registered = false;
 
 		try
 		{
-			mSensorManager.registerListener(this, mOrientation, delayMksec);
+			if (android.os.Build.VERSION.SDK_INT >= advancedListenerApiLevel)
+			{
+				if (maxReportLatencyUs < 0)
+				{
+					maxReportLatencyUs = samplingPeriodUs / 5;
+				}
+
+				Log.i(TAG, "Registering orientation listener for API >= " + advancedListenerApiLevel + 
+							" with samplingPeriodUs = " + samplingPeriodUs + 
+							", maxReportLatencyUs = " + maxReportLatencyUs);
+				registered = mSensorManager.registerListener(this, mOrientation, samplingPeriodUs, maxReportLatencyUs);
+			}
+			else
+			{
+				Log.i(TAG, "Registering orientation listener for API < " + advancedListenerApiLevel + 
+							" with samplingPeriodUs = " + samplingPeriodUs);
+				registered = mSensorManager.registerListener(this, mOrientation, samplingPeriodUs);
+			}
 		}
 		catch(Exception e)
 		{
 			Log.e(TAG, e.getMessage());
+		}
+
+		if (registered)
+		{
+			Log.i(TAG, "Sensor listener registered successfully");
+		}
+		else
+		{
+			Log.e(TAG, "Sensor listener failed to register");
 		}
 	}
 
@@ -111,6 +143,7 @@ public class CompassProvider implements SensorEventListener
 
 		try
 		{
+			Log.i(TAG, "Unregistering orientation listener");
 			// to stop the listener and save battery
 			mSensorManager.unregisterListener(this);
 		}
