@@ -161,6 +161,7 @@ public class CompassProvider implements SensorEventListener
 			Log.i(TAG, "Unregistering listener");
 			// to stop the listener and save battery
 			mSensorManager.unregisterListener(this);
+			mRegistered = false;
 		}
 		catch(Exception e)
 		{
