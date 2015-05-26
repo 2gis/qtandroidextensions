@@ -52,6 +52,7 @@ public class CompassProvider implements SensorEventListener
 	private long mNativePtr = 0;
 	private SensorManager mSensorManager;
 	private Sensor mOrientation;
+	private boolean mRegistered = false;
 
 	CompassProvider(long native_ptr)
 	{
@@ -88,13 +89,17 @@ public class CompassProvider implements SensorEventListener
 			return;
 		}
 
+		if (mRegistered)
+		{
+			Log.w(TAG, "Listener already registered");
+			return;
+		}
+
 		/* API 9, not 19. That is not a mistake. */
 		if ((android.os.Build.VERSION.SDK_INT < 9) || (samplingPeriodUs < 0))
 		{
 			samplingPeriodUs = SensorManager.SENSOR_DELAY_UI;
 		}
-
-		boolean registered = false;
 
 		try
 		{
@@ -108,13 +113,13 @@ public class CompassProvider implements SensorEventListener
 				Log.i(TAG, "Registering orientation listener for API >= " + advancedListenerApiLevel + 
 							" with samplingPeriodUs = " + samplingPeriodUs + 
 							", maxReportLatencyUs = " + maxReportLatencyUs);
-				registered = mSensorManager.registerListener(this, mOrientation, samplingPeriodUs, maxReportLatencyUs);
+				mRegistered = mSensorManager.registerListener(this, mOrientation, samplingPeriodUs, maxReportLatencyUs);
 			}
 			else
 			{
 				Log.i(TAG, "Registering orientation listener for API < " + advancedListenerApiLevel + 
 							" with samplingPeriodUs = " + samplingPeriodUs);
-				registered = mSensorManager.registerListener(this, mOrientation, samplingPeriodUs);
+				mRegistered = mSensorManager.registerListener(this, mOrientation, samplingPeriodUs);
 			}
 		}
 		catch(Exception e)
@@ -122,7 +127,7 @@ public class CompassProvider implements SensorEventListener
 			Log.e(TAG, e.getMessage());
 		}
 
-		if (registered)
+		if (mRegistered)
 		{
 			Log.i(TAG, "Sensor listener registered successfully");
 		}
@@ -138,6 +143,12 @@ public class CompassProvider implements SensorEventListener
 		if (null == mSensorManager)
 		{
 			Log.e(TAG, "SensorManager is null");
+			return;
+		}
+
+		if (!mRegistered)
+		{
+			Log.w(TAG, "Listener is not registered");
 			return;
 		}
 
