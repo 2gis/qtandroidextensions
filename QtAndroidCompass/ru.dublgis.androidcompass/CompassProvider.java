@@ -83,6 +83,8 @@ public class CompassProvider implements SensorEventListener
 
 	public void start(int samplingPeriodUs, int maxReportLatencyUs)
 	{
+		Log.i(TAG, "start");
+
 		if (null == mSensorManager || null == mOrientation)
 		{
 			Log.e(TAG, "Sensors are null");
@@ -110,14 +112,14 @@ public class CompassProvider implements SensorEventListener
 					maxReportLatencyUs = samplingPeriodUs / 5;
 				}
 
-				Log.i(TAG, "Registering orientation listener for API >= " + advancedListenerApiLevel + 
+				Log.i(TAG, "Registering listener for API >= " + advancedListenerApiLevel + 
 							" with samplingPeriodUs = " + samplingPeriodUs + 
 							", maxReportLatencyUs = " + maxReportLatencyUs);
 				mRegistered = mSensorManager.registerListener(this, mOrientation, samplingPeriodUs, maxReportLatencyUs);
 			}
 			else
 			{
-				Log.i(TAG, "Registering orientation listener for API < " + advancedListenerApiLevel + 
+				Log.i(TAG, "Registering listener for API < " + advancedListenerApiLevel + 
 							" with samplingPeriodUs = " + samplingPeriodUs);
 				mRegistered = mSensorManager.registerListener(this, mOrientation, samplingPeriodUs);
 			}
@@ -140,6 +142,8 @@ public class CompassProvider implements SensorEventListener
 
 	public void stop()
 	{
+		Log.i(TAG, "stop");
+
 		if (null == mSensorManager)
 		{
 			Log.e(TAG, "SensorManager is null");
@@ -154,7 +158,7 @@ public class CompassProvider implements SensorEventListener
 
 		try
 		{
-			Log.i(TAG, "Unregistering orientation listener");
+			Log.i(TAG, "Unregistering listener");
 			// to stop the listener and save battery
 			mSensorManager.unregisterListener(this);
 		}
