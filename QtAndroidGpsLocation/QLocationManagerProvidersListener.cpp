@@ -89,17 +89,21 @@ QLocationManagerProvidersListener::~QLocationManagerProvidersListener()
 
 bool QLocationManagerProvidersListener::IsActiveProvidersEnabled()
 {
+	bool ret = false;
+
 	if (handler_)
 	{
-		return handler_->callBool("IsActiveProvidersEnabled");
+		ret = handler_->callBool("IsActiveProvidersEnabled");
 	}
 
-	return false;
+	qDebug() << __FUNCTION__ << ": ret = " << ret;
+	return ret;
 }
 
 
 void QLocationManagerProvidersListener::onProvidersChange()
 {
+	qDebug() << __FUNCTION__;
 	emit providersChange(IsActiveProvidersEnabled());
 }
 

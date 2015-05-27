@@ -174,6 +174,7 @@ QGeoPositionInfo QAndroidGooglePlayServiceLocationProvider::lastKnownPosition() 
 
 void QAndroidGooglePlayServiceLocationProvider::onStatusChanged(int status)
 {
+	qDebug() << __FUNCTION__ << ": status = " << status;
 	emit statusChanged(status);
 }
 
