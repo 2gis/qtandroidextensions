@@ -191,10 +191,13 @@ int QGeoPositionInfoSourceAndroidGPS::minimumUpdateInterval() const
 	return 1000;
 }
 
-void QGeoPositionInfoSourceAndroidGPS::setError(Error error)
+void QGeoPositionInfoSourceAndroidGPS::setError(Error errval)
 {
-	m_error = error;
-	emit QGeoPositionInfoSource::error(m_error);
+	if (m_error != errval)
+	{
+		m_error = errval;
+		emit QGeoPositionInfoSource::error(error());
+	}
 }
 
 
@@ -239,28 +242,26 @@ void QGeoPositionInfoSourceAndroidGPS::onProvidersChange(bool status)
 
 void QGeoPositionInfoSourceAndroidGPS::onStatusChanged(int status)
 {
-	Error newErrorCode = QGeoPositionInfoSource::NoError;
-
 	switch (status)
 	{
 		case QAndroidGooglePlayServiceLocationProvider::S_DISCONNECTED:
-		case QAndroidGooglePlayServiceLocationProvider::S_ERROR:
-			newErrorCode = QGeoPositionInfoSource::ClosedError;
+		case QAndroidGooglePlayServiceLocationProvider::S_CONNECT_ERROR:
+		case QAndroidGooglePlayServiceLocationProvider::S_CONNECT_SUSPEND:
+		case QAndroidGooglePlayServiceLocationProvider::S_REQUEST_FAIL:
+			setError(QGeoPositionInfoSource::ClosedError);
 			break;
 
 		case QAndroidGooglePlayServiceLocationProvider::S_CONNECTED:
-			newErrorCode = QGeoPositionInfoSource::NoError;
+			break;
+
+		case QAndroidGooglePlayServiceLocationProvider::S_REQUEST_SUCCESS:
+			setError(QGeoPositionInfoSource::NoError);
 			break;
 
 		default:
-			newErrorCode = QGeoPositionInfoSource::UnknownSourceError;
+			setError(QGeoPositionInfoSource::UnknownSourceError);
 			break;
 	};
-
-	if (m_error != newErrorCode)
-	{
-		setError(newErrorCode);
-	}
 }
 
 

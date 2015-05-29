@@ -65,21 +65,23 @@ public class GooglePlayServiceLocationProvider
 			  implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener
 {
 	public static final String TAG = "Grym/GooglePlayServiceLocationProvider";
-	public final static int STATUS_DISCONNECTED		= 0;
-	public final static int STATUS_CONNECTED		= 1;
-	public final static int STATUS_ERROR			= 2;
+	
+	public final static int STATUS_DISCONNECTED			= 0;
+	public final static int STATUS_CONNECTED			= 1;
+	public final static int STATUS_CONNECTION_ERROR		= 2;
+	public final static int STATUS_CONNECTION_SUSPENDED	= 3;
+	public final static int STATUS_REQUEST_SUCCESS		= 4;
+	public final static int STATUS_REQUEST_FAIL			= 5;
 
 	private long native_ptr_ = 0;
 	private long mUpdateInterval = 1000;
 	private long mUpdateIntervalFastest = mUpdateInterval / 2;
 	private int mPriority = LocationRequest.PRIORITY_NO_POWER;
 
-	private AtomicBoolean mRequested = new AtomicBoolean(false);
 
 	protected GoogleApiClient mGoogleApiClient;
 	protected Location mCurrentLocation;
 	protected LocationRequest mLocationRequest;
-	protected Boolean mRequestingLocationUpdates = false;
 
 
 
@@ -87,9 +89,7 @@ public class GooglePlayServiceLocationProvider
 	public GooglePlayServiceLocationProvider(long native_ptr)
 	{
 		native_ptr_ = native_ptr;
-
 		googleApiClientStatus(native_ptr_, STATUS_DISCONNECTED);
-
 		buildGoogleApiClient();
 	}
 
@@ -157,18 +157,15 @@ public class GooglePlayServiceLocationProvider
 					.addOnConnectionFailedListener(this)
 					.addApi(LocationServices.API)
 					.build();
-
-			mGoogleApiClient.connect();
 		}
 		catch(Exception e)
 		{
 			Log.e(TAG, e.getMessage());
 		}
-		createLocationRequest();
 	}
 
 
-	protected void createLocationRequest() 
+	protected void RequestLocation() 
 	{
 		Log.i(TAG, "createLocationRequest with priority " + mPriority);
 
@@ -178,6 +175,19 @@ public class GooglePlayServiceLocationProvider
 			mLocationRequest.setInterval(mUpdateInterval);
 			mLocationRequest.setFastestInterval(mUpdateIntervalFastest);
 			mLocationRequest.setPriority(mPriority);
+
+			PendingResult<Status> result = LocationServices.FusedLocationApi.requestLocationUpdates(
+						mGoogleApiClient, mLocationRequest, this);
+
+			result.setResultCallback(new ResultCallback<Status>()
+				{
+					@Override
+					public void onResult(Status result)
+					{
+						Log.i(TAG, "requestLocationUpdates result = " + result);
+						googleApiClientStatus(native_ptr_, result.isSuccess() ? STATUS_REQUEST_SUCCESS : STATUS_REQUEST_FAIL);
+					}
+				});
 		}
 		catch(Exception e)
 		{
@@ -191,125 +201,45 @@ public class GooglePlayServiceLocationProvider
 	public void onConnected(Bundle connectionHint) 
 	{
 		Log.i(TAG, "Connected to GoogleApiClient");
-
-		if (mCurrentLocation == null) 
-		{
-			try
-			{
-				mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-			}
-			catch(Exception e)
-			{
-				Log.e(TAG, e.getMessage());
-			}
-		}
-
-		if (null != mCurrentLocation)
-		{
-			googleApiClientLocation(native_ptr_, mCurrentLocation, true);
-		}
-
-		if (mRequestingLocationUpdates) 
-		{
-			startLocationUpdates();
-		}
-
 		googleApiClientStatus(native_ptr_, STATUS_CONNECTED);
-	}
 
-
-	protected synchronized void startLocationUpdates() 
-	{
-		Log.i(TAG, "startLocationUpdates");
-
-		try 
-		{
-			if (mGoogleApiClient.isConnected()) 
-			{
-				Log.i(TAG, "call requestLocationUpdates");
-				
-				if (true == mRequested.getAndSet(true))
-				{
-					Log.w(TAG, "Already done");
-					return;
-				}
-
-				PendingResult<Status> result = LocationServices.FusedLocationApi.requestLocationUpdates(
-						mGoogleApiClient, mLocationRequest, this);
-
-				result.setResultCallback(new ResultCallback<Status>()
-					{
-						@Override
-						public void onResult(Status result)
-						{
-							Log.i(TAG, "startLocationUpdates result = " + result);
-							googleApiClientStatus(native_ptr_, result.isSuccess() ? STATUS_CONNECTED : STATUS_ERROR);
-							mRequested.set(result.isSuccess());
-						}
-					});
-			}
-			else
-			{
-				Log.w(TAG, "mGoogleApiClient is not connected");
-
-				if (mGoogleApiClient != null && !mGoogleApiClient.isConnecting())
-				{
-					Log.w(TAG, "Try to connect");
-					mGoogleApiClient.connect();
-				}
-			}
-		}
-		catch(Exception e)
-		{
-		   Log.e(TAG, "Failed to start location updates: " + e.getMessage());
-		}
-	}
-
-
-	protected void stopLocationUpdates() 
-	{
-		Log.i(TAG, "stopLocationUpdates");
-
-		try 
-		{
-			if (mGoogleApiClient.isConnected()) 
-			{
-				Log.i(TAG, "call removeLocationUpdates");
-				
-				if (false == mRequested.getAndSet(false))
-				{
-					Log.w(TAG, "Already done");
-					return;
-				}
-
-				LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-			}
-		}
-		catch(Exception e)
-		{
-		   Log.e(TAG, "Failed to stop location updates: " + e.getMessage());
-		}
-	}
-
-
-	@Override
-	public void onConnectionSuspended(int cause) 
-	{
-		Log.i(TAG, "Connection suspended, cause = " + cause);
-		googleApiClientStatus(native_ptr_, STATUS_DISCONNECTED);
-		
 		try
 		{
-			if (mGoogleApiClient != null && !mGoogleApiClient.isConnected() && !mGoogleApiClient.isConnecting())
+			Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+
+			if (null == mCurrentLocation)
 			{
-				Log.w(TAG, "Try to connect");
-				mGoogleApiClient.connect();
+				mCurrentLocation = lastLocation;
+			}
+			else if ((null != lastLocation) && (null != mCurrentLocation))
+			{
+				if (lastLocation.getTime() > mCurrentLocation.getTime())
+				{
+					mCurrentLocation = lastLocation;
+				}
 			}
 		}
 		catch(Exception e)
 		{
 			Log.e(TAG, e.getMessage());
 		}
+
+
+		if (null != mCurrentLocation)
+		{
+			googleApiClientLocation(native_ptr_, mCurrentLocation, true);
+		}
+
+		RequestLocation();
+	}
+
+
+
+	@Override
+	public void onConnectionSuspended(int cause) 
+	{
+		Log.i(TAG, "Connection suspended, cause = " + cause);
+		googleApiClientStatus(native_ptr_, STATUS_CONNECTION_SUSPENDED);
 	}
 
 
@@ -317,7 +247,7 @@ public class GooglePlayServiceLocationProvider
 	public void onConnectionFailed(ConnectionResult result) 
 	{
 		Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
-		googleApiClientStatus(native_ptr_, STATUS_DISCONNECTED);
+		googleApiClientStatus(native_ptr_, STATUS_CONNECTION_ERROR);
 	}
 
 
@@ -333,37 +263,44 @@ public class GooglePlayServiceLocationProvider
 	}
 
 
-	public void requestGoogleApiClientLocationUpdatesStart(final int priority, final long interval, final long minimum_interval) 
+	public void startLocationUpdates(final int priority, final long interval, final long minimum_interval) 
 	{
-
 		runOnUiThread(new Runnable() 
 		{
 			public void run() 
 			{
-				if (!mRequestingLocationUpdates) 
+				Log.i(TAG, "requestGoogleApiClientLocationUpdatesStart");
+
+				mUpdateInterval = interval;
+				mUpdateIntervalFastest = minimum_interval;
+				mPriority = priority;
+
+				try 
 				{
-					mUpdateInterval = interval;
-					mUpdateIntervalFastest = minimum_interval;
-					mPriority = priority;
-					createLocationRequest();
-					mRequestingLocationUpdates = true;
-					startLocationUpdates();
+					mGoogleApiClient.connect();
+				}
+				catch(Exception e)
+				{
+					Log.e(TAG, "Failed to connect GoogleApiClient: " + e.getMessage());
 				}
 			}
 		});
 	}
 
 
-	public void requestGoogleApiClientLocationUpdatesStop() 
+	public void stopLocationUpdates() 
 	{
 		runOnUiThread(new Runnable() 
 		{
 			public void run() 
 			{
-				if (mRequestingLocationUpdates) 
+				try 
 				{
-					mRequestingLocationUpdates = false;
-					stopLocationUpdates();
+					mGoogleApiClient.disconnect();
+				}
+				catch(Exception e)
+				{
+					Log.e(TAG, "Failed to disconnect GoogleApiClient: " + e.getMessage());
 				}
 			}
 		});

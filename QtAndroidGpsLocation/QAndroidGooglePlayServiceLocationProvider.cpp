@@ -245,7 +245,7 @@ void QAndroidGooglePlayServiceLocationProvider::startUpdates()
 
 	if (handler_)
 	{
-		handler_->callParamVoid("requestGoogleApiClientLocationUpdatesStart", "IJJ", (int32_t)priority_, reqiredInterval_, minimumInterval_);
+		handler_->callParamVoid("startLocationUpdates", "IJJ", (int32_t)priority_, reqiredInterval_, minimumInterval_);
 	}
 }
 
@@ -256,7 +256,7 @@ void QAndroidGooglePlayServiceLocationProvider::stopUpdates()
 
 	if (handler_)
 	{
-		handler_->callVoid("requestGoogleApiClientLocationUpdatesStop");
+		handler_->callVoid("stopLocationUpdates");
 	}
 }
 

@@ -51,9 +51,12 @@ class QAndroidGooglePlayServiceLocationProvider: public QObject
 public:
 	enum enStatus
 	{
-		S_DISCONNECTED = 0,
-		S_CONNECTED = 1,
-		S_ERROR = 2,
+		S_DISCONNECTED 		= 0,
+		S_CONNECTED 		= 1,
+		S_CONNECT_ERROR 	= 2,
+		S_CONNECT_SUSPEND	= 3,
+		S_REQUEST_SUCCESS	= 4,
+		S_REQUEST_FAIL		= 5,
 	};
 
 	enum enPriority
