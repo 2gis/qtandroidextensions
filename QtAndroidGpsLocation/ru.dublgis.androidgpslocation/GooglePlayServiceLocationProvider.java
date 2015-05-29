@@ -45,6 +45,7 @@ import android.location.Location;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -72,6 +73,8 @@ public class GooglePlayServiceLocationProvider
 	private long mUpdateInterval = 1000;
 	private long mUpdateIntervalFastest = mUpdateInterval / 2;
 	private int mPriority = LocationRequest.PRIORITY_NO_POWER;
+
+	private AtomicBoolean mRequested = new AtomicBoolean(false);
 
 	protected GoogleApiClient mGoogleApiClient;
 	protected Location mCurrentLocation;
@@ -224,6 +227,13 @@ public class GooglePlayServiceLocationProvider
 			if (mGoogleApiClient.isConnected()) 
 			{
 				Log.i(TAG, "call requestLocationUpdates");
+				
+				if (true == mRequested.getAndSet(true))
+				{
+					Log.w(TAG, "Already done");
+					return;
+				}
+
 				PendingResult<Status> result = LocationServices.FusedLocationApi.requestLocationUpdates(
 						mGoogleApiClient, mLocationRequest, this);
 
@@ -234,6 +244,7 @@ public class GooglePlayServiceLocationProvider
 						{
 							Log.i(TAG, "startLocationUpdates result = " + result);
 							googleApiClientStatus(native_ptr_, result.isSuccess() ? STATUS_CONNECTED : STATUS_ERROR);
+							mRequested.set(result.isSuccess());
 						}
 					});
 			}
@@ -264,6 +275,13 @@ public class GooglePlayServiceLocationProvider
 			if (mGoogleApiClient.isConnected()) 
 			{
 				Log.i(TAG, "call removeLocationUpdates");
+				
+				if (false == mRequested.getAndSet(false))
+				{
+					Log.w(TAG, "Already done");
+					return;
+				}
+
 				LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
 			}
 		}
