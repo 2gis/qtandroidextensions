@@ -217,10 +217,13 @@ public class GooglePlayServiceLocationProvider
 
 	protected synchronized void startLocationUpdates() 
 	{
+		Log.i(TAG, "startLocationUpdates");
+
 		try 
 		{
 			if (mGoogleApiClient.isConnected()) 
 			{
+				Log.i(TAG, "call requestLocationUpdates");
 				PendingResult<Status> result = LocationServices.FusedLocationApi.requestLocationUpdates(
 						mGoogleApiClient, mLocationRequest, this);
 
@@ -236,8 +239,11 @@ public class GooglePlayServiceLocationProvider
 			}
 			else
 			{
+				Log.w(TAG, "mGoogleApiClient is not connected");
+
 				if (mGoogleApiClient != null && !mGoogleApiClient.isConnecting())
 				{
+					Log.w(TAG, "Try to connect");
 					mGoogleApiClient.connect();
 				}
 			}
@@ -251,10 +257,13 @@ public class GooglePlayServiceLocationProvider
 
 	protected void stopLocationUpdates() 
 	{
+		Log.i(TAG, "stopLocationUpdates");
+
 		try 
 		{
 			if (mGoogleApiClient.isConnected()) 
 			{
+				Log.i(TAG, "call removeLocationUpdates");
 				LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
 			}
 		}
@@ -275,6 +284,7 @@ public class GooglePlayServiceLocationProvider
 		{
 			if (mGoogleApiClient != null && !mGoogleApiClient.isConnected() && !mGoogleApiClient.isConnecting())
 			{
+				Log.w(TAG, "Try to connect");
 				mGoogleApiClient.connect();
 			}
 		}

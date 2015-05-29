@@ -241,6 +241,8 @@ void QAndroidGooglePlayServiceLocationProvider::setUpdateInterval(int64_t reqire
 
 void QAndroidGooglePlayServiceLocationProvider::startUpdates()
 {
+	qDebug() << __FUNCTION__;
+
 	if (handler_)
 	{
 		handler_->callParamVoid("requestGoogleApiClientLocationUpdatesStart", "IJJ", (int32_t)priority_, reqiredInterval_, minimumInterval_);
@@ -250,6 +252,8 @@ void QAndroidGooglePlayServiceLocationProvider::startUpdates()
 
 void QAndroidGooglePlayServiceLocationProvider::stopUpdates()
 {
+	qDebug() << __FUNCTION__;
+
 	if (handler_)
 	{
 		handler_->callVoid("requestGoogleApiClientLocationUpdatesStop");
