@@ -36,9 +36,12 @@
 
 #include <QtCore/QMutex>
 #include <QtCore/QMutexLocker>
+#include <QtCore/QDir>
 #include <QtCore/QFile>
+#include <QtCore/QFileInfo>
 #include <QJniHelpers.h>
 #include <QAndroidQPAPluginGap.h>
+#include "QAndroidStorages.h"
 #include "QAndroidFilePaths.h"
 
 static QMutex paths_mutex_(QMutex::Recursive);
@@ -97,7 +100,39 @@ const QStringList & QAndroidFilePaths::ExternalFilesDirectories(const QString & 
 	{
 		if (QAndroidQPAPluginGap::apiLevel() < 19)
 		{
-			dirs.push_back(ExternalFilesDirectory(type));
+			if (!type.isEmpty())
+			{
+				dirs.push_back(ExternalFilesDirectory(type));
+			}
+			else
+			{
+				// Using hack code to find external storage directories
+				QString std_card_path = ExternalFilesDirectory(QString::null);
+				dirs.push_back(std_card_path);
+				QString package_name = QAndroidQPAPluginGap::Context().callString("getPackageName");
+				const QStringList & storages = QAndroidStorages::externalStorages();
+				for (int i = 0; i < storages.size(); ++i)
+				{
+					if (std_card_path.startsWith(storages.at(i) + QChar('/')))
+					{
+						continue;
+					}
+					QString full_path = storages.at(i) + QLatin1String("/Android/data/") + package_name + QLatin1String("/files");
+					QDir().mkpath(full_path);
+					if (!QFile::exists(full_path))
+					{
+						qWarning() << "[ExternalFilesDirectories] Failed to create directory:" << full_path;
+						continue;
+					}
+					if (!QFileInfo(full_path).isWritable())
+					{
+						qWarning() << "[ExternalFilesDirectories] Directory exists but not writable:" << full_path;
+						continue;
+					}
+					qDebug() << "[ExternalFilesDirectories] Adding external files path:" << full_path;
+					dirs.push_back(full_path);
+				}
+			}
 		}
 		else
 		{

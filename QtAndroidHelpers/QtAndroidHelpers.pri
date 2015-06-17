@@ -18,7 +18,9 @@ HEADERS += \
     $$PWD/QAndroidScreenOrientation.h \
     $$PWD/QAndroidScreenLayoutHandler.h \
     $$PWD/QAndroidToast.h \
-    $$PWD/QAndroidDesktopUtils.h
+    $$PWD/QAndroidDesktopUtils.h \
+    $$PWD/QAndroidStorages_.h \
+    $$PWD/QAndroidStorages_p.h
 
 SOURCES += \
     $$PWD/QAndroidScreenLocker.cpp \
@@ -33,5 +35,6 @@ SOURCES += \
     $$PWD/QAndroidScreenOrientation.cpp \
     $$PWD/QAndroidScreenLayoutHandler.cpp \
     $$PWD/QAndroidToast.cpp \
-    $$PWD/QAndroidDesktopUtils.cpp
+    $$PWD/QAndroidDesktopUtils.cpp \
+    $$PWD/QAndroidStorages.cpp
 }
