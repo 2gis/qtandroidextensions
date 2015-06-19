@@ -177,6 +177,10 @@ public slots:
 
 	void setAllowFullscreenKeyboard(bool allow) { androidEditText()->setAllowFullscreenKeyboard(allow); }
 
+	void setHorizontalScrollBarEnabled(bool horizontalScrollBarEnabled) { androidEditText()->setHorizontalScrollBarEnabled(horizontalScrollBarEnabled); }
+
+	void setVerticalScrollBarEnabled (bool verticalScrollBarEnabled) { androidEditText()->setVerticalScrollBarEnabled(verticalScrollBarEnabled); }
+
 signals:
 	void onTextChanged(QString text);
 

@@ -484,6 +484,22 @@ int QAndroidOffscreenEditText::getSelectionStart()
 	return 0; // No selection start
 }
 
+void QAndroidOffscreenEditText::setHorizontalScrollBarEnabled(bool horizontalScrollBarEnabled)
+{
+	if (QJniObject * view = offscreenView())
+	{
+		view->callVoid("setHorizontalScrollBarEnabled", jboolean(horizontalScrollBarEnabled));
+	}
+}
+
+void QAndroidOffscreenEditText::setVerticalScrollBarEnabled(bool verticalScrollBarEnabled)
+{
+	if (QJniObject * view = offscreenView())
+	{
+		view->callVoid("setVerticalScrollBarEnabled", jboolean(verticalScrollBarEnabled));
+	}
+}
+
 int QAndroidOffscreenEditText::getSelectionEnd()
 {
 	if (QJniObject * view = offscreenView())

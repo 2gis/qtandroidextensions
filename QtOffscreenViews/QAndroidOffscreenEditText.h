@@ -277,6 +277,8 @@ public:
 	void setSelection(int start, int stop);
 	int getSelectionStart();
 	int getSelectionEnd();
+	void setHorizontalScrollBarEnabled(bool horizontalScrollBarEnabled);
+	void setVerticalScrollBarEnabled (bool verticalScrollBarEnabled);
 
 	//
 	// Own helper methods

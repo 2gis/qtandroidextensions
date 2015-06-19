@@ -733,6 +733,26 @@ class OffscreenEditText extends OffscreenView
         });
     }
 
+    void setVerticalScrollBarEnabled(final boolean verticalScrollBarEnabled)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setVerticalScrollBarEnabled(verticalScrollBarEnabled);
+            }
+        });
+    }
+
+    void setHorizontalScrollBarEnabled(final boolean horizontalScrollBarEnabled)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setHorizontalScrollBarEnabled(horizontalScrollBarEnabled);
+            }
+        });
+    }
+
     void setAllowFullscreenKeyboard(final boolean allow)
     {
         runViewAction(new Runnable(){
