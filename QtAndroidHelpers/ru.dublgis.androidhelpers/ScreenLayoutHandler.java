@@ -43,7 +43,7 @@ import android.view.ViewTreeObserver;
 import android.view.Window;
 
 
-public class ScreenLayoutHandler implements ViewTreeObserver.OnGlobalLayoutListener
+public class ScreenLayoutHandler implements ViewTreeObserver.OnGlobalLayoutListener, ViewTreeObserver.OnScrollChangedListener
 {
     public static final String TAG = "Grym/ScreenLayoutHandler";
     private long native_ptr_ = 0;
@@ -74,6 +74,7 @@ public class ScreenLayoutHandler implements ViewTreeObserver.OnGlobalLayoutListe
                     try
                     {
                         view.getViewTreeObserver().addOnGlobalLayoutListener(ScreenLayoutHandler.this);
+                        view.getViewTreeObserver().addOnScrollChangedListener(ScreenLayoutHandler.this);
                     }
                     catch (Exception e)
                     {
@@ -96,6 +97,7 @@ public class ScreenLayoutHandler implements ViewTreeObserver.OnGlobalLayoutListe
                     try
                     {
                         view.getViewTreeObserver().removeOnGlobalLayoutListener(ScreenLayoutHandler.this);
+                        view.getViewTreeObserver().removeOnScrollChangedListener(ScreenLayoutHandler.this);
                     }
                     catch (Exception e)
                     {
@@ -110,6 +112,12 @@ public class ScreenLayoutHandler implements ViewTreeObserver.OnGlobalLayoutListe
     public void onGlobalLayout()
     {
         nativeGlobalLayoutChanged(native_ptr_);
+    }
+
+    @Override
+    public void onScrollChanged()
+    {
+        nativeScrollChanged(native_ptr_);
     }
 
     private View getDecorView()
@@ -156,4 +164,5 @@ public class ScreenLayoutHandler implements ViewTreeObserver.OnGlobalLayoutListe
 
     public native Activity getActivity();
     public native void nativeGlobalLayoutChanged(long nativeptr);
+    public native void nativeScrollChanged(long nativeptr);
 }

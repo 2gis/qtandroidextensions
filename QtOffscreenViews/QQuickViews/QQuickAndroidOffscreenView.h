@@ -75,7 +75,7 @@ public slots:
 signals:
 	void viewCreated();
 	void backgroundColorChanged(QColor color);
-	void visibleRectReceived(int width, int height);
+	void visibleRectReceived(int visible_width, int visible_height);
 
 protected:
 	QAndroidOffscreenView * androidView() { return aview_.data(); }

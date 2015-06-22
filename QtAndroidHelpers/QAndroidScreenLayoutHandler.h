@@ -68,13 +68,17 @@ signals:
 	 */
 	void globalLayoutChanged();
 
+	void scrollChanged();
+
 private:
 	void javaGlobalLayoutChanged();
+	void javaScrollChanged();
 	void preloadJavaClasses();
 
 private:
 	Q_DISABLE_COPY(QAndroidScreenLayoutHandler)
 	friend void JNICALL Java_ScreenLayoutHandler_globalLayoutChanged(JNIEnv *, jobject, jlong param);
+	friend void JNICALL Java_ScreenLayoutHandler_scrollChanged(JNIEnv *, jobject, jlong param);
 
 private:
 	QScopedPointer<QJniObject> screen_layout_handler_;
