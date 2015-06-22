@@ -67,7 +67,6 @@ namespace QAndroidFilePaths
 
 	/*!
 	 * Context.getExternalFilesDirs()
-	 * API >= 19. For API < 19 a list with ExternalFilesDirectory is returned.
 	 * \param type - empty or null string, or one of ANDROID_DIRECTORY_... constants.
 	 */
 	const QStringList & ExternalFilesDirectories(const QString & type = QString::null);
