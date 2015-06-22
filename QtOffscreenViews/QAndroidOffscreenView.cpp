@@ -916,14 +916,9 @@ void QAndroidOffscreenView::resize(const QSize & newsize)
 		}
 		if (offscreen_view_)
 		{
-			// If we're in GL mode, then view texture is now contains trash and should not be used
+			// The view texture is now contains wrongly sized image and should not be used
 			// until the view is painted again because it will look distorted.
-			// If we're in bitmap mode, the bitmap is filled with background color which is OK
-			// (we don't have anything better anyway).
-			if (!bitmap_a_.isAllocated())
-			{
-				view_painted_ = false;
-			}
+			view_painted_ = false;
 			offscreen_view_->callParamVoid("resizeOffscreenView", "II", jint(size.width()), jint(size.height()));
 		}
 		tex_.setTextureSize(size);
