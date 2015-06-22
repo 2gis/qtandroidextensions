@@ -1530,6 +1530,28 @@ abstract class OffscreenView
         });
     }
 
+    public void setSoftInputMode(final int mode)
+    {
+        final Activity a = getActivity();
+        a.runOnUiThread(new Runnable() {
+            @Override
+            public void run()
+            {
+                a.getWindow().setSoftInputMode(mode);
+            }
+        });
+    }
+
+    public void setSoftInputModeResize()
+    {
+        setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+    }
+
+    public void setSoftInputModeAdjustPan()
+    {
+        setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+    }
+
     public native void nativeUpdate(long nativeptr);
     public native Activity getActivity();
     public native void nativeViewCreated(long nativeptr);

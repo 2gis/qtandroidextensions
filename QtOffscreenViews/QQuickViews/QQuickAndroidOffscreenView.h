@@ -72,6 +72,9 @@ public slots:
 	
 	void setHideKeyboardOnFocusLoss(bool hide) { androidView()->setHideKeyboardOnFocusLoss(hide); }
 
+	void setSoftInputModeResize() { androidView()->setSoftInputModeResize(); }
+	void setSoftInputModeAdjustPan() { androidView()->setSoftInputModeAdjustPan(); }
+
 signals:
 	void viewCreated();
 	void backgroundColorChanged(QColor color);

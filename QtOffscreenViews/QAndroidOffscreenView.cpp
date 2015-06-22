@@ -922,6 +922,22 @@ void QAndroidOffscreenView::resize(const QSize & newsize)
 	}
 }
 
+void QAndroidOffscreenView::setSoftInputModeResize()
+{
+	if (offscreen_view_)
+	{
+		offscreen_view_->callVoid("setSoftInputModeResize");
+	}
+}
+
+void QAndroidOffscreenView::setSoftInputModeAdjustPan()
+{
+	if (offscreen_view_)
+	{
+		offscreen_view_->callVoid("setSoftInputModeAdjustPan");
+	}
+}
+
 int QColorToAndroidColor(const QColor & color)
 {
 	// QColor to BGRA aka ARGB in Android terms

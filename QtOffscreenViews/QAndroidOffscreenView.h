@@ -288,6 +288,9 @@ public:
 
 	//! \todo Add multi-touch support!
 
+	void setSoftInputModeResize();
+	void setSoftInputModeAdjustPan();
+
 public slots:
 	/*!
 	 * Free Android view and OpenGL resources. The object will be unusable after that.
@@ -311,6 +314,7 @@ public slots:
 	 * the visible part of the screen.
 	 */
 	void requestVisibleRect();
+
 
 signals:
 	/*!
