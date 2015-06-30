@@ -531,3 +531,12 @@ void QAndroidOffscreenEditText::setAllowFullscreenKeyboard(bool allow)
 		view->callVoid("setAllowFullscreenKeyboard", jboolean(allow));
 	}
 }
+
+void QAndroidOffscreenEditText::setCursorColorToTextColor()
+{
+	if (QJniObject * view = offscreenView())
+	{
+		view->callVoid("setCursorColorToTextColor");
+	}
+}
+

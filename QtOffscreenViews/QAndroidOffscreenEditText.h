@@ -284,7 +284,7 @@ public:
 	// Own helper methods
 	//
 	void setAllowFullscreenKeyboard(bool allow);
-
+	void setCursorColorToTextColor();
 
 signals:
 	//! See Android: TextWatcher.onTextChanged().

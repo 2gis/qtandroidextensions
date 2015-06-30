@@ -37,6 +37,7 @@
 package ru.dublgis.offscreenview;
 
 import java.lang.Thread;
+import java.lang.reflect.Field;
 import java.util.Set;
 import java.util.List;
 import java.util.LinkedList;
@@ -92,6 +93,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.graphics.Canvas;
 import android.text.TextUtils;
 
@@ -148,6 +150,23 @@ class OffscreenEditText extends OffscreenView
             {
                 Log.i(TAG, "MyEditText constructor: using API < 16 method (setBackgroundDrawable)");
                 setBackgroundDrawable(null);
+            }
+        }
+
+        // Super evil workaround to set cursor color equal to text color.
+        // This is equal to setting android:textCursorDrawable="@null".
+        void setCursorColorToTextColor()
+        {
+            try
+            {
+                // https://github.com/android/platform_frameworks_base/blob/kitkat-release/core/java/android/widget/TextView.java#L562-564
+                Field f = TextView.class.getDeclaredField("mCursorDrawableRes");
+                f.setAccessible(true);
+                f.set((TextView)this, 0);
+            }
+            catch (Exception e)
+            {
+                Log.e(TAG, "Could not change default cursor behaviour, exception: " + e);
             }
         }
 
@@ -795,6 +814,16 @@ class OffscreenEditText extends OffscreenView
             @Override
             public void run(){
                 ((MyEditText)getView()).setEllipsize(where);
+            }
+        });
+    }
+
+    void setCursorColorToTextColor()
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setCursorColorToTextColor();
             }
         });
     }

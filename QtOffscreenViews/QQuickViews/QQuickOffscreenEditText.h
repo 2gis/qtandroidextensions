@@ -181,6 +181,8 @@ public slots:
 
 	void setVerticalScrollBarEnabled (bool verticalScrollBarEnabled) { androidEditText()->setVerticalScrollBarEnabled(verticalScrollBarEnabled); }
 
+	void setCursorColorToTextColor() { androidEditText()->setCursorColorToTextColor(); }
+
 signals:
 	void onTextChanged(QString text);
 
