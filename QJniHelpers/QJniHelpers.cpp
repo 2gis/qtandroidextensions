@@ -1260,6 +1260,39 @@ QString QJniObject::callString(const char *method_name)
 	return ret;
 }
 
+
+QString QJniObject::callParamString(const char *method_name, const char* param_signature, ...)
+{
+	VERBOSE(qDebug("void QJniObject(%p)::callParamString(\"%s\", \"%s\", ...)", this, method_name, param_signature));
+	
+	va_list args;
+	QJniEnvPtr jep;
+	JNIEnv* env = jep.env();
+
+	QByteArray signature("(");
+	signature += param_signature;
+	signature += ")Ljava/lang/String;";
+	jmethodID mid = env->GetMethodID(checkedClass(), method_name, signature.data());
+
+	if (!mid)
+	{
+		qWarning("%s: method not found.", __FUNCTION__);
+		throw QJniMethodNotFoundException();
+	}
+
+	va_start(args, param_signature);
+	QString ret = QJniLocalRef(env, env->CallObjectMethodV(instance_, mid, args));
+	va_end(args);
+	
+	if (jep.clearException())
+	{
+		throw QJniJavaCallException();
+	}
+
+	return ret;
+}
+
+
 QString QJniObject::getString(const char *field_name)
 {
 	QJniEnvPtr jep;

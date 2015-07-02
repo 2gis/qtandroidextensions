@@ -369,6 +369,8 @@ public:
 	 */
 	QString callString(const char* method_name);
 
+	QString callParamString(const char *method_name, const char* param_signature, ...);
+
 	/*!
 	 * Get value of jstring field of the wrapped Java object and
 	 * return the result as a QString.
