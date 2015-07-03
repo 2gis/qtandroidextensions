@@ -201,7 +201,6 @@ public class GooglePlayServiceLocationProvider
 	public void onConnected(Bundle connectionHint) 
 	{
 		Log.i(TAG, "Connected to GoogleApiClient");
-		googleApiClientStatus(native_ptr_, STATUS_CONNECTED);
 
 		try
 		{
@@ -230,6 +229,7 @@ public class GooglePlayServiceLocationProvider
 			googleApiClientLocation(native_ptr_, mCurrentLocation, true);
 		}
 
+		googleApiClientStatus(native_ptr_, STATUS_CONNECTED);
 		RequestLocation();
 	}
 

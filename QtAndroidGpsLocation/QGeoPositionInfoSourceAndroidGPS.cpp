@@ -252,8 +252,6 @@ void QGeoPositionInfoSourceAndroidGPS::onStatusChanged(int status)
 			break;
 
 		case QAndroidGooglePlayServiceLocationProvider::S_CONNECTED:
-			break;
-
 		case QAndroidGooglePlayServiceLocationProvider::S_REQUEST_SUCCESS:
 			setError(QGeoPositionInfoSource::NoError);
 			break;

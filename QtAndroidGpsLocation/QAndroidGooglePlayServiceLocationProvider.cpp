@@ -181,14 +181,16 @@ void QAndroidGooglePlayServiceLocationProvider::onStatusChanged(int status)
 
 void QAndroidGooglePlayServiceLocationProvider::onLocationRecieved(const QGeoPositionInfo &location, jboolean initial)
 {
-	Q_UNUSED(initial)
 
 	{
 		QMutexLocker lock(&lastLocationSync_);
 		lastLocation_ = location;
 	}
 
-	emit locationRecieved(location);
+	if (!initial)
+	{
+		emit locationRecieved(location);
+	}
 }
 
 
