@@ -37,9 +37,9 @@
 
 package ru.dublgis.androidhelpers;
 
-import android.app.Activity;
 import android.util.Log;
 import android.content.SharedPreferences;
+import android.content.Context;
 
 
 final public class SharedPreferencesHelper
@@ -62,9 +62,18 @@ final public class SharedPreferencesHelper
 	}
 
 
+	private SharedPreferences getPreferences()
+	{
+		Context ctx = getContext();
+		String name = ctx.getPackageName() + ".SharedPreferencesHelper";
+		return ctx.getSharedPreferences(name, Context.MODE_PRIVATE);
+	}
+
+
 	public void WriteString(String key, String value)
 	{
-		SharedPreferences sharedPref = getActivity().getPreferences(Activity.MODE_PRIVATE);
+		Log.i(TAG, "WriteString " + value + " by key " + key);
+		SharedPreferences sharedPref = getPreferences();
 		SharedPreferences.Editor editor = sharedPref.edit();
 		editor.putString(key, value);
 		editor.commit();
@@ -72,7 +81,7 @@ final public class SharedPreferencesHelper
 
 	public String ReadString(String key, String valueDefault)
 	{
-		SharedPreferences sharedPref = getActivity().getPreferences(Activity.MODE_PRIVATE);
+		SharedPreferences sharedPref = getPreferences();
 		return sharedPref.getString(key, valueDefault);
 	}
 
@@ -80,7 +89,7 @@ final public class SharedPreferencesHelper
 
 	public void WriteInt(String key, int value)
 	{
-		SharedPreferences sharedPref = getActivity().getPreferences(Activity.MODE_PRIVATE);
+		SharedPreferences sharedPref = getPreferences();
 		SharedPreferences.Editor editor = sharedPref.edit();
 		editor.putInt(key, value);
 		editor.commit();
@@ -88,11 +97,11 @@ final public class SharedPreferencesHelper
 
 	public int ReadInt(String key, int valueDefault)
 	{
-		SharedPreferences sharedPref = getActivity().getPreferences(Activity.MODE_PRIVATE);
+		SharedPreferences sharedPref = getPreferences();
 		return sharedPref.getInt(key, valueDefault);
 	}
 
 
-	public native Activity getActivity();
+	public native Context getContext();
 }
 

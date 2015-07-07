@@ -40,13 +40,13 @@
 #include <QJniHelpers.h>
 
 
-class QSharedPreferences : public QObject
+class QAndroidSharedPreferences : public QObject
 {
 	Q_OBJECT
 
 public:
-	QSharedPreferences(QObject * parent = 0);
-	virtual ~QSharedPreferences();
+	QAndroidSharedPreferences(QObject * parent = 0);
+	virtual ~QAndroidSharedPreferences();
 
 public:
 	void writeString(const QString & key, const QString & value);

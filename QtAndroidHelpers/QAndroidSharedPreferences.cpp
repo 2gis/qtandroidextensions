@@ -34,7 +34,7 @@
 	THE POSSIBILITY OF SUCH DAMAGE.
 */
 	
-#include "QSharedPreferences.h"
+#include "QAndroidSharedPreferences.h"
 
 #include <QAndroidQPAPluginGap.h>
 
@@ -43,7 +43,7 @@ static const char * const c_full_class_name_ = "ru/dublgis/androidhelpers/Shared
 
 
 
-QSharedPreferences::QSharedPreferences(QObject * parent /*= 0*/) : 
+QAndroidSharedPreferences::QAndroidSharedPreferences(QObject * parent /*= 0*/) : 
 	QObject(parent)
 {
 	preloadJavaClasses();
@@ -54,7 +54,7 @@ QSharedPreferences::QSharedPreferences(QObject * parent /*= 0*/) :
 }
 
 
-QSharedPreferences::~QSharedPreferences()
+QAndroidSharedPreferences::~QAndroidSharedPreferences()
 {
 	if (java_handler_)
 	{
@@ -64,7 +64,7 @@ QSharedPreferences::~QSharedPreferences()
 }
 
 
-void QSharedPreferences::preloadJavaClasses()
+void QAndroidSharedPreferences::preloadJavaClasses()
 {
 	static volatile bool preloaded_ = false;
 
@@ -78,15 +78,15 @@ void QSharedPreferences::preloadJavaClasses()
 		QJniClass ov(c_full_class_name_);
 		static const JNINativeMethod methods[] = 
 		{
-			{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity},
+			{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContext},
 		};
-	
+
 		ov.registerNativeMethods(methods, sizeof(methods));
 	}
 }
 
 
-void QSharedPreferences::writeString(const QString &key, const QString &value)
+void QAndroidSharedPreferences::writeString(const QString &key, const QString &value)
 {
 	QJniEnvPtr jep;
 	java_handler_->callParamVoid("WriteString", "Ljava/lang/String;Ljava/lang/String;", 
@@ -94,7 +94,7 @@ void QSharedPreferences::writeString(const QString &key, const QString &value)
 }
 
 
-QString QSharedPreferences::readString(const QString & key, const QString & valueDefault)
+QString QAndroidSharedPreferences::readString(const QString & key, const QString & valueDefault)
 {
 	QJniEnvPtr jep;
 	QString ret;
@@ -114,7 +114,7 @@ QString QSharedPreferences::readString(const QString & key, const QString & valu
 }
 
 
-void QSharedPreferences::writeInt(const QString & key, int32_t value)
+void QAndroidSharedPreferences::writeInt(const QString & key, int32_t value)
 {
 	QJniEnvPtr jep;
 	java_handler_->callParamVoid("WriteInt", "Ljava/lang/String;I", 
@@ -122,7 +122,7 @@ void QSharedPreferences::writeInt(const QString & key, int32_t value)
 }
 
 
-int32_t QSharedPreferences::readInt(const QString & key, int32_t valueDefault)
+int32_t QAndroidSharedPreferences::readInt(const QString & key, int32_t valueDefault)
 {
 	QJniEnvPtr jep;
 	return java_handler_->callParamInt("ReadInt", "Ljava/lang/String;I", 

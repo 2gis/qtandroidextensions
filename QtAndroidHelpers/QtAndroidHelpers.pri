@@ -4,7 +4,7 @@ android-g++ {
 INCLUDEPATH += $$PWD
 
 HEADERS += \
-    $$PWD/QSharedPreferences.h \
+    $$PWD/QAndroidSharedPreferences.h \
     $$PWD/QAndroidScreenLocker.h \
     $$PWD/QAndroidWiFiLocker.h \
     $$PWD/QLocks/QLockBase.h  \
@@ -24,7 +24,7 @@ HEADERS += \
     $$PWD/QAndroidStorages_p.h
 
 SOURCES += \
-    $$PWD/QSharedPreferences.cpp \
+    $$PWD/QAndroidSharedPreferences.cpp \
     $$PWD/QAndroidScreenLocker.cpp \
     $$PWD/QAndroidWiFiLocker.cpp \
     $$PWD/QLocks/QLock.cpp  \
