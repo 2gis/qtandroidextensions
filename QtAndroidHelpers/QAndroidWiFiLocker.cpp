@@ -49,7 +49,8 @@ QAndroidWiFiLocker& QAndroidWiFiLocker::instance()
 }
 
 
-QAndroidWiFiLocker::QAndroidWiFiLocker() 
+QAndroidWiFiLocker::QAndroidWiFiLocker() :
+	QLocks::QLockedObject(false)
 {
 	preloadJavaClasses();
 

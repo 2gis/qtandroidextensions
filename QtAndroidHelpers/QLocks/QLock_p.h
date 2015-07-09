@@ -48,7 +48,7 @@ namespace QLocks
 		Q_DISABLE_COPY(QLock)
 
 	public:
-		QLock(LockedObjShared_t handler);
+		QLock(LockedObjShared_t handler, bool unlockOnSleep);
 		virtual ~QLock();
 
 	private slots:

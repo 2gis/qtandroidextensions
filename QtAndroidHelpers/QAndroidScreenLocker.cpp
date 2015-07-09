@@ -49,7 +49,8 @@ QAndroidScreenLocker& QAndroidScreenLocker::instance()
 }
 
 
-QAndroidScreenLocker::QAndroidScreenLocker() 
+QAndroidScreenLocker::QAndroidScreenLocker() :
+	QLocks::QLockedObject(true)
 {
 	preloadJavaClasses();
 

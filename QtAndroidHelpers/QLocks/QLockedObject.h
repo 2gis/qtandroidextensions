@@ -48,12 +48,13 @@ namespace QLocks
 		Q_DISABLE_COPY(QLockedObject)
 
 	public:
-		QLockedObject();
+		QLockedObject(bool unlockOnSleep);
 		virtual ~QLockedObject();
 		QLockPointer getLock();
 
 	private:
 		QLockWeakPointer lock_;
 		LockedObjShared_t handler_;
+		bool unlockOnSleep_;
 	};
 }

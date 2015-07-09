@@ -42,13 +42,13 @@
 
 namespace QLocks
 {
-
-	QLock::QLock(LockedObjShared_t handler) :
+	QLock::QLock(LockedObjShared_t handler, bool unlockOnSleep) :
 		handler_(handler)
 	{
 		// If we have just QCoreApplicaion instance, we don't have UI and don't have
 		// any active/inactive states, so we just assume that we're always active.
-		if (QApplication::instance()->metaObject()->indexOfSignal("applicationStateChanged(Qt::ApplicationState)") >= 0)
+		if (QApplication::instance()->metaObject()->indexOfSignal("applicationStateChanged(Qt::ApplicationState)") >= 0
+			&& unlockOnSleep)
 		{
 			QObject::connect(
 				QApplication::instance(),
@@ -56,6 +56,7 @@ namespace QLocks
 				this,
 				SLOT(onApplicationStateChanged(Qt::ApplicationState)));
 		}
+
 		handler->lock();
 	}
 
