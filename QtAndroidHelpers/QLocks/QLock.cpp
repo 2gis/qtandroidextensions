@@ -35,20 +35,27 @@
 */
 
 #include <QtWidgets/QApplication>
+#include <QtCore/qdebug.h>
 #include "QLockBase.h"
 #include "QLock_p.h"
 #include "QLockedObjectBase_p.h"
 
-
 namespace QLocks
 {
+
 	QLock::QLock(LockedObjShared_t handler) :
 		handler_(handler)
 	{
-		QObject::connect(
-				QApplication::instance(), SIGNAL(applicationStateChanged(Qt::ApplicationState)),
-				this,						SLOT(onApplicationStateChanged(Qt::ApplicationState)));
-
+		// If we have just QCoreApplicaion instance, we don't have UI and don't have
+		// any active/inactive states, so we just assume that we're always active.
+		if (QApplication::instance()->metaObject()->indexOfSignal("applicationStateChanged(Qt::ApplicationState)") >= 0)
+		{
+			QObject::connect(
+				QApplication::instance(),
+				SIGNAL(applicationStateChanged(Qt::ApplicationState)),
+				this,
+				SLOT(onApplicationStateChanged(Qt::ApplicationState)));
+		}
 		handler->lock();
 	}
 
@@ -56,7 +63,6 @@ namespace QLocks
 	QLock::~QLock()
 	{
 		LockedObjShared_t obj = handler_.toStrongRef();
-
 		if (obj)
 		{
 			obj->unlock();
@@ -67,10 +73,10 @@ namespace QLocks
 	void QLock::onApplicationStateChanged(Qt::ApplicationState state)
 	{
 		LockedObjShared_t obj = handler_.toStrongRef();
-
 		if (!obj)
+		{
 			return;
-
+		}
 		if (Qt::ApplicationActive == state)
 		{
 			obj->lock();
@@ -80,5 +86,6 @@ namespace QLocks
 			obj->unlock();
 		}
 	}
-}
+
+} // namespace QLocks
 
