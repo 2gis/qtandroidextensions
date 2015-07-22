@@ -204,6 +204,7 @@ const QString & QAndroidFilePaths::DownloadCacheDirectory()
 
 const QString & QAndroidFilePaths::ExternalCacheDirectory()
 {
+	qWarning() << __FUNCTION__ << ":" << __LINE__;
 	// Activity.getExternalCacheDir().getPath().
 	QMutexLocker locker(&paths_mutex_);
 	static QString path;
@@ -215,11 +216,14 @@ const QString & QAndroidFilePaths::ExternalCacheDirectory()
 			"java/io/File"));
 		path = externalfilesdir->callString("getPath");
 	}
+
+	qWarning() << __FUNCTION__ << ":" << __LINE__ << ":" << path;
 	return path;
 }
 
 QAndroidFilePaths::StatFs QAndroidFilePaths::GetStatFs(const QString & path)
 {
+	qWarning() << __FUNCTION__ << ":" << __LINE__;
 	QAndroidFilePaths::StatFs result;
 	if (path.isEmpty())
 	{
@@ -228,31 +232,41 @@ QAndroidFilePaths::StatFs QAndroidFilePaths::GetStatFs(const QString & path)
 	}
 	try
 	{
+		qWarning() << __FUNCTION__ << ":" << __LINE__;
 		QJniObject stat("android/os/StatFs", "Ljava/lang/String;", QJniLocalRef(path).jObject());
+		qWarning() << __FUNCTION__ << ":" << __LINE__;
 		quint64 avail_blocks = 0, total_blocks = 0, free_blocks = 0, block_size = 0;
 		if (QAndroidQPAPluginGap::apiLevel() >= 18)
 		{
+			qWarning() << __FUNCTION__ << ":" << __LINE__;
 			avail_blocks = static_cast<quint64>(stat.callLong("getAvailableBlocksLong"));
 			total_blocks = static_cast<quint64>(stat.callLong("getBlockCountLong"));
 			free_blocks = static_cast<quint64>(stat.callLong("getFreeBlocksLong"));
 			block_size = static_cast<quint64>(stat.callLong("getBlockSizeLong"));
+			qWarning() << __FUNCTION__ << ":" << __LINE__;
 		}
 		else
 		{
+			qWarning() << __FUNCTION__ << ":" << __LINE__;
 			avail_blocks = static_cast<quint64>(stat.callInt("getAvailableBlocks"));
 			total_blocks = static_cast<quint64>(stat.callInt("getBlockCount"));
 			free_blocks = static_cast<quint64>(stat.callInt("getFreeBlocks"));
 			block_size = static_cast<quint64>(stat.callInt("getBlockSize"));
+			qWarning() << __FUNCTION__ << ":" << __LINE__;
 		}
+		qWarning() << __FUNCTION__ << ":" << __LINE__;
 		result.total_bytes = block_size * total_blocks;
 		result.available_bytes = block_size * avail_blocks;
 		result.free_bytes = block_size * free_blocks;
 		result.block_size = block_size;
+		qWarning() << __FUNCTION__ << ":" << __LINE__;
 	}
 	catch (std::exception & e)
 	{
+		qWarning() << __FUNCTION__ << ":" << __LINE__;
 		qWarning() << "Failed to stat FS:" << path << "Exception:" << e.what();
 	}
+	qWarning() << __FUNCTION__ << ":" << __LINE__;
 	return result;
 }
 
