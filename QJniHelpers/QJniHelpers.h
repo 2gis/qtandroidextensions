@@ -68,6 +68,7 @@ class QJniClassNotSetException: public QJniBaseException
 {
 public:
 	QJniClassNotSetException();
+	QJniClassNotSetException(const char * class_name);
 };
 
 class QJniMethodNotFoundException: public QJniBaseException
@@ -255,10 +256,11 @@ protected:
 	void initClass(JNIEnv* env, jclass clazz);
 	void clearClass(JNIEnv* env);
 
-	inline jclass checkedClass() { if (!class_) throw QJniClassNotSetException(); return class_; }
+	inline jclass checkedClass() { if (!class_) throw QJniClassNotSetException(full_class_name_); return class_; }
 
 private:
 	jclass class_;
+	const char * full_class_name_;
 };
 
 

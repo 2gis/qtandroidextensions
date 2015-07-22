@@ -132,6 +132,11 @@ QJniClassNotFoundException::QJniClassNotFoundException()
 {
 }
 
+QJniClassNotSetException::QJniClassNotSetException(const char * class_name)
+	: QJniBaseException(class_name ? class_name : "JNI: Java class not found!")
+{
+}
+
 QJniClassNotSetException::QJniClassNotSetException()
 	: QJniBaseException("JNI: Java class is null.")
 {
@@ -360,6 +365,7 @@ bool QJniEnvPtr::clearException(bool describe)
 
 QJniClass::QJniClass(jclass clazz)
 	: class_(0)
+	, full_class_name_(NULL)
 {
 	QJniEnvPtr jep;
 	initClass(jep.env(), clazz);
@@ -367,6 +373,7 @@ QJniClass::QJniClass(jclass clazz)
 
 QJniClass::QJniClass(const char * full_class_name)
 	: class_(0)
+	, full_class_name_(full_class_name)
 {
 	QJniEnvPtr jep;
 	jclass cls = jep.findClass(full_class_name); // this is a preloaded global ref, we don't need to delete it as a local ref
@@ -386,6 +393,7 @@ QJniClass::QJniClass(const char * full_class_name)
 
 QJniClass::QJniClass(jobject object)
 	: class_(0)
+	, full_class_name_(NULL)
 {
 	QJniEnvPtr jep;
 	// Note: class is expected to be a valid ref during the whole lifetime of the object.
@@ -398,6 +406,7 @@ QJniClass::QJniClass(jobject object)
 
 QJniClass::QJniClass(const QJniClass &other)
 	: class_(0)
+	, full_class_name_(NULL)
 {
 	QJniEnvPtr jep;
 	initClass(jep.env(), other.class_);

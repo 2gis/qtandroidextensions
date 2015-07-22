@@ -76,41 +76,57 @@ const QString & QAndroidFilePaths::ApplicationFilesDirectory()
 
 const QString & QAndroidFilePaths::ExternalFilesDirectory(const QString & type)
 {
+	qWarning() << __FUNCTION__ << ":" << __LINE__;
 	// Activity.getExternalFilesDir().getPath().
 	QMutexLocker locker(&paths_mutex_);
 	static QString path;
+	qWarning() << __FUNCTION__ << ":" << __LINE__;
 	if (path.isEmpty())
 	{
+		qWarning() << __FUNCTION__ << ":" << __LINE__;
 		QAndroidQPAPluginGap::Context activity;
+		qWarning() << __FUNCTION__ << ":" << __LINE__;
 		QScopedPointer<QJniObject> externalfilesdir(activity.callParamObject(
 			"getExternalFilesDir",
 			"java/io/File",
 			"Ljava/lang/String;",
 			(type.isEmpty())? jstring(0): QJniLocalRef(type).operator jstring()));
 		path = externalfilesdir->callString("getPath");
+		qWarning() << __FUNCTION__ << ":" << __LINE__;
 	}
+	qWarning() << __FUNCTION__ << ":" << __LINE__;
 	return path;
 }
 
 const QStringList & QAndroidFilePaths::ExternalFilesDirectories(const QString & type)
 {
+	qWarning() << __FUNCTION__ << ":" << __LINE__;
 	QMutexLocker locker(&paths_mutex_);
 	static QStringList dirs;
+	qWarning() << __FUNCTION__ << ":" << __LINE__;
 	if (dirs.isEmpty())
 	{
+		qWarning() << __FUNCTION__ << ":" << __LINE__;
 		if (QAndroidQPAPluginGap::apiLevel() < 19)
 		{
+			qWarning() << __FUNCTION__ << ":" << __LINE__;
 			if (!type.isEmpty())
 			{
+				qWarning() << __FUNCTION__ << ":" << __LINE__;
 				dirs.push_back(ExternalFilesDirectory(type));
 			}
 			else
 			{
+				qWarning() << __FUNCTION__ << ":" << __LINE__;
 				// Using hack code to find external storage directories
 				QString std_card_path = ExternalFilesDirectory(QString::null);
 				dirs.push_back(std_card_path);
+				qWarning() << __FUNCTION__ << ":" << __LINE__;
 				QString package_name = QAndroidQPAPluginGap::Context().callString("getPackageName");
+				qWarning() << __FUNCTION__ << ":" << __LINE__;
 				const QStringList & storages = QAndroidStorages::externalStorages();
+				qWarning() << __FUNCTION__ << ":" << __LINE__;
+
 				for (int i = 0; i < storages.size(); ++i)
 				{
 					if (std_card_path.startsWith(storages.at(i) + QChar('/')))
@@ -132,23 +148,29 @@ const QStringList & QAndroidFilePaths::ExternalFilesDirectories(const QString & 
 					qDebug() << "[ExternalFilesDirectories] Adding external files path:" << full_path;
 					dirs.push_back(full_path);
 				}
+				qWarning() << __FUNCTION__ << ":" << __LINE__;
 			}
 		}
 		else
 		{
+			qWarning() << __FUNCTION__ << ":" << __LINE__;
 			QString paths = QJniClass(c_directorieshelper_class_).callStaticParamString(
 				"getExternalFilesDirs",
 				"Landroid/content/Context;Ljava/lang/String;",
 				QAndroidQPAPluginGap::Context().jObject(),
 				(type.isEmpty())? jobject(0): QJniLocalRef(type).jObject());
+			qWarning() << __FUNCTION__ << ":" << __LINE__;
 			dirs = paths.split(QLatin1Char('\n'), QString::SkipEmptyParts);
+			qWarning() << __FUNCTION__ << ":" << __LINE__;
 			if (dirs.isEmpty())
 			{
 				qWarning() << "Failed to get dirs from getExternalFilesDirs(), falling back to getExternalFilesDir().";
 				dirs.push_back(ExternalFilesDirectory(type));
 			}
+			qWarning() << __FUNCTION__ << ":" << __LINE__;
 		}
 	}
+	qWarning() << __FUNCTION__ << ":" << __LINE__;
 	return dirs;
 }
 
