@@ -325,7 +325,6 @@ signals:
 
 	/*!
 	 * Emitted when view has been actually created.
-	 * \todo This signal seems to be useless, maybe it should be removed.
 	 */
 	void viewCreated();
 
