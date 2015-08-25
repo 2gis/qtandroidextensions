@@ -16,7 +16,17 @@
 ****************************************************************************/
 
 #pragma once
-#include <QtCore/5.4.1/QtCore/private/qabstractfileengine_p.h>
+
+#include <QtCore/qtcoreversion.h>
+
+#if QTCORE_VERSION == 0x050401
+#   include <QtCore/5.4.1/QtCore/private/qabstractfileengine_p.h>
+#elif QTCORE_VERSION == 0x050500
+#   include <QtCore/5.5.0/QtCore/private/qabstractfileengine_p.h>
+#else
+#   error qt version unknown
+#endif
+
 #include <QtCore/QCache>
 #include <QtCore/QMutex>
 #include <QtCore/QSharedPointer>

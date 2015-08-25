@@ -16,6 +16,7 @@
 ****************************************************************************/
 
 #include <QtCore/QCoreApplication>
+#include <QtCore/QDataStream>
 #include <QtCore/QVector>
 #include "AndroidAssetsFileEngineHandler_p.h"
 
