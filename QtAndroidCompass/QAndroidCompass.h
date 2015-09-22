@@ -36,33 +36,39 @@
 
 #pragma once
 
-#include <QObject>
 #include <QJniHelpers.h>
+#include <QScopedPointer>
+#include <QWeakPointer>
+#include <QMutex>
 
 
-class QAndroidCompass : public QObject
+class QAndroidCompass
 {
-	Q_OBJECT
-
 public:
-	QAndroidCompass(QObject * parent = 0);
+	class AzimuthListener
+	{
+	public:
+		virtual void azimuthChanged(float azimuth) = 0;
+		virtual ~AzimuthListener() {}
+	};
+
+	QAndroidCompass();
 	virtual ~QAndroidCompass();
 
-public slots:
 	void start(int32_t delayUs = -1, int32_t latencyUs = -1);
 	void stop();
 
-signals:
-	void azimutChanged(float azimut);
+	void resetAzimuthListener(const QWeakPointer<AzimuthListener> & azimuth_listener);
 
 private:
-	void setAzimut(float azimut);
+	void setAzimuth(float azimuth);
 	static void preloadJavaClasses();
 
 private:
 	QScopedPointer<QJniObject> handler_;
+	QWeakPointer<AzimuthListener> azimuth_listener_;
+	QMutex send_mutex_;
 
-	friend void JNICALL Java_setAzimut(JNIEnv * env, jobject, jlong inst, jfloat azimut);
+	friend void JNICALL Java_setAzimuth(JNIEnv * env, jobject, jlong inst, jfloat azimuth);
 };
-
 

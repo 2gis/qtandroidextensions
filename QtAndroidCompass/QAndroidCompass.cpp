@@ -38,12 +38,14 @@
 #include "QAndroidCompass.h"
 
 #include <QAndroidQPAPluginGap.h>
+#include <QSharedPointer>
+#include <QMutexLocker>
 
 
 static const char * const c_full_class_name_ = "ru/dublgis/androidcompass/CompassProvider";
 
 
-Q_DECL_EXPORT void JNICALL Java_setAzimut(JNIEnv * env, jobject, jlong inst, jfloat azimut)
+Q_DECL_EXPORT void JNICALL Java_setAzimuth(JNIEnv * env, jobject, jlong inst, jfloat azimuth)
 {
 	Q_UNUSED(env);
 
@@ -53,7 +55,7 @@ Q_DECL_EXPORT void JNICALL Java_setAzimut(JNIEnv * env, jobject, jlong inst, jfl
 		{
 			void * vp = reinterpret_cast<void*>(inst);
 			QAndroidCompass * proxy = reinterpret_cast<QAndroidCompass*>(vp);
-			proxy->setAzimut(azimut);
+			proxy->setAzimuth(azimuth);
 			return;
 		}
 		else
@@ -68,14 +70,12 @@ Q_DECL_EXPORT void JNICALL Java_setAzimut(JNIEnv * env, jobject, jlong inst, jfl
 }
 
 
-QAndroidCompass::QAndroidCompass(QObject * parent /*= 0*/) :
-	QObject(parent)
+QAndroidCompass::QAndroidCompass()
 {
 	preloadJavaClasses();
 
 	// Creating Java object
-	handler_.reset(new QJniObject(c_full_class_name_, "J",
-		jlong(reinterpret_cast<void*>(this))));
+	handler_.reset(new QJniObject(c_full_class_name_, "J", jlong(reinterpret_cast<void*>(this))));
 }
 
 
@@ -106,7 +106,7 @@ void QAndroidCompass::preloadJavaClasses()
 			QJniClass ov(c_full_class_name_);
 			static const JNINativeMethod methods[] = {
 				{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContext},
-				{"setAzimut", "(JF)V", (void*)Java_setAzimut},
+				{"setAzimuth", "(JF)V", (void*)Java_setAzimuth},
 			};
 
 			if (!ov.registerNativeMethods(methods, sizeof(methods)))
@@ -143,10 +143,31 @@ void QAndroidCompass::stop()
 }
 
 
-void QAndroidCompass::setAzimut(float azimut)
+void QAndroidCompass::resetAzimuthListener(const QWeakPointer<AzimuthListener> & azimuth_listener)
 {
-	emit azimutChanged(azimut);
+	QMutexLocker lock(&send_mutex_);
+
+	azimuth_listener_= azimuth_listener;
 }
 
+
+void QAndroidCompass::setAzimuth(float azimuth)
+{
+	QSharedPointer<AzimuthListener> azimuth_listener;
+
+	{
+		QMutexLocker lock(&send_mutex_);
+		azimuth_listener = azimuth_listener_.lock();
+	}
+
+	if (azimuth_listener)
+	{
+		azimuth_listener->azimuthChanged(azimuth);
+	}
+	else
+	{
+		stop();
+	}
+}
 
 

@@ -112,14 +112,14 @@ public class CompassProvider implements SensorEventListener
 					maxReportLatencyUs = samplingPeriodUs / 5;
 				}
 
-				Log.i(TAG, "Registering listener for API >= " + advancedListenerApiLevel + 
-							" with samplingPeriodUs = " + samplingPeriodUs + 
+				Log.i(TAG, "Registering listener for API >= " + advancedListenerApiLevel +
+							" with samplingPeriodUs = " + samplingPeriodUs +
 							", maxReportLatencyUs = " + maxReportLatencyUs);
 				mRegistered = mSensorManager.registerListener(this, mOrientation, samplingPeriodUs, maxReportLatencyUs);
 			}
 			else
 			{
-				Log.i(TAG, "Registering listener for API < " + advancedListenerApiLevel + 
+				Log.i(TAG, "Registering listener for API < " + advancedListenerApiLevel +
 							" with samplingPeriodUs = " + samplingPeriodUs);
 				mRegistered = mSensorManager.registerListener(this, mOrientation, samplingPeriodUs);
 			}
@@ -174,7 +174,7 @@ public class CompassProvider implements SensorEventListener
 	{
 		if (event.sensor.getType() == mOrientation.getType())
 		{
-			setAzimut(mNativePtr, event.values[0]);
+			setAzimuth(mNativePtr, event.values[0]);
 		}
 	}
 
@@ -185,6 +185,6 @@ public class CompassProvider implements SensorEventListener
 
 
 	private native Context getContext();
-	private native void setAzimut(long nativeptr, float azimut);
+	private native void setAzimuth(long nativeptr, float azimuth);
 };
 
