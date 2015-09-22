@@ -375,8 +375,16 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setText(text);
-                need_to_reflow_text_ = false;
+                // May crash input method manager in rare situations
+                try
+                {
+                    ((MyEditText)getView()).setText(text);
+                    need_to_reflow_text_ = false;
+                }
+                catch (Exception e)
+                {
+                    Log.e(TAG, "Exception in setText: " + e);
+                }
             }
         });
     }
