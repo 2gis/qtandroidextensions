@@ -23,6 +23,10 @@
 #   include <QtCore/5.4.1/QtCore/private/qabstractfileengine_p.h>
 #elif QTCORE_VERSION == 0x050500
 #   include <QtCore/5.5.0/QtCore/private/qabstractfileengine_p.h>
+#elif QTCORE_VERSION == 0x050501
+#   include <QtCore/5.5.1/QtCore/private/qabstractfileengine_p.h>
+#elif QTCORE_VERSION == 0x050600
+#   include <QtCore/5.6.0/QtCore/private/qabstractfileengine_p.h>
 #else
 #   error qt version unknown
 #endif
