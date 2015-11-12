@@ -215,7 +215,9 @@ QGeoPositionInfoSource::Error QGeoPositionInfoSourceAndroidGPS::error() const
 void QGeoPositionInfoSourceAndroidGPS::requestUpdate(int timeout)
 {
 	Q_UNUSED(timeout)
-	Q_ASSERT(!"Not implemented");
+	// FIXME: This function should be implemented properly!
+	// Q_ASSERT(!"Not implemented");
+	qWarning() << "QGeoPositionInfoSourceAndroidGPS::requestUpdate(" << timeout << "): not implemented!";
 	emit updateTimeout();
 	return;
 }
