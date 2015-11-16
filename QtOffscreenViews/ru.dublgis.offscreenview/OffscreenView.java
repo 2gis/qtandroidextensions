@@ -385,7 +385,7 @@ abstract class OffscreenView
         return result;
     }
 
-    private ViewGroup getMainLayout()
+    protected ViewGroup getMainLayout()
     {
         final Activity activity = getActivity();
         if (activity == null)

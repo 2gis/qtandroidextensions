@@ -540,3 +540,22 @@ void QAndroidOffscreenEditText::setCursorColorToTextColor()
 	}
 }
 
+int QAndroidOffscreenEditText::getSystemDrawMode()
+{
+	if (QJniObject * view = offscreenView())
+	{
+		return static_cast<int>(view->callInt("getSystemDrawMode"));
+	}
+	return 0;
+}
+
+void QAndroidOffscreenEditText::setSystemDrawMode(int mode)
+{
+	if (QJniObject * view = offscreenView())
+	{
+		view->callVoid("setSystemDrawMode", static_cast<jint>(mode));
+	}
+}
+
+
+

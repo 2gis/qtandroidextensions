@@ -105,6 +105,12 @@ class OffscreenEditText extends OffscreenView
     int selection_start_ = 0, selection_end_ = 0;
     private Object variables_mutex_ = new Object();
 
+    static final int
+        SYSTEM_DRAW_NEVER = 0,
+        SYSTEM_DRAW_ALWAYS = 1,
+        SYSTEM_DRAW_HACKY = 2;
+    private int system_draw_ = SYSTEM_DRAW_HACKY;
+
     class MyEditText extends EditText
     {
 
@@ -173,7 +179,48 @@ class OffscreenEditText extends OffscreenView
         @Override
         protected void onDraw(Canvas canvas)
         {
-            // Don't draw when called from layout
+            try
+            {
+                if (system_draw_ != SYSTEM_DRAW_NEVER && isInAttachingMode())
+                {
+                    if (system_draw_ == SYSTEM_DRAW_HACKY)
+                    {
+                        // We should perform this draw for system text zoom but ignore it
+                        // for any other purposes.
+                        //
+                        // OK (zoom, should be painted):
+                        // onDraw: my size is 992x72, canvas: 195x122, hwa: false, mainlayout: 1200x1662
+                        //
+                        // BAD (screen paint, should be ignored):
+                        // onDraw: my size is 992x72, canvas: 1200x1824, hwa: false, mainlayout: 1200x1774
+                        MyEditText edittext = (MyEditText)getView();
+                        ViewGroup mainlayout = getMainLayout();
+                        boolean ignore_this_draw =
+                            // If the canvas is wider and taller than our EditText then it's probably not
+                            // a zoom window (which is usually small) so it should be ignored.
+                            // This is the worst part of the workaround :(
+                            (canvas.getWidth() > edittext.getWidth() && canvas.getHeight() > edittext.getHeight())
+                            // If output canvas is wider than my outer layout it must be a full window
+                            // paint. We should ignore it as the window painting is handled by Qt.
+                            ||  (mainlayout == null || mainlayout.getWidth() <= canvas.getWidth());
+                        /*Log.d(TAG, "onDraw: my size is " +
+                            edittext.getWidth() + "x" + edittext.getHeight() +
+                            ", canvas: " + canvas.getWidth() + "x" + canvas.getHeight() +
+                            ", hwa: " + canvas.isHardwareAccelerated() +
+                            ", mainlayout: " + ((mainlayout==null)?"null": "" + mainlayout.getWidth() + "x" + mainlayout.getHeight()) +
+                            ", ignoring: " + ignore_this_draw);*/
+                        if (ignore_this_draw)
+                        {
+                            return;
+                        }
+                    }
+                    super.onDraw(canvas);
+                }
+            }
+            catch (Exception e)
+            {
+                Log.e(TAG, "Exception in onDraw: " + e);
+            }
         }
 
         public void onDrawPublic(Canvas canvas)
@@ -850,6 +897,16 @@ class OffscreenEditText extends OffscreenView
         {
             return selection_end_;
         }
+    }
+
+    int getSystemDrawMode()
+    {
+        return system_draw_;
+    }
+
+    void setSystemDrawMode(int mode)
+    {
+        system_draw_ = mode;
     }
 }
 

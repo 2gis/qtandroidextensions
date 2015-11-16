@@ -286,6 +286,16 @@ public:
 	void setAllowFullscreenKeyboard(bool allow);
 	void setCursorColorToTextColor();
 
+	//
+	// Drawing mode hack
+	//
+	static const int
+		SYSTEM_DRAW_NEVER		= 0,
+		SYSTEM_DRAW_ALWAYS		= 1,
+		SYSTEM_DRAW_HACKY		= 2;
+	int getSystemDrawMode();
+	void setSystemDrawMode(int mode);
+
 signals:
 	//! See Android: TextWatcher.onTextChanged().
 	void onTextChanged(QString text, int start, int before, int count);
