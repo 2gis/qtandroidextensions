@@ -221,6 +221,14 @@ void QAndroidOffscreenEditText::setInputType(int type)
 	}
 }
 
+void QAndroidOffscreenEditText::setInputType(int type_and, int type_or)
+{
+	if (QJniObject * view = offscreenView())
+	{
+		view->callParamVoid("setInputType", "II", jint(type_and), jint(type_or));
+	}
+}
+
 void QAndroidOffscreenEditText::setMarqueeRepeatLimit(int marqueeLimit)
 {
 	if (QJniObject * view = offscreenView())

@@ -511,6 +511,18 @@ class OffscreenEditText extends OffscreenView
         });
     }
 
+    void setInputType(final int type_and, final int type_or)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                MyEditText edittext = (MyEditText)getView();
+                int type = edittext.getInputType();
+                edittext.setInputType((type & type_and) | type_or);
+            }
+        });
+    }
+
     void setMarqueeRepeatLimit(final int marqueeLimit)
     {
         runViewAction(new Runnable(){

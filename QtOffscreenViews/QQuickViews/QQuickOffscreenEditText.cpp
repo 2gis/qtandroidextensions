@@ -64,3 +64,23 @@ void QQuickAndroidOffscreenEditText::etKeyBack(bool down)
 		emit backPressed();
 	}
 }
+
+void QQuickAndroidOffscreenEditText::setEnableNativeSuggestions(bool enable)
+{
+	if (enable)
+	{
+		// Turn off TYPE_TEXT_FLAG_NO_SUGGESTIONS,
+		setInputTypeAndOr(
+			(~QAndroidOffscreenEditText::ANDROID_INPUTTYPE_TYPE_TEXT_FLAG_NO_SUGGESTIONS) & 0x7fffffff,
+			0);
+	}
+	else
+	{
+		// Turn on TYPE_TEXT_FLAG_NO_SUGGESTIONS
+		setInputTypeAndOr(
+			0x7fffffff,
+			QAndroidOffscreenEditText::ANDROID_INPUTTYPE_TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+	}
+}
+
+

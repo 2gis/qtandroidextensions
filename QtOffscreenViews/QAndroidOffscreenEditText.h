@@ -134,6 +134,9 @@ public:
 	//! Set the type of the content with a constant as defined for inputType (ANDROID_INPUTTYPE_...)
 	void setInputType(int type);
 
+	//! setInputType((getInputType() & type_and) | type_or)
+	void setInputType(int type_and, int type_or);
+
 	//! Sets how many times to repeat the marquee animation.
 	void setMarqueeRepeatLimit(int marqueeLimit);
 
