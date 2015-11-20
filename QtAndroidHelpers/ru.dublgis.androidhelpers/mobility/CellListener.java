@@ -1,8 +1,10 @@
 /*
     Offscreen Android Views library for Qt
 
-    Author:
+    Authors:
     Vyacheslav O. Koscheev <vok1980@gmail.com>
+    Ivan Avdeev marflon@gmail.com
+    Sergey A. Galin sergey.galin@gmail.com
 
     Distrbuted under The BSD License
 
@@ -64,7 +66,7 @@ public class CellListener
     private Looper mListenerLooper = null;
 
 
-    CellListener(long native_ptr)
+    public CellListener(long native_ptr)
     {
         native_ptr_ = native_ptr;
     }

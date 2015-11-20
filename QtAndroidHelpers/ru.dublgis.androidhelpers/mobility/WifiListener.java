@@ -1,8 +1,10 @@
 /*
     Offscreen Android Views library for Qt
 
-    Author:
+    Authors:
     Vyacheslav O. Koscheev <vok1980@gmail.com>
+    Ivan Avdeev marflon@gmail.com
+    Sergey A. Galin sergey.galin@gmail.com
 
     Distrbuted under The BSD License
 
@@ -56,7 +58,7 @@ public class WifiListener extends BroadcastReceiver
 	private WifiManager mWifiMan = null;
 
 
-	WifiListener(long native_ptr)
+	public WifiListener(long native_ptr)
 	{
 		native_ptr_ = native_ptr;
 	}

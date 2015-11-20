@@ -71,7 +71,7 @@ void JniObjectLinker::preloadJavaClasses(const JNINativeMethod * methods_list, s
 		preloaded_ = true;
 
 		QAndroidQPAPluginGap::preloadJavaClasses();
-		QAndroidQPAPluginGap::preloadJavaClass(full_class_name_);
+		QAndroidQPAPluginGap::preloadJavaClass(full_class_name_.constData());
 
 		QJniClass ov(full_class_name_);
 		ov.registerNativeMethods(methods_list, sizeof_methods_list);
