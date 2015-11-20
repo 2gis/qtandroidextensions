@@ -70,7 +70,7 @@ static const JNINativeMethod methods[] = {
 
 QAndroidWifiDataProvider::QAndroidWifiDataProvider(QObject * parent /*= 0*/) : 
 	QObject(parent)
-	, JniObjectLinker(reinterpret_cast<void*>(this), "ru.dublgis.androidhelpers.mobility.WifiListener", methods, sizeof(methods))
+	, JniObjectLinker(reinterpret_cast<void*>(this), "ru/dublgis/androidhelpers/mobility/WifiListener", methods, sizeof(methods))
 	, started_(false)
 {
 }

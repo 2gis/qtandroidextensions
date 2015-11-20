@@ -71,7 +71,7 @@ static const JNINativeMethod methods[] = {
 
 QAndroidCellDataProvider::QAndroidCellDataProvider(QObject * parent /*= 0*/) : 
 	QObject(parent)
-	, JniObjectLinker(reinterpret_cast<void*>(this), "ru.dublgis.androidhelpers.mobility.CellListener", methods, sizeof(methods))
+	, JniObjectLinker(reinterpret_cast<void*>(this), "ru/dublgis/androidhelpers/mobility/CellListener", methods, sizeof(methods))
 {
 }
 
