@@ -67,18 +67,20 @@ void QQuickAndroidOffscreenEditText::etKeyBack(bool down)
 
 void QQuickAndroidOffscreenEditText::setEnableNativeSuggestions(bool enable)
 {
+	// Note: changing just TYPE_TEXT_FLAG_NO_SUGGESTIONS does not have effect on some
+	// software keyboards (e.g. HTC Sense).
 	if (enable)
 	{
-		// Turn off TYPE_TEXT_FLAG_NO_SUGGESTIONS,
+		// Turn off TYPE_TEXT_FLAG_NO_SUGGESTIONS, turn on INPUTTYPE_TYPE_CLASS_TEXT
 		setInputTypeAndOr(
 			(~QAndroidOffscreenEditText::ANDROID_INPUTTYPE_TYPE_TEXT_FLAG_NO_SUGGESTIONS) & 0x7fffffff,
-			0);
+			QAndroidOffscreenEditText::ANDROID_INPUTTYPE_TYPE_CLASS_TEXT);
 	}
 	else
 	{
-		// Turn on TYPE_TEXT_FLAG_NO_SUGGESTIONS
+		// Turn on TYPE_TEXT_FLAG_NO_SUGGESTIONS, turn off INPUTTYPE_TYPE_CLASS_TEXT
 		setInputTypeAndOr(
-			0x7fffffff,
+			0x7fffffff & ~QAndroidOffscreenEditText::ANDROID_INPUTTYPE_TYPE_CLASS_TEXT,
 			QAndroidOffscreenEditText::ANDROID_INPUTTYPE_TYPE_TEXT_FLAG_NO_SUGGESTIONS);
 	}
 }
