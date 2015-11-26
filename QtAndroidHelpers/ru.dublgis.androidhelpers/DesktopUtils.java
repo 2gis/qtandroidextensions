@@ -54,6 +54,7 @@ import android.os.Looper;
 import android.os.Build;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
+import android.support.v4.content.FileProvider;
 import android.telephony.TelephonyManager;
 import android.telephony.CellLocation;
 import android.telephony.gsm.GsmCellLocation;
@@ -167,7 +168,33 @@ public class DesktopUtils
         }
     }
 
-    public static boolean sendEmail(final Context ctx, final String to, final String subject, final String body, final String attach_file)
+    /*
+        For this to work with attachments on Android 6 or with force_content_provider == true,
+        please add this section into you AndroidManifest.xml:
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="ru.dublgis.sharefileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_provider_paths" />
+        </provider>
+
+        Also, create res/xml/file_provider_paths.xml with the following content:
+
+        <paths xmlns:android="http://schemas.android.com/apk/res/android">
+            <external-path name="share" path="/" />
+        </paths>
+   */
+    public static boolean sendEmail(
+         final Context ctx,
+         final String to,
+         final String subject,
+         final String body,
+         final String attach_file,
+         final boolean force_content_provider)
     {
         //Log.d(tag, "Will send email with subject \"" +
         //    subject + "\" to \"" + to + "\" with attach_file = \"" + attach_file + "\"");
@@ -184,7 +211,21 @@ public class DesktopUtils
             i.putExtra(Intent.EXTRA_TEXT, body);
             if (attach_file != null && attach_file.length() > 0)
             {
-                i.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(attach_file)));
+                if (!force_content_provider && android.os.Build.VERSION.SDK_INT < 23)
+                {
+                    i.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(attach_file)));
+                }
+                else
+                {
+                    // Android 6+: going the longer route.
+                    // For more information, please see:
+                    // http://stackoverflow.com/questions/32981194/android-6-cannot-share-files-anymore
+                    i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    i.putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(
+                         ctx,
+                         "ru.dublgis.sharefileprovider",
+                         new File(attach_file)));
+                }
             }
             Intent chooser = Intent.createChooser(
                 i,

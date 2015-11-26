@@ -52,7 +52,17 @@ int getNetworkType();
 
 bool sendTo(const QString & chooser_caption, const QString & text, const QString & content_type);
 bool sendSMS(const QString & number, const QString & text);
-bool sendEmail(const QString & to, const QString & subject, const QString & body, const QString & attach_file = QString::null);
+
+// WARNING: For this function to work properly with e-mail attachments on Android 6+
+// or when using force_content_provider, please follow instructions in 
+// DesktopUtils.java => DesktopUtils.sendEmail().
+bool sendEmail(
+    const QString & to,
+    const QString & subject,
+    const QString & body,
+    const QString & attach_file = QString::null,
+    bool force_content_provider = false);
+
 bool openURL(const QString & url);
 bool openFile(const QString & fileName, const QString & mimeType);
 bool installApk(const QString & apk);
