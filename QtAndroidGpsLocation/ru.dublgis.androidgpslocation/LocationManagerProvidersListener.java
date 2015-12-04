@@ -77,17 +77,34 @@ public class LocationManagerProvidersListener extends BroadcastReceiver
 
 	public boolean IsActiveProvidersEnabled()
 	{
+		return IsGpsProviderEnabled() || IsNetworkProviderEnabled();
+	}
+
+
+	public boolean IsGpsProviderEnabled()
+	{
+		return IsProviderEnabled(LocationManager.GPS_PROVIDER);
+	}
+
+
+	public boolean IsNetworkProviderEnabled()
+	{
+		return IsProviderEnabled(LocationManager.NETWORK_PROVIDER);
+	}
+
+
+	public boolean IsProviderEnabled(String provider)
+	{
 		boolean ret = false;
 
-		try 
+		try
 		{
-			final LocationManager lm = 
+			final LocationManager lm =
 				(LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 
-			String provider = lm.getBestProvider(new Criteria(), true);
-			ret = (provider != null) && !provider.isEmpty() && !LocationManager.PASSIVE_PROVIDER.equals(provider);
+			ret = lm.isProviderEnabled(provider);
 		}
-		catch(Exception e) 
+		catch(Exception e)
 		{
 			Log.e(TAG, "LocationManager failed" + e.getMessage());
 			e.printStackTrace();
