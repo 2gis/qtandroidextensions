@@ -39,7 +39,7 @@
 
 #include <QObject>
 #include <QJniHelpers.h>
-
+#include <QtPositioning/QGeoPositionInfoSource>
 
 
 class QLocationManagerProvidersListener : public QObject
@@ -53,6 +53,7 @@ public:
 public:
 	static void preloadJavaClasses();
 	bool IsActiveProvidersEnabled();
+	QGeoPositionInfoSource::PositioningMethods getActiveMethods();
 
 signals:
 	void providersChange(bool);
