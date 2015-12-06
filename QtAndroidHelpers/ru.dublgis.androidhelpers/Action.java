@@ -71,7 +71,7 @@ public class Action
 		}
 		catch(Exception e)
 		{
-			Log.e(TAG, "startAction " + action + " failed:" + e);
+			Log.e(TAG, "startAction " + action + " failed: " + e);
 		}
 	}
 
