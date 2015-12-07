@@ -194,10 +194,13 @@ public class DesktopUtils
          final String subject,
          final String body,
          final String attach_file,
-         final boolean force_content_provider)
+         final boolean force_content_provider,
+         final String authorities)
     {
         //Log.d(tag, "Will send email with subject \"" +
-        //    subject + "\" to \"" + to + "\" with attach_file = \"" + attach_file + "\"");
+        //    subject + "\" to \"" + to + "\" with attach_file = \"" + attach_file + "\"" +
+        //    ", force_content_provider = " + force_content_provider +
+        //    ", authorities = \"" + authorities + "\"");
         try
         {
             // TODO: support multiple recipients
@@ -223,7 +226,7 @@ public class DesktopUtils
                     i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     i.putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(
                          ctx,
-                         "ru.dublgis.sharefileprovider",
+                         authorities,
                          new File(attach_file)));
                 }
             }

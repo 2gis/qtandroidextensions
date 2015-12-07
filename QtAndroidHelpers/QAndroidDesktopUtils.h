@@ -61,7 +61,8 @@ bool sendEmail(
     const QString & subject,
     const QString & body,
     const QString & attach_file = QString::null,
-    bool force_content_provider = false);
+    bool force_content_provider = false,
+    const QString & authorities = QLatin1String("ru.dublgis.sharefileprovider"));
 
 bool openURL(const QString & url);
 bool openFile(const QString & fileName, const QString & mimeType);
