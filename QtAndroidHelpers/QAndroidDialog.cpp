@@ -55,7 +55,7 @@ Q_DECL_EXPORT void JNICALL Java_DialogHelper_DialogHelper_showMessageCallback(JN
 	qWarning()<<__FUNCTION__<<"Zero param, button ="<<button;
 }
 
-QAndroidDialog::QAndroidDialog(QObject * parent)
+QAndroidDialog::QAndroidDialog(QObject * parent /*= 0*/)
 	: QObject(parent)
 	, delete_self_on_close_(false)
 	, result_button_(0)

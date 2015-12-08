@@ -46,7 +46,7 @@ class QAndroidAction : public QObject, public JniObjectLinker
 	Q_OBJECT
 
 public:
-	QAndroidAction(QObject * parent);
+	QAndroidAction(QObject * parent = 0);
 	virtual ~QAndroidAction() override;
 
 public slots:
