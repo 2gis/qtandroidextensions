@@ -63,7 +63,7 @@ QGeoPositionInfoSourceAndroidGPS::QGeoPositionInfoSourceAndroidGPS(QObject * par
 		QObject::connect(providersListener_, SIGNAL(providersChange(bool)),
 							this, SLOT(onProvidersChange(bool)));
 
-		onProvidersChange(providersListener_->IsActiveProvidersEnabled());
+		onProvidersChange(providersListener_->isActiveProvidersEnabled());
 	}
 
 	if (regularProvider_)
@@ -125,7 +125,7 @@ void QGeoPositionInfoSourceAndroidGPS::startUpdates()
 	regularProvider_->setUpdateInterval(updateInterval(), minimumUpdateInterval());
 	regularProvider_->startUpdates();
 
-	onProvidersChange(providersListener_->IsActiveProvidersEnabled());
+	onProvidersChange(providersListener_->isActiveProvidersEnabled());
 }
 
 

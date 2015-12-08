@@ -93,12 +93,12 @@ QGeoPositionInfoSource::PositioningMethods QLocationManagerProvidersListener::ge
 
 	if (handler_)
 	{
-		if (handler_->callBool("IsGpsProviderEnabled"))
+		if (handler_->callBool("isGpsProviderEnabled"))
 		{
 			res |= QGeoPositionInfoSource::SatellitePositioningMethods;
 		}
 
-		if (handler_->callBool("IsNetworkProviderEnabled"))
+		if (handler_->callBool("isNetworkProviderEnabled"))
 		{
 			res |= QGeoPositionInfoSource::NonSatellitePositioningMethods;
 		}
@@ -108,13 +108,13 @@ QGeoPositionInfoSource::PositioningMethods QLocationManagerProvidersListener::ge
 }
 
 
-bool QLocationManagerProvidersListener::IsActiveProvidersEnabled()
+bool QLocationManagerProvidersListener::isActiveProvidersEnabled()
 {
 	bool ret = false;
 
 	if (handler_)
 	{
-		ret = handler_->callBool("IsActiveProvidersEnabled");
+		ret = handler_->callBool("isActiveProvidersEnabled");
 	}
 
 	qDebug() << __FUNCTION__ << ": ret = " << ret;
@@ -125,7 +125,7 @@ bool QLocationManagerProvidersListener::IsActiveProvidersEnabled()
 void QLocationManagerProvidersListener::onProvidersChange()
 {
 	qDebug() << __FUNCTION__;
-	emit providersChange(IsActiveProvidersEnabled());
+	emit providersChange(isActiveProvidersEnabled());
 }
 
 

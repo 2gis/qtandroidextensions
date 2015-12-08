@@ -75,25 +75,25 @@ public class LocationManagerProvidersListener extends BroadcastReceiver
 	}
 
 
-	public boolean IsActiveProvidersEnabled()
+	public boolean isActiveProvidersEnabled()
 	{
-		return IsGpsProviderEnabled() || IsNetworkProviderEnabled();
+		return isGpsProviderEnabled() || isNetworkProviderEnabled();
 	}
 
 
-	public boolean IsGpsProviderEnabled()
+	public boolean isGpsProviderEnabled()
 	{
-		return IsProviderEnabled(LocationManager.GPS_PROVIDER);
+		return isProviderEnabled(LocationManager.GPS_PROVIDER);
 	}
 
 
-	public boolean IsNetworkProviderEnabled()
+	public boolean isNetworkProviderEnabled()
 	{
-		return IsProviderEnabled(LocationManager.NETWORK_PROVIDER);
+		return isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 	}
 
 
-	public boolean IsProviderEnabled(String provider)
+	public boolean isProviderEnabled(String provider)
 	{
 		boolean ret = false;
 

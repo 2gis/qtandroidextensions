@@ -52,7 +52,7 @@ public:
 
 public:
 	static void preloadJavaClasses();
-	bool IsActiveProvidersEnabled();
+	bool isActiveProvidersEnabled();
 	QGeoPositionInfoSource::PositioningMethods getActiveMethods();
 
 signals:
