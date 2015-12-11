@@ -199,7 +199,7 @@ class OffscreenEditText extends OffscreenView
                             // If the canvas is wider and taller than our EditText then it's probably not
                             // a zoom window (which is usually small) so it should be ignored.
                             // This is the worst part of the workaround :(
-                            (canvas.getWidth() > edittext.getWidth() && canvas.getHeight() > edittext.getHeight())
+                            (canvas.getWidth() >= edittext.getWidth() && canvas.getHeight() >= edittext.getHeight())
                             // If output canvas is wider than my outer layout it must be a full window
                             // paint. We should ignore it as the window painting is handled by Qt.
                             ||  (mainlayout == null || mainlayout.getWidth() <= canvas.getWidth());
