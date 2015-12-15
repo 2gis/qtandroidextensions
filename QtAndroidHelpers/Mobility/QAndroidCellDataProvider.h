@@ -66,7 +66,7 @@ public slots:
 	void stop();
 
 signals:
-	void update(const CellDataPtr & data);
+	void update();
 
 private:
 	CellDataPtr last_data_;

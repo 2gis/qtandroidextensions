@@ -112,7 +112,7 @@ void QAndroidCellDataProvider::cellUpdate(int cid, int lac, int mcc, int mnc, in
 	}
 	
 	last_data_ = new_data;
-	emit update(last_data_);
+	emit update();
 }
 
 
