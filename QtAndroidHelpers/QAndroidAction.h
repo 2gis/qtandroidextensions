@@ -47,7 +47,7 @@ class QAndroidAction : public QObject, public JniObjectLinker
 
 public:
 	QAndroidAction(QObject * parent = 0);
-	virtual ~QAndroidAction() override;
+	virtual ~QAndroidAction();
 
 public slots:
 	void openLocationSourceSettings();
