@@ -654,7 +654,7 @@ QString QJniClass::callStaticString(const char *method_name)
 	return ret;
 }
 
-QJniObject * QJniClass::getStaticObjectField(const char *field_name, const char * objname)
+QJniObject * QJniClass::getStaticObjectField(const char * field_name, const char * objname)
 {
 	VERBOSE(qDebug("int QJniObject::getStaticObjectField(const char * field_name, const char * objname) %p \"%s\"", this, field_name, objname));
 	QByteArray obj;
@@ -681,11 +681,11 @@ QJniObject * QJniClass::getStaticObjectField(const char *field_name, const char 
 	return new QJniObject(jo, true);
 }
 
-QString QJniClass::getStaticStringField(const char *field_name)
+QString QJniClass::getStaticStringField(const char * field_name)
 {
 	VERBOSE(qDebug("int QJniObject::getStaticStringField(const char * field_name) %p \"%s\"", this, field_name));
 	QJniEnvPtr jep;
-	JNIEnv* env = jep.env();
+	JNIEnv * env = jep.env();
 	jfieldID fid = env->GetStaticFieldID(checkedClass(), field_name, "Ljava/lang/String;");
 	if (!fid)
 	{
@@ -700,11 +700,11 @@ QString QJniClass::getStaticStringField(const char *field_name)
 	return ret;
 }
 
-jint QJniClass::getStaticIntField(const char *field_name)
+jint QJniClass::getStaticIntField(const char * field_name)
 {
 	VERBOSE(qDebug("int QJniObject::getStaticIntField(const char * field_name) %p \"%s\"", this, field_name));
 	QJniEnvPtr jep;
-	JNIEnv* env = jep.env();
+	JNIEnv * env = jep.env();
 	jfieldID fid = env->GetStaticFieldID(checkedClass(), field_name, "I");
 	if (!fid)
 	{
@@ -717,6 +717,25 @@ jint QJniClass::getStaticIntField(const char *field_name)
 		throw QJniJavaCallException();
 	}
 	return result;
+}
+
+bool QJniClass::getStaticBooleanField(const char * field_name)
+{
+	VERBOSE(qDebug("int QJniObject::getStaticBooleanField(const char * field_name) %p \"%s\"", this, field_name));
+	QJniEnvPtr jep;
+	JNIEnv * env = jep.env();
+	jfieldID fid = env->GetStaticFieldID(checkedClass(), field_name, "Z");
+	if (!fid)
+	{
+		qWarning("%s: field not found.", field_name);
+		throw QJniFieldNotFoundException();
+	}
+	jint result = env->GetStaticBooleanField(jClass(), fid);
+	if (jep.clearException())
+	{
+		throw QJniJavaCallException();
+	}
+	return (result)? true: false;
 }
 
 QJniObject* QJniClass::callStaticObject(const char * method_name, const char * objname)
