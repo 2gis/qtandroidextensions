@@ -110,7 +110,10 @@ public:
 	JNIEnv * env() const;
 
 	//! \brief Get current JavaVM. Note: QJniHelpers supports only one JVM per process.
-	JavaVM * getJavaVM() const;
+	static JavaVM * getJavaVM();
+
+	//! \brief Check if current thread looks properly attached to JNI.
+	static bool isCurrentThreadAttached();
 
 	/*!
 	 * \brief Preload class by name, e.g.: "ru/dublgis/offscreenview/OffscreenWebView".

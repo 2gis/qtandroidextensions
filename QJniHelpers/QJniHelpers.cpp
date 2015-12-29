@@ -284,9 +284,23 @@ jclass QJniEnvPtr::findClass(const char * name)
 	return ret;
 }
 
-JavaVM * QJniEnvPtr::getJavaVM() const
+JavaVM * QJniEnvPtr::getJavaVM()
 {
 	return g_JavaVm;
+}
+
+bool QJniEnvPtr::isCurrentThreadAttached()
+{
+	if (g_JavaVm)
+	{
+		JNIEnv * env = 0;
+		int errsv = g_JavaVm->GetEnv((void**)(&env), JNI_VERSION_1_6);
+		if (errsv == JNI_OK && env)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 void QJniEnvPtr::setJavaVM(JavaVM* vm)
