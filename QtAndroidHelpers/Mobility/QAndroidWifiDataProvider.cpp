@@ -133,15 +133,18 @@ bool QAndroidWifiDataProvider::RetrieveData(WifiDataList & data)
 	for(int i=0; i<tablelist.size(); i++)
 	{
 		QStringList entry = tablelist.at(i).split(QChar('\t'), QString::KeepEmptyParts);
-	
-		if( entry.size()<2 )
+
+		if (entry.size() < 4)
 		{
 			qWarning() << "WiFi table entry is too short!";
 			return false;
-		}		
-	
+		}
+
 		wd.StringAsMac(entry[0]);
 		wd.signalStrength = entry.at(1).toInt();
+		wd.name = entry[2];
+		wd.timestamp_mks = entry.at(3).toInt();
+
 		data.push_back(wd);
 	}
 	
