@@ -180,7 +180,14 @@ public class WifiListener extends BroadcastReceiver
 			for( Iterator<ScanResult> it = srlist.iterator(); it.hasNext(); )
 			{
 				ScanResult sr = it.next();
-				result += sr.BSSID + "\t" + sr.level + "\t" + sr.SSID + "\t" + sr.timestamp + "\n";
+				long timestamp = 0;
+
+				if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1)
+				{
+					timestamp = sr.timestamp;
+				}
+
+				result += sr.BSSID + "\t" + sr.level + "\t" + sr.SSID + "\t" + timestamp + "\n";
 			}
 
 			return result;
