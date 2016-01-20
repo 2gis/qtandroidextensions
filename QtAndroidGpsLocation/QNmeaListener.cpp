@@ -34,6 +34,7 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 #include <QAndroidQPAPluginGap.h>
+#include <QJniHelpers.h>
 
 #include "QNmeaListener.h"
 
@@ -47,16 +48,15 @@ Q_DECL_EXPORT void JNICALL Java_NmeaListener_OnNmeaReceivedNative(JNIEnv * env, 
 		{
 			QNmeaListener * proxy = reinterpret_cast<QNmeaListener*>(reinterpret_cast<void*>(param));
 
-			const char* chars = env->GetStringUTFChars(str, nullptr);
 			try
 			{
-				emit proxy->nmeaMessage(static_cast<qint64>(timestamp), QString(chars));
+				QJniEnvPtr env_ptr(env);
+				emit proxy->nmeaMessage(static_cast<qint64>(timestamp), env_ptr.QStringFromJString(str));
 			}
 			catch (std::exception & e)
 			{
 				qWarning() << __FUNCTION__ << " exception: " << e.what();
 			}
-			env->ReleaseStringUTFChars(str, chars);
 		}
 		else
 		{
@@ -72,17 +72,17 @@ Q_DECL_EXPORT void JNICALL Java_NmeaListener_OnNmeaReceivedNative(JNIEnv * env, 
 static const JNINativeMethod methods[] = {
 	{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity},
 	{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContext},
-	{"OnNmeaReceived", "(JJLjava/lang/String;)V", (void*)Java_NmeaListener_OnNmeaReceivedNative},
+	{"OnNmeaReceivedNative", "(JJLjava/lang/String;)V", (void*)Java_NmeaListener_OnNmeaReceivedNative},
 };
 
 QNmeaListener::QNmeaListener(QObject * parent)
 	: QObject(parent)
 	, JniObjectLinker(reinterpret_cast<void*>(this), c_full_class_name, methods, sizeof(methods))
 {
-	handler()->callParamVoid("StartListening", "");
+	handler()->callVoid("StartListening");
 }
 
 QNmeaListener::~QNmeaListener()
 {
-	handler()->callParamVoid("StopListening", "");
+	handler()->callVoid("StopListening");
 }

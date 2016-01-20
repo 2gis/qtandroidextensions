@@ -154,7 +154,7 @@ public class NmeaListener implements GpsStatus.NmeaListener
 	{
 		try
 		{
-			OnNmeaReceived(native_ptr_, timestamp, nmea);
+			OnNmeaReceivedNative(native_ptr_, timestamp, nmea);
 		}
 		catch (Exception e)
 		{
