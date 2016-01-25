@@ -38,7 +38,79 @@
 #include <QAndroidQPAPluginGap.h>
 #include "QAndroidDisplayMetrics.h"
 
-QAndroidDisplayMetrics::QAndroidDisplayMetrics(QObject * parent)
+
+namespace {
+
+struct ThemeListEntry
+{
+	QAndroidDisplayMetrics::Theme theme;
+	float density;
+	QAndroidDisplayMetrics::IntermediateDensities availability;
+	int starting_ppi;
+};
+
+} // anonymous namespace
+
+static const ThemeListEntry all_themes[] =
+{
+	{ QAndroidDisplayMetrics::ThemeLDPI,	0.75f,	QAndroidDisplayMetrics::IntermediateNone,			QAndroidDisplayMetrics::ANDROID_DENSITY_LOW },
+	{ QAndroidDisplayMetrics::ThemeMDPI,	1.00f,	QAndroidDisplayMetrics::IntermediateNone,			QAndroidDisplayMetrics::ANDROID_DENSITY_MEDIUM },
+	{ QAndroidDisplayMetrics::ThemeTVDPI,	1.33f,	QAndroidDisplayMetrics::IntermediateAll,			QAndroidDisplayMetrics::ANDROID_DENSITY_TV },
+	{ QAndroidDisplayMetrics::ThemeHDPI,	1.50f,	QAndroidDisplayMetrics::IntermediateNone,			QAndroidDisplayMetrics::ANDROID_DENSITY_HIGH },
+	{ QAndroidDisplayMetrics::Theme280DPI,	1.67f,	QAndroidDisplayMetrics::IntermediateAll,			QAndroidDisplayMetrics::ANDROID_DENSITY_280 },
+	{ QAndroidDisplayMetrics::ThemeXHDPI,	2.00f,	QAndroidDisplayMetrics::IntermediateNone,			QAndroidDisplayMetrics::ANDROID_DENSITY_XHIGH },
+	{ QAndroidDisplayMetrics::Theme360DPI,	2.33f,	QAndroidDisplayMetrics::IntermediateAll,			QAndroidDisplayMetrics::ANDROID_DENSITY_360 },
+	{ QAndroidDisplayMetrics::Theme400DPI,	2.50f,	QAndroidDisplayMetrics::IntermediateWithStep0_5,	QAndroidDisplayMetrics::ANDROID_DENSITY_400 },
+	{ QAndroidDisplayMetrics::Theme420DPI,	2.67f,	QAndroidDisplayMetrics::IntermediateAll,			QAndroidDisplayMetrics::ANDROID_DENSITY_420 },
+	{ QAndroidDisplayMetrics::ThemeXXDPI,	3.00f,	QAndroidDisplayMetrics::IntermediateNone,			QAndroidDisplayMetrics::ANDROID_DENSITY_XXHIGH },
+	{ QAndroidDisplayMetrics::Theme560DPI,	3.50f,	QAndroidDisplayMetrics::IntermediateWithStep0_5,	QAndroidDisplayMetrics::ANDROID_DENSITY_560 },
+	{ QAndroidDisplayMetrics::ThemeXXXDPI,	4.00f,	QAndroidDisplayMetrics::IntermediateNone,			QAndroidDisplayMetrics::ANDROID_DENSITY_XXXHIGH },
+	{ QAndroidDisplayMetrics::ThemeNone,	1.00f,	QAndroidDisplayMetrics::IntermediateAll,			1000000 } // Terminator
+};
+
+
+static float densityFromTheme(QAndroidDisplayMetrics::Theme theme)
+{
+	for (const ThemeListEntry * entry = all_themes; entry->theme != QAndroidDisplayMetrics::ThemeNone; ++entry)
+	{
+		if (entry->theme == theme)
+		{
+			return entry->density;
+		}
+	}
+	qWarning() << "Theme code is not listed in the table:" << static_cast<int>(theme);
+	Q_ASSERT(!"Theme code is not listed in the table!");
+	return 1.0f;
+}
+
+
+static QAndroidDisplayMetrics::Theme themeFromDensity(int density_dpi, QAndroidDisplayMetrics::IntermediateDensities intermediate_densities)
+{
+	QAndroidDisplayMetrics::Theme resulting_theme = all_themes[0].theme;
+	for (const ThemeListEntry * entry = all_themes; entry->theme != QAndroidDisplayMetrics::ThemeNone; ++entry)
+	{
+		// Don't see unallowed themes
+		if (entry->availability > intermediate_densities)
+		{
+			continue;
+		}
+		if (density_dpi >= entry->starting_ppi)
+		{
+			resulting_theme = entry->theme;
+		}
+		else // density_dpi < entry->starting_ppi
+		{
+			// Since all the next entries have bigger starting_ppi, we don't have to look further.
+			break;
+		}
+	}
+	return resulting_theme;
+}
+
+
+QAndroidDisplayMetrics::QAndroidDisplayMetrics(
+		QObject * parent
+		, QAndroidDisplayMetrics::IntermediateDensities intermediate_densities)
 	: QObject(parent)
 	, density_(1.0f)
 	, densityDpi_(160)
@@ -69,47 +141,11 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(QObject * parent)
 	widthPixels_ = metrics.getIntField("widthPixels");
 	heightPixels_ = metrics.getIntField("heightPixels");
 
-	//
 	// Calculating theme
-	//
-	if (densityDpi_ < (ANDROID_DENSITY_LOW+ANDROID_DENSITY_MEDIUM)/2)
-		theme_ = ThemeLDPI;
-	else if(densityDpi_ < (ANDROID_DENSITY_MEDIUM+ANDROID_DENSITY_TV)/2)
-		theme_ = ThemeMDPI;
-	else if(densityDpi_ < (ANDROID_DENSITY_TV+ANDROID_DENSITY_HIGH)/2)
-		theme_ = ThemeTVDPI;
-	else if(densityDpi_ < (ANDROID_DENSITY_HIGH+ANDROID_DENSITY_XHIGH)/2)
-		theme_ = ThemeHDPI;
-	else if(densityDpi_ < (ANDROID_DENSITY_XHIGH+ANDROID_DENSITY_400)/2)
-		theme_ = ThemeXHDPI;
-	else if(densityDpi_ < (ANDROID_DENSITY_400+ANDROID_DENSITY_XXHIGH)/2)
-		theme_ = Theme400DPI;
-	else if(densityDpi_ < (ANDROID_DENSITY_XXHIGH+ANDROID_DENSITY_560)/2)
-		theme_ = ThemeXXDPI;
-	else if(densityDpi_ < (ANDROID_DENSITY_560+ANDROID_DENSITY_XXXHIGH)/2)
-		theme_ = Theme560DPI;
-	else
-		theme_ = ThemeXXXDPI;
+	theme_ = themeFromDensity(densityDpi_, intermediate_densities);
 
-	//
 	// Calculating scaler from the theme
-	//
-	switch(theme_)
-	{
-	case ThemeLDPI:		densityFromDpi_ = 0.75f;	break;
-	case ThemeMDPI:		densityFromDpi_ = 1.00f;	break;
-	case ThemeTVDPI:	densityFromDpi_ = 1.33f;	break;
-	case ThemeHDPI:		densityFromDpi_ = 1.50f;	break;
-	case ThemeXHDPI:	densityFromDpi_ = 2.00f;	break;
-	case Theme400DPI:	densityFromDpi_ = 2.50f;	break; //! \fixme Unverified value!
-	case ThemeXXDPI:	densityFromDpi_ = 3.00f;	break;
-	case Theme560DPI:	densityFromDpi_ = 3.50f;	break;
-	case ThemeXXXDPI:	densityFromDpi_ = 4.00f;	break;
-	default:
-		Q_ASSERT(!"Theme value not listed!");
-		densityFromDpi_ = 1.0f;
-		break;
-	}
+	densityFromDpi_ = densityFromTheme(theme_);
 
 	if (density_ > 0.0f)
 	{
@@ -125,7 +161,9 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(QObject * parent)
 	{
 		float difference = realisticDpi_ / float(densityDpi_);
 		if (difference > 1.0f)
+		{
 			difference = 1.0f / difference;
+		}
 		if (difference < 0.75f)
 		{
 			qWarning()<<"Average hardware DPI is reported as"<<realisticDpi_<<"but physical DPI is"
@@ -158,9 +196,13 @@ QString QAndroidDisplayMetrics::themeDirectoryName(Theme theme)
 	case ThemeMDPI:		return QLatin1String("mdpi");
 	case ThemeTVDPI:	return QLatin1String("tvdpi");
 	case ThemeHDPI:		return QLatin1String("hdpi");
+	case Theme280DPI:	return QLatin1String("280dpi");
 	case ThemeXHDPI:	return QLatin1String("xhdpi");
+	case Theme360DPI:	return QLatin1String("360dpi");
 	case Theme400DPI:	return QLatin1String("400dpi");
+	case Theme420DPI:	return QLatin1String("420dpi");
 	case ThemeXXDPI:	return QLatin1String("xxdpi");
+	case Theme560DPI:	return QLatin1String("560dpi");
 	case ThemeXXXDPI:	return QLatin1String("xxxdpi");
 	default:
 		qWarning()<<"Unknown theme value:"<<theme;
