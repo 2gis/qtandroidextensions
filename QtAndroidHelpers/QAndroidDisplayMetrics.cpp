@@ -84,8 +84,10 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(QObject * parent)
 		theme_ = ThemeXHDPI;
 	else if(densityDpi_ < (ANDROID_DENSITY_400+ANDROID_DENSITY_XXHIGH)/2)
 		theme_ = Theme400DPI;
-	else if(densityDpi_ < (ANDROID_DENSITY_XXHIGH+ANDROID_DENSITY_XXXHIGH)/2)
+	else if(densityDpi_ < (ANDROID_DENSITY_XXHIGH+ANDROID_DENSITY_560)/2)
 		theme_ = ThemeXXDPI;
+	else if(densityDpi_ < (ANDROID_DENSITY_560+ANDROID_DENSITY_XXXHIGH)/2)
+		theme_ = Theme560DPI;
 	else
 		theme_ = ThemeXXXDPI;
 
@@ -101,6 +103,7 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(QObject * parent)
 	case ThemeXHDPI:	densityFromDpi_ = 2.00f;	break;
 	case Theme400DPI:	densityFromDpi_ = 2.50f;	break; //! \fixme Unverified value!
 	case ThemeXXDPI:	densityFromDpi_ = 3.00f;	break;
+	case Theme560DPI:	densityFromDpi_ = 3.50f;	break;
 	case ThemeXXXDPI:	densityFromDpi_ = 4.00f;	break;
 	default:
 		Q_ASSERT(!"Theme value not listed!");

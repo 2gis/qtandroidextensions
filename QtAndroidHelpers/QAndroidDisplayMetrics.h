@@ -52,14 +52,15 @@ class QAndroidDisplayMetrics: public QObject
 	Q_OBJECT
 public:
 	enum Theme {
-		ThemeLDPI	= 0,
-		ThemeMDPI	= 1,
-		ThemeTVDPI	= 2,
-		ThemeHDPI	= 3,
-		ThemeXHDPI	= 4,
-		Theme400DPI	= 5,
-		ThemeXXDPI	= 6,
-		ThemeXXXDPI	= 7
+		ThemeLDPI		= 0,
+		ThemeMDPI		= 1,
+		ThemeTVDPI		= 2,
+		ThemeHDPI		= 3,
+		ThemeXHDPI		= 4,
+		Theme400DPI		= 5,
+		ThemeXXDPI		= 6,
+		Theme560DPI		= 7,
+		ThemeXXXDPI		= 8
 	};
 	Q_ENUMS(Theme)
 
@@ -78,16 +79,20 @@ private:
 	Q_PROPERTY(QString themeDirectoryName READ themeDirectoryName)
 
 public:
+	// Correctness of the names and constants can be verified here:
+	// http://developer.android.com/intl/ru/guide/practices/screens_support.html
+	// http://developer.android.com/intl/ru/reference/android/util/DisplayMetrics.html
 	static const int
-		ANDROID_DENSITY_LOW		= 120,
-		ANDROID_DENSITY_DEFAULT = 160,
-		ANDROID_DENSITY_MEDIUM  = 160,
-		ANDROID_DENSITY_TV		= 213,
-		ANDROID_DENSITY_HIGH	= 240,
-		ANDROID_DENSITY_XHIGH	= 320,
-		ANDROID_DENSITY_400		= 400,
-		ANDROID_DENSITY_XXHIGH	= 480,
-		ANDROID_DENSITY_XXXHIGH	= 640;
+		ANDROID_DENSITY_LOW			= 120,
+		ANDROID_DENSITY_DEFAULT		= 160,
+		ANDROID_DENSITY_MEDIUM		= 160,
+		ANDROID_DENSITY_TV			= 213,
+		ANDROID_DENSITY_HIGH		= 240,
+		ANDROID_DENSITY_XHIGH		= 320,
+		ANDROID_DENSITY_400			= 400,
+		ANDROID_DENSITY_XXHIGH		= 480,
+		ANDROID_DENSITY_560			= 560,
+		ANDROID_DENSITY_XXXHIGH		= 640;
 
 	QAndroidDisplayMetrics(QObject * parent = 0);
 	static void preloadJavaClasses();
