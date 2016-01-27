@@ -6,7 +6,7 @@
 
   Distrbuted under The BSD License
 
-  Copyright (c) 2014, DoubleGIS, LLC.
+  Copyright (c) 2014-2016, DoubleGIS, LLC.
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -54,19 +54,19 @@ public:
 	enum Theme {
 		// Themes in order of their density.
 		// The integer values are just hints for readability.
-		ThemeNone		= 0,
-		ThemeLDPI		= 1,
-		ThemeMDPI		= 2,
-		ThemeTVDPI		= 3,
-		ThemeHDPI		= 4,
-		Theme280DPI		= 5,
-		ThemeXHDPI		= 6,
-		Theme360DPI		= 7,
-		Theme400DPI		= 8,
-		Theme420DPI		= 9,
-		ThemeXXDPI		= 10,
-		Theme560DPI		= 11,
-		ThemeXXXDPI		= 12
+		ThemeNone   = 0,
+		ThemeLDPI   = 1,
+		ThemeMDPI   = 2,
+		ThemeTVDPI  = 3,
+		ThemeHDPI   = 4,
+		Theme280DPI = 5,
+		ThemeXHDPI  = 6,
+		Theme360DPI = 7,
+		Theme400DPI = 8,
+		Theme420DPI = 9,
+		ThemeXXDPI  = 10,
+		Theme560DPI = 11,
+		ThemeXXXDPI = 12
 	};
 	Q_ENUMS(Theme)
 
@@ -89,27 +89,27 @@ public:
 	// http://developer.android.com/intl/ru/guide/practices/screens_support.html
 	// http://developer.android.com/intl/ru/reference/android/util/DisplayMetrics.html
 	static const int
-		ANDROID_DENSITY_LOW			= 120,
-		ANDROID_DENSITY_DEFAULT		= 160,
-		ANDROID_DENSITY_MEDIUM		= 160,
-		ANDROID_DENSITY_TV			= 213,
-		ANDROID_DENSITY_HIGH		= 240,
-		ANDROID_DENSITY_280			= 280,
-		ANDROID_DENSITY_XHIGH		= 320,
-		ANDROID_DENSITY_360			= 360,
-		ANDROID_DENSITY_400			= 400,
-		ANDROID_DENSITY_420			= 420,
-		ANDROID_DENSITY_XXHIGH		= 480,
-		ANDROID_DENSITY_560			= 560,
-		ANDROID_DENSITY_XXXHIGH		= 640;
+		ANDROID_DENSITY_LOW      = 120,
+		ANDROID_DENSITY_DEFAULT  = 160,
+		ANDROID_DENSITY_MEDIUM   = 160,
+		ANDROID_DENSITY_TV       = 213,
+		ANDROID_DENSITY_HIGH     = 240,
+		ANDROID_DENSITY_280      = 280,
+		ANDROID_DENSITY_XHIGH    = 320,
+		ANDROID_DENSITY_360      = 360,
+		ANDROID_DENSITY_400      = 400,
+		ANDROID_DENSITY_420      = 420,
+		ANDROID_DENSITY_XXHIGH   = 480,
+		ANDROID_DENSITY_560      = 560,
+		ANDROID_DENSITY_XXXHIGH  = 640;
 
 	enum IntermediateDensities
 	{
 		// Themes availablity.
 		// The integer values are just hints for readability.
-		IntermediateNone			= 0, // Use only major themes (integer and below 1.0 densities).
-		IntermediateWithStep0_5		= 1, // Use major themes and X.5 themes.
-		IntermediateAll				= 2  // Use all possible themes, including X.33 and X.67 themes.
+		IntermediateNone        = 0, // Use only major themes (integer and below 1.0 densities).
+		IntermediateWithStep0_5 = 1, // Use major themes and X.5 themes.
+		IntermediateAll         = 2  // Use all possible themes, including X.33 and X.67 themes.
 	};
 
 	QAndroidDisplayMetrics(QObject * parent = 0, IntermediateDensities intermediate_densities = IntermediateAll);
@@ -204,5 +204,6 @@ private:
 };
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-Q_DECLARE_METATYPE(QAndroidDisplayMetrics::Theme)
+	Q_DECLARE_METATYPE(QAndroidDisplayMetrics::Theme)
 #endif
+

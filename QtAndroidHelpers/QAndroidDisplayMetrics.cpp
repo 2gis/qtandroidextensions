@@ -6,7 +6,7 @@
 
   Distrbuted under The BSD License
 
-  Copyright (c) 2014, DoubleGIS, LLC.
+  Copyright (c) 2014-2016, DoubleGIS, LLC.
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -53,21 +53,21 @@ struct ThemeListEntry
 
 static const ThemeListEntry all_themes[] =
 {
-	{ QAndroidDisplayMetrics::ThemeLDPI,	0.75f,	QAndroidDisplayMetrics::IntermediateNone,			QAndroidDisplayMetrics::ANDROID_DENSITY_LOW },
-	{ QAndroidDisplayMetrics::ThemeMDPI,	1.00f,	QAndroidDisplayMetrics::IntermediateNone,			QAndroidDisplayMetrics::ANDROID_DENSITY_MEDIUM },
-	{ QAndroidDisplayMetrics::ThemeTVDPI,	1.33f,	QAndroidDisplayMetrics::IntermediateAll,			QAndroidDisplayMetrics::ANDROID_DENSITY_TV },
-	{ QAndroidDisplayMetrics::ThemeHDPI,	1.50f,	QAndroidDisplayMetrics::IntermediateNone,			QAndroidDisplayMetrics::ANDROID_DENSITY_HIGH },
-	{ QAndroidDisplayMetrics::Theme280DPI,	1.67f,	QAndroidDisplayMetrics::IntermediateAll,			QAndroidDisplayMetrics::ANDROID_DENSITY_280 },
-	{ QAndroidDisplayMetrics::ThemeXHDPI,	2.00f,	QAndroidDisplayMetrics::IntermediateNone,			QAndroidDisplayMetrics::ANDROID_DENSITY_XHIGH },
-	{ QAndroidDisplayMetrics::Theme360DPI,	2.33f,	QAndroidDisplayMetrics::IntermediateAll,			QAndroidDisplayMetrics::ANDROID_DENSITY_360 },
-	{ QAndroidDisplayMetrics::Theme400DPI,	2.50f,	QAndroidDisplayMetrics::IntermediateWithStep0_5,	QAndroidDisplayMetrics::ANDROID_DENSITY_400 },
-	{ QAndroidDisplayMetrics::Theme420DPI,	2.67f,	QAndroidDisplayMetrics::IntermediateAll,			QAndroidDisplayMetrics::ANDROID_DENSITY_420 },
-	{ QAndroidDisplayMetrics::ThemeXXDPI,	3.00f,	QAndroidDisplayMetrics::IntermediateNone,			QAndroidDisplayMetrics::ANDROID_DENSITY_XXHIGH },
-	{ QAndroidDisplayMetrics::Theme560DPI,	3.50f,	QAndroidDisplayMetrics::IntermediateWithStep0_5,	QAndroidDisplayMetrics::ANDROID_DENSITY_560 },
-	{ QAndroidDisplayMetrics::ThemeXXXDPI,	4.00f,	QAndroidDisplayMetrics::IntermediateNone,			QAndroidDisplayMetrics::ANDROID_DENSITY_XXXHIGH }
+	{ QAndroidDisplayMetrics::ThemeLDPI,   0.75f, QAndroidDisplayMetrics::IntermediateNone,        QAndroidDisplayMetrics::ANDROID_DENSITY_LOW },
+	{ QAndroidDisplayMetrics::ThemeMDPI,   1.00f, QAndroidDisplayMetrics::IntermediateNone,        QAndroidDisplayMetrics::ANDROID_DENSITY_MEDIUM },
+	{ QAndroidDisplayMetrics::ThemeTVDPI,  1.33f, QAndroidDisplayMetrics::IntermediateAll,         QAndroidDisplayMetrics::ANDROID_DENSITY_TV },
+	{ QAndroidDisplayMetrics::ThemeHDPI,   1.50f, QAndroidDisplayMetrics::IntermediateNone,        QAndroidDisplayMetrics::ANDROID_DENSITY_HIGH },
+	{ QAndroidDisplayMetrics::Theme280DPI, 1.67f, QAndroidDisplayMetrics::IntermediateAll,         QAndroidDisplayMetrics::ANDROID_DENSITY_280 },
+	{ QAndroidDisplayMetrics::ThemeXHDPI,  2.00f, QAndroidDisplayMetrics::IntermediateNone,        QAndroidDisplayMetrics::ANDROID_DENSITY_XHIGH },
+	{ QAndroidDisplayMetrics::Theme360DPI, 2.33f, QAndroidDisplayMetrics::IntermediateAll,         QAndroidDisplayMetrics::ANDROID_DENSITY_360 },
+	{ QAndroidDisplayMetrics::Theme400DPI, 2.50f, QAndroidDisplayMetrics::IntermediateWithStep0_5, QAndroidDisplayMetrics::ANDROID_DENSITY_400 },
+	{ QAndroidDisplayMetrics::Theme420DPI, 2.67f, QAndroidDisplayMetrics::IntermediateAll,         QAndroidDisplayMetrics::ANDROID_DENSITY_420 },
+	{ QAndroidDisplayMetrics::ThemeXXDPI,  3.00f, QAndroidDisplayMetrics::IntermediateNone,        QAndroidDisplayMetrics::ANDROID_DENSITY_XXHIGH },
+	{ QAndroidDisplayMetrics::Theme560DPI, 3.50f, QAndroidDisplayMetrics::IntermediateWithStep0_5, QAndroidDisplayMetrics::ANDROID_DENSITY_560 },
+	{ QAndroidDisplayMetrics::ThemeXXXDPI, 4.00f, QAndroidDisplayMetrics::IntermediateNone,        QAndroidDisplayMetrics::ANDROID_DENSITY_XXXHIGH }
 };
 
-static const size_t all_themes_count = sizeof(all_themes) / sizeof(ThemeListEntry);
+static const size_t all_themes_count = sizeof(all_themes) / sizeof(all_themes[0]);
 
 
 static float densityFromTheme(QAndroidDisplayMetrics::Theme theme)
@@ -167,20 +167,20 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(
 		}
 		if (difference < 0.75f)
 		{
-			qWarning()<<"Average hardware DPI is reported as"<<realisticDpi_<<"but physical DPI is"
-					  <<densityDpi_<<"(too different).";
+			qWarning() << "Average hardware DPI is reported as" << realisticDpi_ << "but physical DPI is"
+				<< densityDpi_ << "(too different).";
 			realisticDpi_ = float(densityDpi_);
 		}
 	}
 
-	qDebug()<<"QAndroidDisplayMetrics: density ="<<density()<<"/ densityDpi ="<<densityDpi()
-			<<"/ scaledDensity ="<<scaledDensity()
-			<<"/ xdpi ="<<xdpi()<<"/ ydpi ="<<ydpi()
-			<<"/ realisticDpi ="<<realisticDpi_
-			<<"/ widthPixels ="<<widthPixels()<<"/ heightPixels ="<<heightPixels()
-			<<"/ Theme ="<<int(theme_)<<themeDirectoryName()
-			<<"/ densityFromDpi ="<<densityFromDpi_
-			<<"/ scaledDensityFromDpi ="<<scaledDensityFromDpi_;
+	qDebug() << "QAndroidDisplayMetrics: density =" << density() << "/ densityDpi =" << densityDpi()
+		<< "/ scaledDensity =" << scaledDensity()
+		<< "/ xdpi =" << xdpi() << "/ ydpi =" << ydpi()
+		<< "/ realisticDpi =" << realisticDpi_
+		<< "/ widthPixels =" << widthPixels() << "/ heightPixels =" << heightPixels()
+		<< "/ Theme =" << int(theme_) << themeDirectoryName()
+		<< "/ densityFromDpi =" << densityFromDpi_
+		<< "/ scaledDensityFromDpi =" << scaledDensityFromDpi_;
 }
 
 void QAndroidDisplayMetrics::preloadJavaClasses()
@@ -195,20 +195,20 @@ QString QAndroidDisplayMetrics::themeDirectoryName(Theme theme)
 {
 	switch(theme)
 	{
-	case ThemeLDPI:		return QLatin1String("ldpi");
-	case ThemeMDPI:		return QLatin1String("mdpi");
-	case ThemeTVDPI:	return QLatin1String("tvdpi");
-	case ThemeHDPI:		return QLatin1String("hdpi");
-	case Theme280DPI:	return QLatin1String("280dpi");
-	case ThemeXHDPI:	return QLatin1String("xhdpi");
-	case Theme360DPI:	return QLatin1String("360dpi");
-	case Theme400DPI:	return QLatin1String("400dpi");
-	case Theme420DPI:	return QLatin1String("420dpi");
-	case ThemeXXDPI:	return QLatin1String("xxdpi");
-	case Theme560DPI:	return QLatin1String("560dpi");
-	case ThemeXXXDPI:	return QLatin1String("xxxdpi");
+	case ThemeLDPI:   return QLatin1String("ldpi");
+	case ThemeMDPI:   return QLatin1String("mdpi");
+	case ThemeTVDPI:  return QLatin1String("tvdpi");
+	case ThemeHDPI:   return QLatin1String("hdpi");
+	case Theme280DPI: return QLatin1String("280dpi");
+	case ThemeXHDPI:  return QLatin1String("xhdpi");
+	case Theme360DPI: return QLatin1String("360dpi");
+	case Theme400DPI: return QLatin1String("400dpi");
+	case Theme420DPI: return QLatin1String("420dpi");
+	case ThemeXXDPI:  return QLatin1String("xxdpi");
+	case Theme560DPI: return QLatin1String("560dpi");
+	case ThemeXXXDPI: return QLatin1String("xxxdpi");
 	default:
-		qWarning()<<"Unknown theme value:"<<theme;
+		qWarning() << "Unknown theme value:" << theme;
 		return QString::null;
 	};
 }
