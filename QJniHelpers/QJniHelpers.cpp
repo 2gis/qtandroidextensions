@@ -602,6 +602,35 @@ jint QJniClass::callStaticParamInt(const char * method_name, const char * param_
 	return result;
 }
 
+jfloat QJniClass::callStaticParamFloat(const char * method_name, const char * param_signature, ...)
+{
+	VERBOSE(qDebug("void QJniClass(%p)::CallStaticParamFloat(\"%s\", \"%s\", ...)", this, method_name, param_signature));
+	va_list args;
+	QJniEnvPtr jep;
+	JNIEnv* env = jep.env();
+
+	QByteArray signature("(");
+	signature += param_signature;
+	signature += ")F";
+	jmethodID mid = env->GetStaticMethodID(checkedClass(), method_name, signature.data());
+	if (!mid)
+	{
+		qWarning("%s: method not found.", __FUNCTION__);
+		throw QJniMethodNotFoundException();
+	}
+
+	va_start(args, param_signature);
+	jfloat result = env->CallStaticFloatMethodV(jClass(), mid, args);
+	va_end(args);
+	if (jep.clearException())
+	{
+		qWarning("void QJniClass(%p)::CallStatucParamFloat(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
+		throw QJniJavaCallException();
+	}
+	return result;
+}
+
+
 QString QJniClass::callStaticParamString(const char * method_name, const char * param_signature, ...)
 {
 	VERBOSE(qDebug("void QJniClass(%p)::CallStaticParamString(\"%s\", \"%s\", ...)", this, method_name, param_signature));
