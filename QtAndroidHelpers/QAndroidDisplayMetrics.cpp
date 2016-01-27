@@ -64,18 +64,19 @@ static const ThemeListEntry all_themes[] =
 	{ QAndroidDisplayMetrics::Theme420DPI,	2.67f,	QAndroidDisplayMetrics::IntermediateAll,			QAndroidDisplayMetrics::ANDROID_DENSITY_420 },
 	{ QAndroidDisplayMetrics::ThemeXXDPI,	3.00f,	QAndroidDisplayMetrics::IntermediateNone,			QAndroidDisplayMetrics::ANDROID_DENSITY_XXHIGH },
 	{ QAndroidDisplayMetrics::Theme560DPI,	3.50f,	QAndroidDisplayMetrics::IntermediateWithStep0_5,	QAndroidDisplayMetrics::ANDROID_DENSITY_560 },
-	{ QAndroidDisplayMetrics::ThemeXXXDPI,	4.00f,	QAndroidDisplayMetrics::IntermediateNone,			QAndroidDisplayMetrics::ANDROID_DENSITY_XXXHIGH },
-	{ QAndroidDisplayMetrics::ThemeNone,	1.00f,	QAndroidDisplayMetrics::IntermediateAll,			1000000 } // Terminator
+	{ QAndroidDisplayMetrics::ThemeXXXDPI,	4.00f,	QAndroidDisplayMetrics::IntermediateNone,			QAndroidDisplayMetrics::ANDROID_DENSITY_XXXHIGH }
 };
+
+static const size_t all_themes_count = sizeof(all_themes) / sizeof(ThemeListEntry);
 
 
 static float densityFromTheme(QAndroidDisplayMetrics::Theme theme)
 {
-	for (const ThemeListEntry * entry = all_themes; entry->theme != QAndroidDisplayMetrics::ThemeNone; ++entry)
+	for (size_t i = 0; i < all_themes_count; ++i)
 	{
-		if (entry->theme == theme)
+		if (all_themes[i].theme == theme)
 		{
-			return entry->density;
+			return all_themes[i].density;
 		}
 	}
 	qWarning() << "Theme code is not listed in the table:" << static_cast<int>(theme);
@@ -87,16 +88,16 @@ static float densityFromTheme(QAndroidDisplayMetrics::Theme theme)
 static QAndroidDisplayMetrics::Theme themeFromDensity(int density_dpi, QAndroidDisplayMetrics::IntermediateDensities intermediate_densities)
 {
 	QAndroidDisplayMetrics::Theme resulting_theme = all_themes[0].theme;
-	for (const ThemeListEntry * entry = all_themes; entry->theme != QAndroidDisplayMetrics::ThemeNone; ++entry)
+	for (size_t i = 0; i < all_themes_count; ++i)
 	{
 		// Don't see unallowed themes
-		if (entry->availability > intermediate_densities)
+		if (all_themes[i].availability > intermediate_densities)
 		{
 			continue;
 		}
-		if (density_dpi >= entry->starting_ppi)
+		if (density_dpi >= all_themes[i].starting_ppi)
 		{
-			resulting_theme = entry->theme;
+			resulting_theme = all_themes[i].theme;
 		}
 		else // density_dpi < entry->starting_ppi
 		{
@@ -218,5 +219,5 @@ float QAndroidDisplayMetrics::fontScale()
 	QScopedPointer<QJniObject> resources(activity.callObject("getResources", "android/content/res/Resources"));
 	QScopedPointer<QJniObject> configuration(resources->callObject("getConfiguration", "android/content/res/Configuration"));
 	jfloat font_scale = configuration->getFloatField("fontScale");
-	return static_cast<float>(scale);
+	return static_cast<float>(font_scale);
 }
