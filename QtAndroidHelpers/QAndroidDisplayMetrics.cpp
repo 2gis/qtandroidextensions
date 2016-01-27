@@ -186,6 +186,8 @@ void QAndroidDisplayMetrics::preloadJavaClasses()
 {
 	QAndroidQPAPluginGap::preloadJavaClasses();
 	QAndroidQPAPluginGap::preloadJavaClass("android/util/DisplayMetrics");
+	QAndroidQPAPluginGap::preloadJavaClass("android/content/res/Resources");
+	QAndroidQPAPluginGap::preloadJavaClass("android/content/res/Configuration");
 }
 
 QString QAndroidDisplayMetrics::themeDirectoryName(Theme theme)
@@ -210,3 +212,11 @@ QString QAndroidDisplayMetrics::themeDirectoryName(Theme theme)
 	};
 }
 
+float QAndroidDisplayMetrics::fontScale()
+{
+	QAndroidQPAPluginGap::Context activity;
+	QScopedPointer<QJniObject> resources(activity.callObject("getResources", "android/content/res/Resources"));
+	QScopedPointer<QJniObject> configuration(resources->callObject("getConfiguration", "android/content/res/Configuration"));
+	jfloat font_scale = configuration->getFloatField("fontScale");
+	return static_cast<float>(scale);
+}

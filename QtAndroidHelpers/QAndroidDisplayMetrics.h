@@ -184,6 +184,11 @@ public:
 	//! Pixel size of the screen
 	int heightPixels() const { return heightPixels_; }
 
+	// Font scale, as configured by user.
+	// Please note that this value may changes during run-time, so it is a good
+	// idea to check it on each application activation.
+	static float fontScale();
+
 private:
 	float density_;
 	int densityDpi_;
