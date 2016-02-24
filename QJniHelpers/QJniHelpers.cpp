@@ -452,7 +452,7 @@ void QJniClass::callStaticVoid(const char* method_name)
 	jmethodID mid = env->GetStaticMethodID(checkedClass(), method_name, "()V");
 	if (!mid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method %s not found.", __FUNCTION__, method_name);
 		throw QJniMethodNotFoundException();
 	}
 	env->CallStaticVoidMethod(class_, mid);
@@ -470,7 +470,7 @@ jint QJniClass::callStaticInt(const char* method_name)
 	jmethodID mid = env->GetStaticMethodID(checkedClass(), method_name, "()I");
 	if (!mid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method %s not found.", __FUNCTION__, method_name);
 		throw QJniMethodNotFoundException();
 	}
 	jint result = env->CallStaticIntMethod(jClass(), mid);
@@ -489,7 +489,7 @@ jlong QJniClass::callStaticLong(const char* method_name)
 	jmethodID mid = env->GetStaticMethodID(checkedClass(), method_name, "()J");
 	if (!mid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method %s not found.", __FUNCTION__, method_name);
 		throw QJniMethodNotFoundException();
 	}
 	jlong result = env->CallStaticLongMethod(jClass(), mid);
@@ -508,7 +508,7 @@ bool QJniClass::callStaticBoolean(const char* method_name)
 	jmethodID mid = env->GetStaticMethodID(checkedClass(), method_name, "()Z");
 	if (!mid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method %s not found.", __FUNCTION__, method_name);
 		throw QJniMethodNotFoundException();
 	}
 	bool result = env->CallStaticBooleanMethod(jClass(), mid)? true: false;
@@ -532,7 +532,7 @@ void QJniClass::callStaticParamVoid(const char * method_name, const char * param
 	jmethodID mid = env->GetStaticMethodID(checkedClass(), method_name, signature.data());
 	if (!mid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method %s not found.", __FUNCTION__, method_name);
 		throw QJniMethodNotFoundException();
 	}
 
@@ -559,7 +559,7 @@ bool QJniClass::callStaticParamBoolean(const char * method_name, const char * pa
 	jmethodID mid = env->GetStaticMethodID(checkedClass(), method_name, signature.data());
 	if (!mid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method %s not found.", __FUNCTION__, method_name);
 		throw QJniMethodNotFoundException();
 	}
 
@@ -587,7 +587,7 @@ jint QJniClass::callStaticParamInt(const char * method_name, const char * param_
 	jmethodID mid = env->GetStaticMethodID(checkedClass(), method_name, signature.data());
 	if (!mid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method %s not found.", __FUNCTION__, method_name);
 		throw QJniMethodNotFoundException();
 	}
 
@@ -615,7 +615,7 @@ jfloat QJniClass::callStaticParamFloat(const char * method_name, const char * pa
 	jmethodID mid = env->GetStaticMethodID(checkedClass(), method_name, signature.data());
 	if (!mid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method %s not found.", __FUNCTION__, method_name);
 		throw QJniMethodNotFoundException();
 	}
 
@@ -644,7 +644,7 @@ QString QJniClass::callStaticParamString(const char * method_name, const char * 
 	jmethodID mid = env->GetStaticMethodID(checkedClass(), method_name, signature.data());
 	if (!mid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method %s not found.", __FUNCTION__, method_name);
 		throw QJniMethodNotFoundException();
 	}
 
@@ -672,7 +672,7 @@ QString QJniClass::callStaticString(const char *method_name)
 	jmethodID mid = env->GetStaticMethodID(checkedClass(), method_name, "()Ljava/lang/String;");
 	if (!mid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method %s not found.", __FUNCTION__, method_name);
 		throw QJniMethodNotFoundException();
 	}
 	QString ret = QJniLocalRef(env, env->CallStaticObjectMethod(jClass(), mid));
@@ -695,7 +695,7 @@ QJniObject * QJniClass::getStaticObjectField(const char * field_name, const char
 	jfieldID fid = env->GetStaticFieldID(checkedClass(), field_name, obj.data());
 	if (!fid)
 	{
-		qWarning("%s: field not found.", field_name);
+		qWarning("%s: field %s not found.", __FUNCTION__, field_name);
 		throw QJniFieldNotFoundException();
 	}
 	jobject jo = env->GetStaticObjectField(jClass(), fid);
@@ -718,7 +718,7 @@ QString QJniClass::getStaticStringField(const char * field_name)
 	jfieldID fid = env->GetStaticFieldID(checkedClass(), field_name, "Ljava/lang/String;");
 	if (!fid)
 	{
-		qWarning("%s: field not found.", field_name);
+		qWarning("%s: field %s not found.", __FUNCTION__, field_name);
 		throw QJniFieldNotFoundException();
 	}
 	QString ret = QJniLocalRef(env, env->GetStaticObjectField(class_, fid));
@@ -737,7 +737,7 @@ jint QJniClass::getStaticIntField(const char * field_name)
 	jfieldID fid = env->GetStaticFieldID(checkedClass(), field_name, "I");
 	if (!fid)
 	{
-		qWarning("%s: field not found.", field_name);
+		qWarning("%s: field %s not found.", __FUNCTION__, field_name);
 		throw QJniFieldNotFoundException();
 	}
 	jint result = env->GetStaticIntField(jClass(), fid);
@@ -756,7 +756,7 @@ bool QJniClass::getStaticBooleanField(const char * field_name)
 	jfieldID fid = env->GetStaticFieldID(checkedClass(), field_name, "Z");
 	if (!fid)
 	{
-		qWarning("%s: field not found.", field_name);
+		qWarning("%s: field %s not found.", __FUNCTION__, field_name);
 		throw QJniFieldNotFoundException();
 	}
 	jint result = env->GetStaticBooleanField(jClass(), fid);
@@ -782,7 +782,7 @@ QJniObject* QJniClass::callStaticObject(const char * method_name, const char * o
 	jmethodID mid = env->GetStaticMethodID(checkedClass(), method_name, signature.data());
 	if (!mid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method %s not found.", __FUNCTION__, method_name);
 		throw QJniMethodNotFoundException();
 	}
 
@@ -818,7 +818,7 @@ QJniObject * QJniClass::callStaticParamObject(const char * method_name, const ch
 	jmethodID mid = env->GetStaticMethodID(checkedClass(), method_name, signature.data());
 	if (!mid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method %s not found.", __FUNCTION__, method_name);
 		throw QJniMethodNotFoundException();
 	}
 
@@ -902,7 +902,7 @@ QJniObject::QJniObject(const QJniClass &clazz, const char* param_signature, ...)
 	}
 	if (!mid_init)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method <init> not found.", __FUNCTION__);
 		throw QJniMethodNotFoundException();
 	}
 
@@ -940,7 +940,7 @@ QJniObject::QJniObject(const char* class_name, const char* param_signature, ...)
 	}
 	if (!mid_init)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method <init> not found.", __FUNCTION__);
 		throw QJniMethodNotFoundException();
 	}
 
@@ -994,7 +994,7 @@ void QJniObject::callVoid(const char* method_name)
 	jmethodID mid = env->GetMethodID(checkedClass(), method_name, "()V");
 	if (!mid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method %s not found.", __FUNCTION__, method_name);
 		throw QJniMethodNotFoundException();
 	}
 	env->CallVoidMethod(instance_, mid);
@@ -1012,7 +1012,7 @@ bool QJniObject::callBool(const char* method_name)
 	jmethodID mid = env->GetMethodID(checkedClass(), method_name, "()Z");
 	if (!mid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method %s not found.", __FUNCTION__, method_name);
 		throw QJniMethodNotFoundException();
 	}
 	bool result = (JNI_TRUE==env->CallBooleanMethod(instance_, mid));
@@ -1031,7 +1031,7 @@ bool QJniObject::callBool(const char* method_name, bool param)
 	jmethodID mid = env->GetMethodID(checkedClass(), method_name, "(Z)Z");
 	if (!mid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method %s not found.", __FUNCTION__, method_name);
 		throw QJniMethodNotFoundException();
 	}
 	bool result = (JNI_TRUE==env->CallBooleanMethod(instance_, mid, jboolean(param)));
@@ -1050,7 +1050,7 @@ int QJniObject::callInt(const char* method_name)
 	jmethodID mid = env->GetMethodID(checkedClass(), method_name, "()I");
 	if (!mid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method %s not found.", __FUNCTION__, method_name);
 		throw QJniMethodNotFoundException();
 	}
 	int result = (int)env->CallIntMethod(instance_, mid);
@@ -1069,7 +1069,7 @@ long long QJniObject::callLong(const char* method_name)
 	jmethodID mid = env->GetMethodID(checkedClass(), method_name, "()J");
 	if (!mid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method %s not found.", __FUNCTION__, method_name);
 		throw QJniMethodNotFoundException();
 	}
 	long long result = (long long)env->CallLongMethod(instance_, mid);
@@ -1088,7 +1088,7 @@ float QJniObject::callFloat(const char* method_name)
 	jmethodID mid = env->GetMethodID(checkedClass(), method_name, "()F");
 	if (!mid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method %s not found.", __FUNCTION__, method_name);
 		throw QJniMethodNotFoundException();
 	}
 	float result = (float)env->CallFloatMethod(instance_, mid);
@@ -1107,7 +1107,7 @@ float QJniObject::callFloat(const char* method_name, int param)
 	jmethodID mid = env->GetMethodID(checkedClass(), method_name, "(I)F");
 	if (!mid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method %s not found.", __FUNCTION__, method_name);
 		throw QJniMethodNotFoundException();
 	}
 	float result = (float)env->CallFloatMethod(instance_, mid, jint(param));
@@ -1126,7 +1126,7 @@ double QJniObject::callDouble(const char* method_name)
 	jmethodID mid = env->GetMethodID(checkedClass(), method_name, "()D");
 	if (!mid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method %s not found.", __FUNCTION__, method_name);
 		throw QJniMethodNotFoundException();
 	}
 	double result = (double)env->CallDoubleMethod(instance_, mid);
@@ -1148,7 +1148,7 @@ QJniObject * QJniObject::callObject(const char * method_name, const char * objna
 	jmethodID mid = env->GetMethodID(checkedClass(), method_name, signature.data());
 	if (!mid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method %s not found.", __FUNCTION__, method_name);
 		throw QJniMethodNotFoundException();
 	}
 	jobject object = env->CallObjectMethod(instance_, mid);
@@ -1211,7 +1211,7 @@ jint QJniObject::callParamInt(const char* method_name, const char* param_signatu
 	jmethodID mid = env->GetMethodID(checkedClass(), method_name, signature.data());
 	if (!mid)
 	{
-		qWarning("%s: method not found.", method_name);
+		qWarning("%s: method %s not found.", method_name, method_name);
 		throw QJniMethodNotFoundException();
 	}
 	va_start(args, param_signature);
@@ -1237,7 +1237,7 @@ jlong QJniObject::callParamLong(const char* method_name, const char* param_signa
 	jmethodID mid = env->GetMethodID(checkedClass(), method_name, signature.data());
 	if (!mid)
 	{
-		qWarning("%s: method not found.", method_name);
+		qWarning("%s: method %s not found.", method_name, method_name);
 		throw QJniMethodNotFoundException();
 	}
 	va_start(args, param_signature);
@@ -1263,7 +1263,7 @@ jfloat QJniObject::callParamFloat(const char* method_name, const char* param_sig
 	jmethodID mid = env->GetMethodID(checkedClass(), method_name, signature.data());
 	if (!mid)
 	{
-		qWarning("%s: method not found.", method_name);
+		qWarning("%s: method %s not found.", method_name, method_name);
 		throw QJniMethodNotFoundException();
 	}
 	va_start(args, param_signature);
@@ -1289,7 +1289,7 @@ jdouble QJniObject::callParamDouble(const char* method_name, const char* param_s
 	jmethodID mid = env->GetMethodID(checkedClass(), method_name, signature.data());
 	if (!mid)
 	{
-		qWarning("%s: method not found.", method_name);
+		qWarning("%s: method %s not found.", method_name, method_name);
 		throw QJniMethodNotFoundException();
 	}
 	va_start(args, param_signature);
@@ -1311,7 +1311,7 @@ QString QJniObject::callString(const char *method_name)
 	jmethodID mid = env->GetMethodID(checkedClass(), method_name, "()Ljava/lang/String;");
 	if (!mid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method %s not found.", __FUNCTION__, method_name);
 		throw QJniMethodNotFoundException();
 	}
 	QString ret = QJniLocalRef(env, env->CallObjectMethod(instance_, mid));
@@ -1338,7 +1338,7 @@ QString QJniObject::callParamString(const char *method_name, const char* param_s
 
 	if (!mid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: method %s not found.", __FUNCTION__, method_name);
 		throw QJniMethodNotFoundException();
 	}
 
@@ -1362,7 +1362,7 @@ QString QJniObject::getString(const char *field_name)
 	jfieldID fid = env->GetFieldID(checkedClass(), field_name, "Ljava/lang/String;");
 	if (!fid)
 	{
-		qWarning("%s: method not found.", __FUNCTION__);
+		qWarning("%s: field %s not found.", __FUNCTION__, field_name);
 		throw QJniFieldNotFoundException();
 	}
 	QString ret = QJniLocalRef(env, env->GetObjectField(instance_, fid));
@@ -1381,7 +1381,7 @@ int QJniObject::getIntField(const char * field_name)
 	jfieldID fid = env->GetFieldID(checkedClass(), field_name, "I");
 	if (!fid)
 	{
-		qWarning("%s: field not found.", field_name);
+		qWarning("%s: field %s not found.", __FUNCTION__, field_name);
 		throw QJniFieldNotFoundException();
 	}
 	int result = (int)env->GetIntField(instance_, fid);
@@ -1400,7 +1400,7 @@ float QJniObject::getFloatField(const char * field_name)
 	jfieldID fid = env->GetFieldID(checkedClass(), field_name, "F");
 	if (!fid)
 	{
-		qWarning("%s: field not found.", field_name);
+		qWarning("%s: field %s not found.", __FUNCTION__, field_name);
 		throw QJniFieldNotFoundException();
 	}
 	float result = (float)env->GetFloatField(instance_, fid);
@@ -1419,7 +1419,7 @@ void QJniObject::setIntField(const char * field_name, jint value)
 	jfieldID fid = env->GetFieldID(checkedClass(), field_name, "I");
 	if (!fid)
 	{
-		qWarning("%s: field not found.", field_name);
+		qWarning("%s: field %s not found.", __FUNCTION__, field_name);
 		throw QJniFieldNotFoundException();
 	}
 	env->SetIntField(instance_, fid, value);
@@ -1437,7 +1437,7 @@ void QJniObject::setBooleanField(const char * field_name, jboolean value)
 	jfieldID fid = env->GetFieldID(checkedClass(), field_name, "Z");
 	if (!fid)
 	{
-		qWarning("%s: field not found.", field_name);
+		qWarning("%s: field %s not found.", __FUNCTION__, field_name);
 		throw QJniFieldNotFoundException();
 	}
 	env->SetBooleanField(instance_, fid, value);
@@ -1459,7 +1459,7 @@ QJniObject * QJniObject::getObjectField(const char* field_name, const char * obj
 	jfieldID fid = env->GetFieldID(checkedClass(), field_name, obj.data());
 	if (!fid)
 	{
-		qWarning("%s: field not found.", field_name);
+		qWarning("%s: field %s not found.", __FUNCTION__, field_name);
 		throw QJniFieldNotFoundException();
 	}
 	jobject jo = env->GetObjectField(instance_, fid);
@@ -1482,7 +1482,7 @@ QString QJniObject::getStringField(const char * field_name)
 	jfieldID fid = env->GetFieldID(checkedClass(), field_name, "Ljava/lang/String;");
 	if (!fid)
 	{
-		qWarning("%s: field not found.", field_name);
+		qWarning("%s: field %s not found.", __FUNCTION__, field_name);
 		throw QJniFieldNotFoundException();
 	}
 	QString ret = QJniLocalRef(env, env->GetObjectField(instance_, fid));
@@ -1507,7 +1507,7 @@ void QJniObject::callParamVoid(const char * method_name, const char * param_sign
 	jmethodID mid = env->GetMethodID(checkedClass(), method_name, signature.data());
 	if (!mid)
 	{
-		qWarning("%s: method not found.", method_name);
+		qWarning("%s: method %s not found.", __FUNCTION__, method_name);
 		throw QJniMethodNotFoundException();
 	}
 
