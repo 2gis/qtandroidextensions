@@ -348,6 +348,7 @@ public:
 	void callVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3);
 	void callVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3, const QString & string4);
 	void callVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3, const QString & string4, const QString & string5);
+	void callVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3, const QString & string4, const QString & string5, const QString & string6);
 
 	jint callParamInt(const char* method_name, const char* param_signature, ...);
 	jlong callParamLong(const char* method_name, const char* param_signature, ...);

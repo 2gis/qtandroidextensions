@@ -1586,6 +1586,14 @@ void QJniObject::callVoid(const char * method_name, const QString & string1, con
 		QJniLocalRef(jep, string4).jObject(), QJniLocalRef(jep, string5).jObject());
 }
 
+void QJniObject::callVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3, const QString & string4, const QString & string5, const QString & string6)
+{
+	QJniEnvPtr jep;
+	callParamVoid(method_name, "Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;",
+		QJniLocalRef(jep, string1).jObject(), QJniLocalRef(jep, string2).jObject(), QJniLocalRef(jep, string3).jObject(),
+		QJniLocalRef(jep, string4).jObject(), QJniLocalRef(jep, string5).jObject(), QJniLocalRef(jep, string6).jObject());
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 // QJniLocalRef
