@@ -191,7 +191,13 @@ public class GooglePlayServiceLocationProvider
 		}
 		catch(Exception e)
 		{
-			Log.e(TAG, e.getMessage());
+			String message = e.getMessage();
+			
+			if (message)
+			{
+				Log.e(TAG, message);
+			}
+			
 			mLocationRequest = null;
 		}
 	}
