@@ -193,7 +193,7 @@ public class GooglePlayServiceLocationProvider
 		{
 			String message = e.getMessage();
 			
-			if (message)
+			if (message != null)
 			{
 				Log.e(TAG, message);
 			}
