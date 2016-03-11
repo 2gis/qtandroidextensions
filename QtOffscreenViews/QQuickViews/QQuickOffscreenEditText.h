@@ -188,6 +188,17 @@ public slots:
 
 	void setCursorColorToTextColor() { androidEditText()->setCursorColorToTextColor(); }
 
+
+	void setImeOptions(int and_mask, int or_mask) { androidEditText()->setImeOptions(and_mask, or_mask); }
+	void setImeAction(int action) { androidEditText()->setImeAction(action); }
+	void setImeActionUnspecified() { androidEditText()->setImeActionUnspecified(); }
+	void setImeActionGo() { androidEditText()->setImeActionGo(); }
+	void setImeActionSearch() { androidEditText()->setImeActionSearch(); }
+	void setImeActionSend() { androidEditText()->setImeActionSend(); }
+	void setImeActionNext() { androidEditText()->setImeActionNext(); }
+	void setImeActionDone() { androidEditText()->setImeActionDone(); }
+	void setImeActionPrevious() { androidEditText()->setImeActionPrevious(); }
+
 signals:
 	void onTextChanged(QString text);
 

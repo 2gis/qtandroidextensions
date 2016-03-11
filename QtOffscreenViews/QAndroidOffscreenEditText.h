@@ -221,6 +221,28 @@ public:
 		ANDROID_GRAVITY_START				= 0x00800003,
 		ANDROID_GRAVITY_END					= 0x00800005;
 
+	// http://developer.android.com/reference/android/view/inputmethod/EditorInfo.html
+	static const int
+		ANDROID_IME_NULL						= 0x00000000,
+		ANDROID_IME_ACTION_UNSPECIFIED			= 0x00000000,
+		ANDROID_IME_ACTION_NONE					= 0x00000001,
+		ANDROID_IME_ACTION_GO					= 0x00000002,
+		ANDROID_IME_ACTION_SEARCH				= 0x00000003,
+		ANDROID_IME_ACTION_SEND					= 0x00000004,
+		ANDROID_IME_ACTION_NEXT					= 0x00000005,
+		ANDROID_IME_ACTION_DONE					= 0x00000006,
+		ANDROID_IME_ACTION_PREVIOUS 			= 0x00000007,
+		ANDROID_IME_MASK_ACTION					= 0x000000ff,
+
+		ANDROID_IME_FLAG_NO_FULLSCREEN			= 0x02000000,
+		ANDROID_IME_FLAG_NAVIGATE_PREVIOUS		= 0x04000000,
+		ANDROID_IME_FLAG_NAVIGATE_NEXT			= 0x08000000,
+		ANDROID_IME_FLAG_NO_EXTRACT_UI			= 0x10000000,
+
+		ANDROID_IME_FLAG_NO_ENTER_ACTION		= 0x40000000,
+		ANDROID_IME_FLAG_NO_ACCESSORY_ACTION	= 0x20000000,
+		ANDROID_IME_FLAG_FORCE_ASCII			= 0x80000000;
+
 	//! Sets the horizontal alignment of the text and the vertical gravity that will be used when there is extra space in the TextView beyond what is required for the text itself.
 	void setGravity(int gravity);
 
@@ -259,6 +281,20 @@ public:
 
 	//! Set password mode.
 	void setPasswordMode();
+
+	// Change the editor type integer associated with the text view, which will be reported to an IME with imeOptions when it has focus.
+	// options = (options & and) | or
+	void setImeOptions(int and_mask, int or_mask);
+
+	void setImeAction(int action) { setImeOptions(~ANDROID_IME_MASK_ACTION, action); }
+
+	void setImeActionUnspecified() { setImeAction(ANDROID_IME_ACTION_UNSPECIFIED); }
+	void setImeActionGo() { setImeAction(ANDROID_IME_ACTION_GO); }
+	void setImeActionSearch() { setImeAction(ANDROID_IME_ACTION_SEARCH); }
+	void setImeActionSend() { setImeAction(ANDROID_IME_ACTION_SEND); }
+	void setImeActionNext() { setImeAction(ANDROID_IME_ACTION_NEXT); }
+	void setImeActionDone() { setImeAction(ANDROID_IME_ACTION_DONE); }
+	void setImeActionPrevious() { setImeAction(ANDROID_IME_ACTION_PREVIOUS); }
 
 	// http://developer.android.com/reference/android/text/TextUtils.TruncateAt.html
 	enum AndroidTruncateAt
@@ -486,7 +522,6 @@ signals:
 	//	void 	setFilters(InputFilter[] filters)	//	Sets the list of input filters that will be used if the buffer is Editable.
 	//	void 	setFreezesText(boolean freezesText)	//	Control whether this text view saves its entire text contents when freezing to an icicle, in addition to dynamic state such as cursor position.
 	//	void 	setImeActionLabel(CharSequence label, int actionId)	//	Change the custom IME action associated with the text view, which will be reported to an IME with actionLabel and actionId when it has focus.
-	//	void 	setImeOptions(int imeOptions)	//	Change the editor type integer associated with the text view, which will be reported to an IME with imeOptions when it has focus.
 	//	void 	setIncludeFontPadding(boolean includepad)	//	Set whether the TextView includes extra top and bottom padding to make room for accents that go above the normal ascent and descent.
 	//	void 	setInputExtras(int xmlResId)	//	Set the extra input data of the text, which is the TextBoxAttribute.extras Bundle that will be filled in when creating an input connection.
 	//	void 	setKeyListener(KeyListener input)	//	Sets the key listener to be used with this TextView.

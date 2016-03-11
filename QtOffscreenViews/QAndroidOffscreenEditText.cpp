@@ -451,6 +451,14 @@ void QAndroidOffscreenEditText::setPasswordMode()
 	}
 }
 
+void QAndroidOffscreenEditText::setImeOptions(int and_mask, int or_mask)
+{
+	if (QJniObject * view = offscreenView())
+	{
+		view->callParamVoid("setImeOptions", "II", static_cast<jint>(and_mask), static_cast<jint>(or_mask));
+	}
+}
+
 void QAndroidOffscreenEditText::setEllipsize(AndroidTruncateAt ellipsis)
 {
 	if (QJniObject * view = offscreenView())

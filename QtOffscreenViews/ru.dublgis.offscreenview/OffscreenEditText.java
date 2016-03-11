@@ -873,6 +873,17 @@ class OffscreenEditText extends OffscreenView
         });
     }
 
+    void setImeOptions(final int and_mask, final int or_mask)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                MyEditText et = (MyEditText)getView();
+                et.setImeOptions((et.getImeOptions() & and_mask) | or_mask);
+            }
+        });
+    }
+
     void setEllipsize(final int ellipsis)
     {
         final TextUtils.TruncateAt where = TextUtils.TruncateAt.values()[ellipsis];
