@@ -106,6 +106,7 @@ private:
 	bool is_interactive_;
 	bool mouse_tracking_;
 	bool redraw_texture_needed_;
+	QPoint last_set_position_;
 };
 
 

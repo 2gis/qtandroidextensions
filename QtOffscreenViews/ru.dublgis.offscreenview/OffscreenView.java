@@ -1147,24 +1147,29 @@ abstract class OffscreenView
      */
     public void setPosition(final int left, final int top)
     {
-        synchronized(view_variables_mutex_)
+        runViewAction(new Runnable()
         {
-            if (view_left_ != left || view_top_ != top)
+            @Override
+            public void run()
             {
-                view_left_ = left;
-                view_top_ = top;
+                synchronized(view_variables_mutex_)
+                {
+                    if (view_left_ != left || view_top_ != top)
+                    {
+                        view_left_ = left;
+                        view_top_ = top;
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
                 if (layout_ != null)
                 {
-                    runViewAction(new Runnable(){
-                            @Override
-                            public void run()
-                            {
-                                layout_.requestLayout();
-                            }
-                    });
+                    layout_.requestLayout();
                 }
             }
-        }
+        });
     }
 
     public boolean isViewCreated()
