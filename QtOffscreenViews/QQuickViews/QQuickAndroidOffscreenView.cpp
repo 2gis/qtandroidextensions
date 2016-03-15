@@ -97,6 +97,7 @@ QQuickAndroidOffscreenView::QQuickAndroidOffscreenView(QAndroidOffscreenView * a
 	, is_interactive_(true) // TODO
 	, mouse_tracking_(false)
 	, redraw_texture_needed_(true)
+	, last_set_position_(0, 0) // View always at (0, 0) by default.
 {
 	setFlag(QQuickItem::ItemHasContents, true);
 	setAcceptedMouseButtons(Qt::LeftButton);
@@ -302,8 +303,17 @@ void QQuickAndroidOffscreenView::updateAndroidViewPosition()
 	// Note: x() and y() return coordinates of the item within parent, i.e. we don't
 	// need them. We only need in-scene coordinates.
 	QPointF scenepos = mapToScene(QPointF(0, 0));
-	// qDebug()<<__PRETTY_FUNCTION__<<scenepos.x()<<scenepos.y();
-	aview_->setPosition(qRound(scenepos.x()), qRound(scenepos.y()));
+	QPoint scenepos_i(qRound(scenepos.x()), qRound(scenepos.y()));
+
+	// Calling setPosition only if position has actually changed, because
+	// Java side has to schedule a relatively lenghty operation to handle the
+	// request.
+	if (last_set_position_ != scenepos_i)
+	{
+		// qDebug() << __PRETTY_FUNCTION__ << scenepos_i.x() << scenepos_i.y();
+		aview_->setPosition(scenepos_i.x(), scenepos_i.y());
+		last_set_position_ = scenepos_i;
+	}
 }
 
 void QQuickAndroidOffscreenView::requestVisibleRect()
