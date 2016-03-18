@@ -460,7 +460,14 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setTypeface(Typeface.create((name.length() > 0)? name: null, style));
+                try 
+                {
+                    ((MyEditText)getView()).setTypeface(Typeface.create((name.length() > 0)? name: null, style));
+                }
+                catch (Exception e)
+                {
+                    Log.e(TAG, "Failed to create Typeface with name " + name + ": " + e);
+                }
             }
         });
     }
@@ -470,8 +477,15 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                Typeface face = Typeface.createFromFile(filename);
-                ((MyEditText)getView()).setTypeface((style==0)? face: Typeface.create(face, style));
+                try 
+                {
+                    Typeface face = Typeface.createFromFile(filename);
+                    ((MyEditText)getView()).setTypeface((style==0)? face: Typeface.create(face, style));
+                }
+                catch (Exception e)
+                {
+                    Log.e(TAG, "Failed to create Typeface from file:" + e);
+                }
             }
         });
     }
@@ -484,8 +498,15 @@ class OffscreenEditText extends OffscreenView
                 Activity a = getActivity();
                 if (a != null)
                 {
-                    Typeface face = Typeface.createFromAsset(a.getAssets(), filename);
-                    ((MyEditText)getView()).setTypeface((style==0)? face: Typeface.create(face, style));
+                    try 
+                    {
+                        Typeface face = Typeface.createFromAsset(a.getAssets(), filename);
+                        ((MyEditText)getView()).setTypeface((style==0)? face: Typeface.create(face, style));
+                    }
+                    catch (Exception e)
+                    {
+                        Log.e(TAG, "Failed to create Typeface from asset:" + e);
+                    }
                 }
             }
         });
