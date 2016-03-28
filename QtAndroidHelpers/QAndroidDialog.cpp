@@ -39,6 +39,7 @@
 #include "QAndroidDialog.h"
 
 static const char * const c_full_class_name_ = "ru/dublgis/androidhelpers/DialogHelper";
+bool QAndroidDialog::interactive_ = true;
 
 Q_DECL_EXPORT void JNICALL Java_DialogHelper_DialogHelper_showMessageCallback(JNIEnv *, jobject, jlong param, jint button)
 {
@@ -95,6 +96,19 @@ void QAndroidDialog::preloadJavaClasses()
 	}
 }
 
+void QAndroidDialog::setInteractiveMode(bool interactive)
+{
+	if (interactive_ != interactive)
+	{
+		interactive_ = interactive;
+	}
+}
+
+bool QAndroidDialog::isInteractiveMode()
+{
+	return interactive_;
+}
+
 void QAndroidDialog::showMessage(
 	const QString & title,
 	const QString & explanation,
@@ -104,6 +118,14 @@ void QAndroidDialog::showMessage(
 	bool pause,
 	bool lock_rotation)
 {
+	if (!isInteractiveMode())
+	{
+		qDebug() << "Dialog was not shown due to non-interactive mode";
+		qDebug() << "title: \"" << title << "\"";
+		qDebug() << "explanation: " << explanation << "\"";
+		return;
+	}
+
 	if (dialog_helper_)
 	{
 		if (pause)

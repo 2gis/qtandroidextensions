@@ -67,6 +67,8 @@ public:
 	virtual ~QAndroidDialog();
 
 	static void preloadJavaClasses();
+	static void setInteractiveMode(bool interactive);
+	static bool isInteractiveMode();
 
 	Q_INVOKABLE bool deleteSelfOnClose() const { return delete_self_on_close_; }
 	Q_INVOKABLE void setDeleteSelfOnClose(bool del) { delete_self_on_close_ = del; }
@@ -134,6 +136,7 @@ private:
 	QScopedPointer<QJniObject> dialog_helper_;
 	bool delete_self_on_close_;
 	int result_button_;
+	static bool interactive_;
 
 	friend Q_DECL_EXPORT void JNICALL Java_DialogHelper_DialogHelper_showMessageCallback(JNIEnv *, jobject, jlong param, jint button);
 };
