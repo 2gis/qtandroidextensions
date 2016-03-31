@@ -37,41 +37,19 @@
 package ru.dublgis.androidhelpers;
 
 import java.util.List;
-import java.util.List;
-import java.util.Iterator;
 import java.io.File;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.NetworkInfo.DetailedState;
 import android.net.Uri;
-import android.net.wifi.ScanResult;
-import android.net.wifi.WifiManager;
-import android.net.wifi.ScanResult;
-import android.os.Looper;
 import android.os.Build;
-import android.content.BroadcastReceiver;
-import android.content.IntentFilter;
 import android.support.v4.content.FileProvider;
 import android.telephony.TelephonyManager;
-import android.telephony.CellLocation;
-import android.telephony.gsm.GsmCellLocation;
-import android.telephony.cdma.CdmaCellLocation;
-import android.telephony.PhoneStateListener;
-import android.telephony.SignalStrength;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.provider.Settings.Secure;
 import android.util.Log;
-import android.app.Activity;
-import android.view.Display;
-import android.view.Surface;
-import android.view.View;
-import android.view.WindowManager;
+
 
 public class DesktopUtils
 {

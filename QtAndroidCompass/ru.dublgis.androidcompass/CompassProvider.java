@@ -37,7 +37,6 @@
 
 package ru.dublgis.androidcompass;
 
-import java.lang.Math;
 import android.util.Log;
 import android.content.Context;
 import android.hardware.SensorManager;

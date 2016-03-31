@@ -37,7 +37,6 @@ package ru.dublgis.androidgpslocation;
 
 import android.app.Activity;
 import android.util.Log;
-import android.os.Bundle;
 
 import android.location.*;
 

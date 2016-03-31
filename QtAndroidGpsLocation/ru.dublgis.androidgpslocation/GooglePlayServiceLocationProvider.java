@@ -43,10 +43,6 @@ import android.util.Log;
 import android.os.Bundle;
 import android.location.Location;
 
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
