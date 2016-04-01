@@ -1351,11 +1351,12 @@ abstract class OffscreenView
         {
             synchronized(texture_mutex_)
             {
-                Log.i(TAG, "OffscreenGLTextureRenderingSurface(obj=\""+object_name_+"\", texture="+gl_texture_id_
+                Log.d(TAG, "OffscreenGLTextureRenderingSurface(obj=\""+object_name_+"\", texture="+gl_texture_id_
                     +", w="+view_width_+", h="+view_height_+") tid="+Thread.currentThread().getId());
                 surface_texture_ = new SurfaceTexture(gl_texture_id_);
                 surface_ = new Surface(surface_texture_);
                 setNewSize(view_width_, view_height_);
+                Log.d(TAG, "OffscreenGLTextureRenderingSurface created");
             }
         }
 
