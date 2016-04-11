@@ -72,8 +72,8 @@ class WifiLocker
 			if (wifiManager != null)
 			{
 				int mode = android.os.Build.VERSION.SDK_INT >= 12 ?
-				WifiManager.WIFI_MODE_FULL_HIGH_PERF :
-				WifiManager.WIFI_MODE_FULL;
+					WifiManager.WIFI_MODE_FULL_HIGH_PERF :
+					WifiManager.WIFI_MODE_FULL;
 				mLock = wifiManager.createWifiLock(mode, TAG);
 			}
 			else
