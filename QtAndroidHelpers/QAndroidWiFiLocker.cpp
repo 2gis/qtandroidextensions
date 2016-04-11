@@ -107,6 +107,17 @@ void QAndroidWiFiLocker::unlock()
 
 bool QAndroidWiFiLocker::isLocked()
 {
-	return java_handler_->callBool("IsLocked");	
+	return java_handler_->callBool("IsLocked");
+}
+
+
+bool QAndroidWiFiLocker::isWifiEnabled()
+{
+	if (java_handler_)
+	{
+		return java_handler_->callBool("IsWifiEnabled");
+	}
+
+	return false;
 }
 

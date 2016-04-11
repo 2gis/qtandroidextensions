@@ -148,6 +148,23 @@ class WifiLocker
 		}
 	}
 
+
+	public boolean IsWifiEnabled()
+	{
+		try 
+		{
+			WifiManager wifiManager = (WifiManager)getContext().getSystemService(Context.WIFI_SERVICE);
+			return null != wifiManager && wifiManager.isWifiEnabled();
+		}
+		catch (Exception e)
+		{
+			Log.e(TAG, "Failed to call isWifiEnabled: " + e);
+		}
+
+		return false;
+	}
+
+
 	public native Context getContext();
 }
 

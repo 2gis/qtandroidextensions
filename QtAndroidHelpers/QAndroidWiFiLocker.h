@@ -57,6 +57,7 @@ private:
 
 public:
 	bool isLocked();
+	bool isWifiEnabled();
 	static void preloadJavaClasses();
 
 private:	
