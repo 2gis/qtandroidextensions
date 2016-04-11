@@ -89,6 +89,12 @@ bool QGeoPositionInfoSourceAndroidGPS::isAvailable()
 }
 
 
+int QGeoPositionInfoSourceAndroidGPS::getGmsVersion()
+{
+	return QAndroidGooglePlayServiceLocationProvider::getGmsVersion();
+}
+
+
 void QGeoPositionInfoSourceAndroidGPS::startUpdates()
 {
 	if (updatesRunning_)

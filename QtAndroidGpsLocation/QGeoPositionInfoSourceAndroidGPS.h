@@ -56,6 +56,7 @@ public:
 
 public:
 	static bool isAvailable();
+	static int getGmsVersion();
 
 public:
 	// From QGeoPositionInfoSource

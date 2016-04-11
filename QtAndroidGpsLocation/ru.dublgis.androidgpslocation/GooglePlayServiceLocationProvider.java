@@ -45,6 +45,7 @@ import android.location.Location;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
@@ -321,6 +322,23 @@ public class GooglePlayServiceLocationProvider
 		}
 
 		return false;
+	}
+
+
+	static public int getGmsVersion(Activity context)
+	{
+		int versionCode = 0;
+
+		try 
+		{
+			versionCode = context.getPackageManager().getPackageInfo(GoogleApiAvailability.GOOGLE_PLAY_SERVICES_PACKAGE, 0).versionCode;
+		}
+		catch(Exception e)
+		{
+			Log.e(TAG, e.getMessage());
+		}
+
+		return versionCode;
 	}
 
 

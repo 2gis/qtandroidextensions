@@ -81,6 +81,7 @@ signals:
 
 public:
 	static bool isAvailable();
+	static int getGmsVersion();
 	void setUpdateInterval(int64_t reqiredInterval, int64_t minimumInterval);
 	void setPriority(enPriority priority);
 	QGeoPositionInfo lastKnownPosition() const;

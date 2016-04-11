@@ -259,6 +259,30 @@ void QAndroidGooglePlayServiceLocationProvider::stopUpdates()
 }
 
 
+int QAndroidGooglePlayServiceLocationProvider::getGmsVersion()
+{
+	preloadJavaClasses();
+
+	try 
+	{
+		QJniClass clazz(c_full_class_name_);
+		if (!clazz.jClass())
+		{
+			qWarning() << "Failed to instantiate: " << c_full_class_name_;
+			return 0;
+		}
+
+		return clazz.callStaticParamInt("getGmsVersion", "Landroid/app/Activity;", QAndroidQPAPluginGap::Context().jObject());
+	}
+	catch (const QJniBaseException &e)
+	{
+		qWarning() << "QJniBaseException catched! " << e.what();
+	}		
+
+	return 0;
+}
+
+
 bool QAndroidGooglePlayServiceLocationProvider::isAvailable()
 {
 	preloadJavaClasses();
