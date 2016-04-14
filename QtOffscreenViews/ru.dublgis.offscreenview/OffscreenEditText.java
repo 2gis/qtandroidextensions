@@ -43,6 +43,7 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.os.Handler;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
@@ -847,7 +848,7 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setTransformationMethod(PasswordTransformationMethod.getInstance());
+                ((MyEditText)getView()).setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
             }
         });
     }
