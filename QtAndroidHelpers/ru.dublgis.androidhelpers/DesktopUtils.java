@@ -184,36 +184,58 @@ public class DesktopUtils
             // TODO: support multiple recipients
             String[] recipients = new String[]{to};
 
+            final Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", to, null));
+            List<ResolveInfo> resolveInfos = ctx.getPackageManager().queryIntentActivities(intent, 0);
+            Intent chooserIntent = null;
+            List<Intent> intentList = new ArrayList<Intent>();
+
             Intent i = new Intent(Intent.ACTION_SEND);
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             i.setType("message/rfc822");
             i.putExtra(Intent.EXTRA_EMAIL, recipients);
             i.putExtra(Intent.EXTRA_SUBJECT, subject);
             i.putExtra(Intent.EXTRA_TEXT, body);
-            if (attach_file != null && attach_file.length() > 0)
-            {
-                if (!force_content_provider && android.os.Build.VERSION.SDK_INT < 23)
-                {
+            if (attach_file != null && attach_file.length() > 0) {
+                if (!force_content_provider && android.os.Build.VERSION.SDK_INT < 23) {
                     i.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(attach_file)));
-                }
-                else
-                {
+                } else {
                     // Android 6+: going the longer route.
                     // For more information, please see:
                     // http://stackoverflow.com/questions/32981194/android-6-cannot-share-files-anymore
                     i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     i.putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(
-                         ctx,
-                         authorities,
-                         new File(attach_file)));
+                            ctx,
+                            authorities,
+                            new File(attach_file)));
                 }
             }
-            Intent chooser = Intent.createChooser(
-                i,
-                null // "Select email application."
-            );
-            chooser.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            ctx.startActivity(chooser);
+
+            for (ResolveInfo resolveInfo : resolveInfos) {
+                String packageName = resolveInfo.activityInfo.packageName;
+                String name = resolveInfo.activityInfo.name;
+
+                Intent fakeIntent = (Intent)i.clone();
+                fakeIntent.setComponent(new ComponentName(packageName, name));
+                if (chooserIntent == null) {
+                    chooserIntent = new Intent(Intent.ACTION_CHOOSER);
+                    chooserIntent.putExtra(Intent.EXTRA_INTENT, fakeIntent);
+                } else {
+                    intentList.add(fakeIntent);
+                }
+            }
+
+            if (chooserIntent == null) {
+                chooserIntent = Intent.createChooser(
+                     i,
+                     null // "Select email application."
+                );
+                chooserIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            } else if (!intentList.isEmpty()) {
+                Intent[] extraIntents = intentList.toArray(new Intent[intentList.size()]);
+                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
+            }
+
+            ctx.startActivity(chooserIntent);
             return true;
         }
         catch (Exception e)
