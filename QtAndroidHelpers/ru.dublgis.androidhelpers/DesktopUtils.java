@@ -38,9 +38,13 @@ package ru.dublgis.androidhelpers;
 
 import java.util.List;
 import java.io.File;
+import java.util.ArrayList;
+
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
+import android.content.pm.ResolveInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -217,8 +221,7 @@ public class DesktopUtils
                 Intent fakeIntent = (Intent)i.clone();
                 fakeIntent.setComponent(new ComponentName(packageName, name));
                 if (chooserIntent == null) {
-                    chooserIntent = new Intent(Intent.ACTION_CHOOSER);
-                    chooserIntent.putExtra(Intent.EXTRA_INTENT, fakeIntent);
+                    chooserIntent = fakeIntent;
                 } else {
                     intentList.add(fakeIntent);
                 }
@@ -231,6 +234,9 @@ public class DesktopUtils
                 );
                 chooserIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             } else if (!intentList.isEmpty()) {
+                Intent fakeIntent = chooserIntent;
+                chooserIntent = new Intent(Intent.ACTION_CHOOSER);
+                chooserIntent.putExtra(Intent.EXTRA_INTENT, fakeIntent);
                 Intent[] extraIntents = intentList.toArray(new Intent[intentList.size()]);
                 chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
             }
