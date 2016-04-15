@@ -39,20 +39,20 @@
 #include <QtPositioning/QGeoPositionInfoSource>
 
 
-class QAndroidGooglePlayServiceLocationProvider;
+class QAndroidGmsLocationProvider;
 class QLocationManagerProvidersListener;
 
 
 /*!
  * A class for geting location from Google Play Services
  */
-class QGeoPositionInfoSourceAndroidGPS : public QGeoPositionInfoSource
+class QGeoPositionInfoSourceAndroidGms : public QGeoPositionInfoSource
 {
 	Q_OBJECT
 
 public:
-	QGeoPositionInfoSourceAndroidGPS(QObject * parent = 0);
-	virtual ~QGeoPositionInfoSourceAndroidGPS();
+	QGeoPositionInfoSourceAndroidGms(QObject * parent = 0);
+	virtual ~QGeoPositionInfoSourceAndroidGms();
 
 public:
 	static bool isAvailable();
@@ -85,7 +85,7 @@ private:
 	void setError(Error error);
 
 private:
-	QAndroidGooglePlayServiceLocationProvider *regularProvider_;
+	QAndroidGmsLocationProvider *regularProvider_;
 	QLocationManagerProvidersListener *providersListener_;
 	bool updatesRunning_;
 	Error m_error;

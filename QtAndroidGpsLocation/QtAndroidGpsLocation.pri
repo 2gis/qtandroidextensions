@@ -5,14 +5,14 @@ INCLUDEPATH += $$PWD
 
 HEADERS += \
 	$$PWD/QLocationManagerProvidersListener.h \
-	$$PWD/QAndroidGooglePlayServiceLocationProvider.h \
-	$$PWD/QGeoPositionInfoSourceAndroidGPS.h \
+	$$PWD/QAndroidGmsLocationProvider.h \
+	$$PWD/QGeoPositionInfoSourceAndroidGms.h \
 	$$PWD/QNmeaListener.h
 
 SOURCES += \
 	$$PWD/QLocationManagerProvidersListener.cpp \
-	$$PWD/QAndroidGooglePlayServiceLocationProvider.cpp \
-	$$PWD/QGeoPositionInfoSourceAndroidGPS.cpp \
+	$$PWD/QAndroidGmsLocationProvider.cpp \
+	$$PWD/QGeoPositionInfoSourceAndroidGms.cpp \
 	$$PWD/QNmeaListener.cpp
 
 }

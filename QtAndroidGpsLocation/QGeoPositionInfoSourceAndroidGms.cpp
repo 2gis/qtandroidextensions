@@ -34,18 +34,18 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "QGeoPositionInfoSourceAndroidGPS.h"
+#include "QGeoPositionInfoSourceAndroidGms.h"
 
 #include <QtPositioning/QGeoPositionInfo>
 #include <QAndroidQPAPluginGap.h>
-#include "QAndroidGooglePlayServiceLocationProvider.h"
+#include "QAndroidGmsLocationProvider.h"
 #include "QLocationManagerProvidersListener.h"
 
 
 Q_DECLARE_METATYPE(QGeoPositionInfo)
 
 
-QGeoPositionInfoSourceAndroidGPS::QGeoPositionInfoSourceAndroidGPS(QObject * parent) :
+QGeoPositionInfoSourceAndroidGms::QGeoPositionInfoSourceAndroidGms(QObject * parent) :
 	QGeoPositionInfoSource(parent),
 	m_error(NoError),
 	regularProvider_(NULL),
@@ -55,7 +55,8 @@ QGeoPositionInfoSourceAndroidGPS::QGeoPositionInfoSourceAndroidGPS(QObject * par
 	qRegisterMetaType< QGeoPositionInfo >();
 
 	providersListener_ = new QLocationManagerProvidersListener(this);
-	regularProvider_ = new QAndroidGooglePlayServiceLocationProvider(this);
+	regularProvider_ = new QAndroidGmsLocationProvider(this);
+	// requestProvider_ = new QAndroidGmsLocationProvider(this);
 	setPreferredPositioningMethods(NonSatellitePositioningMethods);
 
 	if (providersListener_)
@@ -74,28 +75,37 @@ QGeoPositionInfoSourceAndroidGPS::QGeoPositionInfoSourceAndroidGPS(QObject * par
 		QObject::connect(regularProvider_, SIGNAL(statusChanged(int)),
 						  this, SLOT(onStatusChanged(int)));
 	}
+
+	// if (requestProvider_)
+	// {
+	// 	QObject::connect(requestProvider_, &QAndroidGmsLocationProvider::locationRecieved,
+	// 						this, &QGeoPositionInfoSourceAndroidGms::processRequestPositionUpdate);
+
+	// 	QObject::connect(requestProvider_, &QAndroidGmsLocationProvider::statusChanged,
+	// 						this, &QGeoPositionInfoSourceAndroidGms::onRequestStatusChanged);
+	// }
 }
 
 
-QGeoPositionInfoSourceAndroidGPS::~QGeoPositionInfoSourceAndroidGPS()
+QGeoPositionInfoSourceAndroidGms::~QGeoPositionInfoSourceAndroidGms()
 {
 	stopUpdates();
 }
 
 
-bool QGeoPositionInfoSourceAndroidGPS::isAvailable()
+bool QGeoPositionInfoSourceAndroidGms::isAvailable()
 {
-	return QAndroidGooglePlayServiceLocationProvider::isAvailable();
+	return QAndroidGmsLocationProvider::isAvailable();
 }
 
 
-int QGeoPositionInfoSourceAndroidGPS::getGmsVersion()
+int QGeoPositionInfoSourceAndroidGms::getGmsVersion()
 {
-	return QAndroidGooglePlayServiceLocationProvider::getGmsVersion();
+	return QAndroidGmsLocationProvider::getGmsVersion();
 }
 
 
-void QGeoPositionInfoSourceAndroidGPS::startUpdates()
+void QGeoPositionInfoSourceAndroidGms::startUpdates()
 {
 	if (updatesRunning_)
 	{
@@ -111,16 +121,16 @@ void QGeoPositionInfoSourceAndroidGPS::startUpdates()
 		return;
 	}
 
-	QAndroidGooglePlayServiceLocationProvider::enPriority priority = QAndroidGooglePlayServiceLocationProvider::PRIORITY_LOW_POWER;
+	QAndroidGmsLocationProvider::enPriority priority = QAndroidGmsLocationProvider::PRIORITY_LOW_POWER;
 
 	if (QGeoPositionInfoSource::NonSatellitePositioningMethods & methods)
 	{
-		priority = QAndroidGooglePlayServiceLocationProvider::PRIORITY_BALANCED_POWER_ACCURACY;
+		priority = QAndroidGmsLocationProvider::PRIORITY_BALANCED_POWER_ACCURACY;
 	}
 
 	if (QGeoPositionInfoSource::SatellitePositioningMethods & methods)
 	{
-		priority = QAndroidGooglePlayServiceLocationProvider::PRIORITY_HIGH_ACCURACY;
+		priority = QAndroidGmsLocationProvider::PRIORITY_HIGH_ACCURACY;
 	}
 
 	regularProvider_->setPriority(priority);
@@ -135,7 +145,7 @@ void QGeoPositionInfoSourceAndroidGPS::startUpdates()
 }
 
 
-void QGeoPositionInfoSourceAndroidGPS::stopUpdates()
+void QGeoPositionInfoSourceAndroidGms::stopUpdates()
 {
 	Q_ASSERT(regularProvider_);
 	updatesRunning_ = false;
@@ -143,7 +153,7 @@ void QGeoPositionInfoSourceAndroidGPS::stopUpdates()
 }
 
 
-void QGeoPositionInfoSourceAndroidGPS::setUpdateInterval(int msec)
+void QGeoPositionInfoSourceAndroidGms::setUpdateInterval(int msec)
 {
 	int previousInterval = updateInterval();
 	msec = (((msec > 0) && (msec < minimumUpdateInterval())) || msec < 0)? minimumUpdateInterval() : msec;
@@ -162,7 +172,7 @@ void QGeoPositionInfoSourceAndroidGPS::setUpdateInterval(int msec)
 }
 
 
-QGeoPositionInfo QGeoPositionInfoSourceAndroidGPS::lastKnownPosition(bool fromSatellitePositioningMethodsOnly /*= false*/) const
+QGeoPositionInfo QGeoPositionInfoSourceAndroidGms::lastKnownPosition(bool fromSatellitePositioningMethodsOnly /*= false*/) const
 {
 	Q_UNUSED(fromSatellitePositioningMethodsOnly);
 	Q_ASSERT(regularProvider_);
@@ -170,10 +180,11 @@ QGeoPositionInfo QGeoPositionInfoSourceAndroidGPS::lastKnownPosition(bool fromSa
 }
 
 
-void QGeoPositionInfoSourceAndroidGPS::setPreferredPositioningMethods(const PositioningMethods methods)
+void QGeoPositionInfoSourceAndroidGms::setPreferredPositioningMethods(const PositioningMethods methods)
 {
 	const PositioningMethods previousPreferredPositioningMethods = preferredPositioningMethods();
 	QGeoPositionInfoSource::setPreferredPositioningMethods(methods);
+
 	if (previousPreferredPositioningMethods == preferredPositioningMethods())
 	{
 		return;
@@ -186,18 +197,18 @@ void QGeoPositionInfoSourceAndroidGPS::setPreferredPositioningMethods(const Posi
 }
 
 
-QGeoPositionInfoSource::PositioningMethods QGeoPositionInfoSourceAndroidGPS::supportedPositioningMethods() const
+QGeoPositionInfoSource::PositioningMethods QGeoPositionInfoSourceAndroidGms::supportedPositioningMethods() const
 {
 	return QGeoPositionInfoSource::AllPositioningMethods;
 }
 
 
-int QGeoPositionInfoSourceAndroidGPS::minimumUpdateInterval() const
+int QGeoPositionInfoSourceAndroidGms::minimumUpdateInterval() const
 {
 	return 1000;
 }
 
-void QGeoPositionInfoSourceAndroidGPS::setError(Error errval)
+void QGeoPositionInfoSourceAndroidGms::setError(Error errval)
 {
 	if (m_error != errval)
 	{
@@ -207,7 +218,7 @@ void QGeoPositionInfoSourceAndroidGPS::setError(Error errval)
 }
 
 
-QGeoPositionInfoSource::Error QGeoPositionInfoSourceAndroidGPS::error() const
+QGeoPositionInfoSource::Error QGeoPositionInfoSourceAndroidGms::error() const
 {
 	if (activeProvidersDisabled_)
 	{
@@ -218,47 +229,45 @@ QGeoPositionInfoSource::Error QGeoPositionInfoSourceAndroidGPS::error() const
 }
 
 
-void QGeoPositionInfoSourceAndroidGPS::requestUpdate(int timeout)
+void QGeoPositionInfoSourceAndroidGms::requestUpdate(int timeout)
 {
-	Q_UNUSED(timeout)
-	Q_ASSERT(!"Not implemented");
-	emit updateTimeout();
-	return;
+	Q_ASSERT(regularProvider_);
+	regularProvider_->requestUpdate(timeout);
 }
 
 
-void QGeoPositionInfoSourceAndroidGPS::processRegularPositionUpdate(const QGeoPositionInfo& location)
+void QGeoPositionInfoSourceAndroidGms::processRegularPositionUpdate(const QGeoPositionInfo& location)
 {
 	emit positionUpdated(location);
 }
 
 
-void QGeoPositionInfoSourceAndroidGPS::locationProviderDisabled()
+void QGeoPositionInfoSourceAndroidGms::locationProviderDisabled()
 {
 	setError(QGeoPositionInfoSource::ClosedError);
 }
 
 
-void QGeoPositionInfoSourceAndroidGPS::onProvidersChange(bool status)
+void QGeoPositionInfoSourceAndroidGms::onProvidersChange(bool status)
 {
 	activeProvidersDisabled_ = !status;
 	emit QGeoPositionInfoSource::error(error());
 }
 
 
-void QGeoPositionInfoSourceAndroidGPS::onStatusChanged(int status)
+void QGeoPositionInfoSourceAndroidGms::onStatusChanged(int status)
 {
 	switch (status)
 	{
-		case QAndroidGooglePlayServiceLocationProvider::S_DISCONNECTED:
-		case QAndroidGooglePlayServiceLocationProvider::S_CONNECT_ERROR:
-		case QAndroidGooglePlayServiceLocationProvider::S_CONNECT_SUSPEND:
-		case QAndroidGooglePlayServiceLocationProvider::S_REQUEST_FAIL:
+		case QAndroidGmsLocationProvider::S_DISCONNECTED:
+		case QAndroidGmsLocationProvider::S_CONNECT_ERROR:
+		case QAndroidGmsLocationProvider::S_CONNECT_SUSPEND:
+		case QAndroidGmsLocationProvider::S_REQUEST_FAIL:
 			setError(QGeoPositionInfoSource::ClosedError);
 			break;
 
-		case QAndroidGooglePlayServiceLocationProvider::S_CONNECTED:
-		case QAndroidGooglePlayServiceLocationProvider::S_REQUEST_SUCCESS:
+		case QAndroidGmsLocationProvider::S_CONNECTED:
+		case QAndroidGmsLocationProvider::S_REQUEST_SUCCESS:
 			setError(QGeoPositionInfoSource::NoError);
 			break;
 
@@ -269,7 +278,7 @@ void QGeoPositionInfoSourceAndroidGPS::onStatusChanged(int status)
 }
 
 
-void QGeoPositionInfoSourceAndroidGPS::reconfigureRunningSystem()
+void QGeoPositionInfoSourceAndroidGms::reconfigureRunningSystem()
 {
 	if (!updatesRunning_)
 	{

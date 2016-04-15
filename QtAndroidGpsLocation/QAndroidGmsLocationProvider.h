@@ -37,6 +37,7 @@
 #pragma once
 
 #include <QObject>
+#include <QTimer>
 #include <QJniHelpers.h>
 #include <QtPositioning/QGeoPositionInfo>
   
@@ -44,7 +45,7 @@
 /*!
  * A class for geting location from Google Play Services
  */
-class QAndroidGooglePlayServiceLocationProvider: public QObject
+class QAndroidGmsLocationProvider: public QObject
 {
 	Q_OBJECT
 
@@ -68,12 +69,16 @@ public:
 	};
 
 public:
-	QAndroidGooglePlayServiceLocationProvider(QObject * parent = 0);
-	virtual ~QAndroidGooglePlayServiceLocationProvider();
+	QAndroidGmsLocationProvider(QObject * parent = 0);
+	virtual ~QAndroidGmsLocationProvider();
 
 public slots:
 	void startUpdates();
 	void stopUpdates();
+	virtual void requestUpdate(int timeout = 0);
+
+private slots:
+	void onRequestTimeout();
 
 signals:
 	void statusChanged(int);
@@ -89,12 +94,13 @@ public:
 	static void preloadJavaClasses();
 
 private:
+	void stopUpdates(int64_t requestId);
 	void onStatusChanged(int status);
-	void onLocationRecieved(const QGeoPositionInfo &location, jboolean initial);
+	void onLocationRecieved(const QGeoPositionInfo &location, jboolean initial, jlong requestId);
 
 private:
-	Q_DISABLE_COPY(QAndroidGooglePlayServiceLocationProvider)
-	friend void JNICALL Java_GooglePlayServiceLocationProvider_locationRecieved(JNIEnv * env, jobject, jlong param, jobject location, jboolean initial);
+	Q_DISABLE_COPY(QAndroidGmsLocationProvider)
+	friend void JNICALL Java_GooglePlayServiceLocationProvider_locationRecieved(JNIEnv * env, jobject, jlong param, jobject location, jboolean initial, jlong requestId);
 	friend void JNICALL Java_GooglePlayServiceLocationProvider_locationStatus(JNIEnv * env, jobject, jlong param, jint state);
 
 private:
@@ -105,6 +111,11 @@ private:
 	int64_t reqiredInterval_; 
 	int64_t minimumInterval_;
 	enPriority priority_;
+
+	long regularUpdadesId_;
+	long requestUpdadesId_;
+
+	QTimer requestTimer_;
 };
 
 
