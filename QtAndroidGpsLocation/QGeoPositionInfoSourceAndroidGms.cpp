@@ -56,7 +56,6 @@ QGeoPositionInfoSourceAndroidGms::QGeoPositionInfoSourceAndroidGms(QObject * par
 
 	providersListener_ = new QLocationManagerProvidersListener(this);
 	regularProvider_ = new QAndroidGmsLocationProvider(this);
-	// requestProvider_ = new QAndroidGmsLocationProvider(this);
 	setPreferredPositioningMethods(NonSatellitePositioningMethods);
 
 	if (providersListener_)
@@ -75,15 +74,6 @@ QGeoPositionInfoSourceAndroidGms::QGeoPositionInfoSourceAndroidGms(QObject * par
 		QObject::connect(regularProvider_, SIGNAL(statusChanged(int)),
 						  this, SLOT(onStatusChanged(int)));
 	}
-
-	// if (requestProvider_)
-	// {
-	// 	QObject::connect(requestProvider_, &QAndroidGmsLocationProvider::locationRecieved,
-	// 						this, &QGeoPositionInfoSourceAndroidGms::processRequestPositionUpdate);
-
-	// 	QObject::connect(requestProvider_, &QAndroidGmsLocationProvider::statusChanged,
-	// 						this, &QGeoPositionInfoSourceAndroidGms::onRequestStatusChanged);
-	// }
 }
 
 
