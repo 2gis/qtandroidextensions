@@ -94,7 +94,7 @@ public:
 	static void preloadJavaClasses();
 
 private:
-	void stopUpdates(int64_t requestId);
+	void stopUpdates(jlong requestId);
 	void onStatusChanged(int status);
 	void onLocationRecieved(const QGeoPositionInfo &location, jboolean initial, jlong requestId);
 
@@ -108,12 +108,12 @@ private:
 	QGeoPositionInfo lastLocation_;
 	mutable QMutex lastLocationSync_;
 
-	int64_t reqiredInterval_; 
-	int64_t minimumInterval_;
+	jlong reqiredInterval_; 
+	jlong minimumInterval_;
 	enPriority priority_;
 
-	long regularUpdadesId_;
-	long requestUpdadesId_;
+	jlong regularUpdadesId_;
+	jlong requestUpdadesId_;
 
 	QTimer requestTimer_;
 };

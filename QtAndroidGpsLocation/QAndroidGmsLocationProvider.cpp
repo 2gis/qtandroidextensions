@@ -262,13 +262,13 @@ void QAndroidGmsLocationProvider::startUpdates()
 
 	if (handler_)
 	{
-		long maxWaitTime = 0;
-		int numUpdates = 0;
-		long expirationDuration = 0;
-		long expirationTime = 0;
+		jlong maxWaitTime = 0;
+		jint numUpdates = 0;
+		jlong expirationDuration = 0;
+		jlong expirationTime = 0;
 
-		long id = handler_->callParamLong("startLocationUpdates", "IJJJIJJ", 
-			(int32_t)priority_, 
+		jlong id = handler_->callParamLong("startLocationUpdates", "IJJJIJJ", 
+			(jint)priority_, 
 			reqiredInterval_, 
 			minimumInterval_, 
 			maxWaitTime, 
@@ -286,7 +286,7 @@ void QAndroidGmsLocationProvider::startUpdates()
 
 void QAndroidGmsLocationProvider::stopUpdates()
 {
-	long id = 0;
+	jlong id = 0;
 
 	{
 		QMutexLocker lock(&lastLocationSync_);
@@ -297,7 +297,7 @@ void QAndroidGmsLocationProvider::stopUpdates()
 }
 
 
-void QAndroidGmsLocationProvider::stopUpdates(int64_t requestId)
+void QAndroidGmsLocationProvider::stopUpdates(jlong requestId)
 {
 	qDebug() << __FUNCTION__ << "(" << requestId << ")";
 
@@ -330,7 +330,7 @@ void QAndroidGmsLocationProvider::requestUpdate(int timeout /*= 0*/)
 
 	if (0 == timeout)
 	{
-		timeout = std::max((int64_t)1000, 2 * reqiredInterval_);
+		timeout = std::max((jlong)1000, 2 * reqiredInterval_);
 	}
 
 	requestTimer_.setSingleShot(true);
@@ -338,13 +338,13 @@ void QAndroidGmsLocationProvider::requestUpdate(int timeout /*= 0*/)
 
 	if (handler_)
 	{
-		long maxWaitTime = 0;
-		int numUpdates = 1;
-		long expirationDuration = timeout;
-		long expirationTime = 0;
+		jlong maxWaitTime = 0;
+		jint numUpdates = 1;
+		jlong expirationDuration = timeout;
+		jlong expirationTime = 0;
 
 		requestUpdadesId_ = handler_->callParamLong("startLocationUpdates", "IJJJIJJ", 
-			(int32_t)priority_, 
+			(jint)priority_, 
 			reqiredInterval_, 
 			minimumInterval_, 
 			maxWaitTime, 
