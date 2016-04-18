@@ -323,7 +323,7 @@ void QAndroidGmsLocationProvider::requestUpdate(int timeout /*= 0*/)
 {
 	qDebug() << __FUNCTION__;
 
-	if (requestTimer_.isActive())
+	if (requestTimer_.isActive() || timeout < 0)
 	{
 		return;
 	}
