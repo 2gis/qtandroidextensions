@@ -76,7 +76,7 @@ Homebrewn access to Android compass which addresses some problems with Qt 5
 implementation.
 
 
-QtAndroidGpsLocation
+QtAndroidLocation
 ===============================================================================
 
 Homebrewn location provider which uses Google Fused location (when it is

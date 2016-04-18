@@ -39,7 +39,7 @@
 
 
 
-static const char * const c_full_class_name_ = "ru/dublgis/androidgpslocation/LocationManagerProvidersListener";
+static const char * const c_full_class_name_ = "ru/dublgis/androidlocation/LocationManagerProvidersListener";
 
 
 Q_DECL_EXPORT void JNICALL Java_onProvidersChange(JNIEnv * env, jobject, jlong param)

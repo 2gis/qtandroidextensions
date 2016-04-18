@@ -40,7 +40,7 @@
 #include <QtPositioning/QGeoPositionInfo>
 
 
-static const char * const c_full_class_name_ = "ru/dublgis/androidgpslocation/GmsLocationProvider";
+static const char * const c_full_class_name_ = "ru/dublgis/androidlocation/GmsLocationProvider";
 
 
 
