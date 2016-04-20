@@ -40,6 +40,7 @@ package ru.dublgis.androidlocation;
 import android.app.Activity;
 import android.os.Looper;
 import android.util.Log;
+import android.app.Dialog;
 
 import java.lang.Exception;
 import java.lang.Override;
@@ -328,12 +329,29 @@ public class GmsLocationProvider
 	}
 
 
-	static public boolean isAvailable(final Activity context)
+	static public boolean isAvailable(final Activity activity, final boolean allowDialog)
 	{
 		try {
 			final GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
-			final int errorCode = apiAvailability.isGooglePlayServicesAvailable(context);
+			final int errorCode = apiAvailability.isGooglePlayServicesAvailable(activity);
 
+			switch (errorCode) {
+				case ConnectionResult.SERVICE_MISSING:
+				case ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED:
+				case ConnectionResult.SERVICE_DISABLED:
+
+					if (allowDialog) {
+						activity.runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								Dialog dialog = apiAvailability.getErrorDialog(activity, errorCode, 1);
+								if (null != dialog) {
+									dialog.show();
+								}
+							}
+						});
+					}
+			}
 
 			return ConnectionResult.SUCCESS == errorCode;
 		}
@@ -345,16 +363,14 @@ public class GmsLocationProvider
 	}
 
 
-	static public int getGmsVersion(Activity context)
+	static public int getGmsVersion(Activity activity)
 	{
 		int versionCode = 0;
 
-		try 
-		{
-			versionCode = context.getPackageManager().getPackageInfo(GoogleApiAvailability.GOOGLE_PLAY_SERVICES_PACKAGE, 0).versionCode;
+		try {
+			versionCode = activity.getPackageManager().getPackageInfo(GoogleApiAvailability.GOOGLE_PLAY_SERVICES_PACKAGE, 0).versionCode;
 		}
-		catch(Exception e)
-		{
+		catch(Exception e) {
 			Log.e(TAG, e.getMessage());
 		}
 

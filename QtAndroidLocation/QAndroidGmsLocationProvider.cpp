@@ -379,7 +379,7 @@ int QAndroidGmsLocationProvider::getGmsVersion()
 }
 
 
-bool QAndroidGmsLocationProvider::isAvailable()
+bool QAndroidGmsLocationProvider::isAvailable(jboolean allowDialog)
 {
 	preloadJavaClasses();
 
@@ -392,7 +392,7 @@ bool QAndroidGmsLocationProvider::isAvailable()
 			qWarning() << "Failed to instantiate: " << c_full_class_name_;
 			return false;
 		}
-		jboolean result = clazz.callStaticParamBoolean("isAvailable", "Landroid/app/Activity;", QAndroidQPAPluginGap::Context().jObject());
+		jboolean result = clazz.callStaticParamBoolean("isAvailable", "Landroid/app/Activity;Z", QAndroidQPAPluginGap::Context().jObject(), allowDialog);
 		qDebug() << "....GP positioning availability result:" << result;
 		return result;
 	}

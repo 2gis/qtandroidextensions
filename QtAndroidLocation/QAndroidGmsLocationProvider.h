@@ -85,7 +85,7 @@ signals:
 	void locationRecieved(const QGeoPositionInfo&);
 
 public:
-	static bool isAvailable();
+	static bool isAvailable(jboolean allowDialog);
 	static int getGmsVersion();
 	void setUpdateInterval(int64_t reqiredInterval, int64_t minimumInterval);
 	void setPriority(enPriority priority);

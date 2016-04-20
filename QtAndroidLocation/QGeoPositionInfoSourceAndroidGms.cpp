@@ -83,9 +83,9 @@ QGeoPositionInfoSourceAndroidGms::~QGeoPositionInfoSourceAndroidGms()
 }
 
 
-bool QGeoPositionInfoSourceAndroidGms::isAvailable()
+bool QGeoPositionInfoSourceAndroidGms::isAvailable(bool allowDialog /*= false*/)
 {
-	return QAndroidGmsLocationProvider::isAvailable();
+	return QAndroidGmsLocationProvider::isAvailable(allowDialog);
 }
 
 

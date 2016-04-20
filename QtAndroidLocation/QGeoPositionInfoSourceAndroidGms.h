@@ -55,7 +55,7 @@ public:
 	virtual ~QGeoPositionInfoSourceAndroidGms();
 
 public:
-	static bool isAvailable();
+	static bool isAvailable(bool allowDialog = false);
 	static int getGmsVersion();
 
 public:
