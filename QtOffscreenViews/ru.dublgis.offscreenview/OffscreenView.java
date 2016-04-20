@@ -63,42 +63,45 @@ import android.graphics.Canvas;
 abstract class OffscreenView
 {
     public static final String TAG = "Grym/OffscreenView";
-    private View view_ = null;
-    protected OffscreenRenderingSurface rendering_surface_ = null;
-    private String object_name_ = "UnnamedView";
-    private long native_ptr_ = 0;
+
+    private volatile long native_ptr_ = 0;
+
+    final private Object texture_mutex_ = new Object();
     private int gl_texture_id_ = 0;
-    private ArrayList<Runnable> precreation_actions_ = new ArrayList<Runnable>();
+    protected OffscreenRenderingSurface rendering_surface_ = null;
 
-    private Object native_ptr_mutex_ = new Object();
-    private Object view_existence_mutex_ = new Object();
-    private Object view_variables_mutex_ = new Object();
-    private Object texture_mutex_ = new Object();
-    private Object texture_transform_mutex_ = new Object();
-
-    private int view_width_ = 512;
-    private int view_height_ = 512;
+    final protected Object view_variables_mutex_ = new Object();
+    protected int fill_a_ = 255, fill_r_ = 255, fill_g_ = 255, fill_b_ = 255;
     private int view_left_ = 0;
     private int view_top_ = 0;
-    protected int fill_a_ = 255, fill_r_ = 255, fill_g_ = 255, fill_b_ = 255;
-    private MyLayout layout_ = null;
-    private boolean last_visibility_ = false;
-    private boolean last_enabled_ = true;
-    private boolean offscreen_touch_ = false;
-    private boolean is_attached_ = false;
-    private boolean attaching_mode_ = true;
-    private boolean hide_keyboard_on_focus_loss_ = true;
-    private boolean show_keyboard_on_focus_in_ = false;
-    private int scroll_x_ = 0;
-    private int scroll_y_ = 0;
     private int measured_width_ = -1;
     private int measured_height_ = -1;
+    private int scroll_x_ = 0;
+    private int scroll_y_ = 0;
+    private int view_width_ = 512;
+    private int view_height_ = 512;
+
+    final private Object view_existence_mutex_ = new Object();
+    private View view_ = null;
+    private ArrayList<Runnable> precreation_actions_ = new ArrayList<Runnable>();
 
     // Variables to inform C++ about last painted texture / control size
+    final private Object texture_transform_mutex_ = new Object();
     private int last_painted_width_ = 0;
     private int last_painted_height_ = 0;
     private int last_texture_width_ = 0;
     private int last_texture_height_ = 0;
+
+    private MyLayout layout_ = null;                             // threads: ui
+    volatile private String object_name_ = "UnnamedView";
+    volatile private boolean last_visibility_ = false;           // threads: c++ & ui
+    volatile private boolean last_enabled_ = true;               // threads: c++ & ui
+    volatile private boolean offscreen_touch_ = false;           // threads: ui
+    volatile private boolean is_attached_ = false;               // threads: ui
+    volatile private boolean attaching_mode_ = true;             // threads: c++ & ui
+    volatile private boolean hide_keyboard_on_focus_loss_ = true;// threads: c++ & ui
+    volatile private boolean show_keyboard_on_focus_in_ = false; // threads: c++ & ui
+
 
     //! Simple one-element absolute layout.
     private class MyLayout extends ViewGroup
@@ -145,14 +148,15 @@ abstract class OffscreenView
             View child = getChildAt(0);
             // This absolutely must be done, because this is what updates layout of overlays
             // on some Android versions.
-            child.layout(view_left_, view_top_, view_left_+view_width_, view_top_+view_height_);
-            if (getApiLevel() >= 11)
-            {
-                // Child view should not overlap with the keyboard
-                child.layout(0, 0, view_width_, view_height_);
-                // Translate to real position
-                child.setX(view_left_);
-                child.setY(view_top_);
+            synchronized (view_variables_mutex_) {
+                child.layout(view_left_, view_top_, view_left_ + view_width_, view_top_ + view_height_);
+                if (getApiLevel() >= 11) {
+                    // Child view should not overlap with the keyboard
+                    child.layout(0, 0, view_width_, view_height_);
+                    // Translate to real position
+                    child.setX(view_left_);
+                    child.setY(view_top_);
+                }
             }
         }
     }
@@ -164,10 +168,7 @@ abstract class OffscreenView
 
     public void SetObjectName(String name)
     {
-        synchronized(view_variables_mutex_)
-        {
-            object_name_ = name;
-        }
+        object_name_ = name;
     }
 
     public void SetTexture(int tex)
@@ -200,10 +201,7 @@ abstract class OffscreenView
 
     public void SetNativePtr(long ptr)
     {
-        synchronized(native_ptr_mutex_)
-        {
-            native_ptr_ = ptr;
-        }
+        native_ptr_ = ptr;
     }
 
     public boolean runOnUiThread(final Runnable runnable)
@@ -364,28 +362,25 @@ abstract class OffscreenView
     {
         try
         {
-            if (!attaching_mode_ || is_attached_)
-            {
-                return false;
-            }
-            Log.i(TAG, "uiAttachViewToQtScreen "+object_name_);
-            if (layout_ == null)
-            {
-                Log.e(TAG, "Failed to insert "+object_name_+" into the ViewGroup because View is null!");
-                return false;
-            }
-            ViewGroup vg = getMainLayout();
-            if (vg != null)
-            {
-                Log.i(TAG, "Inserting "+object_name_+" (layout_ id="+layout_.getId()+") into the ViewGroup...");
-                vg.addView(layout_);
-                is_attached_ = true;
-                return true;
-            }
-            else
-            {
-                Log.w(TAG, "Failed to insert "+object_name_+" into the ViewGroup because it was not found!");
-                return false;
+            synchronized (view_variables_mutex_) {
+                if (!attaching_mode_ || is_attached_) {
+                    return false;
+                }
+                Log.i(TAG, "uiAttachViewToQtScreen " + object_name_);
+                if (layout_ == null) {
+                    Log.e(TAG, "Failed to insert " + object_name_ + " into the ViewGroup because View is null!");
+                    return false;
+                }
+                ViewGroup vg = getMainLayout();
+                if (vg != null) {
+                    Log.i(TAG, "Inserting " + object_name_ + " (layout_ id=" + layout_.getId() + ") into the ViewGroup...");
+                    vg.addView(layout_);
+                    is_attached_ = true;
+                    return true;
+                } else {
+                    Log.w(TAG, "Failed to insert " + object_name_ + " into the ViewGroup because it was not found!");
+                    return false;
+                }
             }
         }
         catch(Exception e)
@@ -405,7 +400,7 @@ abstract class OffscreenView
         try
         {
             Activity activity = getActivity();
-            View view = getView();
+            final View view = getView();
             if (activity == null || layout_ == null || view == null)
             {
                 Log.w(TAG, "Could not remove "+object_name_+" from the ViewGroup because Activity, layout or view is null.");
@@ -547,11 +542,13 @@ abstract class OffscreenView
     void initializeBitmap(final Bitmap bitmap_a, final Bitmap bitmap_b)
     {
         Log.i(TAG, "OffscreenView.intializeBitmap(name=\""+object_name_+"\"");
+
         synchronized(texture_mutex_)
         {
             rendering_surface_ = new OffscreenBitmapRenderingSurface();
             rendering_surface_.setBitmaps(bitmap_a, bitmap_b);
         }
+
         runViewAction(new Runnable() {
             @Override
             public void run()
@@ -592,7 +589,7 @@ abstract class OffscreenView
             @Override
             public void run()
             {
-                View v = getView();
+                final View v = getView();
                 if (v != null)
                 {
                     int vis = last_visibility_? View.VISIBLE: View.INVISIBLE;
@@ -633,7 +630,7 @@ abstract class OffscreenView
             @Override
             public void run()
             {
-                View v = getView();
+                final View v = getView();
                 if (v != null)
                 {
                     if (!enabled)
@@ -729,7 +726,7 @@ abstract class OffscreenView
                 return false;
             }
 
-            View v = getView();
+            final View v = getView();
             if (v != null && v.getVisibility() != View.VISIBLE)
             {
                 // Note: setVisible()'s lambda will schedule one more paint after the view will become visible.
@@ -820,11 +817,13 @@ abstract class OffscreenView
         This function should be called after updateTexture(). */
     public float getTextureTransformMatrix(int index)
     {
-        if (rendering_surface_ == null)
-        {
-            return 0;
+        float val = 0;
+        synchronized(texture_mutex_) {
+            if (rendering_surface_ != null) {
+                val = rendering_surface_.getTextureTransformMatrix(index);
+            }
         }
-        return rendering_surface_.getTextureTransformMatrix(index);
+        return val;
     }
 
     //! Called from C++.
@@ -848,9 +847,10 @@ abstract class OffscreenView
     //! Called from C++
     public void setBitmaps(final Bitmap bitmap_a, final Bitmap bitmap_b)
     {
-        if (rendering_surface_ != null)
-        {
-            rendering_surface_.setBitmaps(bitmap_a, bitmap_b);
+        synchronized (texture_mutex_) {
+            if (rendering_surface_ != null) {
+                rendering_surface_.setBitmaps(bitmap_a, bitmap_b);
+            }
         }
         System.gc();
     }
@@ -858,16 +858,14 @@ abstract class OffscreenView
     //! Called from C++
     public int getQtPaintingTexture()
     {
-        if (rendering_surface_ != null)
-        {
-            // Log.i(TAG, "getQtPaintingTexture "+object_name_+" getting texture...");
-            return rendering_surface_.getQtPaintingTexture();
+        synchronized (texture_mutex_) {
+            if (rendering_surface_ != null) {
+                // Log.i(TAG, "getQtPaintingTexture "+object_name_+" getting texture...");
+                return rendering_surface_.getQtPaintingTexture();
+            }
         }
-        else
-        {
-            // Log.i(TAG, "getQtPaintingTexture "+object_name_+" no rendering surface, returning -1");
-            return -1;
-        }
+        // Log.i(TAG, "getQtPaintingTexture "+object_name_+" no rendering surface, returning -1");
+        return -1;
     }
 
     /*!
@@ -1062,41 +1060,37 @@ abstract class OffscreenView
     //! Called from C++ to change size of the view.
     public void resizeOffscreenView(final int w, final int h)
     {
-        synchronized(view_variables_mutex_)
-        {
-            Log.i(TAG, "resizeOffscreenView "+w+"x"+h);
-            view_width_ = w;
-            view_height_ = h;
-            if (rendering_surface_ != null)
-            {
-                rendering_surface_.setNewSize(w, h);
-            }
-            runViewAction(new Runnable(){
-                @Override
-                public void run()
-                {
-                    final View v = getView();
-                    if (v != null)
-                    {
-                        if (!attaching_mode_)
-                        {
-                            if (getApiLevel() >= 11)
-                            {
-                                v.setLeft(0);
-                                v.setTop(0);
-                                v.setRight(w);
-                                v.setBottom(h);
-                            }
-                        }
-                        else
-                        {
-                            v.forceLayout();
-                            v.requestLayout();
-                        }
-                        invalidateOffscreenView();
-                    }
+        synchronized (texture_mutex_) {
+            synchronized (view_variables_mutex_) {
+                Log.i(TAG, "resizeOffscreenView " + w + "x" + h);
+                view_width_ = w;
+                view_height_ = h;
+
+                if (rendering_surface_ != null) {
+                    rendering_surface_.setNewSize(w, h);
                 }
-            });
+
+                runViewAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        final View v = getView();
+                        if (v != null) {
+                            if (!attaching_mode_) {
+                                if (getApiLevel() >= 11) {
+                                    v.setLeft(0);
+                                    v.setTop(0);
+                                    v.setRight(w);
+                                    v.setBottom(h);
+                                }
+                            } else {
+                                v.forceLayout();
+                                v.requestLayout();
+                            }
+                            invalidateOffscreenView();
+                        }
+                    }
+                });
+            }
         }
     }
 
@@ -1138,19 +1132,14 @@ abstract class OffscreenView
 
     final long getNativePtr()
     {
-        synchronized(native_ptr_mutex_)
-        {
-            return native_ptr_;
-        }
+        return native_ptr_;
     }
 
     //! Called from C++ to notify us that the associated C++ object is being destroyed.
     public void cppDestroyed()
     {
-        synchronized(native_ptr_mutex_)
-        {
-            native_ptr_ = 0;
-        }
+        native_ptr_ = 0;
+
         runOnUiThread(new Runnable(){
             @Override
             public void run()
@@ -1351,12 +1340,14 @@ abstract class OffscreenView
         {
             synchronized(texture_mutex_)
             {
-                Log.d(TAG, "OffscreenGLTextureRenderingSurface(obj=\""+object_name_+"\", texture="+gl_texture_id_
-                    +", w="+view_width_+", h="+view_height_+") tid="+Thread.currentThread().getId());
-                surface_texture_ = new SurfaceTexture(gl_texture_id_);
-                surface_ = new Surface(surface_texture_);
-                setNewSize(view_width_, view_height_);
-                Log.d(TAG, "OffscreenGLTextureRenderingSurface created");
+                synchronized (view_variables_mutex_) {
+                    Log.d(TAG, "OffscreenGLTextureRenderingSurface(obj=\"" + object_name_ + "\", texture=" + gl_texture_id_
+                            + ", w=" + view_width_ + ", h=" + view_height_ + ") tid=" + Thread.currentThread().getId());
+                    surface_texture_ = new SurfaceTexture(gl_texture_id_);
+                    surface_ = new Surface(surface_texture_);
+                    setNewSize(view_width_, view_height_);
+                    Log.d(TAG, "OffscreenGLTextureRenderingSurface created");
+                }
             }
         }
 
@@ -1484,7 +1475,7 @@ abstract class OffscreenView
             @Override
             public void run()
             {
-                View v = getView();
+                final View v = getView();
                 if (v != null)
                 {
                     Rect rect = new Rect();

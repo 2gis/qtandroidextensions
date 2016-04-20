@@ -185,7 +185,9 @@ class OffscreenEditText extends OffscreenView
         public void onDrawPublic(Canvas canvas)
         {
             // A text view has transparent background by default, which is not what we expect.
-            canvas.drawARGB (fill_a_, fill_r_, fill_g_, fill_b_);
+            synchronized(view_variables_mutex_) {
+                canvas.drawARGB(fill_a_, fill_r_, fill_g_, fill_b_);
+            }
             super.onDraw(canvas);
         }
 
