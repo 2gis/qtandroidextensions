@@ -334,27 +334,6 @@ public class GmsLocationProvider
 			final GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
 			final int errorCode = apiAvailability.isGooglePlayServicesAvailable(context);
 
-//			switch (errorCode) {
-//				case ConnectionResult.SERVICE_MISSING:
-//				case ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED:
-//				case ConnectionResult.SERVICE_DISABLED:
-//
-//					if (false == mDialogShown) {
-//						mDialogShown = true;
-//
-//						context.runOnUiThread(new Runnable() {
-//							@Override
-//							public void run() {
-//								Dialog dialog = apiAvailability.getErrorDialog(context, errorCode, 1);
-//
-//								if (null != dialog) {
-//									mDialogShown = true;
-//									dialog.show();
-//								}
-//							}
-//						});
-//					}
-//			}
 
 			return ConnectionResult.SUCCESS == errorCode;
 		}
