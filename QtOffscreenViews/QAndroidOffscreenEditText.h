@@ -91,7 +91,8 @@ public:
 	void setCursorVisible(bool visible);
 
 	// http://developer.android.com/reference/android/text/InputType.html
-	static const int
+	enum AndroidInputType
+	{
 		ANDROID_INPUTTYPE_TYPE_CLASS_DATETIME					= 0x00000004,
 		ANDROID_INPUTTYPE_TYPE_CLASS_NUMBER						= 0x00000002,
 		ANDROID_INPUTTYPE_TYPE_CLASS_PHONE						= 0x00000003,
@@ -129,7 +130,8 @@ public:
 		ANDROID_INPUTTYPE_TYPE_TEXT_VARIATION_VISIBLE_PASSWORD	= 0x00000090,
 		ANDROID_INPUTTYPE_TYPE_TEXT_VARIATION_WEB_EDIT_TEXT		= 0x000000a0,
 		ANDROID_INPUTTYPE_TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS	= 0x000000d0,
-		ANDROID_INPUTTYPE_TYPE_TEXT_VARIATION_WEB_PASSWORD		= 0x000000e0;
+		ANDROID_INPUTTYPE_TYPE_TEXT_VARIATION_WEB_PASSWORD		= 0x000000e0
+	};
 
 	//! Set the type of the content with a constant as defined for inputType (ANDROID_INPUTTYPE_...)
 	void setInputType(int type);

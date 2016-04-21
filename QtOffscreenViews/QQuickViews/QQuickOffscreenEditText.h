@@ -42,6 +42,7 @@ class QQuickAndroidOffscreenEditText: public QQuickAndroidOffscreenView
 {
 	Q_OBJECT
 	Q_PROPERTY(QString text READ getText WRITE setText NOTIFY onTextChanged)
+	Q_ENUMS(QAndroidOffscreenEditText::AndroidInputType)
 public:
 	QQuickAndroidOffscreenEditText();
 
