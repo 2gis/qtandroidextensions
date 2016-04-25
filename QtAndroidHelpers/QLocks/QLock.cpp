@@ -34,7 +34,7 @@
     THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <QtWidgets/QApplication>
+#include <QtGui/QGuiApplication>
 #include <QtCore/qdebug.h>
 #include "QLockBase.h"
 #include "QLock_p.h"
@@ -47,11 +47,11 @@ namespace QLocks
 	{
 		// If we have just QCoreApplicaion instance, we don't have UI and don't have
 		// any active/inactive states, so we just assume that we're always active.
-		if (QApplication::instance()->metaObject()->indexOfSignal("applicationStateChanged(Qt::ApplicationState)") >= 0
+		if (QGuiApplication::instance()->metaObject()->indexOfSignal("applicationStateChanged(Qt::ApplicationState)") >= 0
 			&& unlockOnSleep)
 		{
 			QObject::connect(
-				QApplication::instance(),
+				QGuiApplication::instance(),
 				SIGNAL(applicationStateChanged(Qt::ApplicationState)),
 				this,
 				SLOT(onApplicationStateChanged(Qt::ApplicationState)));
