@@ -47,7 +47,7 @@ import android.hardware.SensorEvent;
 
 public class CompassProvider implements SensorEventListener
 {
-	private final String TAG = "Grym/CompassProvider";
+	private static final String TAG = "Grym/CompassProvider";
 	private long mNativePtr = 0;
 	private SensorManager mSensorManager;
 	private Sensor mOrientation;

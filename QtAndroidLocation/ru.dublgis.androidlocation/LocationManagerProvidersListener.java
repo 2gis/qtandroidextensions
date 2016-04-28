@@ -50,7 +50,7 @@ import android.content.BroadcastReceiver;
 
 public class LocationManagerProvidersListener extends BroadcastReceiver
 {
-	static final String TAG = "Grym/LocationManagerProvidersListener";
+	static final String TAG = "Grym/LocMngProvListener";
 	long native_ptr_ = 0;
 
 

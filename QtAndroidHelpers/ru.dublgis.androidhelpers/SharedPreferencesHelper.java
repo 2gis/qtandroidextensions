@@ -44,7 +44,7 @@ import android.content.Context;
 
 final public class SharedPreferencesHelper
 {
-	static final private String TAG = "Grym/SharedPreferencesHelper";
+	static final private String TAG = "Grym/ShrdPrefHelper";
 	private long native_ptr_ = 0;
 
 

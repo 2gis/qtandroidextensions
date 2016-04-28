@@ -58,7 +58,7 @@ import android.util.Log;
 
 public class DesktopUtils
 {
-    private static final String tag = "Grym/DesktopServices";
+    private static final String TAG = "Grym/DesktopServices";
     private static final boolean verbose = false;
 
     // Returns:
@@ -79,7 +79,7 @@ public class DesktopUtils
         }
         catch (Exception e)
         {
-            Log.e(tag, "IsInternetActive exception: "+e);
+            Log.e(TAG, "IsInternetActive exception: "+e);
         }
         return -1;
     }
@@ -102,7 +102,7 @@ public class DesktopUtils
         }
         catch (Exception e)
         {
-            Log.e(tag, "GetNetworkType exception: "+e);
+            Log.e(TAG, "GetNetworkType exception: "+e);
         }
         return -1;
     }
@@ -112,7 +112,7 @@ public class DesktopUtils
     {
         try
         {
-            Log.d(tag, "Will send-to text \""+text+"\" of type: \""+content_type+"\"");
+            Log.d(TAG, "Will send-to text \""+text+"\" of type: \""+content_type+"\"");
             Intent sendIntent = new Intent(Intent.ACTION_SEND);
             sendIntent.setType(content_type);
             sendIntent.putExtra(Intent.EXTRA_TEXT, text);
@@ -123,7 +123,7 @@ public class DesktopUtils
         }
         catch (Exception e)
         {
-            Log.e(tag, "sendTo exception: "+e);
+            Log.e(TAG, "sendTo exception: "+e);
             return false;
         }
     }
@@ -132,12 +132,12 @@ public class DesktopUtils
     {
         try
         {
-            //Log.d(tag, "Will send sms \""+text+"\" to  \""+number+"\"");
+            //Log.d(TAG, "Will send sms \""+text+"\" to  \""+number+"\"");
             String uris = "smsto:";
             if (number != null && number.length()>2)
                 uris += number;
             if (verbose)
-                Log.i(tag, "URI: "+uris);
+                Log.i(TAG, "URI: "+uris);
             Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse(uris));
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.putExtra("sms_body", text);
@@ -146,7 +146,7 @@ public class DesktopUtils
         }
         catch (Exception e)
         {
-            Log.e(tag, "sendSMS exception: "+e);
+            Log.e(TAG, "sendSMS exception: "+e);
             return false;
         }
     }
@@ -180,7 +180,7 @@ public class DesktopUtils
          final boolean force_content_provider,
          final String authorities)
     {
-        //Log.d(tag, "Will send email with subject \"" +
+        //Log.d(TAG, "Will send email with subject \"" +
         //    subject + "\" to \"" + to + "\" with attach_file = \"" + attach_file + "\"" +
         //    ", force_content_provider = " + force_content_provider +
         //    ", authorities = \"" + authorities + "\"");
@@ -247,7 +247,7 @@ public class DesktopUtils
         }
         catch (Exception e)
         {
-            Log.e(tag, "sendEmail exception: "+e);
+            Log.e(TAG, "sendEmail exception: "+e);
             return false;
         }
     }
@@ -256,7 +256,7 @@ public class DesktopUtils
     {
         try
         {
-            Log.d(tag, "Will open URL: "+url);
+            Log.d(TAG, "Will open URL: "+url);
             String openurl = url;
 
             Uri uri = Uri.parse(openurl);
@@ -277,7 +277,7 @@ public class DesktopUtils
         }
         catch (Exception e)
         {
-            Log.e(tag, "openURL exception: "+e);
+            Log.e(TAG, "openURL exception: "+e);
             return false;
         }
     }
@@ -285,7 +285,7 @@ public class DesktopUtils
     // Open a file using some (or default) associated application
     public static boolean openFile(final Context ctx, final String fileName, final String mimeType)
     {
-        Log.d(tag, "Will open file: "+fileName);
+        Log.d(TAG, "Will open file: "+fileName);
         try
         {
             Intent intent =new Intent(Intent.ACTION_VIEW);
@@ -297,7 +297,7 @@ public class DesktopUtils
         }
         catch (Exception e)
         {
-            Log.e(tag, "Exception while opening a file: "+e);
+            Log.e(TAG, "Exception while opening a file: "+e);
             return false;
         }
     }
@@ -305,19 +305,19 @@ public class DesktopUtils
     // Request system to install a local apk file. System installer application will be open.
     public static boolean installApk(final Context ctx, final String apk)
     {
-        Log.d(tag, "Will install APK: "+apk);
+        Log.d(TAG, "Will install APK: "+apk);
         try
         {
             Intent intent =new Intent(Intent.ACTION_VIEW);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.setDataAndType(Uri.fromFile(new File(apk)), "application/vnd.android.package-archive");
             ctx.startActivity(intent);
-            Log.i(tag, "Installation intent started successfully.");
+            Log.i(TAG, "Installation intent started successfully.");
             return true;
         }
         catch (Exception e)
         {
-            Log.e(tag, "Exception while installing apk: "+e);
+            Log.e(TAG, "Exception while installing apk: "+e);
             return false;
         }
     }
@@ -325,18 +325,18 @@ public class DesktopUtils
     // Request system to uninstall a package. User will be prompted for confirmation by the system package manager application.
     public static void uninstallApk(final Context ctx, final String packagename)
     {
-        Log.i(tag, "Will uninstall package: "+packagename);
+        Log.i(TAG, "Will uninstall package: "+packagename);
         try
         {
             Intent intent = new Intent(Intent.ACTION_DELETE);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.setData(Uri.parse("package:"+packagename));
             ctx.startActivity(intent);
-            Log.i(tag, "Uninstallation intent started successfully.");
+            Log.i(TAG, "Uninstallation intent started successfully.");
         }
         catch (Exception e)
         {
-            Log.e(tag, "Exception while uninstalling package: "+e);
+            Log.e(TAG, "Exception while uninstalling package: "+e);
         }
     }
 
@@ -346,7 +346,7 @@ public class DesktopUtils
     {
         try
         {
-            Log.i(tag, "Will call number: "+number);
+            Log.i(TAG, "Will call number: "+number);
             Intent i = new Intent(Intent.ACTION_VIEW);
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             i.setData(Uri.parse("tel:"+number));
@@ -355,7 +355,7 @@ public class DesktopUtils
         }
         catch(Exception e)
         {
-            Log.e(tag, "callNumber exception: "+e);
+            Log.e(TAG, "callNumber exception: "+e);
             return false;
         }
     }
@@ -373,7 +373,7 @@ public class DesktopUtils
         }
         catch (Exception e)
         {
-            Log.e(tag, "getTelephonyDeviceId exception: "+e);
+            Log.e(TAG, "getTelephonyDeviceId exception: "+e);
             return "";
         }
     }
@@ -386,7 +386,7 @@ public class DesktopUtils
         }
         catch (Exception e)
         {
-            Log.e(tag, "getDisplayCountry exception: " + e);
+            Log.e(TAG, "getDisplayCountry exception: " + e);
             return "";
         }
     }
@@ -399,7 +399,7 @@ public class DesktopUtils
         }
         catch (Exception e)
         {
-            Log.e(tag, "getCountry exception: " + e);
+            Log.e(TAG, "getCountry exception: " + e);
             return "";
         }
     }
@@ -418,7 +418,7 @@ public class DesktopUtils
         }
         catch (Exception e)
         {
-            Log.e(tag, "getAndroidId exception: "+e);
+            Log.e(TAG, "getAndroidId exception: "+e);
         }
         return "";
     }
@@ -436,7 +436,7 @@ public class DesktopUtils
        }
        catch (Exception e)
        {
-           Log.e(tag, "getBuildSerial exception: "+e);
+           Log.e(TAG, "getBuildSerial exception: "+e);
        }
        return "";
     }
@@ -456,7 +456,7 @@ public class DesktopUtils
         }
         catch (Exception e)
         {
-            Log.e(tag, "getInstalledAppsList exception: "+e);
+            Log.e(TAG, "getInstalledAppsList exception: "+e);
         }
         return "";
     }
