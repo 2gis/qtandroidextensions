@@ -6,7 +6,7 @@
 
   Distrbuted under The BSD License
 
-  Copyright (c) 2015, DoubleGIS, LLC.
+  Copyright (c) 2015-2016, DoubleGIS, LLC.
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@
 package ru.dublgis.androidhelpers;
 
 import java.util.List;
+import java.util.Locale;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -458,5 +459,10 @@ public class DesktopUtils
             Log.e(tag, "getInstalledAppsList exception: "+e);
         }
         return "";
+    }
+
+    public static String getDefaultLocaleName()
+    {
+        return Locale.getDefault().toString();
     }
 }

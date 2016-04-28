@@ -254,6 +254,12 @@ QString getUniqueDeviceId()
 	return device_id;
 }
 
+QString getDefaultLocaleName()
+{
+	QJniClass du(c_full_class_name_);
+	return du.callStaticString("getDefaultLocaleName");
+}
+
 
 } // namespace QAndroidDesktopUtils
 
