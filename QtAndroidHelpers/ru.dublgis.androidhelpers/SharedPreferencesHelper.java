@@ -76,7 +76,7 @@ final public class SharedPreferencesHelper
 		SharedPreferences sharedPref = getPreferences();
 		SharedPreferences.Editor editor = sharedPref.edit();
 		editor.putString(key, value);
-		editor.commit();
+		editor.apply();
 	}
 
 	public String ReadString(String key, String valueDefault)
@@ -92,7 +92,7 @@ final public class SharedPreferencesHelper
 		SharedPreferences sharedPref = getPreferences();
 		SharedPreferences.Editor editor = sharedPref.edit();
 		editor.putInt(key, value);
-		editor.commit();
+		editor.apply();
 	}
 
 	public int ReadInt(String key, int valueDefault)
