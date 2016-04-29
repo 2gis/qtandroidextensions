@@ -41,6 +41,7 @@ class QAndroidOffscreenEditText
 	: public QAndroidOffscreenView
 {
 	Q_OBJECT
+	Q_ENUMS(AndroidInputType)
 public:
 	QAndroidOffscreenEditText(const QString & object_name, const QSize & def_size, QObject * parent = 0);
 	virtual ~QAndroidOffscreenEditText();
