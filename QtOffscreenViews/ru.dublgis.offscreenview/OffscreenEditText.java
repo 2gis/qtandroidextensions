@@ -70,6 +70,46 @@ class OffscreenEditText extends OffscreenView
         SYSTEM_DRAW_HACKY = 2;
     private int system_draw_ = SYSTEM_DRAW_HACKY;
 
+    class PasswordTextWatcher implements TextWatcher
+    {
+        private EditText mEditText;
+
+        public PasswordTextWatcher(EditText e)
+        {
+            mEditText = e;
+            // need to set only transformation method after component creation, not input type
+            // because input type will change placeholder typeface to monospace, and we have
+            // no way to change it back to default typeface before we start typing text
+            mEditText.setTransformationMethod(PasswordTransformationMethod.getInstance());
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after)
+        {
+            if ((mEditText.getInputType() & InputType.TYPE_TEXT_VARIATION_PASSWORD) == 0)
+            {
+                // if we set TYPE_TEXT_VARIATION_PASSWORD right after component created it will change
+                // placeholder text typeface to monospace immediately, and we can't call setTypeface
+                // it will just have no effect, because typeface is changing to monospace not immediately
+                // http://stackoverflow.com/questions/24117178/android-typeface-is-changed-when-i-apply-password-type-on-edittext
+                mEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            }
+            mEditText.setTypeface(Typeface.DEFAULT);
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count)
+        {
+            mEditText.setTypeface(Typeface.DEFAULT);
+        }
+
+        @Override
+        public void afterTextChanged(Editable s)
+        {
+            mEditText.setTypeface(Typeface.DEFAULT);
+        }
+    }
+
     class MyEditText extends EditText
     {
 
@@ -850,7 +890,10 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                if ((((MyEditText)getView()).getInputType() & InputType.TYPE_TEXT_VARIATION_PASSWORD) == 0)
+                {
+                    ((MyEditText)getView()).addTextChangedListener(new PasswordTextWatcher((MyEditText)getView()));
+                }
             }
         });
     }
