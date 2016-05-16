@@ -793,10 +793,14 @@ class OffscreenEditText extends OffscreenView
 
     void setSelection(final int start, final int stop)
     {
-        runViewAction(new Runnable(){
+        runViewAction(new Runnable() {
             @Override
-            public void run(){
-                ((MyEditText)getView()).setSelection(start, stop);
+            public void run() {
+                try {
+                    ((MyEditText)getView()).setSelection(start, stop);
+                } catch (final Exception e) {
+                    Log.e(TAG, "Failed to set bounds to (" + start + ", " + stop + "): " + e);
+                }
             }
         });
     }
