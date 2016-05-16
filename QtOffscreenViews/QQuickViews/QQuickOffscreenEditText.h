@@ -199,7 +199,8 @@ public slots:
 	void setImeActionDone() { androidEditText()->setImeActionDone(); }
 	void setImeActionPrevious() { androidEditText()->setImeActionPrevious(); }
 
-	void setPasswordMode() { androidEditText()->setPasswordMode(); };
+	void setPasswordMode() { androidEditText()->setPasswordMode(); }
+	void setPasswordModeWithDefaultTypeface(bool enable) { androidEditText()->setPasswordModeWithDefaultTypeface(enable); }
 
 signals:
 	void onTextChanged(QString text);
