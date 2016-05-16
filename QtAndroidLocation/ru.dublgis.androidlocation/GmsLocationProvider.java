@@ -96,34 +96,41 @@ public class GmsLocationProvider
 	{
 		native_ptr_ = native_ptr;
 		googleApiClientStatus(native_ptr_, STATUS_DISCONNECTED);
-		buildGoogleApiClient();
+
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				buildGoogleApiClient();
+			}
+		});
 	}
 
 
 	//! Called from C++ to notify us that the associated C++ object is being destroyed.
-	public void cppDestroyed()
-	{
-		if (mGoogleApiClient != null)
-		{
-			try 
-			{
-				if (mGoogleApiClient.isConnected())
-				{
-					mGoogleApiClient.disconnect();
+	public void cppDestroyed() {
+		Log.i(TAG, "cppDestroyed");
+
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				if (mGoogleApiClient != null) {
+					try {
+						if (mGoogleApiClient.isConnected()) {
+							mGoogleApiClient.disconnect();
+						}
+					} catch (Exception e) {
+						Log.e(TAG, e.getMessage());
+					}
 				}
 			}
-			catch(Exception e)
-			{
-				Log.e(TAG, e.getMessage());
-			}
-		}
+		});
 
 		googleApiClientStatus(native_ptr_, STATUS_DISCONNECTED);
 		native_ptr_ = 0;
 	}
 
 
-	protected synchronized void buildGoogleApiClient() 
+	protected void buildGoogleApiClient()
 	{
 		Log.i(TAG, "Building GoogleApiClient");
 
@@ -145,7 +152,7 @@ public class GmsLocationProvider
 
 
 	@Override
-	public void onConnected(Bundle connectionHint) 
+	public void onConnected(Bundle connectionHint)
 	{
 		Log.i(TAG, "Connected to GoogleApiClient");
 
@@ -195,23 +202,34 @@ public class GmsLocationProvider
 		googleApiClientStatus(native_ptr_, STATUS_CONNECTION_ERROR);
 	}
 
-
-	private RequestHolder reinitRequest(Long key)
-	{
+	private void deinitRequest(final Long key) {
 		synchronized (mRequests) {
 			if (mRequests.containsKey(key)) {
-				RequestHolder holder = mRequests.get(key);
+				final RequestHolder holder = mRequests.get(key);
 
-				if (null != mGoogleApiClient && null != holder.mCallback) {
-					try {
-						LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, holder.mCallback);
-					} catch (Exception e) {
-						Log.e(TAG, "Failed to removeLocationUpdates: " + e.getMessage());
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						if (null != mGoogleApiClient && null != holder.mCallback) {
+							try {
+								LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, holder.mCallback);
+							} catch (Exception e) {
+								Log.e(TAG, "Failed to removeLocationUpdates: " + e.getMessage());
+							}
+						}
 					}
-				}
+				});
 			}
 
 			mRequests.remove(key);
+		}
+	}
+
+
+	private RequestHolder reinitRequest(final Long key)
+	{
+		synchronized (mRequests) {
+			deinitRequest(key);
 
 			RequestHolder holder = new RequestHolder();
 			holder.mRequestId = key;
@@ -232,26 +250,25 @@ public class GmsLocationProvider
 	}
 
 
-	private void processRequest(Long key)
-	{
-		try
-		{
-			if (mGoogleApiClient.isConnected())
-			{
-				synchronized (mRequests) {
-					RequestHolder holder = mRequests.get(key);
-					LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, holder.mRequest, holder.mCallback, Looper.getMainLooper());
+	private void processRequest(final Long key) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					if (mGoogleApiClient.isConnected()) {
+						synchronized (mRequests) {
+							RequestHolder holder = mRequests.get(key);
+							LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, holder.mRequest, holder.mCallback, Looper.getMainLooper());
+						}
+					} else if (!mGoogleApiClient.isConnecting()) {
+						Log.i(TAG, "Try mGoogleApiClient.connect in processRequest");
+						mGoogleApiClient.connect();
+					}
+				} catch (Exception e) {
+					Log.e(TAG, "Failed to connect GoogleApiClient: " + e.getMessage());
 				}
 			}
-			else if (!mGoogleApiClient.isConnecting())
-			{
-				mGoogleApiClient.connect();
-			}
-		}
-		catch(Exception e)
-		{
-			Log.e(TAG, "Failed to connect GoogleApiClient: " + e.getMessage());
-		}
+		});
 	}
 
 
@@ -314,6 +331,7 @@ public class GmsLocationProvider
 		};
 
 		processRequest(holder.mRequestId);
+		Log.i(TAG, "Request Id = " + holder.mRequestId);
 		return holder.mRequestId;
 	}
 
@@ -323,8 +341,7 @@ public class GmsLocationProvider
 		Log.d(TAG, "stopLocationUpdates(" + id + ")" );
 
 		synchronized (mRequests) {
-			reinitRequest(id);
-			mRequests.remove(id);
+			deinitRequest(id);
 		}
 	}
 
@@ -375,6 +392,29 @@ public class GmsLocationProvider
 		}
 
 		return versionCode;
+	}
+
+
+	public boolean runOnUiThread(final Runnable runnable) {
+		try {
+			if (runnable == null) {
+				Log.e(TAG, "runOnUiThread: null runnable!");
+				return false;
+			}
+
+			final Activity activity = getActivity();
+
+			if (activity == null) {
+				Log.e(TAG, "runOnUiThread: cannot schedule task because of the null context!");
+				return false;
+			}
+
+			activity.runOnUiThread(runnable);
+			return true;
+		} catch (Exception e) {
+			Log.e(TAG, "Exception when posting a runnable:", e);
+			return false;
+		}
 	}
 
 
