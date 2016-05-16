@@ -451,6 +451,14 @@ void QAndroidOffscreenEditText::setPasswordMode()
 	}
 }
 
+void QAndroidOffscreenEditText::setPasswordModeWithDefaultTypeface(bool enable)
+{
+	if (QJniObject * view = offscreenView())
+	{
+		view->callVoid("setPasswordModeWithDefaultTypeface", jboolean(enable));
+	}
+}
+
 void QAndroidOffscreenEditText::setImeOptions(int and_mask, int or_mask)
 {
 	if (QJniObject * view = offscreenView())

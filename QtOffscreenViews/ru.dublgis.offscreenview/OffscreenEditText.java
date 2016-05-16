@@ -70,46 +70,6 @@ class OffscreenEditText extends OffscreenView
         SYSTEM_DRAW_HACKY = 2;
     private int system_draw_ = SYSTEM_DRAW_HACKY;
 
-    class PasswordTextWatcher implements TextWatcher
-    {
-        private EditText mEditText;
-
-        public PasswordTextWatcher(EditText e)
-        {
-            mEditText = e;
-            // need to set only transformation method after component creation, not input type
-            // because input type will change placeholder typeface to monospace, and we have
-            // no way to change it back to default typeface before we start typing text
-            mEditText.setTransformationMethod(PasswordTransformationMethod.getInstance());
-        }
-
-        @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after)
-        {
-            if ((mEditText.getInputType() & InputType.TYPE_TEXT_VARIATION_PASSWORD) == 0)
-            {
-                // if we set TYPE_TEXT_VARIATION_PASSWORD right after component created it will change
-                // placeholder text typeface to monospace immediately, and we can't call setTypeface
-                // it will just have no effect, because typeface is changing to monospace not immediately
-                // http://stackoverflow.com/questions/24117178/android-typeface-is-changed-when-i-apply-password-type-on-edittext
-                mEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-            }
-            mEditText.setTypeface(Typeface.DEFAULT);
-        }
-
-        @Override
-        public void onTextChanged(CharSequence s, int start, int before, int count)
-        {
-            mEditText.setTypeface(Typeface.DEFAULT);
-        }
-
-        @Override
-        public void afterTextChanged(Editable s)
-        {
-            mEditText.setTypeface(Typeface.DEFAULT);
-        }
-    }
-
     class MyEditText extends EditText
     {
 
@@ -890,12 +850,74 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                if ((((MyEditText)getView()).getInputType() & InputType.TYPE_TEXT_VARIATION_PASSWORD) == 0)
-                {
-                    ((MyEditText)getView()).addTextChangedListener(new PasswordTextWatcher((MyEditText)getView()));
-                }
+                ((MyEditText)getView()).setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
             }
         });
+    }
+
+
+    private volatile TextWatcher password_text_watcher_ = null;
+    private volatile int input_type_before_password_with_custom_typeface_ = 0;
+
+    protected void setPasswordModeWithCustomTypeface(final boolean enable, final Typeface typeface)
+    {
+        runViewAction(new Runnable() {
+            @Override
+            public void run() {
+                final MyEditText myedittext = (MyEditText)getView();
+                // Disabling the mode
+                if (!enable) {
+                    if (password_text_watcher_ != null) {
+                        myedittext.removeTextChangedListener(password_text_watcher_);
+                        password_text_watcher_ = null;
+                        myedittext.setInputType(input_type_before_password_with_custom_typeface_);
+                    } else {
+                        Log.e(TAG, "Attempting to clear password mode with default typeface when it was not set!");
+                    }
+                // Enabling the mode
+                } else {
+                    if (password_text_watcher_ == null) {
+                        // Need to set only transformation method after component creation, not input type
+                        // because input type will change placeholder typeface to monospace, and we have
+                        // no way to change it back to default typeface before we start typing text
+                        // If we set TYPE_TEXT_VARIATION_PASSWORD right after component created it will change
+                        // placeholder text typeface to monospace immediately, and we can't call setTypeface
+                        // it will just have no effect, because typeface is changing to monospace not immediately:
+                        // http://stackoverflow.com/questions/24117178/android-typeface-is-changed-when-i-apply-password-type-on-edittext
+                        password_text_watcher_ = new TextWatcher()
+                            {
+                                @Override
+                                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                                    if ((myedittext.getInputType() & InputType.TYPE_TEXT_VARIATION_PASSWORD) == 0) {
+                                        input_type_before_password_with_custom_typeface_ = myedittext.getInputType();
+                                        myedittext.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                                    }
+                                    myedittext.setTypeface(typeface);
+                                }
+
+                                @Override
+                                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                                    myedittext.setTypeface(typeface);
+                                }
+
+                                @Override
+                                public void afterTextChanged(Editable s) {
+                                    myedittext.setTypeface(typeface);
+                                }
+                            };
+                        myedittext.setTransformationMethod(PasswordTransformationMethod.getInstance());
+                        myedittext.addTextChangedListener(password_text_watcher_);
+                    } else {
+                        Log.e(TAG, "Attempting to set password mode with default typeface twice!");
+                    }
+                } // Enabling mode
+            } // run()
+        });
+    }
+
+    void setPasswordModeWithDefaultTypeface(final boolean enable)
+    {
+        setPasswordModeWithCustomTypeface(enable, Typeface.DEFAULT);
     }
 
     void setImeOptions(final int and_mask, final int or_mask)

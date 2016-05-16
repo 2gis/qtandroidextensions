@@ -285,6 +285,12 @@ public:
 	//! Set password mode.
 	void setPasswordMode();
 
+	// Set/unset password mode with default typeface. This is not normally possible in Android.
+	// A text change watcher is installed to workaround the problem. To remove the watcher
+	// (e.g. to change the purpose of the EditText) please call to
+	// setPasswordModeWithDefaultTypeface(false) first.
+	void setPasswordModeWithDefaultTypeface(bool enable);
+
 	// Change the editor type integer associated with the text view, which will be reported to an IME with imeOptions when it has focus.
 	// options = (options & and) | or
 	void setImeOptions(int and_mask, int or_mask);
