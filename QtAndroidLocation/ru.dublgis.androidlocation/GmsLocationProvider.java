@@ -87,6 +87,12 @@ public class GmsLocationProvider
 		public long mRequestId;
 		public LocationRequest mRequest = null;
 		public LocationCallback mCallback = null;
+
+		RequestHolder(long id, LocationRequest request, LocationCallback callback) {
+			mRequestId = id;
+			mRequest = request;
+			mCallback = callback;
+		}
 	}
 
 	private Map<Long, RequestHolder> mRequests = new LinkedHashMap<Long, RequestHolder>();
@@ -202,6 +208,7 @@ public class GmsLocationProvider
 		googleApiClientStatus(native_ptr_, STATUS_CONNECTION_ERROR);
 	}
 
+
 	private void deinitRequest(final Long key) {
 		synchronized (mRequests) {
 			if (mRequests.containsKey(key)) {
@@ -226,14 +233,11 @@ public class GmsLocationProvider
 	}
 
 
-	private RequestHolder reinitRequest(final Long key)
+	private RequestHolder reinitRequest(final Long key, LocationRequest request, LocationCallback callback)
 	{
 		synchronized (mRequests) {
 			deinitRequest(key);
-
-			RequestHolder holder = new RequestHolder();
-			holder.mRequestId = key;
-
+			RequestHolder holder = new RequestHolder(key, request, callback);
 			mRequests.put(key, holder);
 			return holder;
 		}
@@ -243,23 +247,20 @@ public class GmsLocationProvider
 	private void processAllRequests()
 	{
 		synchronized (mRequests) {
-			for (Long key : mRequests.keySet()) {
-				processRequest(key);
+			for (RequestHolder val : mRequests.values()) {
+				processRequest(val);
 			}
 		}
 	}
 
 
-	private void processRequest(final Long key) {
+	private void processRequest(final RequestHolder holder) {
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					if (mGoogleApiClient.isConnected()) {
-						synchronized (mRequests) {
-							RequestHolder holder = mRequests.get(key);
-							LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, holder.mRequest, holder.mCallback, Looper.getMainLooper());
-						}
+					if (mGoogleApiClient.isConnected() && null != holder) {
+						LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, holder.mRequest, holder.mCallback, Looper.getMainLooper());
 					} else if (!mGoogleApiClient.isConnecting()) {
 						Log.i(TAG, "Try mGoogleApiClient.connect in processRequest");
 						mGoogleApiClient.connect();
@@ -282,36 +283,38 @@ public class GmsLocationProvider
 	{
 		Log.i(TAG, "startLocationUpdates");
 
-		RequestHolder holder = reinitRequest(++mLastRequestId);
-		holder.mRequest = new LocationRequest();
-		holder.mRequest
-				.setPriority(priority)
-				.setInterval(interval)
-				.setFastestInterval(fastestInterval);
+		LocationRequest request = new LocationRequest();
+		request
+			.setPriority(priority)
+			.setInterval(interval)
+			.setFastestInterval(fastestInterval);
 
 		if (maxWaitTime > 0) {
-			holder.mRequest.setMaxWaitTime(maxWaitTime);
+			request.setMaxWaitTime(maxWaitTime);
 		}
 
 		if (numUpdates > 0) {
-			holder.mRequest.setNumUpdates(numUpdates);
+			request.setNumUpdates(numUpdates);
 		}
 
 		if (expirationDuration > 0) {
-			holder.mRequest.setExpirationDuration(expirationDuration);
+			request.setExpirationDuration(expirationDuration);
 		}
 
 		if (expirationTime > 0) {
-			holder.mRequest.setExpirationTime(expirationTime);
+			request.setExpirationTime(expirationTime);
 		}
 
-		final long requestId = holder.mRequestId;
+		final Long requestId = ++mLastRequestId;
 
-		holder.mCallback = new LocationCallback() {
+		LocationCallback callback = new LocationCallback() {
 			@Override
 			public void onLocationAvailability (LocationAvailability locationAvailability)
 			{
-				boolean available = locationAvailability.isLocationAvailable();
+				boolean available = false;
+				if (null != locationAvailability) {
+					available = locationAvailability.isLocationAvailable();
+				}
 				googleApiClientStatus(native_ptr_, available ? STATUS_REQUEST_SUCCESS : STATUS_REQUEST_FAIL);
 			}
 
@@ -330,7 +333,9 @@ public class GmsLocationProvider
 			}
 		};
 
-		processRequest(holder.mRequestId);
+		final RequestHolder holder = reinitRequest(requestId, request, callback);
+		processRequest(holder);
+
 		Log.i(TAG, "Request Id = " + holder.mRequestId);
 		return holder.mRequestId;
 	}
