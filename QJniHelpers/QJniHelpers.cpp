@@ -1303,6 +1303,33 @@ jdouble QJniObject::callParamDouble(const char* method_name, const char* param_s
 	return result;
 }
 
+jboolean QJniObject::callParamBoolean(const char* method_name, const char* param_signature, ...)
+{
+	VERBOSE(qDebug("void QJniObject(%p)::callParamBoolean(\"%s\", \"%s\", ...)", this, method_name, param_signature));
+	va_list args;
+	QJniEnvPtr jep;
+	JNIEnv* env = jep.env();
+	QByteArray signature("(");
+	signature += param_signature;
+	signature += ")Z";
+	jmethodID mid = env->GetMethodID(checkedClass(), method_name, signature.data());
+	if (!mid)
+	{
+		qWarning("%s: method %s not found.", method_name, method_name);
+		throw QJniMethodNotFoundException();
+	}
+	va_start(args, param_signature);
+	jboolean result = env->CallBooleanMethodV(instance_, mid, args);
+	va_end(args);
+	if (jep.clearException())
+	{
+		qWarning("void QJniObject(%p)::callParamBoolean(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
+		throw QJniJavaCallException();
+	}
+	return result;
+}
+
+
 QString QJniObject::callString(const char *method_name)
 {
 	VERBOSE(qDebug("QString QJniObject::CallString(const char* method_name) %p \"%s\"",this,method_name));

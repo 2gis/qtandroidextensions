@@ -354,6 +354,7 @@ public:
 	jlong callParamLong(const char* method_name, const char* param_signature, ...);
 	jfloat callParamFloat(const char* method_name, const char* param_signature, ...);
 	jdouble callParamDouble(const char* method_name, const char* param_signature, ...);
+	jboolean callParamBoolean(const char* method_name, const char* param_signature, ...);
 
 	//! Get value of int field of the wrapped Java object
 	int getIntField(const char * field_name);
