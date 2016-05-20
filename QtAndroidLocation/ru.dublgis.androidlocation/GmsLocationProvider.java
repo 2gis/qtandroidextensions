@@ -127,7 +127,7 @@ public class GmsLocationProvider
 								mGoogleApiClient.disconnect();
 							}
 						} catch (Exception e) {
-							Log.e(TAG, e.getMessage());
+							Log.e(TAG, "Exception while disconnecting from Google API Client: " + e);
 						}
 					}
 
@@ -141,8 +141,7 @@ public class GmsLocationProvider
 			try {
 				syncToken.wait();
 			} catch (InterruptedException e) {
-				Log.e(TAG, e.getMessage());
-				e.printStackTrace();
+				Log.e(TAG, "cppDestroyed(): exception while waiting for sync token: " + e);
 			}
 		}
 
@@ -167,7 +166,7 @@ public class GmsLocationProvider
 		}
 		catch(Exception e)
 		{
-			Log.e(TAG, e.getMessage());
+			Log.e(TAG, "Exception while connecting to Google API Client: " + e);
 		}
 	}
 
@@ -196,7 +195,7 @@ public class GmsLocationProvider
 		}
 		catch(Exception e)
 		{
-			Log.e(TAG, e.getMessage());
+			Log.e(TAG, "onConnected(): Exception while getLastLocation: " + e);
 		}
 
 		if (null != locationToSend) {
@@ -393,7 +392,7 @@ public class GmsLocationProvider
 			return ConnectionResult.SUCCESS == errorCode;
 		}
 		catch(Exception e) {
-			Log.e(TAG, e.getMessage());
+			Log.e(TAG, "isAvailable(): " + e);
 		}
 
 		return false;
@@ -408,7 +407,7 @@ public class GmsLocationProvider
 			versionCode = activity.getPackageManager().getPackageInfo(GoogleApiAvailability.GOOGLE_PLAY_SERVICES_PACKAGE, 0).versionCode;
 		}
 		catch(Exception e) {
-			Log.e(TAG, e.getMessage());
+			Log.e(TAG, "getGmsVersion(): " + e);
 		}
 
 		return versionCode;
