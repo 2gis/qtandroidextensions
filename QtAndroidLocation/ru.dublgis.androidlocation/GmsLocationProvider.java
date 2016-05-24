@@ -87,6 +87,12 @@ public class GmsLocationProvider
 		public long mRequestId;
 		public LocationRequest mRequest = null;
 		public LocationCallback mCallback = null;
+
+		RequestHolder(long id, LocationRequest request, LocationCallback callback) {
+			mRequestId = id;
+			mRequest = request;
+			mCallback = callback;
+		}
 	}
 
 	private Map<Long, RequestHolder> mRequests = new LinkedHashMap<Long, RequestHolder>();
@@ -109,21 +115,35 @@ public class GmsLocationProvider
 	//! Called from C++ to notify us that the associated C++ object is being destroyed.
 	public void cppDestroyed() {
 		Log.i(TAG, "cppDestroyed");
+		final Object syncToken = new Object();
 
-		runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				if (mGoogleApiClient != null) {
-					try {
-						if (mGoogleApiClient.isConnected()) {
-							mGoogleApiClient.disconnect();
+		synchronized(syncToken) {
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					if (mGoogleApiClient != null) {
+						try {
+							if (mGoogleApiClient.isConnected()) {
+								mGoogleApiClient.disconnect();
+							}
+						} catch (Exception e) {
+							Log.e(TAG, "Exception while disconnecting from Google API Client: " + e);
 						}
-					} catch (Exception e) {
-						Log.e(TAG, e.getMessage());
+					}
+
+					synchronized(syncToken) {
+						syncToken.notify();
 					}
 				}
+			});
+
+
+			try {
+				syncToken.wait();
+			} catch (InterruptedException e) {
+				Log.e(TAG, "cppDestroyed(): exception while waiting for sync token: " + e);
 			}
-		});
+		}
 
 		googleApiClientStatus(native_ptr_, STATUS_DISCONNECTED);
 		native_ptr_ = 0;
@@ -146,7 +166,7 @@ public class GmsLocationProvider
 		}
 		catch(Exception e)
 		{
-			Log.e(TAG, e.getMessage());
+			Log.e(TAG, "Exception while connecting to Google API Client: " + e);
 		}
 	}
 
@@ -175,7 +195,7 @@ public class GmsLocationProvider
 		}
 		catch(Exception e)
 		{
-			Log.e(TAG, e.getMessage());
+			Log.e(TAG, "onConnected(): Exception while getLastLocation: " + e);
 		}
 
 		if (null != locationToSend) {
@@ -202,6 +222,7 @@ public class GmsLocationProvider
 		googleApiClientStatus(native_ptr_, STATUS_CONNECTION_ERROR);
 	}
 
+
 	private void deinitRequest(final Long key) {
 		synchronized (mRequests) {
 			if (mRequests.containsKey(key)) {
@@ -226,14 +247,11 @@ public class GmsLocationProvider
 	}
 
 
-	private RequestHolder reinitRequest(final Long key)
+	private RequestHolder reinitRequest(final Long key, LocationRequest request, LocationCallback callback)
 	{
 		synchronized (mRequests) {
 			deinitRequest(key);
-
-			RequestHolder holder = new RequestHolder();
-			holder.mRequestId = key;
-
+			RequestHolder holder = new RequestHolder(key, request, callback);
 			mRequests.put(key, holder);
 			return holder;
 		}
@@ -243,23 +261,20 @@ public class GmsLocationProvider
 	private void processAllRequests()
 	{
 		synchronized (mRequests) {
-			for (Long key : mRequests.keySet()) {
-				processRequest(key);
+			for (RequestHolder val : mRequests.values()) {
+				processRequest(val);
 			}
 		}
 	}
 
 
-	private void processRequest(final Long key) {
+	private void processRequest(final RequestHolder holder) {
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					if (mGoogleApiClient.isConnected()) {
-						synchronized (mRequests) {
-							RequestHolder holder = mRequests.get(key);
-							LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, holder.mRequest, holder.mCallback, Looper.getMainLooper());
-						}
+					if (mGoogleApiClient.isConnected() && null != holder) {
+						LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, holder.mRequest, holder.mCallback, Looper.getMainLooper());
 					} else if (!mGoogleApiClient.isConnecting()) {
 						Log.i(TAG, "Try mGoogleApiClient.connect in processRequest");
 						mGoogleApiClient.connect();
@@ -282,36 +297,38 @@ public class GmsLocationProvider
 	{
 		Log.i(TAG, "startLocationUpdates");
 
-		RequestHolder holder = reinitRequest(++mLastRequestId);
-		holder.mRequest = new LocationRequest();
-		holder.mRequest
-				.setPriority(priority)
-				.setInterval(interval)
-				.setFastestInterval(fastestInterval);
+		LocationRequest request = new LocationRequest();
+		request
+			.setPriority(priority)
+			.setInterval(interval)
+			.setFastestInterval(fastestInterval);
 
 		if (maxWaitTime > 0) {
-			holder.mRequest.setMaxWaitTime(maxWaitTime);
+			request.setMaxWaitTime(maxWaitTime);
 		}
 
 		if (numUpdates > 0) {
-			holder.mRequest.setNumUpdates(numUpdates);
+			request.setNumUpdates(numUpdates);
 		}
 
 		if (expirationDuration > 0) {
-			holder.mRequest.setExpirationDuration(expirationDuration);
+			request.setExpirationDuration(expirationDuration);
 		}
 
 		if (expirationTime > 0) {
-			holder.mRequest.setExpirationTime(expirationTime);
+			request.setExpirationTime(expirationTime);
 		}
 
-		final long requestId = holder.mRequestId;
+		final Long requestId = ++mLastRequestId;
 
-		holder.mCallback = new LocationCallback() {
+		LocationCallback callback = new LocationCallback() {
 			@Override
 			public void onLocationAvailability (LocationAvailability locationAvailability)
 			{
-				boolean available = locationAvailability.isLocationAvailable();
+				boolean available = false;
+				if (null != locationAvailability) {
+					available = locationAvailability.isLocationAvailable();
+				}
 				googleApiClientStatus(native_ptr_, available ? STATUS_REQUEST_SUCCESS : STATUS_REQUEST_FAIL);
 			}
 
@@ -330,7 +347,9 @@ public class GmsLocationProvider
 			}
 		};
 
-		processRequest(holder.mRequestId);
+		final RequestHolder holder = reinitRequest(requestId, request, callback);
+		processRequest(holder);
+
 		Log.i(TAG, "Request Id = " + holder.mRequestId);
 		return holder.mRequestId;
 	}
@@ -373,7 +392,7 @@ public class GmsLocationProvider
 			return ConnectionResult.SUCCESS == errorCode;
 		}
 		catch(Exception e) {
-			Log.e(TAG, e.getMessage());
+			Log.e(TAG, "isAvailable(): " + e);
 		}
 
 		return false;
@@ -388,7 +407,7 @@ public class GmsLocationProvider
 			versionCode = activity.getPackageManager().getPackageInfo(GoogleApiAvailability.GOOGLE_PLAY_SERVICES_PACKAGE, 0).versionCode;
 		}
 		catch(Exception e) {
-			Log.e(TAG, e.getMessage());
+			Log.e(TAG, "getGmsVersion(): " + e);
 		}
 
 		return versionCode;
