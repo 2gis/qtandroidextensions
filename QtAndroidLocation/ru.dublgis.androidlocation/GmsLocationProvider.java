@@ -115,35 +115,18 @@ public class GmsLocationProvider
 	//! Called from C++ to notify us that the associated C++ object is being destroyed.
 	public void cppDestroyed() {
 		Log.i(TAG, "cppDestroyed");
-		final Object syncToken = new Object();
-
-		synchronized(syncToken) {
-			runOnUiThread(new Runnable() {
-				@Override
-				public void run() {
-					if (mGoogleApiClient != null) {
-						try {
-							if (mGoogleApiClient.isConnected()) {
-								mGoogleApiClient.disconnect();
-							}
-						} catch (Exception e) {
-							Log.e(TAG, "Exception while disconnecting from Google API Client: " + e);
-						}
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
+						mGoogleApiClient.disconnect();
 					}
-
-					synchronized(syncToken) {
-						syncToken.notify();
-					}
+				} catch (Exception e) {
+					Log.e(TAG, "Exception while disconnecting from Google API Client: " + e);
 				}
-			});
-
-
-			try {
-				syncToken.wait();
-			} catch (InterruptedException e) {
-				Log.e(TAG, "cppDestroyed(): exception while waiting for sync token: " + e);
 			}
-		}
+		});
 
 		googleApiClientStatus(native_ptr_, STATUS_DISCONNECTED);
 		native_ptr_ = 0;
