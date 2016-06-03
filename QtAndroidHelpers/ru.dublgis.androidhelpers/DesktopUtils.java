@@ -308,7 +308,7 @@ public class DesktopUtils
         Log.d(TAG, "Will install APK: "+apk);
         try
         {
-            Intent intent =new Intent(Intent.ACTION_VIEW);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.setDataAndType(Uri.fromFile(new File(apk)), "application/vnd.android.package-archive");
             ctx.startActivity(intent);
