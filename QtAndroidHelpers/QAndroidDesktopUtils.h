@@ -36,6 +36,7 @@
 
 #pragma once
 #include <QtCore/QString>
+#include <QtCore/QStringList>
 #include <QtCore/QObject>
 
 namespace QAndroidDesktopUtils {
@@ -54,7 +55,7 @@ bool sendTo(const QString & chooser_caption, const QString & text, const QString
 bool sendSMS(const QString & number, const QString & text);
 
 // WARNING: For this function to work properly with e-mail attachments on Android 6+
-// or when using force_content_provider, please follow instructions in 
+// or when using force_content_provider, please follow instructions in
 // DesktopUtils.java => DesktopUtils.sendEmail().
 bool sendEmail(
     const QString & to,
@@ -81,6 +82,15 @@ QString getDefaultLocaleName();
 // This function tries to find out some string which uniquely identifies this device.
 // If it's not available on the device it returns an empty string.
 QString getUniqueDeviceId();
+
+// API < 23: always true
+bool checkSelfPermission(const QString & permission_name);
+
+// API < 23: always false
+bool shouldShowRequestPermissionRationale(const QString & permission_name);
+
+// API < 23: does nothing
+void requestPermissions(const QStringList & permission_names, int permission_request_code);
 
 } // namespace QAndroidDesktopUtils
 
