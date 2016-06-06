@@ -260,6 +260,64 @@ QString getDefaultLocaleName()
 	return du.callStaticString("getDefaultLocaleName");
 }
 
+bool checkSelfPermission(const QString & permission_name)
+{
+	if (QAndroidQPAPluginGap::apiLevel() < 23)
+	{
+		return true;
+	}
+	else
+	{
+		jint result = QAndroidQPAPluginGap::Context().callParamInt(
+			"checkSelfPermission"
+			, "Ljava/lang/String;"
+			, QJniLocalRef(permission_name).jObject());
+		return result == 0; // PERMISSION_GRANTED
+	}
+}
+
+bool shouldShowRequestPermissionRationale(const QString & permission_name)
+{
+	if (QAndroidQPAPluginGap::apiLevel() < 23)
+	{
+		return false;
+	}
+	else
+	{
+		return QAndroidQPAPluginGap::Context().callParamBoolean(
+			"shouldShowRequestPermissionRationale"
+			, "Ljava/lang/String;"
+			, QJniLocalRef(permission_name).jObject());
+	}
+}
+
+void requestPermissions(const QStringList & permission_names, int permission_request_code)
+{
+	if (QAndroidQPAPluginGap::apiLevel() >= 23 && !permission_names.isEmpty())
+	{
+		QJniEnvPtr jep;
+
+		QJniLocalRef permission_array(
+			jep.env()->NewObjectArray(
+				  permission_names.count() // size
+				  , QJniClass("java/lang/String").jClass() // type
+				  , 0)); // initial object
+
+		for (int i = 0; i < permission_names.count(); ++i)
+		{
+			jep.env()->SetObjectArrayElement(
+				static_cast<jobjectArray>(permission_array.jObject())
+				, i
+				, QJniLocalRef(permission_names.at(i)).jObject());
+		}
+		QAndroidQPAPluginGap::Context().callParamVoid(
+			"requestPermissions"
+			, "[Ljava/lang/String;I"
+			, static_cast<jobjectArray>(permission_array.jObject())
+			, static_cast<jint>(permission_request_code));
+	}
+}
+
 
 } // namespace QAndroidDesktopUtils
 
