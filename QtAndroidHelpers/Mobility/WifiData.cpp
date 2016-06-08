@@ -37,7 +37,7 @@
 */
 
 #include "WifiData.h"
-#include <QStringList>
+#include <QtCore/QStringList>
 
 
 namespace Mobility {

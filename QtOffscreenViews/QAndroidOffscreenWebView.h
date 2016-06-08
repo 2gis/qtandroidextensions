@@ -35,7 +35,7 @@
 */
 
 #pragma once
-#include <QMap>
+#include <QtCore/QMap>
 #include "QAndroidOffscreenView.h"
 
 class QAndroidOffscreenWebView

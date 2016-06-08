@@ -33,9 +33,9 @@
   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
   THE POSSIBILITY OF SUCH DAMAGE.
 */
-#include <qconfig.h>
-#include <QDebug>
-#include <QScopedPointer>
+#include <QtCore/qconfig.h>
+#include <QtCore/QDebug>
+#include <QtCore/QScopedPointer>
 #include "QAndroidQPAPluginGap.h"
 
 #if QT_VERSION < 0x050000 && defined(QJNIHELPERS_GRYM)

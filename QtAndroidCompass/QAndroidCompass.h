@@ -37,9 +37,9 @@
 #pragma once
 
 #include <QJniHelpers.h>
-#include <QScopedPointer>
-#include <QWeakPointer>
-#include <QMutex>
+#include <QtCore/QScopedPointer>
+#include <QtCore/QWeakPointer>
+#include <QtCore/QMutex>
 
 
 class QAndroidCompass

@@ -38,8 +38,8 @@
 #include "QAndroidCompass.h"
 
 #include <QAndroidQPAPluginGap.h>
-#include <QSharedPointer>
-#include <QMutexLocker>
+#include <QtCore/QSharedPointer>
+#include <QtCore/QMutexLocker>
 
 
 static const char * const c_full_class_name_ = "ru/dublgis/androidcompass/CompassProvider";

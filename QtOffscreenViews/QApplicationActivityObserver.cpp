@@ -34,8 +34,8 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <QCoreApplication>
-#include <QDebug>
+#include <QtCore/QCoreApplication>
+#include <QtCore/QDebug>
 #include "QApplicationActivityObserver.h"
 
 

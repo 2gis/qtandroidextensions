@@ -35,9 +35,9 @@
 */
 
 #pragma once
-#include <QScopedPointer>
-#include <QMutex>
-#include <QObject>
+#include <QtCore/QScopedPointer>
+#include <QtCore/QMutex>
+#include <QtCore/QObject>
 
 /*!
  * A place where various QObjects can connect to receive signals about

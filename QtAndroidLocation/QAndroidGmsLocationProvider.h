@@ -36,8 +36,8 @@
 
 #pragma once
 
-#include <QObject>
-#include <QTimer>
+#include <QtCore/QObject>
+#include <QtCore/QTimer>
 #include <QJniHelpers.h>
 #include <QtPositioning/QGeoPositionInfo>
   

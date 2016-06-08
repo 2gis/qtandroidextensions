@@ -39,8 +39,8 @@
 
 #include <unistd.h>
 #include <android/bitmap.h>
-#include <QDebug>
-#include <QColor>
+#include <QtCore/QDebug>
+#include <QtGui/QColor>
 #include "QAndroidJniImagePair.h"
 
 static QImage::Format AndroidBitmapFormat_to_QImageFormat(uint32_t abf)

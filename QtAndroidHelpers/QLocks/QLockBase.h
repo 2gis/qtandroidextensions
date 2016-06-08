@@ -35,10 +35,8 @@
 */
 
 #pragma once
-
-
-#include <QSharedPointer>
-#include <QWeakPointer>
+#include <QtCore/QSharedPointer>
+#include <QtCore/QWeakPointer>
 
 
 namespace QLocks

@@ -38,7 +38,7 @@
 
 #pragma once
 
-#include <QObject>
+#include <QtCore/QObject>
 #include <QJniHelpers.h>
 #include "JniObjectLinker.h"
 #include "CellData.h"

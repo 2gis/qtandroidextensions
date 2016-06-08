@@ -35,9 +35,7 @@
 */
 
 #pragma once
-
-
-#include <QObject>
+#include <QtCore/QObject>
 #include <QJniHelpers.h>
 
 

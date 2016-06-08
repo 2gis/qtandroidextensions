@@ -38,10 +38,10 @@
 #include <stdlib.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
-#include <QThread>
-#include <QTimer>
-#include <QMutexLocker>
-#include <QCoreApplication>
+#include <QtCore/QThread>
+#include <QtCore/QTimer>
+#include <QtCore/QMutexLocker>
+#include <QtCore/QCoreApplication>
 #include <QAndroidQPAPluginGap.h>
 #include "QAndroidJniImagePair.h"
 #include "QAndroidOffscreenView.h"

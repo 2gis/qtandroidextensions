@@ -35,7 +35,7 @@
 */
 #pragma once
 
-#include <QObject>
+#include <QtCore/QObject>
 #include "JniObjectLinker.h"
 
 /*!

@@ -36,7 +36,7 @@
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
-#include <QGLWidget>
+#include <QtOpenGL/QGLWidget>
 #include "QOpenGLTextureHolder.h"
 
 static const GLuint c_vertex_coordinates_attr  = 0;

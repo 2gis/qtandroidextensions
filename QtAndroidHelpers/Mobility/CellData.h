@@ -38,7 +38,7 @@
 
 #pragma once
 
-#include <QSharedPointer>
+#include <QtCore/QSharedPointer>
 
 
 namespace Mobility {

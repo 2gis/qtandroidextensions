@@ -38,7 +38,7 @@
 
 #pragma once
 
-#include <QString>
+#include <QtCore/QString>
 
 
 namespace Mobility {

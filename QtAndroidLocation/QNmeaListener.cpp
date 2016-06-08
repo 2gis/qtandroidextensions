@@ -33,9 +33,9 @@
   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
   THE POSSIBILITY OF SUCH DAMAGE.
 */
+
 #include <QAndroidQPAPluginGap.h>
 #include <QJniHelpers.h>
-
 #include "QNmeaListener.h"
 
 static const char c_full_class_name[] = "ru/dublgis/androidgpslocation/NmeaListener";
