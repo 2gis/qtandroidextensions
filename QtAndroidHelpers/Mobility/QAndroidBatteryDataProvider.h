@@ -3,12 +3,10 @@
 
 	Authors:
 	Evgeniy A. Samoylov <ghelius@gmail.com>
-	Ivan Avdeev marflon@gmail.com
-	Sergey A. Galin sergey.galin@gmail.com
 
 	Distrbuted under The BSD License
 
-	Copyright (c) 2015, DoubleGIS, LLC.
+	Copyright (c) 2016, DoubleGIS, LLC.
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without

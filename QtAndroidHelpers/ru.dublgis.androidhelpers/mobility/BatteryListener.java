@@ -2,13 +2,11 @@
     Offscreen Android Views library for Qt
 
     Authors:
-    Vyacheslav O. Koscheev <vok1980@gmail.com>
-    Ivan Avdeev marflon@gmail.com
-    Sergey A. Galin sergey.galin@gmail.com
+    Evgeniy A. Samoylov <ghelius@gmail.com>
 
     Distrbuted under The BSD License
 
-    Copyright (c) 2015, DoubleGIS, LLC.
+    Copyright (c) 2016, DoubleGIS, LLC.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -47,8 +45,8 @@ import android.util.Log;
 
 public class BatteryListener extends BroadcastReceiver
 {
-    final static String LOG_TAG = "Grym/BatteryListener";
-    final private static boolean verbose = true;
+    final private static String LOG_TAG = "Grym/BatteryListener";
+    final private static boolean verbose_ = false;
     private long native_ptr_ = 0;
 
     public BatteryListener(long native_ptr)
@@ -73,7 +71,7 @@ public class BatteryListener extends BroadcastReceiver
 
             return true;
         }
-        catch( Exception e )
+        catch (Exception e)
         {
             Log.e(LOG_TAG, "Exception while starting BatteryListener: " + e);
             return false;
@@ -90,14 +88,14 @@ public class BatteryListener extends BroadcastReceiver
         }
         catch (Exception e)
         {
-            Log.e(LOG_TAG, "Exception while stopping: "+e);
+            Log.e(LOG_TAG, "Exception while stopping: " + e);
         }
     }
 
     // on new battery info
     public synchronized void onReceive(Context c, Intent intent)
     {
-        if (verbose)
+        if (verbose_)
         {
             Log.d(LOG_TAG, "BatteryListener onReceive");
         }
