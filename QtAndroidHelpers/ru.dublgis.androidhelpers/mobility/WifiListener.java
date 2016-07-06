@@ -129,6 +129,10 @@ public class WifiListener extends BroadcastReceiver
 		{
 			Log.e(LOG_TAG, "Exception while stopping: "+e);
 		}
+		finally
+		{
+			mWifiMan = null;
+		}
 	}
 
 	// on new scan results

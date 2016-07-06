@@ -280,6 +280,7 @@ public class CellListener
         }
         finally
         {
+            mListenerThread = null;
             mListenerLooper = null;
             mListener = null;
         }
