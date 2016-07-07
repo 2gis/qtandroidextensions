@@ -39,21 +39,44 @@
 #include <QtCore/QObject>
 #include <QJniHelpers.h>
 
-/*!
- * Examples:
- *
- * QAndroidDialog().showMessage(...);
- *
- * QAndroidDialog * dialog = new QAndroidDialog();
- * connect(dialog, SIGNAL(closed()), ....)
- * dialog->setDeleteSelfOnClose(true);
- * dialog->showMessage(...);
- *
- * NOTE: this class can work with or without Activity but to display dialogs from non-Activity
- * context one needs a permission in the AndroidManifest.xml:
- * <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
- *
- */
+/*
+
+Examples:
+
+1) Simply show a dialog:
+
+QAndroidDialog().showMessage(...);
+
+
+2) Show a dialog & invoke slot after it's closed:
+
+QAndroidDialog * dialog = new QAndroidDialog();
+connect(dialog, SIGNAL(closed()), ....)
+dialog->setDeleteSelfOnClose(true);
+dialog->showMessage(...);
+
+
+3) C++ connection examples:
+
+QObject::connect(
+    dialog
+    , (void (QAndroidDialog::*)())&QAndroidDialog::closed
+    , []() {
+        // some lambda here
+    });
+
+QObject::connect(
+    dialog
+    , (void (QAndroidDialog::*)(int))&QAndroidDialog::closed
+    , [](int button) {
+        // some lambda here
+    });
+
+NOTE: this class can work with or without Activity but to display dialogs from non-Activity
+context one needs a permission in the AndroidManifest.xml:
+<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+*/
+
 class QAndroidDialog: public QObject
 {
 	Q_OBJECT
