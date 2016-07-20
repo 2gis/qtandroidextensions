@@ -693,17 +693,16 @@ void QAndroidOffscreenView::setAttachingMode(bool attaching)
 	}
 }
 
-/*
 void QAndroidOffscreenView::reattachView()
 {
 	if (offscreen_view_)
 	{
 		offscreen_view_->callVoid("reattachView");
-//		setVisible(visible());
-//		setEnabled(enabled());
-//		invalidate();
+		setVisible(visible());
+		setEnabled(enabled());
+		invalidate();
 	}
-}*/
+}
 
 /*bool QAndroidOffscreenView::isFocused() const
 {

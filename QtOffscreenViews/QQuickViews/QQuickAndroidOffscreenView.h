@@ -75,6 +75,8 @@ public slots:
 	void setSoftInputModeResize() { androidView()->setSoftInputModeResize(); }
 	void setSoftInputModeAdjustPan() { androidView()->setSoftInputModeAdjustPan(); }
 
+	void reattachView() { androidView()->reattachView(); }
+
 signals:
 	void viewCreated();
 	void backgroundColorChanged(QColor color);
