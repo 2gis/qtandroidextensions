@@ -65,6 +65,13 @@ bool sendEmail(
     bool force_content_provider = false,
     const QString & authorities = QLatin1String("ru.dublgis.sharefileprovider"));
 
+bool sendEmail(
+	const QString & to,
+	const QString & subject,
+	const QString & body,
+	const QStringList & attachment,
+	const QString & authorities = QLatin1String("ru.dublgis.sharefileprovider"));
+
 bool openURL(const QString & url);
 bool openFile(const QString & fileName, const QString & mimeType);
 bool installApk(const QString & apk);

@@ -121,6 +121,40 @@ bool sendEmail(
 		QJniLocalRef(authorities).jObject());
 }
 
+bool sendEmail(
+	const QString & to,
+	const QString & subject,
+	const QString & body,
+	const QStringList & attachment,
+	const QString & authorities)
+{
+	QJniEnvPtr jep;
+
+	QJniLocalRef attachment_array{jep.env()->NewObjectArray(attachment.size(), QJniClass{"java/lang/String"}.jClass(), nullptr)};
+
+	for (QStringList::size_type i = 0; i < attachment.size(); ++i)
+	{
+		jep.env()->SetObjectArrayElement(static_cast<jobjectArray>(attachment_array.jObject()), i, QJniLocalRef{attachment[i]}.jObject());
+	}
+
+	QJniClass du(c_full_class_name_);
+	QAndroidQPAPluginGap::Context activity;
+	return du.callStaticParamBoolean(
+		"sendEmail",
+		"Landroid/content/Context;"
+		"Ljava/lang/String;" // to
+		"Ljava/lang/String;" // subject
+		"Ljava/lang/String;" // body
+		"[Ljava/lang/String;" // attachment
+		"Ljava/lang/String;", // authorities
+		activity.jObject(),
+		QJniLocalRef(to).jObject(),
+		QJniLocalRef(subject).jObject(),
+		QJniLocalRef(body).jObject(),
+		static_cast<jobjectArray>(attachment_array.jObject()),
+		QJniLocalRef(authorities).jObject());
+}
+
 bool openURL(const QString & url)
 {
 	QJniClass du(c_full_class_name_);

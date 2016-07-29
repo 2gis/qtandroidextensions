@@ -252,6 +252,78 @@ public class DesktopUtils
         }
     }
 
+    public static boolean sendEmail(final Context ctx, final String to, final String subject, final String body, final String[] attachment, final String authorities) {
+        try
+        {
+            final String[] recipients = new String[]{ to };
+
+            final Intent intent = new Intent(attachment.length > 1 ? Intent.ACTION_SEND_MULTIPLE : Intent.ACTION_SENDTO);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setType("message/rfc822");
+            intent.putExtra(Intent.EXTRA_EMAIL, recipients);
+            intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+            intent.putExtra(Intent.EXTRA_TEXT, body);
+
+            if (attachment.length > 0) {
+                final ArrayList<Uri> uri = new ArrayList<>();
+
+                if (android.os.Build.VERSION.SDK_INT < 23) {
+                    for (final String fileName: attachment) {
+                        uri.add(Uri.fromFile(new File(fileName)));
+                    }
+                } else {
+                    // Android 6+: going the longer route.
+                    // For more information, please see:
+                    // http://stackoverflow.com/questions/32981194/android-6-cannot-share-files-anymore
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                    for (final String fileName: attachment) {
+                        uri.add(FileProvider.getUriForFile(ctx, authorities, new File(fileName)));
+                    }
+                }
+                intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uri);
+            }
+
+            final List<ResolveInfo> resolveInfoList = ctx.getPackageManager().queryIntentActivities(new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", to, null)), 0);
+
+            if (resolveInfoList != null && resolveInfoList.size() > 0) {
+                List<Intent> intentList = new ArrayList<>();
+
+                for (final ResolveInfo resolveInfo : resolveInfoList) {
+                    final String packageName = resolveInfo.activityInfo.packageName;
+                    final String name = resolveInfo.activityInfo.name;
+
+                    final Intent fakeIntent = (Intent) intent.clone();
+                    fakeIntent.setComponent(new ComponentName(packageName, name));
+                    intentList.add(fakeIntent);
+                }
+
+                Intent firstIntent = intentList.get(0);
+                intentList.remove(0);
+
+                if (!intentList.isEmpty()) {
+                    firstIntent = Intent.createChooser(firstIntent, null);
+                    final Intent[] extraIntents = intentList.toArray(new Intent[intentList.size()]);
+                    firstIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
+                }
+
+                ctx.startActivity(firstIntent);
+            } else {
+                final Intent chooserIntent = Intent.createChooser(intent, null);
+                chooserIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+                ctx.startActivity(chooserIntent);
+            }
+
+            return true;
+        }
+        catch (Exception exception)
+        {
+            Log.e(TAG, "sendEmail exception: ", exception);
+            return false;
+        }
+    }
+
     public static boolean openURL(final Context ctx, final String url)
     {
         try
