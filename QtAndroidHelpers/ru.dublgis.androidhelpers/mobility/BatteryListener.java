@@ -48,6 +48,7 @@ public class BatteryListener extends BroadcastReceiver
     final private static String LOG_TAG = "Grym/BatteryListener";
     final private static boolean verbose_ = false;
     private long native_ptr_ = 0;
+    private boolean started_ = false;
 
     public BatteryListener(long native_ptr)
     {
@@ -65,13 +66,16 @@ public class BatteryListener extends BroadcastReceiver
     {
         try
         {
-            Log.d(LOG_TAG, "BatteryListener start ");
-
-            getContext().registerReceiver(this, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-
+            Log.d(LOG_TAG, "BatteryListener start");
+            if (!started_) {
+                getContext().registerReceiver(this, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+                started_ = true;
+            } else {
+                Log.d(LOG_TAG, "BatteryListener start: already started!");
+            }
             return true;
         }
-        catch (Exception e)
+        catch (final Exception e)
         {
             Log.e(LOG_TAG, "Exception while starting BatteryListener: " + e);
             return false;
@@ -81,12 +85,16 @@ public class BatteryListener extends BroadcastReceiver
     public synchronized void stop()
     {
         Log.d(LOG_TAG, "BatteryListener stop");
-
         try
         {
-            getContext().unregisterReceiver(this);
+            if (started_) {
+                getContext().unregisterReceiver(this);
+                started_ = false;
+            } else {
+               Log.d(LOG_TAG, "BatteryListener stop: was not started!");
+            }
         }
-        catch (Exception e)
+        catch (final Exception e)
         {
             Log.e(LOG_TAG, "Exception while stopping: " + e);
         }
