@@ -164,6 +164,9 @@ QAndroidGmsLocationProvider::QAndroidGmsLocationProvider(QObject * parent)
 
 QAndroidGmsLocationProvider::~QAndroidGmsLocationProvider()
 {
+	stopUpdates(regularUpdadesId_);
+	stopUpdates(requestUpdadesId_);
+
 	if (handler_)
 	{
 		handler_->callVoid("cppDestroyed");
