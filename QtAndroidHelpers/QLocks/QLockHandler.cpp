@@ -39,21 +39,21 @@
 
 namespace QLocks
 {
-	QLockHandler::QLockHandler(QLockedObjectBase *object) : 
-		object_(object)
-	{
-		Q_ASSERT(object_);
-	}
+QLockHandler::QLockHandler(QLockedObjectBase * object) :
+	object_(object)
+{
+	Q_ASSERT(object_);
+}
 
 
-	void QLockHandler::lock()
-	{
-		object_->lock();
-	}
-	
+void QLockHandler::lock()
+{
+	object_->lock();
+}
 
-	void QLockHandler::unlock()
-	{
-		object_->unlock();
-	}
+
+void QLockHandler::unlock()
+{
+	object_->unlock();
+}
 }

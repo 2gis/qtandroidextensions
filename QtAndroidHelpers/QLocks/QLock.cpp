@@ -42,51 +42,55 @@
 
 namespace QLocks
 {
-	QLock::QLock(LockedObjShared_t handler, bool unlockOnSleep) :
-		handler_(handler)
+QLock::QLock(LockedObjShared_t handler, bool unlockOnSleep) :
+	handler_(handler)
+{
+	// If we have just QCoreApplicaion instance, we don't have UI and don't have
+	// any active/inactive states, so we just assume that we're always active.
+	if (QGuiApplication::instance()->metaObject()->indexOfSignal("applicationStateChanged(Qt::ApplicationState)")
+	        >= 0
+	        && unlockOnSleep)
 	{
-		// If we have just QCoreApplicaion instance, we don't have UI and don't have
-		// any active/inactive states, so we just assume that we're always active.
-		if (QGuiApplication::instance()->metaObject()->indexOfSignal("applicationStateChanged(Qt::ApplicationState)") >= 0
-			&& unlockOnSleep)
-		{
-			QObject::connect(
-				QGuiApplication::instance(),
-				SIGNAL(applicationStateChanged(Qt::ApplicationState)),
-				this,
-				SLOT(onApplicationStateChanged(Qt::ApplicationState)));
-		}
-
-		handler->lock();
+		QObject::connect(
+		    QGuiApplication::instance(),
+		    SIGNAL(applicationStateChanged(Qt::ApplicationState)),
+		    this,
+		    SLOT(onApplicationStateChanged(Qt::ApplicationState)));
 	}
 
+	handler->lock();
+}
 
-	QLock::~QLock()
+
+QLock::~QLock()
+{
+	LockedObjShared_t obj = handler_.toStrongRef();
+
+	if (obj)
 	{
-		LockedObjShared_t obj = handler_.toStrongRef();
-		if (obj)
-		{
-			obj->unlock();
-		}
+		obj->unlock();
+	}
+}
+
+
+void QLock::onApplicationStateChanged(Qt::ApplicationState state)
+{
+	LockedObjShared_t obj = handler_.toStrongRef();
+
+	if (!obj)
+	{
+		return;
 	}
 
-
-	void QLock::onApplicationStateChanged(Qt::ApplicationState state)
+	if (Qt::ApplicationActive == state)
 	{
-		LockedObjShared_t obj = handler_.toStrongRef();
-		if (!obj)
-		{
-			return;
-		}
-		if (Qt::ApplicationActive == state)
-		{
-			obj->lock();
-		}
-		else
-		{
-			obj->unlock();
-		}
+		obj->lock();
 	}
+	else
+	{
+		obj->unlock();
+	}
+}
 
 } // namespace QLocks
 

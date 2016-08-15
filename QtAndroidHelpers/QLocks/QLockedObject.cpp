@@ -41,30 +41,30 @@
 
 namespace QLocks
 {
-	QLockedObject::QLockedObject(bool unlockOnSleep) :
-        unlockOnSleep_(unlockOnSleep)
+QLockedObject::QLockedObject(bool unlockOnSleep) :
+	unlockOnSleep_(unlockOnSleep)
+{
+	handler_.reset(new QLockHandler(this));
+}
+
+
+QLockedObject::~QLockedObject()
+{
+	handler_.reset();
+}
+
+
+QLockPointer QLockedObject::getLock()
+{
+	QLockPointer lock = lock_.toStrongRef();
+
+	if (!lock)
 	{
-		handler_.reset(new QLockHandler(this));
+		lock = QLockPointer(new QLocks::QLock(handler_, unlockOnSleep_));
+		lock_ = lock;
 	}
 
-
-	QLockedObject::~QLockedObject()
-	{
-		handler_.reset();
-	}
-
-
-	QLockPointer QLockedObject::getLock()
-	{
-		QLockPointer lock = lock_.toStrongRef();
-
-		if (!lock)
-		{
-			lock = QLockPointer(new QLocks::QLock(handler_, unlockOnSleep_));
-			lock_ = lock;
-		}
-
-		return lock;
-	}
+	return lock;
+}
 }
 
