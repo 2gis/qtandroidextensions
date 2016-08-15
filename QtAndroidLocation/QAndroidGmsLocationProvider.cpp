@@ -43,8 +43,8 @@
 static const char * const c_full_class_name_ = "ru/dublgis/androidlocation/GmsLocationProvider";
 
 
-static void setPositionAttributeFloat(QGeoPositionInfo &info, QGeoPositionInfo::Attribute attr,
-										QJniObject &location, const char* szCheck, const char* szGet)
+static void setPositionAttributeFloat(QGeoPositionInfo & info, QGeoPositionInfo::Attribute attr,
+                                      QJniObject & location, const char * szCheck, const char * szGet)
 {
 	if (location.callBool(szCheck))
 	{
@@ -54,7 +54,7 @@ static void setPositionAttributeFloat(QGeoPositionInfo &info, QGeoPositionInfo::
 }
 
 
-static QGeoPositionInfo positionInfoFromJavaLocation(JNIEnv * jniEnv, const jobject &jlocation)
+static QGeoPositionInfo positionInfoFromJavaLocation(JNIEnv * jniEnv, const jobject & jlocation)
 {
 	QGeoPositionInfo info;
 	QJniObject location(jlocation, true);
@@ -155,10 +155,10 @@ QAndroidGmsLocationProvider::QAndroidGmsLocationProvider(QObject * parent)
 
 	// Creating Java object
 	handler_.reset(new QJniObject(c_full_class_name_, "J",
-		jlong(reinterpret_cast<void*>(this))));
+	                              jlong(reinterpret_cast<void *>(this))));
 
 	QObject::connect(&requestTimer_, &QTimer::timeout,
-					this, &QAndroidGmsLocationProvider::onRequestTimeout);
+	                 this, &QAndroidGmsLocationProvider::onRequestTimeout);
 }
 
 
@@ -270,14 +270,14 @@ void QAndroidGmsLocationProvider::startUpdates()
 		jlong expirationDuration = 0;
 		jlong expirationTime = 0;
 
-		jlong id = handler_->callParamLong("startLocationUpdates", "IJJJIJJ", 
-			(jint)priority_, 
-			reqiredInterval_, 
-			minimumInterval_, 
-			maxWaitTime, 
-			numUpdates, 
-			expirationDuration, 
-			expirationTime);
+		jlong id = handler_->callParamLong("startLocationUpdates", "IJJJIJJ",
+		                                   (jint)priority_,
+		                                   reqiredInterval_,
+		                                   minimumInterval_,
+		                                   maxWaitTime,
+		                                   numUpdates,
+		                                   expirationDuration,
+		                                   expirationTime);
 
 		{
 			QMutexLocker lock(&lastLocationSync_);
@@ -346,14 +346,14 @@ void QAndroidGmsLocationProvider::requestUpdate(int timeout /*= 0*/)
 		jlong expirationDuration = timeout;
 		jlong expirationTime = 0;
 
-		requestUpdadesId_ = handler_->callParamLong("startLocationUpdates", "IJJJIJJ", 
-			(jint)priority_, 
-			reqiredInterval_, 
-			minimumInterval_, 
-			maxWaitTime, 
-			numUpdates, 
-			expirationDuration, 
-			expirationTime);
+		requestUpdadesId_ = handler_->callParamLong("startLocationUpdates", "IJJJIJJ",
+		                    (jint)priority_,
+		                    reqiredInterval_,
+		                    minimumInterval_,
+		                    maxWaitTime,
+		                    numUpdates,
+		                    expirationDuration,
+		                    expirationTime);
 	}
 }
 
@@ -362,9 +362,10 @@ int QAndroidGmsLocationProvider::getGmsVersion()
 {
 	preloadJavaClasses();
 
-	try 
+	try
 	{
 		QJniClass clazz(c_full_class_name_);
+
 		if (!clazz.jClass())
 		{
 			qWarning() << "Failed to instantiate: " << c_full_class_name_;
@@ -373,10 +374,10 @@ int QAndroidGmsLocationProvider::getGmsVersion()
 
 		return clazz.callStaticParamInt("getGmsVersion", "Landroid/app/Activity;", QAndroidQPAPluginGap::Context().jObject());
 	}
-	catch (const QJniBaseException &e)
+	catch (const QJniBaseException & e)
 	{
 		qWarning() << "QJniBaseException catched! " << e.what();
-	}		
+	}
 
 	return 0;
 }
@@ -386,10 +387,11 @@ bool QAndroidGmsLocationProvider::isAvailable(jboolean allowDialog)
 {
 	preloadJavaClasses();
 
-	try 
+	try
 	{
 		qDebug() << "Checking for Google Play Services positioning availability...";
 		QJniClass clazz(c_full_class_name_);
+
 		if (!clazz.jClass())
 		{
 			qWarning() << "Failed to instantiate: " << c_full_class_name_;
@@ -399,7 +401,7 @@ bool QAndroidGmsLocationProvider::isAvailable(jboolean allowDialog)
 		qDebug() << "....GP positioning availability result:" << result;
 		return result;
 	}
-	catch (const QJniBaseException &e)
+	catch (const QJniBaseException & e)
 	{
 		qWarning() << "QJniBaseException catched! " << e.what();
 	}
