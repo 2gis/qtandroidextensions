@@ -49,11 +49,12 @@ Q_DECL_EXPORT void JNICALL Java_DialogHelper_DialogHelper_showMessageCallback(JN
 		QAndroidDialog * proxy = reinterpret_cast<QAndroidDialog*>(vp);
 		if (proxy)
 		{
-		  proxy->showMessageCallback(int(button));
-		  return;
+			proxy->showMessageCallback(int(button));
+			return;
 		}
 	}
-	qWarning()<<__FUNCTION__<<"Zero param, button ="<<button;
+
+	qWarning() << __FUNCTION__ << "Zero param, button =" << button;
 }
 
 QAndroidDialog::QAndroidDialog(QObject * parent /*= 0*/)
@@ -63,9 +64,10 @@ QAndroidDialog::QAndroidDialog(QObject * parent /*= 0*/)
 {
 	preloadJavaClasses();
 	dialog_helper_.reset(new QJniObject(c_full_class_name_, "J", (jlong)this));
+
 	if (!dialog_helper_->jObject())
 	{
-		qCritical()<<"Failed to create DialogHelper instance!";
+		qCritical() << "Failed to create DialogHelper instance!";
 		dialog_helper_.reset();
 	}
 }
@@ -82,6 +84,7 @@ QAndroidDialog::~QAndroidDialog()
 void QAndroidDialog::preloadJavaClasses()
 {
 	static bool s_preloaded = false;
+
 	if (!s_preloaded)
 	{
 		QAndroidQPAPluginGap::preloadJavaClass(c_full_class_name_);
@@ -110,13 +113,13 @@ bool QAndroidDialog::isInteractiveMode()
 }
 
 void QAndroidDialog::showMessage(
-	const QString & title,
-	const QString & explanation,
-	const QString & positive_button_text,
-	const QString & negative_button_text,
-	const QString & neutral_button_text,
-	bool pause,
-	bool lock_rotation)
+    const QString & title,
+    const QString & explanation,
+    const QString & positive_button_text,
+    const QString & negative_button_text,
+    const QString & neutral_button_text,
+    bool pause,
+    bool lock_rotation)
 {
 	if (!isInteractiveMode())
 	{
@@ -132,6 +135,7 @@ void QAndroidDialog::showMessage(
 		{
 			lock_rotation = true;
 		}
+
 		// TODO: We can't read or lock orientation when we don't have an activity.
 		// Currently, we check it via customContextSet(), but this might not always be the right way.
 		bool in_activity = !QAndroidQPAPluginGap::customContextSet();
@@ -150,54 +154,58 @@ void QAndroidDialog::showMessage(
 	}
 	else
 	{
-		qCritical()<<"Failed to show message because DialogHelper instance not created!";
+		qCritical() << "Failed to show message because DialogHelper instance not created!";
 	}
 }
 
 void QAndroidDialog::showMessage(
-	const QString & title,
-	const QString & explanation,
-	const QString & positive_button_text,
-	const QString & negative_button_text,
-	bool pause,
-	bool lock_rotation)
+    const QString & title,
+    const QString & explanation,
+    const QString & positive_button_text,
+    const QString & negative_button_text,
+    bool pause,
+    bool lock_rotation)
 {
 	showMessage(title, explanation, positive_button_text, negative_button_text, QString::null, pause, lock_rotation);
 }
 
 void QAndroidDialog::showMessage(
-	const QString & title,
-	const QString & explanation,
-	const QString & positive_button_text,
-	bool pause,
-	bool lock_rotation)
+    const QString & title,
+    const QString & explanation,
+    const QString & positive_button_text,
+    bool pause,
+    bool lock_rotation)
 {
 	showMessage(title, explanation, positive_button_text, QString::null, QString::null, pause, lock_rotation);
 }
 
 void QAndroidDialog::showMessageCallback(int button)
 {
-	qDebug()<<__FUNCTION__<<button;
+	qDebug() << __FUNCTION__ << button;
 
 	result_button_ = button;
 
 	switch(button)
 	{
-	case ANDROID_DIALOGINTERFACE_BUTTON_POSITIVE:
-		emit positiveClicked();
-		break;
-	case ANDROID_DIALOGINTERFACE_BUTTON_NEGATIVE:
-		emit negativeClicked();
-		break;
-	case ANDROID_DIALOGINTERFACE_BUTTON_NEUTRAL:
-		emit neutralClicked();
-		break;
-	case 0:
-		emit cancelled();
-		break;
-	default:
-		qWarning()<<"Unexpected button number in showMessageCallback:"<<button;
-		break;
+		case ANDROID_DIALOGINTERFACE_BUTTON_POSITIVE:
+			emit positiveClicked();
+			break;
+
+		case ANDROID_DIALOGINTERFACE_BUTTON_NEGATIVE:
+			emit negativeClicked();
+			break;
+
+		case ANDROID_DIALOGINTERFACE_BUTTON_NEUTRAL:
+			emit neutralClicked();
+			break;
+
+		case 0:
+			emit cancelled();
+			break;
+
+		default:
+			qWarning() << "Unexpected button number in showMessageCallback:" << button;
+			break;
 	}
 
 	emit closed(button);
