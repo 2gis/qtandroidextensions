@@ -149,6 +149,7 @@ QAndroidGmsLocationProvider::QAndroidGmsLocationProvider(QObject * parent)
 	, priority_(PRIORITY_NO_POWER)
 	, regularUpdadesId_(0)
 	, requestUpdadesId_(0)
+	, requestTimer_(this) // should be set due to parent's move to moveToThread operation
 {
 	preloadJavaClasses();
 
