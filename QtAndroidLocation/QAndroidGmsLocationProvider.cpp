@@ -44,7 +44,7 @@ static const char * const c_full_class_name_ = "ru/dublgis/androidlocation/GmsLo
 
 
 
-static void setPositionAttributeFloat(QGeoPositionInfo &info, QGeoPositionInfo::Attribute attr, 
+static void setPositionAttributeFloat(QGeoPositionInfo &info, QGeoPositionInfo::Attribute attr,
 										QJniObject &location, const char* szCheck, const char* szGet)
 {
 	if (location.callBool(szCheck))
