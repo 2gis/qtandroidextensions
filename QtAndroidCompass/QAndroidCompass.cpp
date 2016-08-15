@@ -146,7 +146,7 @@ void QAndroidCompass::stop()
 void QAndroidCompass::resetAzimuthListener(const QWeakPointer<AzimuthListener> & azimuth_listener)
 {
 	QMutexLocker lock(&send_mutex_);
-	azimuth_listener_= azimuth_listener;
+	azimuth_listener_ = azimuth_listener;
 }
 
 
