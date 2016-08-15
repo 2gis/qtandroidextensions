@@ -42,7 +42,7 @@
 static const char * const c_full_class_name_ = "ru/dublgis/androidhelpers/ScreenLocker";
 
 
-QAndroidScreenLocker& QAndroidScreenLocker::instance()
+QAndroidScreenLocker & QAndroidScreenLocker::instance()
 {
 	static QAndroidScreenLocker obj;
 	return obj;
@@ -56,7 +56,7 @@ QAndroidScreenLocker::QAndroidScreenLocker() :
 
 	// Creating Java object
 	java_handler_.reset(new QJniObject(c_full_class_name_, "J",
-		jlong(reinterpret_cast<void*>(this))));
+	                                   jlong(reinterpret_cast<void *>(this))));
 }
 
 
@@ -82,11 +82,11 @@ void QAndroidScreenLocker::preloadJavaClasses()
 		QAndroidQPAPluginGap::preloadJavaClass(c_full_class_name_);
 
 		QJniClass ov(c_full_class_name_);
-		static const JNINativeMethod methods[] = 
+		static const JNINativeMethod methods[] =
 		{
 			{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContext},
 		};
-	 
+
 		ov.registerNativeMethods(methods, sizeof(methods));
 	}
 }
@@ -107,6 +107,6 @@ void QAndroidScreenLocker::unlock()
 
 bool QAndroidScreenLocker::isLocked()
 {
-	return java_handler_->callBool("IsLocked");	
+	return java_handler_->callBool("IsLocked");
 }
 
