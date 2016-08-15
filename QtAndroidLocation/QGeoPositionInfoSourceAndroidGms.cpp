@@ -52,7 +52,7 @@ QGeoPositionInfoSourceAndroidGms::QGeoPositionInfoSourceAndroidGms(QObject * par
 	updatesRunning_(false),
 	activeProvidersDisabled_(false)
 {
-	qRegisterMetaType< QGeoPositionInfo >();
+	qRegisterMetaType<QGeoPositionInfo>();
 
 	providersListener_ = new QLocationManagerProvidersListener(this);
 	regularProvider_ = new QAndroidGmsLocationProvider(this);
