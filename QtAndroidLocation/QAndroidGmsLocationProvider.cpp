@@ -43,7 +43,6 @@
 static const char * const c_full_class_name_ = "ru/dublgis/androidlocation/GmsLocationProvider";
 
 
-
 static void setPositionAttributeFloat(QGeoPositionInfo &info, QGeoPositionInfo::Attribute attr,
 										QJniObject &location, const char* szCheck, const char* szGet)
 {
