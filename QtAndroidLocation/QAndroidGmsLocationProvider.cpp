@@ -143,8 +143,8 @@ Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationReciev
 }
 
 
-QAndroidGmsLocationProvider::QAndroidGmsLocationProvider(QObject * parent) : 
-	QObject(parent)
+QAndroidGmsLocationProvider::QAndroidGmsLocationProvider(QObject * parent)
+	: QObject(parent)
 	, reqiredInterval_(1500)
 	, minimumInterval_(1000)
 	, priority_(PRIORITY_NO_POWER)
