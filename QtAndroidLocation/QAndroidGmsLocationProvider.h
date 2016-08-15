@@ -40,7 +40,7 @@
 #include <QtCore/QTimer>
 #include <QJniHelpers.h>
 #include <QtPositioning/QGeoPositionInfo>
-  
+
 
 /*!
  * A class for geting location from Google Play Services
