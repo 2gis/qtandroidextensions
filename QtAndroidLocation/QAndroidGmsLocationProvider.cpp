@@ -308,7 +308,14 @@ void QAndroidGmsLocationProvider::stopUpdates(jlong requestId)
 	{
 		handler_->callParamVoid("stopLocationUpdates", "J", requestId);
 
-		if (requestId == requestUpdadesId_)
+		bool bStopTimer = false;
+
+		{
+			QMutexLocker lock(&lastLocationSync_);
+			bStopTimer = (requestId == requestUpdadesId_);
+		}
+
+		if (bStopTimer)
 		{
 			requestTimer_.stop();
 		}
@@ -318,7 +325,14 @@ void QAndroidGmsLocationProvider::stopUpdates(jlong requestId)
 
 void QAndroidGmsLocationProvider::onRequestTimeout()
 {
-	stopUpdates(requestUpdadesId_);
+	jlong id = 0;
+
+	{
+		QMutexLocker lock(&lastLocationSync_);
+		id = requestUpdadesId_;
+	}
+
+	stopUpdates(id);
 }
 
 
@@ -346,7 +360,7 @@ void QAndroidGmsLocationProvider::requestUpdate(int timeout /*= 0*/)
 		jlong expirationDuration = timeout;
 		jlong expirationTime = 0;
 
-		requestUpdadesId_ = handler_->callParamLong("startLocationUpdates", "IJJJIJJ",
+		jlong id = handler_->callParamLong("startLocationUpdates", "IJJJIJJ",
 		                    (jint)priority_,
 		                    reqiredInterval_,
 		                    minimumInterval_,
@@ -354,6 +368,11 @@ void QAndroidGmsLocationProvider::requestUpdate(int timeout /*= 0*/)
 		                    numUpdates,
 		                    expirationDuration,
 		                    expirationTime);
+
+		{
+			QMutexLocker lock(&lastLocationSync_);
+			requestUpdadesId_ = id;
+		}
 	}
 }
 
