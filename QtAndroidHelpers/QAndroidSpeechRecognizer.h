@@ -140,12 +140,12 @@ public slots:
 	// Set voice input timeout parameters.
 	// Please note that the normal setting of these parameters to SpeechRecognizer does not work
 	// on 4.3 (Jelly Bean) and up.To make timeout work on all versions of Android please set
-	// use_timer_workaround to true. Note that it also enables partial results.
+	// timer_workaround_ms > 0. Note that it also enables partial results.
 	void extraSetListeningTimeouts(
-		bool use_timer_workaround
-		, int min_phrase_length_ms
+		int min_phrase_length_ms
 		, int possibly_complete_ms
-		, int complete_ms);
+		, int complete_ms
+		, int timer_workaround_ms);
 
 signals:
 	void listeningChanged(bool listening);

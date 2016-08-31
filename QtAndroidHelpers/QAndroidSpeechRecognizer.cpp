@@ -228,7 +228,10 @@ QAndroidSpeechRecognizer::QAndroidSpeechRecognizer(QObject * p)
 	, enable_timeout_timer_(false)
 {
 	preloadJavaClasses();
+
 	connect(&timeout_timer_, SIGNAL(timeout()), this, SLOT(onTimeoutTimerTimeout()));
+	timeout_timer_.setSingleShot(true);
+
 	if (isRecognitionAvailableStatic())
 	{
 		try
@@ -493,6 +496,9 @@ void QAndroidSpeechRecognizer::javaOnRmsdBChanged(float rmsdb)
 
 void QAndroidSpeechRecognizer::onTimeoutTimerTimeout()
 {
+	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
+		qDebug() << __PRETTY_FUNCTION__;
+	#endif
 	if (listening_)
 	{
 		stopListening();
@@ -539,19 +545,24 @@ void QAndroidSpeechRecognizer::extraSetPartialResults()
 }
 
 void QAndroidSpeechRecognizer::extraSetListeningTimeouts(
-	bool use_timer_workaround
-	, int min_phrase_length_ms
+	int min_phrase_length_ms
 	, int possibly_complete_ms
-	, int complete_ms)
+	, int complete_ms
+	, int timer_workaround_ms)
 {
 	addIntExtra(ANDROID_RECOGNIZERINTENT_EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, min_phrase_length_ms);
 	addIntExtra(ANDROID_RECOGNIZERINTENT_EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, possibly_complete_ms);
 	addIntExtra(ANDROID_RECOGNIZERINTENT_EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, complete_ms);
 
-	if (use_timer_workaround)
+	if (timer_workaround_ms > 0)
 	{
+		enable_timeout_timer_ = true;
 		extraSetPartialResults();
-		timeout_timer_.setInterval(complete_ms);
+		timeout_timer_.setInterval(timer_workaround_ms);
+	}
+	else
+	{
+		enable_timeout_timer_ = false;
 	}
 }
 
