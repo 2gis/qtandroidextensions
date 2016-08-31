@@ -70,8 +70,13 @@ public class VoiceRecognitionListener implements RecognitionListener {
             @Override
             public void run() {
                 synchronized(this) {
-                     mSpeechRecognizer = SpeechRecognizer.createSpeechRecognizer(context);
-                     mSpeechRecognizer.setRecognitionListener(VoiceRecognitionListener.this);
+                    try {
+                        mSpeechRecognizer = SpeechRecognizer.createSpeechRecognizer(mActivity);
+                        mSpeechRecognizer.setRecognitionListener(VoiceRecognitionListener.this);
+                    } catch (final Exception e) {
+                        Log.e(TAG, "Exception while creating SpeechRecognizer:", e);
+                        mSpeechRecognizer = null;
+                    }
                 }
             }
         });
@@ -84,7 +89,11 @@ public class VoiceRecognitionListener implements RecognitionListener {
             @Override
             public void run() {
                 synchronized(this) {
-                     mSpeechRecognizer.startListening(intent);
+                    if (mSpeechRecognizer != null) {
+                        mSpeechRecognizer.startListening(intent);
+                    } else {
+                        Log.e(TAG, "startListening: the recognizer is null!");
+                    }
                 }
             }
         });
@@ -97,7 +106,11 @@ public class VoiceRecognitionListener implements RecognitionListener {
             @Override
             public void run() {
                 synchronized(this) {
-                     mSpeechRecognizer.stopListening();
+                    if (mSpeechRecognizer != null) {
+                        mSpeechRecognizer.stopListening();
+                    } else {
+                        Log.e(TAG, "stopListening: the recognizer is null!");
+                    }
                 }
             }
         });
@@ -110,7 +123,11 @@ public class VoiceRecognitionListener implements RecognitionListener {
             @Override
             public void run() {
                 synchronized(this) {
-                     mSpeechRecognizer.cancel();
+                    if (mSpeechRecognizer != null) {
+                        mSpeechRecognizer.cancel();
+                    } else {
+                        Log.e(TAG, "cancel: the recognizer is null!");
+                    }
                 }
             }
         });

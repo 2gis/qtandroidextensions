@@ -173,33 +173,40 @@ void QAndroidSpeechRecognizer::startListening(const QString & action)
 		if (listener_)
 		{
 			QJniObject intent("android/content/Intent");
-			intent.callVoid("setAction", action);
+			QScopedPointer<QJniObject>(intent.callParamObject(
+				"setAction"
+				, "android/content/Intent"
+				, "Ljava/lang/String;"
+				, QJniLocalRef(action).jObject()));
 
 			for (QMap<QString, QString>::const_iterator it = string_extras_.begin(); it != string_extras_.end(); ++it)
 			{
-				intent.callParamVoid(
+				QScopedPointer<QJniObject>(intent.callParamObject(
 					"putExtra"
+					, "android/content/Intent"
 					, "Ljava/lang/String;Ljava/lang/String;"
 					, QJniLocalRef(it.key()).jObject()
-					, QJniLocalRef(it.value()).jObject());
+					, QJniLocalRef(it.value()).jObject()));
 			}
 
 			for (QMap<QString, bool>::const_iterator it = bool_extras_.begin(); it != bool_extras_.end(); ++it)
 			{
-				intent.callParamVoid(
+				QScopedPointer<QJniObject>(intent.callParamObject(
 					"putExtra"
+					, "android/content/Intent"
 					, "Ljava/lang/String;Z"
 					, QJniLocalRef(it.key()).jObject()
-					, static_cast<jboolean>(it.value()));
+					, static_cast<jboolean>(it.value())));
 			}
 
 			for (QMap<QString, int>::const_iterator it = int_extras_.begin(); it != int_extras_.end(); ++it)
 			{
-				intent.callParamVoid(
+				QScopedPointer<QJniObject>(intent.callParamObject(
 					"putExtra"
+					, "android/content/Intent"
 					, "Ljava/lang/String;I"
 					, QJniLocalRef(it.key()).jObject()
-					, static_cast<jint>(it.value()));
+					, static_cast<jint>(it.value())));
 			}
 
 			listener_->callParamVoid("startListening", "Landroid/content/Intent;", intent.jObject());
