@@ -47,8 +47,8 @@ class QAndroidSpeechRecognizer
 	: public QObject
 {
 	Q_OBJECT
-	Q_PROPERTY(bool listening READ listening NOTIFY onListeningChanged)
-	Q_PROPERTY(float rmsdB READ rmsdB NOTIFY onRmsdBChanged)
+	Q_PROPERTY(bool listening READ listening NOTIFY listeningChanged)
+	Q_PROPERTY(float rmsdB READ rmsdB NOTIFY rmsdBChanged)
 public:
 	QAndroidSpeechRecognizer(QObject * p = 0);
 	virtual ~QAndroidSpeechRecognizer();
@@ -145,19 +145,21 @@ public slots:
 	void extraSetPartialResults() { addBoolExtra(ANDROID_RECOGNIZERINTENT_EXTRA_PARTIAL_RESULTS, true); }
 
 signals:
-	void onListeningChanged(bool listening);
-	void onBeginningOfSpeech();
-	void onEndOfSpeech();
-	void onError(int code, QString message);
-	void onPartialResults(const QStringList & results);
-	void onReadyForSpeech();
-	void onResults(const QStringList & results, bool secure);
-	void onRmsdBChanged(float rmsdb);
+	void listeningChanged(bool listening);
+	void beginningOfSpeech();
+	void endOfSpeech();
+	void error(int code, QString message);
+	void partialResults(const QStringList & results);
+	void partialResult(const QString & voice_input);
+	void readyForSpeech();
+	void results(const QStringList & results, bool secure);
+	void result(const QString & voice_input, bool secure);
+	void rmsdBChanged(float rmsdb);
 
 private slots:
 	void javaOnBeginningOfSpeech();
 	void javaOnEndOfSpeech();
-	void javaOnError(int error);
+	void javaOnError(int code);
 	void javaOnPartialResults(const QStringList & results);
 	void javaOnReadyForSpeech();
 	void javaOnResults(const QStringList & results, bool secure);

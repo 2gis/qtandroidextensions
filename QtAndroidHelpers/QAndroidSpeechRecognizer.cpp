@@ -107,10 +107,12 @@ QAndroidSpeechRecognizer::QAndroidSpeechRecognizer(QObject * p)
 			}
 			else
 			{
-				//listener_.reset(new QJniObject(.............));
-
-
-				// speech_recognizer_->callParamVoid("setRecognitionListener", "Landroid/speech/RecognitionListener;", .....);
+				listener_.reset(new QJniObject(c_recognition_listener_class_name_));
+				speech_recognizer_->callParamVoid(
+					"setRecognitionListener"
+					, "Landroid/speech/RecognitionListener;"
+					, listener_->jObject());
+				listener_->callVoid("setNativePtr", jlong(0));
 
 				/*    public native void nativeOnBeginningOfSpeech(long ptr);
 				public native void nativeOnEndOfSpeech(long ptr);
@@ -135,6 +137,17 @@ QAndroidSpeechRecognizer::QAndroidSpeechRecognizer(QObject * p)
 
 QAndroidSpeechRecognizer::~QAndroidSpeechRecognizer()
 {
+	try
+	{
+		if (listener_)
+		{
+			listener_->callVoid("setNativePtr", jlong(0));
+		}
+	}
+	catch(const std::exception & e)
+	{
+		qCritical() << "QAndroidSpeechRecognizer: exception in the destructor:" << e.what();
+	}
 }
 
 void QAndroidSpeechRecognizer::preloadJavaClasses()
@@ -152,7 +165,10 @@ void QAndroidSpeechRecognizer::preloadJavaClasses()
 bool QAndroidSpeechRecognizer::isRecognitionAvailableStatic()
 {
 	preloadJavaClasses();
-	jboolean result = QJniClass(c_speech_recognizer_class_name_).callStaticBoolean("isRecognitionAvailable");
+	jboolean result = QJniClass(c_speech_recognizer_class_name_)
+		.callStaticParamBoolean("isRecognitionAvailable"
+		, "Landroid/content/Context;"
+		, QAndroidQPAPluginGap::Context().jObject());
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
 		qDebug() << __PRETTY_FUNCTION__ << result;
 	#endif
@@ -161,7 +177,11 @@ bool QAndroidSpeechRecognizer::isRecognitionAvailableStatic()
 
 bool QAndroidSpeechRecognizer::isRecognitionAvailable() const
 {
-	return listener_ && speech_recognizer_ && isRecognitionAvailableStatic();
+	bool result = listener_ && speech_recognizer_ && isRecognitionAvailableStatic();
+	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
+		qDebug() << __PRETTY_FUNCTION__ << result;
+	#endif
+	return result;
 }
 
 void QAndroidSpeechRecognizer::startListening(const QString & action)
@@ -205,7 +225,7 @@ void QAndroidSpeechRecognizer::startListening(const QString & action)
 
 			speech_recognizer_->callParamVoid("startListening", "Landroid/content/Intent;", intent.jObject());
 			listening_ = true;
-			emit onListeningChanged(listening_);
+			emit listeningChanged(listening_);
 		}
 	}
 	catch (const std::exception & e)
@@ -225,7 +245,7 @@ void QAndroidSpeechRecognizer::stopListening()
 		{
 			speech_recognizer_->callVoid("stopListening");
 			listening_ = false;
-			emit onListeningChanged(listening_);
+			emit listeningChanged(listening_);
 		}
 	}
 	catch (const std::exception & e)
@@ -245,7 +265,7 @@ void QAndroidSpeechRecognizer::cancel()
 		{
 			speech_recognizer_->callVoid("cancel");
 			listening_ = false;
-			emit onListeningChanged(listening_);
+			emit listeningChanged(listening_);
 		}
 	}
 	catch (const std::exception & e)
@@ -259,7 +279,7 @@ void QAndroidSpeechRecognizer::javaOnBeginningOfSpeech()
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
 		qDebug() << __PRETTY_FUNCTION__;
 	#endif
-	emit onBeginningOfSpeech();
+	emit beginningOfSpeech();
 }
 
 void QAndroidSpeechRecognizer::javaOnEndOfSpeech()
@@ -267,24 +287,25 @@ void QAndroidSpeechRecognizer::javaOnEndOfSpeech()
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
 		qDebug() << __PRETTY_FUNCTION__;
 	#endif
-	emit onEndOfSpeech();
+	emit endOfSpeech();
 }
 
-void QAndroidSpeechRecognizer::javaOnError(int error)
+void QAndroidSpeechRecognizer::javaOnError(int code)
 {
-	QString message = errorCodeToMessage(error);
+	QString message = errorCodeToMessage(code);
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
-		qDebug() << __PRETTY_FUNCTION__ << error << ":" << message;
+		qDebug() << __PRETTY_FUNCTION__ << code << ":" << message;
 	#endif
-	emit onError(error, message);
+	emit error(code, message);
 }
 
-void QAndroidSpeechRecognizer::javaOnPartialResults(const QStringList & results)
+void QAndroidSpeechRecognizer::javaOnPartialResults(const QStringList & res)
 {
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
-		qDebug() << __PRETTY_FUNCTION__ << ":" << results.join(QLatin1String(" | "));
+		qDebug() << __PRETTY_FUNCTION__ << ":" << res.join(QLatin1String(" | "));
 	#endif
-	emit onPartialResults(results);
+	emit partialResults(res);
+	emit partialResult(res.join(QLatin1String(" ")));
 }
 
 void QAndroidSpeechRecognizer::javaOnReadyForSpeech()
@@ -292,15 +313,16 @@ void QAndroidSpeechRecognizer::javaOnReadyForSpeech()
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
 		qDebug() << __PRETTY_FUNCTION__;
 	#endif
-	emit onReadyForSpeech();
+	emit readyForSpeech();
 }
 
-void QAndroidSpeechRecognizer::javaOnResults(const QStringList & results, bool secure)
+void QAndroidSpeechRecognizer::javaOnResults(const QStringList & res, bool secure)
 {
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
-		qDebug() << __PRETTY_FUNCTION__ << ", secure =" << secure << ":" << results.join(QLatin1String(" | "));
+		qDebug() << __PRETTY_FUNCTION__ << ", secure =" << secure << ":" << res.join(QLatin1String(" | "));
 	#endif
-	emit onResults(results, secure);
+	emit results(res, secure);
+	emit result(res.join(QLatin1String(" ")), secure);
 }
 
 void QAndroidSpeechRecognizer::javaOnRmsdBChanged(float rmsdb)
@@ -309,7 +331,7 @@ void QAndroidSpeechRecognizer::javaOnRmsdBChanged(float rmsdb)
 		qDebug() << __PRETTY_FUNCTION__ << rmsdb;
 	#endif
 	rmsdB_ = rmsdb;
-	emit onRmsdBChanged(rmsdB_);
+	emit rmsdBChanged(rmsdB_);
 }
 
 QString QAndroidSpeechRecognizer::errorCodeToMessage(int code)
