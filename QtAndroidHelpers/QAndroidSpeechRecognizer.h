@@ -38,6 +38,7 @@
 #include <QtCore/QMap>
 #include <QtCore/QObject>
 #include <QtCore/QString>
+#include <QtCore/QTimer>
 #include <QJniHelpers.h>
 
 
@@ -119,7 +120,7 @@ public slots:
 	void cancel();
 
 	// Filling in extra parameters
-	void clearExtras() { string_extras_.clear(); bool_extras_.clear(); int_extras_.clear(); }
+	void clearExtras() { string_extras_.clear(); bool_extras_.clear(); int_extras_.clear(); enable_timeout_timer_ = false; }
 	void addStringExtra(const QString & key, const QString & value) { string_extras_.insert(key, value); }
 	void addBoolExtra(const QString & key, bool value) { bool_extras_.insert(key, value); }
 	void addIntExtra(const QString & key, int value) { int_extras_.insert(key, value); }
@@ -127,27 +128,24 @@ public slots:
 
 	// Higher-level functions
 
-	void startListeningFreeForm() {
-		addStringExtra(ANDROID_RECOGNIZERINTENT_EXTRA_LANGUAGE_MODEL, ANDROID_RECOGNIZERINTENT_LANGUAGE_MODEL_FREE_FORM);
-		startListening(ANDROID_RECOGNIZERINTENT_ACTION_RECOGNIZE_SPEECH);
-	}
-
-	void startListeningWebSearch() {
-		addStringExtra(ANDROID_RECOGNIZERINTENT_EXTRA_LANGUAGE_MODEL, ANDROID_RECOGNIZERINTENT_LANGUAGE_MODEL_WEB_SEARCH);
-		startListening(ANDROID_RECOGNIZERINTENT_ACTION_RECOGNIZE_SPEECH);
-	}
-
-	void startListeningHandsFree() {
-		startListening(ANDROID_RECOGNIZERINTENT_ACTION_VOICE_SEARCH_HANDS_FREE);
-	}
+	void startListeningFreeForm();
+	void startListeningWebSearch();
+	void startListeningHandsFree();
 
 	void extraSetPrompt(const QString & prompt);
 	void extraSetLanguage(const QString & ietf_language);
 	void extraSetMaxResults(int results);
 	void extraSetPartialResults();
 
-	// Warning: this may not work on 4.3 (Jelly Bean) and up
-	void extraSetListeningTimeouts(int min_phrase_length_ms, int possibly_complete_ms, int complete_ms);
+	// Set voice input timeout parameters.
+	// Please note that the normal setting of these parameters to SpeechRecognizer does not work
+	// on 4.3 (Jelly Bean) and up.To make timeout work on all versions of Android please set
+	// use_timer_workaround to true. Note that it also enables partial results.
+	void extraSetListeningTimeouts(
+		bool use_timer_workaround
+		, int min_phrase_length_ms
+		, int possibly_complete_ms
+		, int complete_ms);
 
 signals:
 	void listeningChanged(bool listening);
@@ -169,8 +167,10 @@ private slots:
 	void javaOnReadyForSpeech();
 	void javaOnResults(const QStringList & results, bool secure);
 	void javaOnRmsdBChanged(float rmsdb);
+	void onTimeoutTimerTimeout();
 
 private:
+	void listeningStopped();
 	QString errorCodeToMessage(int code);
 
 	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnBeginningOfSpeech(JNIEnv *, jobject, jlong param);
@@ -188,6 +188,8 @@ private:
 	QMap<QString, bool> bool_extras_;
 	QMap<QString, int> int_extras_;
 	QScopedPointer<QJniObject> listener_;
+	QTimer timeout_timer_;
+	bool enable_timeout_timer_;
 };
 
 

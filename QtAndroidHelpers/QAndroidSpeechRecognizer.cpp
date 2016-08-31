@@ -225,8 +225,10 @@ QAndroidSpeechRecognizer::QAndroidSpeechRecognizer(QObject * p)
 	: QObject(p)
 	, listening_(false)
 	, rmsdB_(0.0f)
+	, enable_timeout_timer_(false)
 {
 	preloadJavaClasses();
+	connect(&timeout_timer_, SIGNAL(timeout()), this, SLOT(onTimeoutTimerTimeout()));
 	if (isRecognitionAvailableStatic())
 	{
 		try
@@ -364,6 +366,11 @@ void QAndroidSpeechRecognizer::startListening(const QString & action)
 
 			listening_ = true;
 			emit listeningChanged(listening_);
+
+			if (enable_timeout_timer_)
+			{
+				timeout_timer_.start();
+			}
 		}
 	}
 	catch (const std::exception & e)
@@ -382,11 +389,7 @@ void QAndroidSpeechRecognizer::stopListening()
 		if (listener_)
 		{
 			listener_->callVoid("stopListening");
-			if (listening_)
-			{
-				listening_ = false;
-				emit listeningChanged(listening_);
-			}
+			listeningStopped();
 		}
 	}
 	catch (const std::exception & e)
@@ -405,11 +408,7 @@ void QAndroidSpeechRecognizer::cancel()
 		if (listener_)
 		{
 			listener_->callVoid("cancel");
-			if (listening_)
-			{
-				listening_ = false;
-				emit listeningChanged(listening_);
-			}
+			listeningStopped();
 		}
 	}
 	catch (const std::exception & e)
@@ -440,11 +439,7 @@ void QAndroidSpeechRecognizer::javaOnError(int code)
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
 		qDebug() << __PRETTY_FUNCTION__ << code << ":" << message;
 	#endif
-	if (listening_)
-	{
-		listening_ = false;
-		emit listeningChanged(listening_);
-	}
+	listeningStopped();
 	emit error(code, message);
 }
 
@@ -457,6 +452,11 @@ void QAndroidSpeechRecognizer::javaOnPartialResults(const QStringList & res)
 	{
 		emit partialResults(res);
 		emit partialResult(res.last());
+	}
+	if (enable_timeout_timer_ && timeout_timer_.isActive())
+	{
+		timeout_timer_.stop();
+		timeout_timer_.start();
 	}
 }
 
@@ -473,11 +473,7 @@ void QAndroidSpeechRecognizer::javaOnResults(const QStringList & res, bool secur
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
 		qDebug() << __PRETTY_FUNCTION__ << ", secure =" << secure << ":" << res.join(QLatin1String(" | "));
 	#endif
-	if (listening_)
-	{
-		listening_ = false;
-		emit listeningChanged(listening_);
-	}
+	listeningStopped();
 	if (!res.isEmpty())
 	{
 		emit results(res, secure);
@@ -493,6 +489,31 @@ void QAndroidSpeechRecognizer::javaOnRmsdBChanged(float rmsdb)
 	// #endif
 	rmsdB_ = rmsdb;
 	emit rmsdBChanged(rmsdB_);
+}
+
+void QAndroidSpeechRecognizer::onTimeoutTimerTimeout()
+{
+	if (listening_)
+	{
+		stopListening();
+	}
+}
+
+void QAndroidSpeechRecognizer::startListeningFreeForm()
+{
+	addStringExtra(ANDROID_RECOGNIZERINTENT_EXTRA_LANGUAGE_MODEL, ANDROID_RECOGNIZERINTENT_LANGUAGE_MODEL_FREE_FORM);
+	startListening(ANDROID_RECOGNIZERINTENT_ACTION_RECOGNIZE_SPEECH);
+}
+
+void QAndroidSpeechRecognizer::startListeningWebSearch()
+{
+	addStringExtra(ANDROID_RECOGNIZERINTENT_EXTRA_LANGUAGE_MODEL, ANDROID_RECOGNIZERINTENT_LANGUAGE_MODEL_WEB_SEARCH);
+	startListening(ANDROID_RECOGNIZERINTENT_ACTION_RECOGNIZE_SPEECH);
+}
+
+void QAndroidSpeechRecognizer::startListeningHandsFree()
+{
+	startListening(ANDROID_RECOGNIZERINTENT_ACTION_VOICE_SEARCH_HANDS_FREE);
 }
 
 void QAndroidSpeechRecognizer::extraSetPrompt(const QString & prompt)
@@ -517,14 +538,32 @@ void QAndroidSpeechRecognizer::extraSetPartialResults()
 	addBoolExtra(ANDROID_RECOGNIZERINTENT_EXTRA_PARTIAL_RESULTS, true);
 }
 
-void QAndroidSpeechRecognizer::extraSetListeningTimeouts(int min_phrase_length_ms, int possibly_complete_ms, int complete_ms)
+void QAndroidSpeechRecognizer::extraSetListeningTimeouts(
+	bool use_timer_workaround
+	, int min_phrase_length_ms
+	, int possibly_complete_ms
+	, int complete_ms)
 {
 	addIntExtra(ANDROID_RECOGNIZERINTENT_EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, min_phrase_length_ms);
 	addIntExtra(ANDROID_RECOGNIZERINTENT_EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, possibly_complete_ms);
 	addIntExtra(ANDROID_RECOGNIZERINTENT_EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, complete_ms);
+
+	if (use_timer_workaround)
+	{
+		extraSetPartialResults();
+		timeout_timer_.setInterval(complete_ms);
+	}
 }
 
-
+void QAndroidSpeechRecognizer::listeningStopped()
+{
+	timeout_timer_.stop();
+	if (listening_)
+	{
+		listening_ = false;
+		emit listeningChanged(listening_);
+	}
+}
 
 QString QAndroidSpeechRecognizer::errorCodeToMessage(int code)
 {
