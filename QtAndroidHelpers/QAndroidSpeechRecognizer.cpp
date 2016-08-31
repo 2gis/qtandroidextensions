@@ -81,10 +81,34 @@ static const char * const c_recognition_listener_class_name_ = "ru/dublgis/andro
 static const char * const c_speech_recognizer_class_name_ = "android/speech/SpeechRecognizer";
 
 
-static QStringList bundleResultsToQStringList(jobject bundle)
+static QStringList bundleResultsToQStringList(jobject jobundle)
 {
-	// QAndroidSpeechRecognizer::ANDROID_SPEECHRECOGNIZER_RESULTS_RECOGNITION => ArrayList<String>
-	return QStringList(); // TODO
+	try
+	{
+		QJniObject bundle(jobundle, false);
+		QScopedPointer<QJniObject> result_array(bundle.callParamObject(
+			"getStringArrayList"
+			, "java/util/ArrayList"
+			, "Ljava/lang/String;"
+			, QJniLocalRef(QAndroidSpeechRecognizer::ANDROID_SPEECHRECOGNIZER_RESULTS_RECOGNITION).jObject()));
+		QStringList result;
+		if (result_array && result_array->jObject())
+		{
+			jint size = result_array->callInt("size");
+			QJniEnvPtr jep;
+			for (jint i = 0; i < size; ++i)
+			{
+				QScopedPointer<QJniObject> str_object(result_array->callParamObject("get", "java/lang/Object", "I", i));
+				result << jep.JStringToQString(static_cast<jstring>(str_object->jObject()));
+			}
+		}
+		return result;
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "QAndroidSpeechRecognizer: exception in bundleResultsToQStringList:" << e.what();
+	}
+	return QStringList();
 }
 
 
