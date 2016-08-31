@@ -37,18 +37,85 @@
 
 package ru.dublgis.androidhelpers;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Bundle;
+import android.speech.SpeechRecognizer;
 import android.speech.RecognitionListener;
+import android.util.Log;
+
 
 public class VoiceRecognitionListener implements RecognitionListener {
     private long mNativePtr = 0;
+    private final String TAG = "Grym/VoiceRecognition";
+    private Activity mActivity = null;
+    private SpeechRecognizer mSpeechRecognizer = null;
 
+    // From C++
     public void setNativePtr(long nativePtr)
     {
         synchronized(this) {
             mNativePtr = nativePtr;
         }
     }
+
+    // From C++
+    public void initialize(final Activity activity)
+    {
+        mActivity = activity;
+        mActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                synchronized(this) {
+                     mSpeechRecognizer = SpeechRecognizer.createSpeechRecognizer(context);
+                     mSpeechRecognizer.setRecognitionListener(VoiceRecognitionListener.this);
+                }
+            }
+        });
+    }
+
+    // From C++
+    public void startListening(final Intent intent)
+    {
+        mActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                synchronized(this) {
+                     mSpeechRecognizer.startListening(intent);
+                }
+            }
+        });
+    }
+
+    // From C++
+    public void stopListening()
+    {
+        mActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                synchronized(this) {
+                     mSpeechRecognizer.stopListening();
+                }
+            }
+        });
+    }
+
+    // From C++
+    public void cancel()
+    {
+        mActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                synchronized(this) {
+                     mSpeechRecognizer.cancel();
+                }
+            }
+        });
+    }
+
 
     @Override
     public void onBeginningOfSpeech()

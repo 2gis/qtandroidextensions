@@ -175,7 +175,6 @@ private:
 	QMap<QString, bool> bool_extras_;
 	QMap<QString, int> int_extras_;
 	QScopedPointer<QJniObject> listener_;
-	QScopedPointer<QJniObject> speech_recognizer_;
 };
 
 

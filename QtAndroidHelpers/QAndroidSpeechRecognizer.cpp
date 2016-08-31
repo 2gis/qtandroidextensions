@@ -89,44 +89,23 @@ QAndroidSpeechRecognizer::QAndroidSpeechRecognizer(QObject * p)
 	{
 		try
 		{
-			QAndroidQPAPluginGap::Context context;
-			speech_recognizer_.reset(
-				QJniClass(c_speech_recognizer_class_name_).callStaticParamObject(
-					"createSpeechRecognizer"
-					, c_speech_recognizer_class_name_
-					, "Landroid/content/Context;"
-					, context.jObject()));
-			if (!speech_recognizer_)
-			{
-				qCritical() << "No SpeechRecognizer object.";
-			}
-			else if (!speech_recognizer_->jObject())
-			{
-				qCritical() << "Null SpeechRecognizer pointer.";
-				speech_recognizer_.reset();
-			}
-			else
-			{
-				listener_.reset(new QJniObject(c_recognition_listener_class_name_));
-				speech_recognizer_->callParamVoid(
-					"setRecognitionListener"
-					, "Landroid/speech/RecognitionListener;"
-					, listener_->jObject());
-				listener_->callVoid("setNativePtr", jlong(0));
+			listener_.reset(new QJniObject(c_recognition_listener_class_name_));
+			listener_->callParamVoid("initialize", "Landroid/app/Activity;", QAndroidQPAPluginGap::Context().jObject());
+			listener_->callVoid("setNativePtr", reinterpret_cast<jlong>(this));
 
-				/*    public native void nativeOnBeginningOfSpeech(long ptr);
-				public native void nativeOnEndOfSpeech(long ptr);
-				public native void nativeOnError(long ptr, int error);
-				public native void nativeOnPartialResults(long ptr, Bundle partialResults);
-				public native void nativeOnReadyForSpeech(long ptr, Bundle params);
-				public native void nativeOnResults(long ptr, Bundle results);
-				public native void nativeOnRmsChanged(long ptr, float rmsdB);*/
-			}
+			/*    public native void nativeOnBeginningOfSpeech(long ptr);
+			public native void nativeOnEndOfSpeech(long ptr);
+			public native void nativeOnError(long ptr, int error);
+			public native void nativeOnPartialResults(long ptr, Bundle partialResults);
+			public native void nativeOnReadyForSpeech(long ptr, Bundle params);
+			public native void nativeOnResults(long ptr, Bundle results);
+			public native void nativeOnRmsChanged(long ptr, float rmsdB);*/
 			qDebug() << "SpeechRecognizer initialized successfully.";
 		}
 		catch(const std::exception & e)
 		{
 			qCritical() << "QAndroidSpeechRecognizer: Exception while creating Speech Recognizer:" << e.what();
+			listener_.reset();
 		}
 	}
 	else
@@ -177,7 +156,7 @@ bool QAndroidSpeechRecognizer::isRecognitionAvailableStatic()
 
 bool QAndroidSpeechRecognizer::isRecognitionAvailable() const
 {
-	bool result = listener_ && speech_recognizer_ && isRecognitionAvailableStatic();
+	bool result = listener_ && isRecognitionAvailableStatic();
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
 		qDebug() << __PRETTY_FUNCTION__ << result;
 	#endif
@@ -191,7 +170,7 @@ void QAndroidSpeechRecognizer::startListening(const QString & action)
 	#endif
 	try
 	{
-		if (listener_ && speech_recognizer_)
+		if (listener_)
 		{
 			QJniObject intent("android/content/Intent");
 			intent.callVoid("setAction", action);
@@ -223,7 +202,7 @@ void QAndroidSpeechRecognizer::startListening(const QString & action)
 					, static_cast<jint>(it.value()));
 			}
 
-			speech_recognizer_->callParamVoid("startListening", "Landroid/content/Intent;", intent.jObject());
+			listener_->callParamVoid("startListening", "Landroid/content/Intent;", intent.jObject());
 			listening_ = true;
 			emit listeningChanged(listening_);
 		}
@@ -241,9 +220,9 @@ void QAndroidSpeechRecognizer::stopListening()
 	#endif
 	try
 	{
-		if (speech_recognizer_)
+		if (listener_)
 		{
-			speech_recognizer_->callVoid("stopListening");
+			listener_->callVoid("stopListening");
 			listening_ = false;
 			emit listeningChanged(listening_);
 		}
@@ -261,9 +240,9 @@ void QAndroidSpeechRecognizer::cancel()
 	#endif
 	try
 	{
-		if (speech_recognizer_)
+		if (listener_)
 		{
-			speech_recognizer_->callVoid("cancel");
+			listener_->callVoid("cancel");
 			listening_ = false;
 			emit listeningChanged(listening_);
 		}
