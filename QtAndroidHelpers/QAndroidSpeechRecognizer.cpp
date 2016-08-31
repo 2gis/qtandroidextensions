@@ -72,11 +72,129 @@ const QString
 	QAndroidSpeechRecognizer::ANDROID_RECOGNIZERINTENT_EXTRA_WEB_SEARCH_ONLY = QLatin1String("android.speech.extra.WEB_SEARCH_ONLY"),
 
 	QAndroidSpeechRecognizer::ANDROID_RECOGNIZERINTENT_LANGUAGE_MODEL_FREE_FORM = QLatin1String("free_form"),
-	QAndroidSpeechRecognizer::ANDROID_RECOGNIZERINTENT_LANGUAGE_MODEL_WEB_SEARCH = QLatin1String("web_search");
+	QAndroidSpeechRecognizer::ANDROID_RECOGNIZERINTENT_LANGUAGE_MODEL_WEB_SEARCH = QLatin1String("web_search"),
+
+	QAndroidSpeechRecognizer::ANDROID_SPEECHRECOGNIZER_RESULTS_RECOGNITION = QLatin1String("results_recognition");
 
 
 static const char * const c_recognition_listener_class_name_ = "ru/dublgis/androidhelpers/VoiceRecognitionListener";
 static const char * const c_speech_recognizer_class_name_ = "android/speech/SpeechRecognizer";
+
+
+static QStringList bundleResultsToQStringList(jobject bundle)
+{
+	// QAndroidSpeechRecognizer::ANDROID_SPEECHRECOGNIZER_RESULTS_RECOGNITION => ArrayList<String>
+	return QStringList(); // TODO
+}
+
+
+Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnBeginningOfSpeech(JNIEnv *, jobject, jlong param)
+{
+	if (param)
+	{
+		void * vp = reinterpret_cast<void*>(param);
+		QAndroidSpeechRecognizer * myobject = reinterpret_cast<QAndroidSpeechRecognizer*>(vp);
+		if (myobject)
+		{
+			myobject->javaOnBeginningOfSpeech();
+			return;
+		}
+	}
+	qWarning() << __FUNCTION__ <<" Zero param!";
+}
+
+Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnEndOfSpeech(JNIEnv *, jobject, jlong param)
+{
+	if (param)
+	{
+		void * vp = reinterpret_cast<void*>(param);
+		QAndroidSpeechRecognizer * myobject = reinterpret_cast<QAndroidSpeechRecognizer*>(vp);
+		if (myobject)
+		{
+			myobject->javaOnEndOfSpeech();
+			return;
+		}
+	}
+	qWarning() << __FUNCTION__ <<" Zero param!";
+}
+
+Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnError(JNIEnv *, jobject, jlong param, jint code)
+{
+	if (param)
+	{
+		void * vp = reinterpret_cast<void*>(param);
+		QAndroidSpeechRecognizer * myobject = reinterpret_cast<QAndroidSpeechRecognizer*>(vp);
+		if (myobject)
+		{
+			myobject->javaOnError(static_cast<int>(code));
+			return;
+		}
+	}
+	qWarning() << __FUNCTION__ <<" Zero param!";
+}
+
+Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnPartialResults(JNIEnv *, jobject, jlong param, jobject bundle_results)
+{
+	if (param)
+	{
+		void * vp = reinterpret_cast<void*>(param);
+		QAndroidSpeechRecognizer * myobject = reinterpret_cast<QAndroidSpeechRecognizer*>(vp);
+		if (myobject)
+		{
+			myobject->javaOnPartialResults(bundleResultsToQStringList(bundle_results));
+			return;
+		}
+	}
+	qWarning() << __FUNCTION__ <<" Zero param!";
+}
+
+Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnReadyForSpeech(JNIEnv *, jobject, jlong param, jobject bundle_params)
+{
+	if (param)
+	{
+		void * vp = reinterpret_cast<void*>(param);
+		QAndroidSpeechRecognizer * myobject = reinterpret_cast<QAndroidSpeechRecognizer*>(vp);
+		if (myobject)
+		{
+			Q_UNUSED(bundle_params)
+			myobject->javaOnReadyForSpeech();
+			return;
+		}
+	}
+	qWarning() << __FUNCTION__ <<" Zero param!";
+}
+
+Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnResults(JNIEnv *, jobject, jlong param, jobject bundle_results, jboolean secure)
+{
+	if (param)
+	{
+		void * vp = reinterpret_cast<void*>(param);
+		QAndroidSpeechRecognizer * myobject = reinterpret_cast<QAndroidSpeechRecognizer*>(vp);
+		if (myobject)
+		{
+			myobject->javaOnResults(bundleResultsToQStringList(bundle_results), static_cast<bool>(secure));
+			return;
+		}
+	}
+	qWarning() << __FUNCTION__ <<" Zero param!";
+}
+
+Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnRmsChanged(JNIEnv *, jobject, jlong param, jfloat rmsdB)
+{
+	if (param)
+	{
+		void * vp = reinterpret_cast<void*>(param);
+		QAndroidSpeechRecognizer * myobject = reinterpret_cast<QAndroidSpeechRecognizer*>(vp);
+		if (myobject)
+		{
+			myobject->javaOnRmsdBChanged(static_cast<float>(rmsdB));
+			return;
+		}
+	}
+	qWarning() << __FUNCTION__ <<" Zero param!";
+}
+
+
 
 
 QAndroidSpeechRecognizer::QAndroidSpeechRecognizer(QObject * p)
@@ -93,13 +211,17 @@ QAndroidSpeechRecognizer::QAndroidSpeechRecognizer(QObject * p)
 			listener_->callParamVoid("initialize", "Landroid/app/Activity;", QAndroidQPAPluginGap::Context().jObject());
 			listener_->callVoid("setNativePtr", reinterpret_cast<jlong>(this));
 
-			/*    public native void nativeOnBeginningOfSpeech(long ptr);
-			public native void nativeOnEndOfSpeech(long ptr);
-			public native void nativeOnError(long ptr, int error);
-			public native void nativeOnPartialResults(long ptr, Bundle partialResults);
-			public native void nativeOnReadyForSpeech(long ptr, Bundle params);
-			public native void nativeOnResults(long ptr, Bundle results);
-			public native void nativeOnRmsChanged(long ptr, float rmsdB);*/
+			static const JNINativeMethod methods[] = {
+				{"nativeOnBeginningOfSpeech", "(J)V", (void*)Java_QAndroidSpeechRecognizer_nativeOnBeginningOfSpeech},
+				{"nativeOnEndOfSpeech", "(J)V", (void*)Java_QAndroidSpeechRecognizer_nativeOnEndOfSpeech},
+				{"nativeOnError", "(JI)V", (void*)Java_QAndroidSpeechRecognizer_nativeOnError},
+				{"nativeOnPartialResults", "(JLandroid/os/Bundle;)V", (void*)Java_QAndroidSpeechRecognizer_nativeOnPartialResults},
+				{"nativeOnReadyForSpeech", "(JLandroid/os/Bundle;)V", (void*)Java_QAndroidSpeechRecognizer_nativeOnReadyForSpeech},
+				{"nativeOnResults", "(JLandroid/os/Bundle;)V", (void*)Java_QAndroidSpeechRecognizer_nativeOnResults},
+				{"nativeOnRmsChanged", "(JF)V", (void*)Java_QAndroidSpeechRecognizer_nativeOnRmsChanged},
+			};
+			listener_->registerNativeMethods(methods, sizeof(methods));
+
 			qDebug() << "SpeechRecognizer initialized successfully.";
 		}
 		catch(const std::exception & e)
@@ -313,9 +435,10 @@ void QAndroidSpeechRecognizer::javaOnResults(const QStringList & res, bool secur
 
 void QAndroidSpeechRecognizer::javaOnRmsdBChanged(float rmsdb)
 {
-	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
-		qDebug() << __PRETTY_FUNCTION__ << rmsdb;
-	#endif
+	// Too many of these!
+	// #if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
+	// 	qDebug() << __PRETTY_FUNCTION__ << rmsdb;
+	// #endif
 	rmsdB_ = rmsdb;
 	emit rmsdBChanged(rmsdB_);
 }

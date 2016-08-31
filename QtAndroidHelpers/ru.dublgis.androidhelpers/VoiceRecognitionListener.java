@@ -50,7 +50,7 @@ import android.util.Log;
 
 public class VoiceRecognitionListener implements RecognitionListener {
     private long mNativePtr = 0;
-    private final String TAG = "Grym/VoiceRecognition";
+    private final String TAG = "Grym/SpeechRecognizer";
     private Activity mActivity = null;
     private SpeechRecognizer mSpeechRecognizer = null;
 
@@ -88,12 +88,10 @@ public class VoiceRecognitionListener implements RecognitionListener {
         mActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                synchronized(this) {
-                    if (mSpeechRecognizer != null) {
-                        mSpeechRecognizer.startListening(intent);
-                    } else {
-                        Log.e(TAG, "startListening: the recognizer is null!");
-                    }
+                if (mSpeechRecognizer != null) {
+                    mSpeechRecognizer.startListening(intent);
+                } else {
+                    Log.e(TAG, "startListening: the recognizer is null!");
                 }
             }
         });
@@ -105,12 +103,10 @@ public class VoiceRecognitionListener implements RecognitionListener {
         mActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                synchronized(this) {
-                    if (mSpeechRecognizer != null) {
-                        mSpeechRecognizer.stopListening();
-                    } else {
-                        Log.e(TAG, "stopListening: the recognizer is null!");
-                    }
+                if (mSpeechRecognizer != null) {
+                    mSpeechRecognizer.stopListening();
+                } else {
+                    Log.e(TAG, "stopListening: the recognizer is null!");
                 }
             }
         });
@@ -122,12 +118,10 @@ public class VoiceRecognitionListener implements RecognitionListener {
         mActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                synchronized(this) {
-                    if (mSpeechRecognizer != null) {
-                        mSpeechRecognizer.cancel();
-                    } else {
-                        Log.e(TAG, "cancel: the recognizer is null!");
-                    }
+                if (mSpeechRecognizer != null) {
+                    mSpeechRecognizer.cancel();
+                } else {
+                    Log.e(TAG, "cancel: the recognizer is null!");
                 }
             }
         });
@@ -137,6 +131,7 @@ public class VoiceRecognitionListener implements RecognitionListener {
     @Override
     public void onBeginningOfSpeech()
     {
+        Log.v(TAG, "onBeginningOfSpeech");
         synchronized(this) {
             if (mNativePtr != 0) {
                 nativeOnBeginningOfSpeech(mNativePtr);
@@ -153,6 +148,7 @@ public class VoiceRecognitionListener implements RecognitionListener {
     @Override
     public void onEndOfSpeech()
     {
+        Log.v(TAG, "onEndOfSpeech");
         synchronized(this) {
             if (mNativePtr != 0) {
                 nativeOnEndOfSpeech(mNativePtr);
@@ -163,6 +159,7 @@ public class VoiceRecognitionListener implements RecognitionListener {
     @Override
     public void onError(int error)
     {
+        Log.v(TAG, "onError " + error);
         synchronized(this) {
             if (mNativePtr != 0) {
                 nativeOnError(mNativePtr, error);
@@ -174,11 +171,13 @@ public class VoiceRecognitionListener implements RecognitionListener {
     public void onEvent(int eventType, Bundle params)
     {
         // Unsupported yet
+        // Log.v(TAG, "onEvent " + eventType);
     }
 
     @Override
     public void onPartialResults(Bundle partialResults)
     {
+        Log.v(TAG, "onPartialResults");
         synchronized(this) {
             if (mNativePtr != 0) {
                 nativeOnPartialResults(mNativePtr, partialResults);
@@ -189,6 +188,7 @@ public class VoiceRecognitionListener implements RecognitionListener {
     @Override
     public void onReadyForSpeech(Bundle params)
     {
+        Log.v(TAG, "onReadyForSpeech");
         synchronized(this) {
             if (mNativePtr != 0) {
                 nativeOnReadyForSpeech(mNativePtr, params);
@@ -199,6 +199,7 @@ public class VoiceRecognitionListener implements RecognitionListener {
     @Override
     public void onResults(Bundle results)
     {
+        Log.v(TAG, "onResults");
         synchronized(this) {
             if (mNativePtr != 0) {
                 nativeOnResults(mNativePtr, results);
@@ -210,6 +211,7 @@ public class VoiceRecognitionListener implements RecognitionListener {
     @Override
     public void onRmsChanged(float rmsdB)
     {
+        // Log.v(TAG, "onRmsChanged"); - super noisy
         synchronized(this) {
             if (mNativePtr != 0) {
                 nativeOnRmsChanged(mNativePtr, rmsdB);

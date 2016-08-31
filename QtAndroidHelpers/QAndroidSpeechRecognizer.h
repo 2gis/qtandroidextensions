@@ -107,7 +107,9 @@ public:
 		ANDROID_RECOGNIZERINTENT_EXTRA_WEB_SEARCH_ONLY,
 
 		ANDROID_RECOGNIZERINTENT_LANGUAGE_MODEL_FREE_FORM,
-		ANDROID_RECOGNIZERINTENT_LANGUAGE_MODEL_WEB_SEARCH;
+		ANDROID_RECOGNIZERINTENT_LANGUAGE_MODEL_WEB_SEARCH,
+
+		ANDROID_SPEECHRECOGNIZER_RESULTS_RECOGNITION;
 
 public slots:
 	// SpeechRecognier functions
@@ -167,6 +169,14 @@ private slots:
 
 private:
 	QString errorCodeToMessage(int code);
+
+	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnBeginningOfSpeech(JNIEnv *, jobject, jlong param);
+	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnEndOfSpeech(JNIEnv *, jobject, jlong param);
+	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnError(JNIEnv *, jobject, jlong param, jint code);
+	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnPartialResults(JNIEnv *, jobject, jlong param, jobject bundle_results);
+	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnReadyForSpeech(JNIEnv *, jobject, jlong param, jobject bundle_params);
+	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnResults(JNIEnv *, jobject, jlong param, jobject bundle_results, jboolean secure);
+	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnRmsChanged(JNIEnv *, jobject, jlong param, jfloat rmsdB);
 
 private:
 	bool listening_;
