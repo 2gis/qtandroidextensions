@@ -318,6 +318,11 @@ void QAndroidSpeechRecognizer::startListening(const QString & action)
 	{
 		if (listener_)
 		{
+			if (listening_)
+			{
+				cancel();
+			}
+
 			QJniObject intent("android/content/Intent");
 			QScopedPointer<QJniObject>(intent.callParamObject(
 				"setAction"
@@ -356,6 +361,7 @@ void QAndroidSpeechRecognizer::startListening(const QString & action)
 			}
 
 			listener_->callParamVoid("startListening", "Landroid/content/Intent;", intent.jObject());
+
 			listening_ = true;
 			emit listeningChanged(listening_);
 		}
@@ -376,8 +382,11 @@ void QAndroidSpeechRecognizer::stopListening()
 		if (listener_)
 		{
 			listener_->callVoid("stopListening");
-			listening_ = false;
-			emit listeningChanged(listening_);
+			if (listening_)
+			{
+				listening_ = false;
+				emit listeningChanged(listening_);
+			}
 		}
 	}
 	catch (const std::exception & e)
@@ -396,8 +405,11 @@ void QAndroidSpeechRecognizer::cancel()
 		if (listener_)
 		{
 			listener_->callVoid("cancel");
-			listening_ = false;
-			emit listeningChanged(listening_);
+			if (listening_)
+			{
+				listening_ = false;
+				emit listeningChanged(listening_);
+			}
 		}
 	}
 	catch (const std::exception & e)
@@ -428,6 +440,11 @@ void QAndroidSpeechRecognizer::javaOnError(int code)
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
 		qDebug() << __PRETTY_FUNCTION__ << code << ":" << message;
 	#endif
+	if (listening_)
+	{
+		listening_ = false;
+		emit listeningChanged(listening_);
+	}
 	emit error(code, message);
 }
 
@@ -436,8 +453,11 @@ void QAndroidSpeechRecognizer::javaOnPartialResults(const QStringList & res)
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
 		qDebug() << __PRETTY_FUNCTION__ << ":" << res.join(QLatin1String(" | "));
 	#endif
-	emit partialResults(res);
-	emit partialResult(res.join(QLatin1String(" ")));
+	if(!res.isEmpty())
+	{
+		emit partialResults(res);
+		emit partialResult(res.last());
+	}
 }
 
 void QAndroidSpeechRecognizer::javaOnReadyForSpeech()
@@ -453,8 +473,16 @@ void QAndroidSpeechRecognizer::javaOnResults(const QStringList & res, bool secur
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
 		qDebug() << __PRETTY_FUNCTION__ << ", secure =" << secure << ":" << res.join(QLatin1String(" | "));
 	#endif
-	emit results(res, secure);
-	emit result(res.join(QLatin1String(" ")), secure);
+	if (listening_)
+	{
+		listening_ = false;
+		emit listeningChanged(listening_);
+	}
+	if (!res.isEmpty())
+	{
+		emit results(res, secure);
+		emit result(res.last(), secure);
+	}
 }
 
 void QAndroidSpeechRecognizer::javaOnRmsdBChanged(float rmsdb)
@@ -467,28 +495,59 @@ void QAndroidSpeechRecognizer::javaOnRmsdBChanged(float rmsdb)
 	emit rmsdBChanged(rmsdB_);
 }
 
+void QAndroidSpeechRecognizer::extraSetPrompt(const QString & prompt)
+{
+	addStringExtra(ANDROID_RECOGNIZERINTENT_EXTRA_PROMPT, prompt);
+}
+
+void QAndroidSpeechRecognizer::extraSetLanguage(const QString & ietf_language)
+{
+	QString language = ietf_language;
+	language.replace(QLatin1Char('_'), QLatin1Char('-'));
+	addStringExtra(ANDROID_RECOGNIZERINTENT_EXTRA_LANGUAGE, language);
+}
+
+void QAndroidSpeechRecognizer::extraSetMaxResults(int results)
+{
+	addIntExtra(ANDROID_RECOGNIZERINTENT_EXTRA_RESULTS, results);
+}
+
+void QAndroidSpeechRecognizer::extraSetPartialResults()
+{
+	addBoolExtra(ANDROID_RECOGNIZERINTENT_EXTRA_PARTIAL_RESULTS, true);
+}
+
+void QAndroidSpeechRecognizer::extraSetListeningTimeouts(int min_phrase_length_ms, int possibly_complete_ms, int complete_ms)
+{
+	addIntExtra(ANDROID_RECOGNIZERINTENT_EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, min_phrase_length_ms);
+	addIntExtra(ANDROID_RECOGNIZERINTENT_EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, possibly_complete_ms);
+	addIntExtra(ANDROID_RECOGNIZERINTENT_EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, complete_ms);
+}
+
+
+
 QString QAndroidSpeechRecognizer::errorCodeToMessage(int code)
 {
 	switch (code)
 	{
 	case ANDROID_SPEECHRECOGNIZER_ERROR_AUDIO:
-		return tr("Audio recording error");
+		return tr("Audio recording error.");
 	case ANDROID_SPEECHRECOGNIZER_ERROR_CLIENT:
-		return tr("Client side error");
+		return tr("Client side error.");
 	case ANDROID_SPEECHRECOGNIZER_ERROR_INSUFFICIENT_PERMISSIONS:
-		return tr("Insufficient permissions");
+		return tr("Insufficient permissions.");
 	case ANDROID_SPEECHRECOGNIZER_ERROR_NETWORK:
-		return tr("Network error");
+		return tr("Network error.");
 	case ANDROID_SPEECHRECOGNIZER_ERROR_NETWORK_TIMEOUT:
-		return tr("Network timeout");
+		return tr("Network timeout.");
 	case ANDROID_SPEECHRECOGNIZER_ERROR_NO_MATCH:
-		return tr("No recognition result matched");
+		return tr("Sorry, your speech was not recognized. Please try again.");
 	case ANDROID_SPEECHRECOGNIZER_ERROR_RECOGNIZER_BUSY:
 		return tr("Android voice recognition service is busy");
 	case ANDROID_SPEECHRECOGNIZER_ERROR_SERVER:
-		return tr("Audio recognition server error");
+		return tr("Audio recognition server error.");
 	case ANDROID_SPEECHRECOGNIZER_ERROR_SPEECH_TIMEOUT:
-		return tr("No speech input");
+		return tr("No speech input.");
 	default:
 		return tr("An unknown voice recognition error occured.");
 	}

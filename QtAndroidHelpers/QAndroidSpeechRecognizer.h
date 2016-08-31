@@ -120,9 +120,9 @@ public slots:
 
 	// Filling in extra parameters
 	void clearExtras() { string_extras_.clear(); bool_extras_.clear(); int_extras_.clear(); }
-	void addStringExtra(const QString & key, const QString & value) { string_extras_.insert(key,value); }
-	void addBoolExtra(const QString & key, bool value) { bool_extras_.insert(key,value); }
-	void addIntExtra(const QString & key, int value) { int_extras_.insert(key,value); }
+	void addStringExtra(const QString & key, const QString & value) { string_extras_.insert(key, value); }
+	void addBoolExtra(const QString & key, bool value) { bool_extras_.insert(key, value); }
+	void addIntExtra(const QString & key, int value) { int_extras_.insert(key, value); }
 
 
 	// Higher-level functions
@@ -141,10 +141,13 @@ public slots:
 		startListening(ANDROID_RECOGNIZERINTENT_ACTION_VOICE_SEARCH_HANDS_FREE);
 	}
 
-	void extraSetPrompt(const QString & prompt) { addStringExtra(ANDROID_RECOGNIZERINTENT_EXTRA_PROMPT, prompt); }
-	void extraSetLanguage(const QString & ietf_language) { addStringExtra(ANDROID_RECOGNIZERINTENT_EXTRA_LANGUAGE, ietf_language); }
-	void extraSetMaxResults(int results) { addIntExtra(ANDROID_RECOGNIZERINTENT_EXTRA_RESULTS, results); }
-	void extraSetPartialResults() { addBoolExtra(ANDROID_RECOGNIZERINTENT_EXTRA_PARTIAL_RESULTS, true); }
+	void extraSetPrompt(const QString & prompt);
+	void extraSetLanguage(const QString & ietf_language);
+	void extraSetMaxResults(int results);
+	void extraSetPartialResults();
+
+	// Warning: this may not work on 4.3 (Jelly Bean) and up
+	void extraSetListeningTimeouts(int min_phrase_length_ms, int possibly_complete_ms, int complete_ms);
 
 signals:
 	void listeningChanged(bool listening);
@@ -152,10 +155,10 @@ signals:
 	void endOfSpeech();
 	void error(int code, QString message);
 	void partialResults(const QStringList & results);
-	void partialResult(const QString & voice_input);
+	void partialResult(const QString & last_result);
 	void readyForSpeech();
 	void results(const QStringList & results, bool secure);
-	void result(const QString & voice_input, bool secure);
+	void result(const QString & last_result, bool secure);
 	void rmsdBChanged(float rmsdb);
 
 private slots:
