@@ -96,6 +96,7 @@ public class VoiceRecognitionListener implements RecognitionListener {
         mActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                Log.d(TAG, "requestLanguageDetails() runnable");
                 try {
                     Intent intent = new Intent(RecognizerIntent.ACTION_GET_LANGUAGE_DETAILS);
                     mActivity.sendOrderedBroadcast(
@@ -142,6 +143,7 @@ public class VoiceRecognitionListener implements RecognitionListener {
             @Override
             public void run() {
                 if (mSpeechRecognizer != null) {
+                    Log.d(TAG, "startListening() runnable");
                     mSpeechRecognizer.cancel();
                     mSpeechRecognizer.startListening(intent);
                     mReadyForSpeechReceived = false;
@@ -159,6 +161,7 @@ public class VoiceRecognitionListener implements RecognitionListener {
         mActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                Log.d(TAG, "stopListening() runnable");
                 if (mSpeechRecognizer != null) {
                     mSpeechRecognizer.stopListening();
                     mStopListeningCalled = true;
@@ -175,6 +178,7 @@ public class VoiceRecognitionListener implements RecognitionListener {
         mActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                Log.d(TAG, "cancel() runnable");
                 if (mSpeechRecognizer != null) {
                     mSpeechRecognizer.cancel();
                 } else {

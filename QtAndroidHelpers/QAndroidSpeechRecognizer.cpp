@@ -532,7 +532,7 @@ void QAndroidSpeechRecognizer::javaOnError(int code)
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
 		qDebug() << "SpeechRecognizer" << __FUNCTION__ << code << ":" << message;
 	#endif
-	// listeningStopped(); - not true!
+	listeningStopped();
 	emit error(code, message);
 }
 
