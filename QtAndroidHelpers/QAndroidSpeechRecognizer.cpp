@@ -36,6 +36,7 @@
 
 #include <QtCore/QDebug>
 #include <QAndroidQPAPluginGap.h>
+#include "QAndroidDesktopUtils.h"
 #include "QAndroidSpeechRecognizer.h"
 
 
@@ -79,6 +80,7 @@ const QString
 
 static const char * const c_recognition_listener_class_name_ = "ru/dublgis/androidhelpers/VoiceRecognitionListener";
 static const char * const c_speech_recognizer_class_name_ = "android/speech/SpeechRecognizer";
+static const QString c_record_audio_permission = "android.permission.RECORD_AUDIO";
 
 
 static QStringList bundleResultsToQStringList(jobject jobundle)
@@ -226,6 +228,7 @@ QAndroidSpeechRecognizer::QAndroidSpeechRecognizer(QObject * p)
 	, listening_(false)
 	, rmsdB_(0.0f)
 	, enable_timeout_timer_(false)
+	, permission_request_code_(100)
 {
 	preloadJavaClasses();
 
@@ -314,7 +317,7 @@ bool QAndroidSpeechRecognizer::isRecognitionAvailable() const
 	return result;
 }
 
-void QAndroidSpeechRecognizer::startListening(const QString & action)
+bool QAndroidSpeechRecognizer::startListening(const QString & action)
 {
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
 		qDebug() << __PRETTY_FUNCTION__ << action;
@@ -323,6 +326,15 @@ void QAndroidSpeechRecognizer::startListening(const QString & action)
 	{
 		if (listener_)
 		{
+			if (!QAndroidDesktopUtils::checkSelfPermission(c_record_audio_permission))
+			{
+				qDebug() << "SpeechRecognizer: requesting audio recording permission...";
+				QAndroidDesktopUtils::requestPermissions(
+					QStringList() << c_record_audio_permission
+					, permission_request_code_);
+				return false;
+			}
+
 			if (listening_)
 			{
 				cancel();
@@ -374,12 +386,15 @@ void QAndroidSpeechRecognizer::startListening(const QString & action)
 			{
 				timeout_timer_.start();
 			}
+
+			return true;
 		}
 	}
 	catch (const std::exception & e)
 	{
 		qCritical() << "Exception in QAndroidSpeechRecognizer::startListening:" << e.what();
 	}
+	return false;
 }
 
 void QAndroidSpeechRecognizer::stopListening()
@@ -550,9 +565,20 @@ void QAndroidSpeechRecognizer::extraSetListeningTimeouts(
 	, int complete_ms
 	, int timer_workaround_ms)
 {
-	addIntExtra(ANDROID_RECOGNIZERINTENT_EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, min_phrase_length_ms);
-	addIntExtra(ANDROID_RECOGNIZERINTENT_EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, possibly_complete_ms);
-	addIntExtra(ANDROID_RECOGNIZERINTENT_EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, complete_ms);
+	if (min_phrase_length_ms >  0)
+	{
+		addIntExtra(ANDROID_RECOGNIZERINTENT_EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, min_phrase_length_ms);
+	}
+
+	if (possibly_complete_ms > 0)
+	{
+		addIntExtra(ANDROID_RECOGNIZERINTENT_EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, possibly_complete_ms);
+	}
+
+	if (complete_ms > 0)
+	{
+		addIntExtra(ANDROID_RECOGNIZERINTENT_EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, complete_ms);
+	}
 
 	if (timer_workaround_ms > 0)
 	{
@@ -563,6 +589,20 @@ void QAndroidSpeechRecognizer::extraSetListeningTimeouts(
 	else
 	{
 		enable_timeout_timer_ = false;
+	}
+}
+
+int QAndroidSpeechRecognizer::permissionRequestCode() const
+{
+	return permission_request_code_;
+}
+
+void QAndroidSpeechRecognizer::setPermissionRequestCode(int code)
+{
+	if (permission_request_code_ != code)
+	{
+		permission_request_code_ = code;
+		emit permissionRequestCodeChanged(permission_request_code_);
 	}
 }
 

@@ -50,6 +50,7 @@ class QAndroidSpeechRecognizer
 	Q_OBJECT
 	Q_PROPERTY(bool listening READ listening NOTIFY listeningChanged)
 	Q_PROPERTY(float rmsdB READ rmsdB NOTIFY rmsdBChanged)
+	Q_PROPERTY(int permissionRequestCode READ permissionRequestCode WRITE setPermissionRequestCode NOTIFY permissionRequestCodeChanged)
 public:
 	QAndroidSpeechRecognizer(QObject * p = 0);
 	virtual ~QAndroidSpeechRecognizer();
@@ -115,7 +116,7 @@ public:
 public slots:
 	// SpeechRecognier functions
 	bool isRecognitionAvailable() const;
-	void startListening(const QString & action);
+	bool startListening(const QString & action);
 	void stopListening();
 	void cancel();
 
@@ -147,6 +148,9 @@ public slots:
 		, int complete_ms
 		, int timer_workaround_ms);
 
+	int permissionRequestCode() const;
+	void setPermissionRequestCode(int code);
+
 signals:
 	void listeningChanged(bool listening);
 	void beginningOfSpeech();
@@ -158,6 +162,7 @@ signals:
 	void results(const QStringList & results, bool secure);
 	void result(const QString & last_result, bool secure);
 	void rmsdBChanged(float rmsdb);
+	void permissionRequestCodeChanged(int code);
 
 private slots:
 	void javaOnBeginningOfSpeech();
@@ -190,6 +195,7 @@ private:
 	QScopedPointer<QJniObject> listener_;
 	QTimer timeout_timer_;
 	bool enable_timeout_timer_;
+	int permission_request_code_;
 };
 
 
