@@ -57,7 +57,10 @@ public class VoiceRecognitionListener implements RecognitionListener {
     private final String TAG = "Grym/SpeechRecognizer";
     private Activity mActivity = null;
     private SpeechRecognizer mSpeechRecognizer = null;
+
+    // Bug workarounds
     private boolean mReadyForSpeechReceived = false;
+    private boolean mStopListeningCalled = false;
 
     // From C++
     public void setNativePtr(long nativePtr)
@@ -142,6 +145,7 @@ public class VoiceRecognitionListener implements RecognitionListener {
                     mSpeechRecognizer.cancel();
                     mSpeechRecognizer.startListening(intent);
                     mReadyForSpeechReceived = false;
+                    mStopListeningCalled = false;
                 } else {
                     Log.e(TAG, "startListening: the recognizer is null!");
                 }
@@ -157,6 +161,7 @@ public class VoiceRecognitionListener implements RecognitionListener {
             public void run() {
                 if (mSpeechRecognizer != null) {
                     mSpeechRecognizer.stopListening();
+                    mStopListeningCalled = true;
                 } else {
                     Log.e(TAG, "stopListening: the recognizer is null!");
                 }
@@ -213,7 +218,12 @@ public class VoiceRecognitionListener implements RecognitionListener {
     {
         // Workaround for a bug in Android: https://code.google.com/p/android/issues/detail?id=179293
         if (error == SpeechRecognizer.ERROR_NO_MATCH && !mReadyForSpeechReceived) {
-            Log.w(TAG, "onError: working around ERROR_NO_MATCH bug.");
+            Log.d(TAG, "onError: working around ERROR_NO_MATCH bug.");
+            return;
+        }
+        // "Client error" after force-stopping the listening is OK.
+        if (error == SpeechRecognizer.ERROR_CLIENT && mStopListeningCalled) {
+            Log.d(TAG, "onError: ignoring ERROR_CLIENT after listening is stopped.");
             return;
         }
         Log.v(TAG, "onError " + error);
