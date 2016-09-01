@@ -127,7 +127,10 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnBeginningOfSpee
 		QAndroidSpeechRecognizer * myobject = reinterpret_cast<QAndroidSpeechRecognizer*>(vp);
 		if (myobject)
 		{
-			myobject->javaOnBeginningOfSpeech();
+			QMetaObject::invokeMethod(
+				myobject
+				, "javaOnBeginningOfSpeech"
+				, Qt::QueuedConnection);
 			return;
 		}
 	}
@@ -142,7 +145,10 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnEndOfSpeech(JNI
 		QAndroidSpeechRecognizer * myobject = reinterpret_cast<QAndroidSpeechRecognizer*>(vp);
 		if (myobject)
 		{
-			myobject->javaOnEndOfSpeech();
+			QMetaObject::invokeMethod(
+				myobject
+				, "javaOnEndOfSpeech"
+				, Qt::QueuedConnection);
 			return;
 		}
 	}
@@ -157,7 +163,11 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnError(JNIEnv *,
 		QAndroidSpeechRecognizer * myobject = reinterpret_cast<QAndroidSpeechRecognizer*>(vp);
 		if (myobject)
 		{
-			myobject->javaOnError(static_cast<int>(code));
+			QMetaObject::invokeMethod(
+				myobject
+				, "javaOnError"
+				, Qt::QueuedConnection
+				, Q_ARG(int, static_cast<int>(code)));
 			return;
 		}
 	}
@@ -172,7 +182,11 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnPartialResults(
 		QAndroidSpeechRecognizer * myobject = reinterpret_cast<QAndroidSpeechRecognizer*>(vp);
 		if (myobject)
 		{
-			myobject->javaOnPartialResults(bundleResultsToQStringList(bundle_results));
+			QMetaObject::invokeMethod(
+				myobject
+				, "javaOnPartialResults"
+				, Qt::QueuedConnection
+				, Q_ARG(QStringList, bundleResultsToQStringList(bundle_results)));
 			return;
 		}
 	}
@@ -188,7 +202,10 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnReadyForSpeech(
 		if (myobject)
 		{
 			Q_UNUSED(bundle_params)
-			myobject->javaOnReadyForSpeech();
+			QMetaObject::invokeMethod(
+				myobject
+				, "javaOnReadyForSpeech"
+				, Qt::QueuedConnection);
 			return;
 		}
 	}
@@ -203,7 +220,12 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnResults(JNIEnv 
 		QAndroidSpeechRecognizer * myobject = reinterpret_cast<QAndroidSpeechRecognizer*>(vp);
 		if (myobject)
 		{
-			myobject->javaOnResults(bundleResultsToQStringList(bundle_results), static_cast<bool>(secure));
+			QMetaObject::invokeMethod(
+				myobject
+				, "javaOnResults"
+				, Qt::QueuedConnection
+				, Q_ARG(QStringList, bundleResultsToQStringList(bundle_results))
+				, Q_ARG(bool, static_cast<bool>(secure)));
 			return;
 		}
 	}
@@ -218,7 +240,11 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnRmsChanged(JNIE
 		QAndroidSpeechRecognizer * myobject = reinterpret_cast<QAndroidSpeechRecognizer*>(vp);
 		if (myobject)
 		{
-			myobject->javaOnRmsdBChanged(static_cast<float>(rmsdB));
+			QMetaObject::invokeMethod(
+				myobject
+				, "javaOnRmsdBChanged"
+				, Qt::QueuedConnection
+				, Q_ARG(float, static_cast<float>(rmsdB)));
 			return;
 		}
 	}
@@ -234,7 +260,11 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeSupportedLanguage
 		if (myobject)
 		{
 			QScopedPointer<QJniObject> languages_qjo(new QJniObject(languages, false));
-			myobject->javaSupportedLanguagesReceived(arrayListOfStringToQStringList(languages_qjo.data()));
+			QMetaObject::invokeMethod(
+				myobject
+				, "javaSupportedLanguagesReceived"
+				, Qt::QueuedConnection
+				, Q_ARG(QStringList, arrayListOfStringToQStringList(languages_qjo.data())));
 			return;
 		}
 	}
@@ -430,15 +460,6 @@ bool QAndroidSpeechRecognizer::startListening(const QString & action)
 
 			listeningStarted();
 
-			if (enable_timeout_timer_)
-			{
-				#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
-					qDebug() << "SpeechRecognizer" << "Start timeout timer";
-				#endif
-				timeout_timer_.start();
-				previous_partial_results_.clear();
-			}
-
 			return true;
 		}
 	}
@@ -543,6 +564,14 @@ void QAndroidSpeechRecognizer::javaOnReadyForSpeech()
 		qDebug() << "SpeechRecognizer" << __FUNCTION__;
 	#endif
 	emit readyForSpeech();
+	if (enable_timeout_timer_)
+	{
+		#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
+			qDebug() << "SpeechRecognizer" << __FUNCTION__ << "Start timeout timer";
+		#endif
+		timeout_timer_.start();
+		previous_partial_results_.clear();
+	}
 }
 
 void QAndroidSpeechRecognizer::javaOnResults(const QStringList & res, bool secure)
@@ -648,6 +677,7 @@ void QAndroidSpeechRecognizer::extraSetListeningTimeouts(
 	{
 		enable_timeout_timer_ = true;
 		timeout_timer_.setInterval(timer_workaround_ms);
+		// The timer is controlled by partial results event.
 		extraSetPartialResults();
 	}
 	else

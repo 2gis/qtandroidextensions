@@ -153,9 +153,10 @@ public slots:
 	void extraSetPartialResults();
 
 	// Set voice input timeout parameters.
-	// Please note that the normal setting of these parameters to SpeechRecognizer does not work
-	// on 4.3 (Jelly Bean) and up.To make timeout work on all versions of Android please set
-	// timer_workaround_ms > 0. Note that it also enables partial results.
+	// Passing a value <=0 will leave the timeout on system default.
+	// Please note that the first 3 parameters are handled by OS and don't work
+	// on certain versions, e.g. on Android 4.3.
+	// Note: setting timer_workaround_ms >0 also enables partial results event.
 	void extraSetListeningTimeouts(
 		int min_phrase_length_ms
 		, int possibly_complete_ms
@@ -171,9 +172,16 @@ signals:
 	void endOfSpeech();
 	void error(int code, QString message);
 	void partialResults(const QStringList & results);
+	// This signal sends only the latest version of the recognition
+	// (likey the most relevant for the moment).
 	void partialResult(const QString & last_result);
 	void readyForSpeech();
+	// "secure" is set to true if device is currently in locked state so no unsafe operations allowed
+	// (may happen only when using "hands free" recognition).
 	void results(const QStringList & results, bool secure);
+	// This signal sends only the latest version of the recognition (likey the most relevant).
+	// "secure" is set to true if device is currently in locked state so no unsafe operations allowed
+	// (may happen only when using "hands free" recognition).
 	void result(const QString & last_result, bool secure);
 	void rmsdBChanged(float rmsdb);
 	void permissionRequestCodeChanged(int code);
