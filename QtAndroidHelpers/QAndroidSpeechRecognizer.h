@@ -134,7 +134,7 @@ public slots:
 	// The languages are returned via supportedLanguagesReceived(QStringList) signal.
 	void requestSupportedLanguages();
 
-	// Filling in extra parameters
+	// Filling in extra parameters of future voice recognition intents (see: RecognizerIntent).
 	void clearExtras() { string_extras_.clear(); bool_extras_.clear(); int_extras_.clear(); enable_timeout_timer_ = false; }
 	void addStringExtra(const QString & key, const QString & value) { string_extras_.insert(key, value); }
 	void addBoolExtra(const QString & key, bool value) { bool_extras_.insert(key, value); }

@@ -480,7 +480,9 @@ void QAndroidSpeechRecognizer::stopListening()
 		if (listener_)
 		{
 			listener_->callVoid("stopListening");
-			listeningStopped();
+			// stopListening doesn't immediately stop the process;
+			// the sound recorded up to date gets recognized and the events are sent.
+			// listeningStopped();
 		}
 	}
 	catch (const std::exception & e)
