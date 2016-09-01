@@ -191,6 +191,7 @@ private slots:
 	void onTimeoutTimerTimeout();
 
 private:
+	void listeningStarted();
 	void listeningStopped();
 	QString errorCodeToMessage(int code);
 

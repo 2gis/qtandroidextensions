@@ -57,6 +57,7 @@ public class VoiceRecognitionListener implements RecognitionListener {
     private final String TAG = "Grym/SpeechRecognizer";
     private Activity mActivity = null;
     private SpeechRecognizer mSpeechRecognizer = null;
+    private boolean mReadyForSpeechReceived = false;
 
     // From C++
     public void setNativePtr(long nativePtr)
@@ -138,7 +139,9 @@ public class VoiceRecognitionListener implements RecognitionListener {
             @Override
             public void run() {
                 if (mSpeechRecognizer != null) {
+                    mSpeechRecognizer.cancel();
                     mSpeechRecognizer.startListening(intent);
+                    mReadyForSpeechReceived = false;
                 } else {
                     Log.e(TAG, "startListening: the recognizer is null!");
                 }
@@ -208,6 +211,11 @@ public class VoiceRecognitionListener implements RecognitionListener {
     @Override
     public void onError(int error)
     {
+        // Workaround for a bug in Android: https://code.google.com/p/android/issues/detail?id=179293
+        if (error == SpeechRecognizer.ERROR_NO_MATCH && !mReadyForSpeechReceived) {
+            Log.w(TAG, "onError " + error + ": working around ERROR_NO_MATCH bug.");
+            return;
+        }
         Log.v(TAG, "onError " + error);
         synchronized(this) {
             if (mNativePtr != 0) {
@@ -242,6 +250,7 @@ public class VoiceRecognitionListener implements RecognitionListener {
             if (mNativePtr != 0) {
                 nativeOnReadyForSpeech(mNativePtr, params);
             }
+            mReadyForSpeechReceived = true;
         }
     }
 
