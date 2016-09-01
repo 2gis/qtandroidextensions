@@ -233,7 +233,8 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeSupportedLanguage
 		QAndroidSpeechRecognizer * myobject = reinterpret_cast<QAndroidSpeechRecognizer*>(vp);
 		if (myobject)
 		{
-			myobject->javaSupportedLanguagesReceived(arrayListOfStringToQStringList(new QJniObject(languages, false)));
+			QScopedPointer<QJniObject> languages_qjo(new QJniObject(languages, false));
+			myobject->javaSupportedLanguagesReceived(arrayListOfStringToQStringList(languages_qjo.data()));
 			return;
 		}
 	}
