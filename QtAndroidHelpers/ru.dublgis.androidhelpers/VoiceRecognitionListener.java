@@ -213,7 +213,7 @@ public class VoiceRecognitionListener implements RecognitionListener {
     {
         // Workaround for a bug in Android: https://code.google.com/p/android/issues/detail?id=179293
         if (error == SpeechRecognizer.ERROR_NO_MATCH && !mReadyForSpeechReceived) {
-            Log.w(TAG, "onError " + error + ": working around ERROR_NO_MATCH bug.");
+            Log.w(TAG, "onError: working around ERROR_NO_MATCH bug.");
             return;
         }
         Log.v(TAG, "onError " + error);

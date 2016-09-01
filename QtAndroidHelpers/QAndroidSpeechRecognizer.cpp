@@ -252,7 +252,11 @@ QAndroidSpeechRecognizer::QAndroidSpeechRecognizer(QObject * p)
 {
 	preloadJavaClasses();
 
-	connect(&timeout_timer_, SIGNAL(timeout()), this, SLOT(onTimeoutTimerTimeout()));
+	if (!connect(&timeout_timer_, SIGNAL(timeout()), this, SLOT(onTimeoutTimerTimeout())))
+	{
+		qCritical() << "Connection failed.";
+		throw std::exception();
+	}
 	timeout_timer_.setSingleShot(true);
 
 	if (isRecognitionAvailableStatic())
@@ -432,6 +436,7 @@ bool QAndroidSpeechRecognizer::startListening(const QString & action)
 					qDebug() << "SpeechRecognizer" << "Start timeout timer";
 				#endif
 				timeout_timer_.start();
+				previous_partial_results_.clear();
 			}
 
 			return true;
@@ -504,7 +509,7 @@ void QAndroidSpeechRecognizer::javaOnError(int code)
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
 		qDebug() << "SpeechRecognizer" << __FUNCTION__ << code << ":" << message;
 	#endif
-	listeningStopped();
+	// listeningStopped(); - not true!
 	emit error(code, message);
 }
 
@@ -518,13 +523,17 @@ void QAndroidSpeechRecognizer::javaOnPartialResults(const QStringList & res)
 		emit partialResults(res);
 		emit partialResult(res.last());
 	}
-	// NB: res is an empty array until the user started to talk.
+	// NB: res is an empty array until the user actually started to talk.
 	if (enable_timeout_timer_)
 	{
-		#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
-			qDebug() << "SpeechRecognizer" << "Restart timeout timer";
-		#endif
-		timeout_timer_.start();
+		if (res != previous_partial_results_)
+		{
+			#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
+				qDebug() << "SpeechRecognizer" << "Restart timeout timer";
+			#endif
+			timeout_timer_.start();
+		}
+		previous_partial_results_ = res;
 	}
 }
 

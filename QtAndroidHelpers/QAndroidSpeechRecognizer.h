@@ -43,7 +43,7 @@
 
 
 // SpeechRecognizer wrapper.
-// Note: this class is QML-singleton friendly.
+// Note: this class is QML friendly, it can be registered as a creatable QML object or singleton.
 class QAndroidSpeechRecognizer
 	: public QObject
 {
@@ -211,8 +211,11 @@ private:
 	QMap<QString, bool> bool_extras_;
 	QMap<QString, int> int_extras_;
 	QScopedPointer<QJniObject> listener_;
+
 	QTimer timeout_timer_;
 	bool enable_timeout_timer_;
+	QStringList previous_partial_results_;
+
 	int permission_request_code_;
 };
 
