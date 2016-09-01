@@ -115,10 +115,19 @@ public:
 
 public slots:
 	// SpeechRecognier functions
+	// Note: see also checkRuntimePermissions(bool) - we may have the voice recognition
+	// but no permission to use it.
 	bool isRecognitionAvailable() const;
 	bool startListening(const QString & action);
 	void stopListening();
 	void cancel();
+
+	// Check for dynamic run-time permissions on Android 6+.
+	// On Android < 6 always returns true.
+	// You may want to call to isRecognitionAvailable() first to check if it makes
+	// sense to show the permission request dialog.
+	// The permissions are requested automatically when calling to startListening().
+	bool checkRuntimePermissions(bool request_if_necessary) const;
 
 	// Filling in extra parameters
 	void clearExtras() { string_extras_.clear(); bool_extras_.clear(); int_extras_.clear(); enable_timeout_timer_ = false; }

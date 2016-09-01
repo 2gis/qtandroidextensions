@@ -317,6 +317,22 @@ bool QAndroidSpeechRecognizer::isRecognitionAvailable() const
 	return result;
 }
 
+bool QAndroidSpeechRecognizer::checkRuntimePermissions(bool request_if_necessary) const
+{
+	if (QAndroidDesktopUtils::checkSelfPermission(c_record_audio_permission))
+	{
+		return true;
+	}
+	if (request_if_necessary)
+	{
+		qDebug() << "SpeechRecognizer: requesting audio recording permission...";
+		QAndroidDesktopUtils::requestPermissions(
+			QStringList() << c_record_audio_permission
+			, permission_request_code_);
+	}
+	return false;
+}
+
 bool QAndroidSpeechRecognizer::startListening(const QString & action)
 {
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
@@ -326,12 +342,9 @@ bool QAndroidSpeechRecognizer::startListening(const QString & action)
 	{
 		if (listener_)
 		{
-			if (!QAndroidDesktopUtils::checkSelfPermission(c_record_audio_permission))
+			if (!checkRuntimePermissions(true))
 			{
-				qDebug() << "SpeechRecognizer: requesting audio recording permission...";
-				QAndroidDesktopUtils::requestPermissions(
-					QStringList() << c_record_audio_permission
-					, permission_request_code_);
+				qDebug() << "SpeechRecognizer: not starting to listen because I have to get the permissions first.";
 				return false;
 			}
 
