@@ -118,16 +118,21 @@ public slots:
 	// Note: see also checkRuntimePermissions(bool) - we may have the voice recognition
 	// but no permission to use it.
 	bool isRecognitionAvailable() const;
+	// Make sure to call setPermissionRequestCode(int) before doing it.
 	bool startListening(const QString & action);
 	void stopListening();
 	void cancel();
 
 	// Check for dynamic run-time permissions on Android 6+.
+	// Make sure to call setPermissionRequestCode(int) before doing it.
 	// On Android < 6 always returns true.
 	// You may want to call to isRecognitionAvailable() first to check if it makes
 	// sense to show the permission request dialog.
 	// The permissions are requested automatically when calling to startListening().
 	bool checkRuntimePermissions(bool request_if_necessary) const;
+
+	// The languages are returned via supportedLanguagesReceived(QStringList) signal.
+	void requestSupportedLanguages();
 
 	// Filling in extra parameters
 	void clearExtras() { string_extras_.clear(); bool_extras_.clear(); int_extras_.clear(); enable_timeout_timer_ = false; }
@@ -172,6 +177,7 @@ signals:
 	void result(const QString & last_result, bool secure);
 	void rmsdBChanged(float rmsdb);
 	void permissionRequestCodeChanged(int code);
+	void supportedLanguagesReceived(const QStringList & ietf_languages);
 
 private slots:
 	void javaOnBeginningOfSpeech();
@@ -181,6 +187,7 @@ private slots:
 	void javaOnReadyForSpeech();
 	void javaOnResults(const QStringList & results, bool secure);
 	void javaOnRmsdBChanged(float rmsdb);
+	void javaSupportedLanguagesReceived(const QStringList & languages);
 	void onTimeoutTimerTimeout();
 
 private:
@@ -194,6 +201,7 @@ private:
 	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnReadyForSpeech(JNIEnv *, jobject, jlong param, jobject bundle_params);
 	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnResults(JNIEnv *, jobject, jlong param, jobject bundle_results, jboolean secure);
 	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnRmsChanged(JNIEnv *, jobject, jlong param, jfloat rmsdB);
+	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeSupportedLanguagesReceived(JNIEnv *, jobject, jlong param, jobject languages);
 
 private:
 	bool listening_;

@@ -83,6 +83,22 @@ static const char * const c_speech_recognizer_class_name_ = "android/speech/Spee
 static const QString c_record_audio_permission = "android.permission.RECORD_AUDIO";
 
 
+static QStringList arrayListOfStringToQStringList(QJniObject * array_list)
+{
+	QStringList result;
+	if (array_list && array_list->jObject())
+	{
+		jint size = array_list->callInt("size");
+		QJniEnvPtr jep;
+		for (jint i = 0; i < size; ++i)
+		{
+			QScopedPointer<QJniObject> str_object(array_list->callParamObject("get", "java/lang/Object", "I", i));
+			result << jep.JStringToQString(static_cast<jstring>(str_object->jObject()));
+		}
+	}
+	return result;
+}
+
 static QStringList bundleResultsToQStringList(jobject jobundle)
 {
 	try
@@ -93,18 +109,7 @@ static QStringList bundleResultsToQStringList(jobject jobundle)
 			, "java/util/ArrayList"
 			, "Ljava/lang/String;"
 			, QJniLocalRef(QAndroidSpeechRecognizer::ANDROID_SPEECHRECOGNIZER_RESULTS_RECOGNITION).jObject()));
-		QStringList result;
-		if (result_array && result_array->jObject())
-		{
-			jint size = result_array->callInt("size");
-			QJniEnvPtr jep;
-			for (jint i = 0; i < size; ++i)
-			{
-				QScopedPointer<QJniObject> str_object(result_array->callParamObject("get", "java/lang/Object", "I", i));
-				result << jep.JStringToQString(static_cast<jstring>(str_object->jObject()));
-			}
-		}
-		return result;
+		return arrayListOfStringToQStringList(result_array.data());
 	}
 	catch (const std::exception & e)
 	{
@@ -220,6 +225,20 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnRmsChanged(JNIE
 	qWarning() << __FUNCTION__ <<" Zero param!";
 }
 
+Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeSupportedLanguagesReceived(JNIEnv *, jobject, jlong param, jobject languages)
+{
+	if (param)
+	{
+		void * vp = reinterpret_cast<void*>(param);
+		QAndroidSpeechRecognizer * myobject = reinterpret_cast<QAndroidSpeechRecognizer*>(vp);
+		if (myobject)
+		{
+			myobject->javaSupportedLanguagesReceived(arrayListOfStringToQStringList(new QJniObject(languages, false)));
+			return;
+		}
+	}
+	qWarning() << __FUNCTION__ <<" Zero param!";
+}
 
 
 
@@ -228,7 +247,7 @@ QAndroidSpeechRecognizer::QAndroidSpeechRecognizer(QObject * p)
 	, listening_(false)
 	, rmsdB_(0.0f)
 	, enable_timeout_timer_(false)
-	, permission_request_code_(100)
+	, permission_request_code_(0)
 {
 	preloadJavaClasses();
 
@@ -251,6 +270,7 @@ QAndroidSpeechRecognizer::QAndroidSpeechRecognizer(QObject * p)
 				{"nativeOnReadyForSpeech", "(JLandroid/os/Bundle;)V", (void*)Java_QAndroidSpeechRecognizer_nativeOnReadyForSpeech},
 				{"nativeOnResults", "(JLandroid/os/Bundle;)V", (void*)Java_QAndroidSpeechRecognizer_nativeOnResults},
 				{"nativeOnRmsChanged", "(JF)V", (void*)Java_QAndroidSpeechRecognizer_nativeOnRmsChanged},
+				{"nativeSupportedLanguagesReceived", "(JLjava/util/ArrayList;)V", (void*)Java_QAndroidSpeechRecognizer_nativeSupportedLanguagesReceived},
 			};
 			listener_->registerNativeMethods(methods, sizeof(methods));
 
@@ -331,6 +351,24 @@ bool QAndroidSpeechRecognizer::checkRuntimePermissions(bool request_if_necessary
 			, permission_request_code_);
 	}
 	return false;
+}
+
+void QAndroidSpeechRecognizer::requestSupportedLanguages()
+{
+	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
+		qDebug() << __PRETTY_FUNCTION__;
+	#endif
+	try
+	{
+		if (listener_)
+		{
+			listener_->callVoid("requestLanguageDetails");
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "Exception in QAndroidSpeechRecognizer::requestSupportedLanguages:" << e.what();
+	}
 }
 
 bool QAndroidSpeechRecognizer::startListening(const QString & action)
@@ -520,6 +558,14 @@ void QAndroidSpeechRecognizer::javaOnRmsdBChanged(float rmsdb)
 	// #endif
 	rmsdB_ = rmsdb;
 	emit rmsdBChanged(rmsdB_);
+}
+
+void QAndroidSpeechRecognizer::javaSupportedLanguagesReceived(const QStringList & languages)
+{
+	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
+		qDebug() << __PRETTY_FUNCTION__ << languages.join(QStringLiteral(", "));
+	#endif
+	emit supportedLanguagesReceived(languages);
 }
 
 void QAndroidSpeechRecognizer::onTimeoutTimerTimeout()

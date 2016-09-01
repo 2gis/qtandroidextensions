@@ -37,12 +37,16 @@
 
 package ru.dublgis.androidhelpers;
 
+import java.util.ArrayList;
+
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.RecognitionListener;
 import android.util.Log;
@@ -77,6 +81,51 @@ public class VoiceRecognitionListener implements RecognitionListener {
                         Log.e(TAG, "Exception while creating SpeechRecognizer:", e);
                         mSpeechRecognizer = null;
                     }
+                }
+            }
+        });
+    }
+
+    // From C++
+    public void requestLanguageDetails()
+    {
+        mActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Intent intent = new Intent(RecognizerIntent.ACTION_GET_LANGUAGE_DETAILS);
+                    mActivity.sendOrderedBroadcast(
+                        intent
+                        , null
+                        , new BroadcastReceiver() {
+                            @Override
+                            public void onReceive(Context context, Intent intent) {
+                                // Log.d(TAG, "onReceive(" + intent.toUri(0) + ")");
+                                if (getResultCode() != Activity.RESULT_OK) {
+                                    return;
+                                }
+                                ArrayList<CharSequence> hints = getResultExtras(true)
+                                   .getCharSequenceArrayList(RecognizerIntent.EXTRA_SUPPORTED_LANGUAGES);
+                                ArrayList<String> result = new ArrayList<String>();
+                                int sz = hints.size();
+                                result.ensureCapacity(sz);
+                                for (int i = 0; i < hints.size(); ++i) {
+                                    result.add(hints.get(i).toString());
+                                }
+                                synchronized(this) {
+                                    if (mNativePtr != 0) {
+                                        nativeSupportedLanguagesReceived(mNativePtr, result);
+                                    }
+                                }
+                            }
+                        }
+                        , null
+                        , Activity.RESULT_OK
+                        , null
+                        , null);
+                } catch (final Exception e) {
+                    Log.e(TAG, "Exception in requestLanguageDetails:", e);
+                    mSpeechRecognizer = null;
                 }
             }
         });
@@ -230,6 +279,7 @@ public class VoiceRecognitionListener implements RecognitionListener {
     public native void nativeOnReadyForSpeech(long ptr, Bundle params);
     public native void nativeOnResults(long ptr, Bundle results);
     public native void nativeOnRmsChanged(long ptr, float rmsdB);
+    public native void nativeSupportedLanguagesReceived(long ptr, ArrayList<String> languages);
 
 }
 
