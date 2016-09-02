@@ -675,6 +675,11 @@ void QAndroidSpeechRecognizer::extraSetListeningTimeouts(
 		addIntExtra(ANDROID_RECOGNIZERINTENT_EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, complete_ms);
 	}
 
+	extraSetWorkaroundTimeout(timer_workaround_ms);
+}
+
+void QAndroidSpeechRecognizer::extraSetWorkaroundTimeout(int timer_workaround_ms)
+{
 	if (timer_workaround_ms > 0)
 	{
 		enable_timeout_timer_ = true;

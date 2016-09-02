@@ -163,6 +163,10 @@ public slots:
 		, int complete_ms
 		, int timer_workaround_ms);
 
+	// Set workaround timer which aborts listening after timer_workaround_ms
+	// since the last new recognizer result.
+	void extraSetWorkaroundTimeout(int timer_workaround_ms);
+
 	int permissionRequestCode() const;
 	void setPermissionRequestCode(int code);
 
