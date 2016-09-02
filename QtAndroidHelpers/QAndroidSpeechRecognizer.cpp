@@ -99,6 +99,28 @@ static QStringList arrayListOfStringToQStringList(QJniObject * array_list)
 	return result;
 }
 
+static QList<float> floatArrayToQList(jfloatArray float_array)
+{
+	if (!float_array)
+	{
+		return QList<float>();
+	}
+	QJniEnvPtr jep;
+	QList<float> result;
+	jsize len = jep.env()->GetArrayLength(jep.env(), float_array);
+	if (len)
+	{
+		result.reserve(len);
+		jfloat * body = jep.env()->GetFloatArrayElements(jep.env(), float_array, 0);
+		for (int i = 0;  i < len; ++i)
+		{
+			result.append(static_cast<float>(body[i]));
+		}
+		jep.env()->ReleaseFloatArrayElements(jep.env(), body);
+	}
+	return result;
+}
+
 static QStringList bundleResultsToQStringList(jobject jobundle)
 {
 	try
@@ -117,6 +139,29 @@ static QStringList bundleResultsToQStringList(jobject jobundle)
 	}
 	return QStringList();
 }
+
+static QList<float> bundleResultsToConfidenceScores(jobject jobundle)
+{
+	try
+	{
+		QJniObject bundle(jobundle, false);
+		QScopedPointer<QJniObject> jo_array(bundle.callParamObject(
+			"getFloatArray"
+			, "[F"
+			, "Ljava/lang/String;"
+			, QJniLocalRef(QAndroidSpeechRecognizer::ANDROID_RECOGNIZERINTENT_EXTRA_CONFIDENCE_SCORES).JObject()));
+		if (jo_array && jo_array->jObject())
+		{
+			return floatArrayToQList(static_cast<jfloatArray>(jo_array->jObject()));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "QAndroidSpeechRecognizer: exception in bundleResultsToConfidenceWeights:" << e.what();
+	}
+	return QList<float>();
+}
+
 
 
 Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnBeginningOfSpeech(JNIEnv *, jobject, jlong param)
