@@ -53,7 +53,11 @@ class QAndroidSpeechRecognizer
 	Q_OBJECT
 	Q_PROPERTY(bool listening READ listening NOTIFY listeningChanged)
 	Q_PROPERTY(float rmsdB READ rmsdB NOTIFY rmsdBChanged)
-	Q_PROPERTY(int permissionRequestCode READ permissionRequestCode WRITE setPermissionRequestCode NOTIFY permissionRequestCodeChanged)
+	Q_PROPERTY(
+		int permissionRequestCode
+		READ permissionRequestCode
+		WRITE setPermissionRequestCode
+		NOTIFY permissionRequestCodeChanged)
 public:
 	QAndroidSpeechRecognizer(QObject * p = 0);
 	virtual ~QAndroidSpeechRecognizer();
@@ -139,10 +143,10 @@ public slots:
 	void requestSupportedLanguages();
 
 	// Filling in extra parameters of future voice recognition intents (see: RecognizerIntent).
-	void clearExtras() { string_extras_.clear(); bool_extras_.clear(); int_extras_.clear(); enable_timeout_timer_ = false; }
-	void addStringExtra(const QString & key, const QString & value) { string_extras_.insert(key, value); }
-	void addBoolExtra(const QString & key, bool value) { bool_extras_.insert(key, value); }
-	void addIntExtra(const QString & key, int value) { int_extras_.insert(key, value); }
+	void clearExtras();
+	void addStringExtra(const QString & key, const QString & value);
+	void addBoolExtra(const QString & key, bool value);
+	void addIntExtra(const QString & key, int value);
 
 
 	// Higher-level functions
@@ -203,15 +207,6 @@ private:
 	void listeningStarted();
 	void listeningStopped();
 	QString errorCodeToMessage(int code);
-
-	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnBeginningOfSpeech(JNIEnv *, jobject, jlong param);
-	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnEndOfSpeech(JNIEnv *, jobject, jlong param);
-	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnError(JNIEnv *, jobject, jlong param, jint code);
-	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnPartialResults(JNIEnv *, jobject, jlong param, jobject bundle_results);
-	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnResults(JNIEnv *, jobject, jlong param, jobject bundle_results, jboolean secure);
-	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnReadyForSpeech(JNIEnv *, jobject, jlong param, jobject bundle_params);
-	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnRmsChanged(JNIEnv *, jobject, jlong param, jfloat rmsdB);
-	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeSupportedLanguagesReceived(JNIEnv *, jobject, jlong param, jobject languages);
 
 private:
 	bool listening_;

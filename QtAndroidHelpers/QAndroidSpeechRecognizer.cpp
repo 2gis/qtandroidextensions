@@ -482,6 +482,29 @@ void QAndroidSpeechRecognizer::requestSupportedLanguages()
 	}
 }
 
+void QAndroidSpeechRecognizer::clearExtras()
+{
+	string_extras_.clear();
+	bool_extras_.clear();
+	int_extras_.clear();
+	enable_timeout_timer_ = false;
+}
+
+void QAndroidSpeechRecognizer::addStringExtra(const QString & key, const QString & value)
+{
+	string_extras_.insert(key, value);
+}
+
+void QAndroidSpeechRecognizer::addBoolExtra(const QString & key, bool value)
+{
+	bool_extras_.insert(key, value);
+}
+
+void QAndroidSpeechRecognizer::addIntExtra(const QString & key, int value)
+{
+	int_extras_.insert(key, value);
+}
+
 bool QAndroidSpeechRecognizer::startListening(const QString & action)
 {
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
