@@ -14,13 +14,13 @@
   modification, are permitted provided that the following conditions are met:
 
   * Redistributions of source code must retain the above copyright notice,
-    this list of conditions and the following disclaimer.
+	this list of conditions and the following disclaimer.
   * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
   * Neither the name of the DoubleGIS, LLC nor the names of its contributors
-    may be used to endorse or promote products derived from this software
-    without specific prior written permission.
+	may be used to endorse or promote products derived from this software
+	without specific prior written permission.
 
   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -103,6 +103,50 @@ QJniEnvPtrThreadDetacher::~QJniEnvPtrThreadDetacher()
 		}
 	}
 #endif
+
+// Hystorically, we allow to specify returing object types like this: "java/lang/String".
+// It is converted to "Ljava/lang/String;" for JNI signatures automatically.
+// However, sometimes it is desirable to pass the type as "Ljava/lang/String;"
+// and also we may need to pass an array name: "[F" (which means float[] in JNI)
+// and always adding the L...; around would break it.
+static inline void appendNormalizedObjectName(
+	QByteArray & out_signature
+	, const char * objname)
+{
+	if (size_t length = strlen(objname))
+	{
+		if (objname[0] != '[' && objname[length-1] != ';')
+		{
+			out_signature.append('L');
+			out_signature.append(objname, length);
+			out_signature.append(';');
+		}
+		else
+		{
+			out_signature.append(objname, length);
+		}
+	}
+}
+
+static inline void makeObjectFunctionSignature(
+	QByteArray & out_signature
+	, const char * param_signature
+	, const char * returning_objname)
+{
+	out_signature.append('(');
+	out_signature.append(param_signature);
+	out_signature.append(')');
+	appendNormalizedObjectName(out_signature, returning_objname);
+}
+
+static inline bool classObjectMayHaveNullClass(const char * class_name)
+{
+	if (!class_name)
+	{
+		return true;
+	}
+	return class_name[0] == '[';
+}
 
 } // anonymous namespace
 
@@ -406,6 +450,7 @@ QJniClass::QJniClass(jobject object)
 	if (object)
 	{
 		QJniLocalRef clazz(jep.env(), jep.env()->GetObjectClass(object));
+		// Note: clazz may be null (for arrays).
 		initClass(jep.env(), clazz);
 	}
 }
@@ -428,10 +473,13 @@ void QJniClass::initClass(JNIEnv* env, jclass clazz)
 {
 	QJniEnvPtr jep(env);
 	clearClass(jep.env());
-	class_ = static_cast<jclass>(env->NewGlobalRef(clazz));
-	if (jep.clearException())
+	if (clazz)
 	{
-		throw QJniBaseException();
+		class_ = static_cast<jclass>(env->NewGlobalRef(clazz));
+		if (jep.clearException())
+		{
+			throw QJniBaseException();
+		}
 	}
 }
 
@@ -687,9 +735,7 @@ QJniObject * QJniClass::getStaticObjectField(const char * field_name, const char
 {
 	VERBOSE(qDebug("int QJniObject::getStaticObjectField(const char * field_name, const char * objname) %p \"%s\"", this, field_name, objname));
 	QByteArray obj;
-	obj += "L";
-	obj += objname;
-	obj += ";";
+	appendNormalizedObjectName(obj, objname);
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 	jfieldID fid = env->GetStaticFieldID(checkedClass(), field_name, obj.data());
@@ -707,7 +753,7 @@ QJniObject * QJniClass::getStaticObjectField(const char * field_name, const char
 		}
 		throw QJniJavaCallException();
 	}
-	return new QJniObject(jo, true);
+	return new QJniObject(jo, true, objname);
 }
 
 QString QJniClass::getStaticStringField(const char * field_name)
@@ -770,9 +816,8 @@ bool QJniClass::getStaticBooleanField(const char * field_name)
 QJniObject* QJniClass::callStaticObject(const char * method_name, const char * objname)
 {
 	VERBOSE(qDebug("QJniClass::CallStaticObject(\"%s\",\"%s\")", method_name, objname));
-	QByteArray signature("()L");
-	signature += objname;
-	signature += ";";
+	QByteArray signature("()");
+	appendNormalizedObjectName(signature, objname);
 
 	VERBOSE(qDebug("QJniClass::CallStaticObject signature: %s", signature.data()));
 	QJniEnvPtr jep;
@@ -800,7 +845,7 @@ QJniObject* QJniClass::callStaticObject(const char * method_name, const char * o
 	{
 		return 0; // Not an exception
 	}
-	return new QJniObject(jret, true);
+	return new QJniObject(jret, true, objname);
 }
 
 QJniObject * QJniClass::callStaticParamObject(const char * method_name, const char * objname, const char * param_signature, ...)
@@ -810,11 +855,9 @@ QJniObject * QJniClass::callStaticParamObject(const char * method_name, const ch
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 
-	QByteArray signature("(");
-	signature += param_signature;
-	signature += ")L";
-	signature += objname;
-	signature += ";";
+	QByteArray signature;
+	makeObjectFunctionSignature(signature, param_signature, objname);
+
 	jmethodID mid = env->GetStaticMethodID(checkedClass(), method_name, signature.data());
 	if (!mid)
 	{
@@ -834,7 +877,7 @@ QJniObject * QJniClass::callStaticParamObject(const char * method_name, const ch
 		}
 		throw QJniJavaCallException();
 	}
-	return new QJniObject(jret, true);
+	return new QJniObject(jret, true, objname);
 }
 
 QJniClass & QJniClass::operator=(const QJniClass &other)
@@ -868,13 +911,13 @@ bool QJniClass::registerNativeMethods(const JNINativeMethod * methods_list, size
 // QJniObject
 /////////////////////////////////////////////////////////////////////////////
 
-QJniObject::QJniObject(jobject instance, bool take_ownership)
+QJniObject::QJniObject(jobject instance, bool take_ownership, const char * known_class_name)
 	: QJniClass(instance)
 	, instance_(0)
 {
 	QJniEnvPtr jep;
-	// Создаёт глобальную ссылку
-	initObject(jep.env(), instance);
+	// Creates global reference
+	initObject(jep.env(), instance, classObjectMayHaveNullClass(known_class_name));
 	if (take_ownership)
 	{
 		jep.env()->DeleteLocalRef(instance);
@@ -974,10 +1017,13 @@ jobject QJniObject::takeJobjectOver()
 	return ret;
 }
 
-void QJniObject::initObject(JNIEnv* env, jobject instance)
+void QJniObject::initObject(JNIEnv* env, jobject instance, bool can_have_null_class)
 {
 	VERBOSE(qDebug("QJniObject::init(JNIEnv* env, jobject instance) %p", this));
-	checkedClass();
+	if (!can_have_null_class)
+	{
+		checkedClass();
+	}
 	QJniEnvPtr jep(env);
 	instance_ = env->NewGlobalRef(instance);
 	if (jep.clearException())
@@ -1139,9 +1185,9 @@ double QJniObject::callDouble(const char* method_name)
 
 QJniObject * QJniObject::callObject(const char * method_name, const char * objname)
 {
-	QByteArray signature("()L");
-	signature += objname;
-	signature += ";";
+	QByteArray signature("()");
+	appendNormalizedObjectName(signature, objname);
+
 	VERBOSE(qDebug("QJniObject::callObject: \"%s\", \"%s\"", method_name, signature.data()));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
@@ -1160,7 +1206,7 @@ QJniObject * QJniObject::callObject(const char * method_name, const char * objna
 		}
 		throw QJniJavaCallException();
 	}
-	QJniObject * result = new QJniObject(object, true);
+	QJniObject * result = new QJniObject(object, true, objname);
 	return result;
 }
 
@@ -1172,11 +1218,9 @@ QJniObject * QJniObject::callParamObject(const char * method_name, const char * 
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 
-	QByteArray signature("(");
-	signature += param_signature;
-	signature += ")L";
-	signature += objname;
-	signature += ";";
+	QByteArray signature;
+	makeObjectFunctionSignature(signature, param_signature, objname);
+
 	jmethodID mid = env->GetMethodID(checkedClass(), method_name, signature.data());
 	if (!mid)
 	{
@@ -1196,7 +1240,7 @@ QJniObject * QJniObject::callParamObject(const char * method_name, const char * 
 		}
 		throw QJniJavaCallException();
 	}
-	return new QJniObject(jret, true);
+	return new QJniObject(jret, true, objname);
 }
 
 jint QJniObject::callParamInt(const char* method_name, const char* param_signature, ...)
@@ -1353,7 +1397,7 @@ QString QJniObject::callString(const char *method_name)
 QString QJniObject::callParamString(const char *method_name, const char* param_signature, ...)
 {
 	VERBOSE(qDebug("void QJniObject(%p)::callParamString(\"%s\", \"%s\", ...)", this, method_name, param_signature));
-	
+
 	va_list args;
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
@@ -1372,7 +1416,7 @@ QString QJniObject::callParamString(const char *method_name, const char* param_s
 	va_start(args, param_signature);
 	QString ret = QJniLocalRef(env, env->CallObjectMethodV(instance_, mid, args));
 	va_end(args);
-	
+
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException();
@@ -1478,9 +1522,8 @@ QJniObject * QJniObject::getObjectField(const char* field_name, const char * obj
 {
 	VERBOSE(qDebug("int QJniObject::getObjectField(const char * field_name, const char * objname) %p \"%s\" \"%s\"", this, field_name, objname));
 	QByteArray obj;
-	obj += "L";
-	obj += objname;
-	obj += ";";
+	appendNormalizedObjectName(obj, objname);
+
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 	jfieldID fid = env->GetFieldID(checkedClass(), field_name, obj.data());
@@ -1498,7 +1541,7 @@ QJniObject * QJniObject::getObjectField(const char* field_name, const char * obj
 		}
 		throw QJniJavaCallException();
 	}
-	return new QJniObject(jo, true);
+	return new QJniObject(jo, true, objname);
 }
 
 QString QJniObject::getStringField(const char * field_name)

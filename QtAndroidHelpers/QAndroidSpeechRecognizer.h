@@ -39,11 +39,14 @@
 #include <QtCore/QObject>
 #include <QtCore/QString>
 #include <QtCore/QTimer>
+#include <QtCore/QVector>
+#include <QtCore/QSharedPointer>
 #include <QJniHelpers.h>
 
 
 // SpeechRecognizer wrapper.
 // Note: this class is QML friendly, it can be registered as a creatable QML object or singleton.
+// The object must be created in the main thread.
 class QAndroidSpeechRecognizer
 	: public QObject
 {
@@ -52,6 +55,10 @@ class QAndroidSpeechRecognizer
 	Q_PROPERTY(float rmsdB READ rmsdB NOTIFY rmsdBChanged)
 	Q_PROPERTY(int permissionRequestCode READ permissionRequestCode WRITE setPermissionRequestCode NOTIFY permissionRequestCodeChanged)
 public:
+	// Using QVector<qreal> because it directly translates to JS array in QML.
+	typedef QVector<qreal> ConfidenceScores;
+	typedef QSharedPointer<ConfidenceScores> ConfidenceScoresPointer;
+
 	QAndroidSpeechRecognizer(QObject * p = 0);
 	virtual ~QAndroidSpeechRecognizer();
 
@@ -170,23 +177,18 @@ public slots:
 	int permissionRequestCode() const;
 	void setPermissionRequestCode(int code);
 
+	QString resultsAndscoresToDebugString(const QStringList & res, const ConfidenceScoresPointer & confidence_scores);
+
 signals:
 	void listeningChanged(bool listening);
 	void beginningOfSpeech();
 	void endOfSpeech();
 	void error(int code, QString message);
-	void partialResults(const QStringList & results);
-	// This signal sends only the latest version of the recognition
-	// (likey the most relevant for the moment).
-	void partialResult(const QString & last_result);
+	void partialResults(const QString & best_result, const QStringList & results, const ConfidenceScores & confidence_scores);
+	// "secure" is set to true if device is currently in locked state so no unsafe operations allowed
+	// (may happen only when using "hands free" recognition).
+	void results(const QString & best_result, const QStringList & results, const ConfidenceScores & confidence_scores, bool secure);
 	void readyForSpeech();
-	// "secure" is set to true if device is currently in locked state so no unsafe operations allowed
-	// (may happen only when using "hands free" recognition).
-	void results(const QStringList & results, bool secure);
-	// This signal sends only the latest version of the recognition (likey the most relevant).
-	// "secure" is set to true if device is currently in locked state so no unsafe operations allowed
-	// (may happen only when using "hands free" recognition).
-	void result(const QString & last_result, bool secure);
 	void rmsdBChanged(float rmsdb);
 	void permissionRequestCodeChanged(int code);
 	void supportedLanguagesReceived(const QStringList & ietf_languages);
@@ -195,9 +197,9 @@ private slots:
 	void javaOnBeginningOfSpeech();
 	void javaOnEndOfSpeech();
 	void javaOnError(int code);
-	void javaOnPartialResults(const QStringList & results);
+	void javaOnPartialResults(const QStringList & results, QAndroidSpeechRecognizer::ConfidenceScoresPointer confidence_scores);
+	void javaOnResults(const QStringList & results, QAndroidSpeechRecognizer::ConfidenceScoresPointer confidence_scores, bool secure);
 	void javaOnReadyForSpeech();
-	void javaOnResults(const QStringList & results, bool secure);
 	void javaOnRmsdBChanged(float rmsdb);
 	void javaSupportedLanguagesReceived(const QStringList & languages);
 	void onTimeoutTimerTimeout();
@@ -211,8 +213,8 @@ private:
 	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnEndOfSpeech(JNIEnv *, jobject, jlong param);
 	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnError(JNIEnv *, jobject, jlong param, jint code);
 	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnPartialResults(JNIEnv *, jobject, jlong param, jobject bundle_results);
-	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnReadyForSpeech(JNIEnv *, jobject, jlong param, jobject bundle_params);
 	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnResults(JNIEnv *, jobject, jlong param, jobject bundle_results, jboolean secure);
+	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnReadyForSpeech(JNIEnv *, jobject, jlong param, jobject bundle_params);
 	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnRmsChanged(JNIEnv *, jobject, jlong param, jfloat rmsdB);
 	friend Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeSupportedLanguagesReceived(JNIEnv *, jobject, jlong param, jobject languages);
 
@@ -230,5 +232,9 @@ private:
 
 	int permission_request_code_;
 };
+
+
+Q_DECLARE_METATYPE(QAndroidSpeechRecognizer::ConfidenceScoresPointer)
+
 
 
