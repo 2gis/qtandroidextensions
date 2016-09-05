@@ -87,7 +87,7 @@ static const QString c_record_audio_permission = "android.permission.RECORD_AUDI
 namespace {
 
 
-template<class LIST1, class LIST2> QString resultsAndscoresToDebugString(
+template<class LIST1, class LIST2> QString resultsAndScoresToDebugString(
 	const LIST1 & res
 	, const LIST2 & confidence_scores)
 {
@@ -643,7 +643,7 @@ void QAndroidSpeechRecognizer::javaOnPartialResults(
 {
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
 		qDebug() << "SpeechRecognizer" << __FUNCTION__ << ":"
-			<< resultsAndscoresToDebugString(res, confidence_scores);
+			<< resultsAndScoresToDebugString(res, confidence_scores);
 	#endif
 	emit partialResults(res, confidence_scores);
 
@@ -668,7 +668,7 @@ void QAndroidSpeechRecognizer::javaOnResults(
 {
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
 		qDebug() << "SpeechRecognizer" << __FUNCTION__
-			<< ", secure =" << secure << ":" << resultsAndscoresToDebugString(res, confidence_scores);
+			<< ", secure =" << secure << ":" << resultsAndScoresToDebugString(res, confidence_scores);
 	#endif
 	listeningStopped();
 	emit results(res, confidence_scores, secure);
