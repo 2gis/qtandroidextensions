@@ -75,7 +75,8 @@ const QString
 	QAndroidSpeechRecognizer::ANDROID_RECOGNIZERINTENT_LANGUAGE_MODEL_FREE_FORM = QLatin1String("free_form"),
 	QAndroidSpeechRecognizer::ANDROID_RECOGNIZERINTENT_LANGUAGE_MODEL_WEB_SEARCH = QLatin1String("web_search"),
 
-	QAndroidSpeechRecognizer::ANDROID_SPEECHRECOGNIZER_RESULTS_RECOGNITION = QLatin1String("results_recognition");
+	QAndroidSpeechRecognizer::ANDROID_SPEECHRECOGNIZER_RESULTS_RECOGNITION = QLatin1String("results_recognition"),
+	QAndroidSpeechRecognizer::ANDROID_SPEECHRECOGNIZER_CONFIDENCE_SCORES = QLatin1String("confidence_scores");
 
 
 static const char * const c_recognition_listener_class_name_ = "ru/dublgis/androidhelpers/VoiceRecognitionListener";
@@ -83,9 +84,33 @@ static const char * const c_speech_recognizer_class_name_ = "android/speech/Spee
 static const QString c_record_audio_permission = "android.permission.RECORD_AUDIO";
 
 
-static QStringList arrayListOfStringToQStringList(QJniObject * array_list)
+namespace {
+
+
+template<class LIST1, class LIST2> QString resultsAndscoresToDebugString(
+	const LIST1 & res
+	, const LIST2 & confidence_scores)
 {
-	QStringList result;
+	QString result;
+	for (int i = 0; i < res.size(); ++i)
+	{
+		if (!result.isEmpty())
+		{
+			result += QLatin1String(" | ");
+		}
+		result += res.at(i).toString();
+		if (confidence_scores.size() > i)
+		{
+			result += QString(QLatin1String("/%1")).arg(confidence_scores.at(i).toFloat(), 0, 'f', 3);
+		}
+	}
+	return result;
+}
+
+
+template<class T> T arrayListOfStringToContainer(QJniObject * array_list)
+{
+	T result;
 	if (array_list && array_list->jObject())
 	{
 		jint size = array_list->callInt("size");
@@ -99,9 +124,10 @@ static QStringList arrayListOfStringToQStringList(QJniObject * array_list)
 	return result;
 }
 
-static QAndroidSpeechRecognizer::ConfidenceScoresPointer floatArrayToQList(jfloatArray float_array)
+
+template<class T> T floatArrayToContainer(jfloatArray float_array)
 {
-	QAndroidSpeechRecognizer::ConfidenceScoresPointer result(new QAndroidSpeechRecognizer::ConfidenceScores());
+	T result;
 	if (!float_array)
 	{
 		return result;
@@ -110,18 +136,19 @@ static QAndroidSpeechRecognizer::ConfidenceScoresPointer floatArrayToQList(jfloa
 	jsize len = jep.env()->GetArrayLength(float_array);
 	if (len)
 	{
-		result->reserve(len);
+		result.reserve(len);
 		jfloat * body = jep.env()->GetFloatArrayElements(float_array, 0);
 		for (int i = 0;  i < len; ++i)
 		{
-			result->append(static_cast<qreal>(body[i]));
+			result << static_cast<float>(body[i]);
 		}
 		jep.env()->ReleaseFloatArrayElements(float_array, body, 0);
 	}
 	return result;
 }
 
-static QStringList bundleResultsToQStringList(jobject jobundle)
+
+static QVariantList bundleResultsToQVariantList(jobject jobundle)
 {
 	try
 	{
@@ -131,16 +158,17 @@ static QStringList bundleResultsToQStringList(jobject jobundle)
 			, "java/util/ArrayList"
 			, "Ljava/lang/String;"
 			, QJniLocalRef(QAndroidSpeechRecognizer::ANDROID_SPEECHRECOGNIZER_RESULTS_RECOGNITION).jObject()));
-		return arrayListOfStringToQStringList(result_array.data());
+		return arrayListOfStringToContainer<QVariantList>(result_array.data());
 	}
 	catch (const std::exception & e)
 	{
 		qCritical() << "QAndroidSpeechRecognizer: exception in bundleResultsToQStringList:" << e.what();
 	}
-	return QStringList();
+	return QVariantList();
 }
 
-static QAndroidSpeechRecognizer::ConfidenceScoresPointer bundleResultsToConfidenceScores(jobject jobundle)
+
+static QVariantList bundleToConfidenceScores(jobject jobundle)
 {
 	try
 	{
@@ -149,19 +177,21 @@ static QAndroidSpeechRecognizer::ConfidenceScoresPointer bundleResultsToConfiden
 			"getFloatArray"
 			, "[F"
 			, "Ljava/lang/String;"
-			, QJniLocalRef(QAndroidSpeechRecognizer::ANDROID_RECOGNIZERINTENT_EXTRA_CONFIDENCE_SCORES).jObject()));
+			, QJniLocalRef(QAndroidSpeechRecognizer::ANDROID_SPEECHRECOGNIZER_CONFIDENCE_SCORES).jObject()));
 		if (jo_array && jo_array->jObject())
 		{
-			return floatArrayToQList(static_cast<jfloatArray>(jo_array->jObject()));
+			return floatArrayToContainer<QVariantList>(static_cast<jfloatArray>(jo_array->jObject()));
 		}
 	}
 	catch (const std::exception & e)
 	{
-		qCritical() << "QAndroidSpeechRecognizer: exception in bundleResultsToConfidenceScores:" << e.what();
+		qCritical() << "QAndroidSpeechRecognizer: exception in bundleToConfidenceScores:" << e.what();
 	}
-	return QAndroidSpeechRecognizer::ConfidenceScoresPointer();
+	return QVariantList();
 }
 
+
+} // anonymous namespace
 
 
 Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnBeginningOfSpeech(JNIEnv *, jobject, jlong param)
@@ -231,8 +261,8 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnPartialResults(
 				myobject
 				, "javaOnPartialResults"
 				, Qt::QueuedConnection
-				, Q_ARG(QStringList, bundleResultsToQStringList(bundle_results))
-				, Q_ARG(QAndroidSpeechRecognizer::ConfidenceScoresPointer, bundleResultsToConfidenceScores(bundle_results)));
+				, Q_ARG(QVariantList, bundleResultsToQVariantList(bundle_results))
+				, Q_ARG(QVariantList, bundleToConfidenceScores(bundle_results)));
 			return;
 		}
 	}
@@ -251,8 +281,8 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnResults(JNIEnv 
 				myobject
 				, "javaOnResults"
 				, Qt::QueuedConnection
-				, Q_ARG(QStringList, bundleResultsToQStringList(bundle_results))
-				, Q_ARG(QAndroidSpeechRecognizer::ConfidenceScoresPointer, bundleResultsToConfidenceScores(bundle_results))
+				, Q_ARG(QVariantList, bundleResultsToQVariantList(bundle_results))
+				, Q_ARG(QVariantList, bundleToConfidenceScores(bundle_results))
 				, Q_ARG(bool, static_cast<bool>(secure)));
 			return;
 		}
@@ -311,7 +341,7 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeSupportedLanguage
 				myobject
 				, "javaSupportedLanguagesReceived"
 				, Qt::QueuedConnection
-				, Q_ARG(QStringList, arrayListOfStringToQStringList(languages_qjo.data())));
+				, Q_ARG(QStringList, arrayListOfStringToContainer<QStringList>(languages_qjo.data())));
 			return;
 		}
 	}
@@ -328,13 +358,6 @@ QAndroidSpeechRecognizer::QAndroidSpeechRecognizer(QObject * p)
 	, permission_request_code_(0)
 {
 	preloadJavaClasses();
-
-	static bool s_metatypes_registered = false;
-	if (!s_metatypes_registered)
-	{
-		s_metatypes_registered= true;
-		qRegisterMetaType<QAndroidSpeechRecognizer::ConfidenceScoresPointer>("QAndroidSpeechRecognizer::ConfidenceScoresPointer");
-	}
 
 	if (!connect(&timeout_timer_, SIGNAL(timeout()), this, SLOT(onTimeoutTimerTimeout())))
 	{
@@ -591,74 +614,16 @@ void QAndroidSpeechRecognizer::javaOnError(int code)
 	emit error(code, message);
 }
 
-// Note: there are never many results (the max limit is like 10) and they are not sent more often
-// than 1 time per second so it's OK to run the search each time.
-static QString getMostRelevantResult(
-	const QStringList & res
-	, const QAndroidSpeechRecognizer::ConfidenceScoresPointer & confidence_scores)
-{
-	if (res.isEmpty()) // OK when processing partial results
-	{
-		return QString();
-	}
-	if (confidence_scores.isNull() || confidence_scores->size() != res.size())
-	{
-		return res.first();
-	}
-	float best = confidence_scores->at(0);
-	int best_index = 0;
-	for (int i = 1; i < res.size(); ++i)
-	{
-		if (confidence_scores->at(i) >= best)
-		{
-			best = confidence_scores->at(i);
-			best_index = i;
-		}
-	}
-	return res.at(best_index);
-}
-
-QString QAndroidSpeechRecognizer::resultsAndscoresToDebugString(
-	const QStringList & res
-	, const QAndroidSpeechRecognizer::ConfidenceScoresPointer & confidence_scores)
-{
-	QString result;
-	for (int i = 0; i < res.size(); ++i)
-	{
-		if (!result.isEmpty())
-		{
-			result += QLatin1String(" | ");
-		}
-		result += res.at(i);
-		if (confidence_scores)
-		{
-			if (confidence_scores->size() > i)
-			{
-				result += QString(QLatin1String("/%1")).arg(confidence_scores->at(i), 0, 'g', 2);
-			}
-		}
-	}
-	return result;
-}
-
-void QAndroidSpeechRecognizer::javaOnPartialResults(const QStringList & res, ConfidenceScoresPointer confidence_scores)
+void QAndroidSpeechRecognizer::javaOnPartialResults(
+	const QVariantList & res
+	, const QVariantList & confidence_scores)
 {
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
 		qDebug() << "SpeechRecognizer" << __FUNCTION__ << ":"
 			<< resultsAndscoresToDebugString(res, confidence_scores);
 	#endif
-	if(!res.isEmpty())
-	{
-		QString best_result = getMostRelevantResult(res, confidence_scores);
-		if (!confidence_scores.isNull() && confidence_scores.data()->size() == res.size())
-		{
-			emit partialResults(best_result, res, *confidence_scores.data());
-		}
-		else
-		{
-			emit partialResults(best_result, res, ConfidenceScores());
-		}
-	}
+	emit partialResults(res, confidence_scores);
+
 	// NB: res is an empty array until the user actually started to talk.
 	if (enable_timeout_timer_)
 	{
@@ -673,25 +638,17 @@ void QAndroidSpeechRecognizer::javaOnPartialResults(const QStringList & res, Con
 	}
 }
 
-void QAndroidSpeechRecognizer::javaOnResults(const QStringList & res, ConfidenceScoresPointer confidence_scores, bool secure)
+void QAndroidSpeechRecognizer::javaOnResults(
+	const QVariantList & res
+	, const QVariantList & confidence_scores
+	, bool secure)
 {
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
 		qDebug() << "SpeechRecognizer" << __FUNCTION__
 			<< ", secure =" << secure << ":" << resultsAndscoresToDebugString(res, confidence_scores);
 	#endif
 	listeningStopped();
-	if (!res.isEmpty())
-	{
-		QString best_result = getMostRelevantResult(res, confidence_scores);
-		if (!confidence_scores.isNull() && confidence_scores.data()->size() == res.size())
-		{
-			emit results(best_result, res, *confidence_scores.data(), secure);
-		}
-		else
-		{
-			emit results(best_result, res, ConfidenceScores(), secure);
-		}
-	}
+	emit results(res, confidence_scores, secure);
 }
 
 void QAndroidSpeechRecognizer::javaOnReadyForSpeech()

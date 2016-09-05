@@ -39,7 +39,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QString>
 #include <QtCore/QTimer>
-#include <QtCore/QVector>
+#include <QtCore/QVariantList>
 #include <QtCore/QSharedPointer>
 #include <QJniHelpers.h>
 
@@ -55,10 +55,6 @@ class QAndroidSpeechRecognizer
 	Q_PROPERTY(float rmsdB READ rmsdB NOTIFY rmsdBChanged)
 	Q_PROPERTY(int permissionRequestCode READ permissionRequestCode WRITE setPermissionRequestCode NOTIFY permissionRequestCodeChanged)
 public:
-	// Using QVector<qreal> because it directly translates to JS array in QML.
-	typedef QVector<qreal> ConfidenceScores;
-	typedef QSharedPointer<ConfidenceScores> ConfidenceScoresPointer;
-
 	QAndroidSpeechRecognizer(QObject * p = 0);
 	virtual ~QAndroidSpeechRecognizer();
 
@@ -118,7 +114,8 @@ public:
 		ANDROID_RECOGNIZERINTENT_LANGUAGE_MODEL_FREE_FORM,
 		ANDROID_RECOGNIZERINTENT_LANGUAGE_MODEL_WEB_SEARCH,
 
-		ANDROID_SPEECHRECOGNIZER_RESULTS_RECOGNITION;
+		ANDROID_SPEECHRECOGNIZER_RESULTS_RECOGNITION,
+		ANDROID_SPEECHRECOGNIZER_CONFIDENCE_SCORES;
 
 public slots:
 	// SpeechRecognier functions
@@ -177,17 +174,15 @@ public slots:
 	int permissionRequestCode() const;
 	void setPermissionRequestCode(int code);
 
-	QString resultsAndscoresToDebugString(const QStringList & res, const ConfidenceScoresPointer & confidence_scores);
-
 signals:
 	void listeningChanged(bool listening);
 	void beginningOfSpeech();
 	void endOfSpeech();
 	void error(int code, QString message);
-	void partialResults(const QString & best_result, const QStringList & results, const ConfidenceScores & confidence_scores);
+	void partialResults(const QVariantList & results, const QVariantList & scores);
 	// "secure" is set to true if device is currently in locked state so no unsafe operations allowed
 	// (may happen only when using "hands free" recognition).
-	void results(const QString & best_result, const QStringList & results, const ConfidenceScores & confidence_scores, bool secure);
+	void results(const QVariantList & results, const QVariantList & scores, bool secure);
 	void readyForSpeech();
 	void rmsdBChanged(float rmsdb);
 	void permissionRequestCodeChanged(int code);
@@ -197,8 +192,8 @@ private slots:
 	void javaOnBeginningOfSpeech();
 	void javaOnEndOfSpeech();
 	void javaOnError(int code);
-	void javaOnPartialResults(const QStringList & results, QAndroidSpeechRecognizer::ConfidenceScoresPointer confidence_scores);
-	void javaOnResults(const QStringList & results, QAndroidSpeechRecognizer::ConfidenceScoresPointer confidence_scores, bool secure);
+	void javaOnPartialResults(const QVariantList & results, const QVariantList & confidence_scores);
+	void javaOnResults(const QVariantList & results, const QVariantList & confidence_scores, bool secure);
 	void javaOnReadyForSpeech();
 	void javaOnRmsdBChanged(float rmsdb);
 	void javaSupportedLanguagesReceived(const QStringList & languages);
@@ -228,13 +223,11 @@ private:
 
 	QTimer timeout_timer_;
 	bool enable_timeout_timer_;
-	QStringList previous_partial_results_;
+	QVariantList previous_partial_results_;
 
 	int permission_request_code_;
 };
 
-
-Q_DECLARE_METATYPE(QAndroidSpeechRecognizer::ConfidenceScoresPointer)
 
 
 
