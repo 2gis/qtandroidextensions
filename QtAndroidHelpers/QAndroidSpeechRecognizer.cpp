@@ -407,6 +407,7 @@ QAndroidSpeechRecognizer::~QAndroidSpeechRecognizer()
 		if (listener_)
 		{
 			listener_->callVoid("setNativePtr", jlong(0));
+			listener_->callVoid("destroySpeechRecognizer");
 		}
 	}
 	catch(const std::exception & e)

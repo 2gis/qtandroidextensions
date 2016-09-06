@@ -91,6 +91,25 @@ public class VoiceRecognitionListener implements RecognitionListener {
     }
 
     // From C++
+    public void destroySpeechRecognizer() {
+        mActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                synchronized(this) {
+                    try {
+                        if (mSpeechRecognizer != null) {
+                            Log.d(TAG, "destroySpeechRecognizer() runnable: destroying...");
+                            mSpeechRecognizer.destroy();
+                        }
+                    } catch (final Exception e) {
+                        Log.e(TAG, "Exception while destorying SpeechRecognizer:", e);
+                    }
+                }
+            }
+        });
+    }
+
+    // From C++
     public void requestLanguageDetails()
     {
         mActivity.runOnUiThread(new Runnable() {
