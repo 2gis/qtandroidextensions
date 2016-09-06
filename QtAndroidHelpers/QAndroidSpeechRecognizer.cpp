@@ -40,7 +40,7 @@
 #include "QAndroidSpeechRecognizer.h"
 
 
-#define ANDROIDSPEECHRECOGNIZER_VERBOSE
+// #define ANDROIDSPEECHRECOGNIZER_VERBOSE
 
 
 const QString
