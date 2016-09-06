@@ -14,13 +14,13 @@
   modification, are permitted provided that the following conditions are met:
 
   * Redistributions of source code must retain the above copyright notice,
-    this list of conditions and the following disclaimer.
+	this list of conditions and the following disclaimer.
   * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
   * Neither the name of the DoubleGIS, LLC nor the names of its contributors
-    may be used to endorse or promote products derived from this software
-    without specific prior written permission.
+	may be used to endorse or promote products derived from this software
+	without specific prior written permission.
 
   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -225,14 +225,14 @@ public:
 	 * \return Pointer to a wrapper for the object returned by the call.
 	 * The wrapper should be deleted after use via 'delete'.
 	 */
-	QJniObject * callStaticObject(const char* method_name, const char* objname);
+	QJniObject * callStaticObject(const char * method_name, const char * objname);
 	QJniObject * callStaticParamObject(const char * method_name, const char * objname, const char * param_signature, ...);
 
 	/*!
 	 * Call static jstring method of the wrapped Java class and
 	 * return the result as a QString.
 	 */
-	QString callStaticString(const char* method_name);
+	QString callStaticString(const char * method_name);
 
 	QJniObject * getStaticObjectField(const char * field_name, const char * objname);
 	QString getStaticStringField(const char * field_name);
@@ -240,7 +240,7 @@ public:
 	bool getStaticBooleanField(const char * field_name);
 
 	//! Register native method in the wrapped class
-	bool registerNativeMethod(const char* name, const char* signature, void* ptr);
+	bool registerNativeMethod(const char * name, const char * signature, void * ptr);
 
 	/*!
 	 * Register native methods in the wrapped class.
@@ -257,8 +257,8 @@ public:
 	jclass jClass() const { return class_; }
 
 protected:
-	void initClass(JNIEnv* env, jclass clazz);
-	void clearClass(JNIEnv* env);
+	void initClass(JNIEnv * env, jclass clazz);
+	void clearClass(JNIEnv * env);
 
 	inline jclass checkedClass() { if (!class_) throw QJniClassNotSetException(); return class_; }
 
@@ -279,20 +279,23 @@ public:
 	 * and only keep the global one here"
 	 * Note that this implies the instance is a valid local ref,
 	 * not global one or whatever.
+	 * \param known_class_name shoule be set to 0 or class of name of instance,
+	 * It is used to check if the object must have a non-zero class reference.
+	 * For example, Java arrays don't have a class instance.
 	 */
-	QJniObject(jobject instance, bool take_ownership);
+	QJniObject(jobject instance, bool take_ownership, const char * known_class_name = 0);
 
 	/*!
 	 * Create a wrapper for a new instance of class 'clazz'.
 	 * \param param_signature - signature for parameter of constructor.
 	 */
-	QJniObject(const QJniClass &clazz, const char* param_signature = 0, ...);
+	QJniObject(const QJniClass & clazz, const char * param_signature = 0, ...);
 
 	/*!
 	 * Create a wrapper for a new instance of class 'class name'.
 	 * \param param_signature - signature for parameter of constructor.
 	 */
-	QJniObject(const char* class_name, const char* param_signature = 0, ...);
+	QJniObject(const char * class_name, const char * param_signature = 0, ...);
 
 	virtual ~QJniObject();
 
@@ -302,41 +305,41 @@ public:
 	jobject takeJobjectOver();
 
 	//! Call void method of the wrapped Java object
-	void callVoid(const char* method_name);
+	void callVoid(const char * method_name);
 
 	//! Call boolean method of the wrapped Java object
-	bool callBool(const char* method_name);
+	bool callBool(const char * method_name);
 
-	bool callBool(const char* method_name, bool param);
+	bool callBool(const char * method_name, bool param);
 
 	//! Call int method of the wrapped Java object
-	int callInt(const char* method_name);
+	int callInt(const char * method_name);
 
 	//! Call long method of the wrapped Java object
-	long long callLong(const char* method_name);
+	long long callLong(const char * method_name);
 
 	//! Call float method of the wrapped Java object
-	float callFloat(const char* method_name);
+	float callFloat(const char * method_name);
 
 	//! Call float method of the wrapped Java object with int parameter
-	float callFloat(const char* method_name, int param);
+	float callFloat(const char * method_name, int param);
 
 	//! Call double method of the wrapped Java object
-	double callDouble(const char* method_name);
+	double callDouble(const char * method_name);
 
 	/*!
 	 * Call object method of the wrapped Java object.
 	 * \return Pointer to a wrapper for the object returned by the call.
 	 * The wrapper should be deleted after use via 'delete'.
 	 */
-	QJniObject * callObject(const char* method_name, const char* objname);
+	QJniObject * callObject(const char * method_name, const char * objname);
 	QJniObject * callParamObject(const char * method_name, const char * objname, const char * param_signature, ...);
 
 	/*!
 	 * Call void method of the wrapped Java object with specified
 	 * Java method signature and parameters.
 	 */
-	void callParamVoid(const char* method_name, const char* param_signature, ...);
+	void callParamVoid(const char * method_name, const char * param_signature, ...);
 	void callVoid(const char * method_name, jint x);
 	void callVoid(const char * method_name, jlong x);
 	void callVoid(const char * method_name, jlong x1, jlong x2);
@@ -350,11 +353,11 @@ public:
 	void callVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3, const QString & string4, const QString & string5);
 	void callVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3, const QString & string4, const QString & string5, const QString & string6);
 
-	jint callParamInt(const char* method_name, const char* param_signature, ...);
-	jlong callParamLong(const char* method_name, const char* param_signature, ...);
-	jfloat callParamFloat(const char* method_name, const char* param_signature, ...);
-	jdouble callParamDouble(const char* method_name, const char* param_signature, ...);
-	jboolean callParamBoolean(const char* method_name, const char* param_signature, ...);
+	jint callParamInt(const char * method_name, const char * param_signature, ...);
+	jlong callParamLong(const char * method_name, const char * param_signature, ...);
+	jfloat callParamFloat(const char * method_name, const char * param_signature, ...);
+	jdouble callParamDouble(const char * method_name, const char * param_signature, ...);
+	jboolean callParamBoolean(const char * method_name, const char * param_signature, ...);
 
 	//! Get value of int field of the wrapped Java object
 	int getIntField(const char * field_name);
@@ -390,7 +393,7 @@ public:
 	jobject jObject() const { return instance_; }
 
 protected:
-	void initObject(JNIEnv* env, jobject instance);
+	void initObject(JNIEnv* env, jobject instance, bool can_have_null_class = false);
 
 protected:
 	jobject instance_;
