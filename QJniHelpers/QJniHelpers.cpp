@@ -104,7 +104,7 @@ QJniEnvPtrThreadDetacher::~QJniEnvPtrThreadDetacher()
 	}
 #endif
 
-// Hystorically, we allow to specify returing object types like this: "java/lang/String".
+// Historically, we allow to specify returing object types like this: "java/lang/String".
 // It is converted to "Ljava/lang/String;" for JNI signatures automatically.
 // However, sometimes it is desirable to pass the type as "Ljava/lang/String;"
 // and also we may need to pass an array name: "[F" (which means float[] in JNI)
