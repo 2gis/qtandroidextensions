@@ -42,8 +42,6 @@
 #include <QtCore/QMutexLocker>
 
 
-static const char * const c_full_class_name_ = "ru/dublgis/androidcompass/CompassProvider";
-
 
 Q_DECL_EXPORT void JNICALL Java_setAzimuth(JNIEnv * env, jobject, jlong inst, jfloat azimuth)
 {
@@ -70,75 +68,41 @@ Q_DECL_EXPORT void JNICALL Java_setAzimuth(JNIEnv * env, jobject, jlong inst, jf
 }
 
 
-QAndroidCompass::QAndroidCompass()
-{
-	preloadJavaClasses();
+static const JNINativeMethod methods[] = {
+	{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContext},
+	{"setAzimuth", "(JF)V", (void*)Java_setAzimuth},
+};
 
-	// Creating Java object
-	handler_.reset(new QJniObject(c_full_class_name_, "J", jlong(reinterpret_cast<void*>(this))));
+
+QAndroidCompass::QAndroidCompass()
+	: JniObjectLinker(reinterpret_cast<void*>(this), "ru/dublgis/androidcompass/CompassProvider", methods, sizeof(methods))
+{
 }
 
 
 QAndroidCompass::~QAndroidCompass()
 {
-	if (handler_)
-	{
-		handler_->callVoid("cppDestroyed");
-		handler_.reset();
-	}
-}
-
-
-void QAndroidCompass::preloadJavaClasses()
-{
-	static volatile bool preloaded_ = false;
-
-	if (!preloaded_)
-	{
-		try
-		{
-			preloaded_ = true;
-
-			QAndroidQPAPluginGap::preloadJavaClasses();
-			QAndroidQPAPluginGap::preloadJavaClass(c_full_class_name_);
-
-			qDebug() << "Pre-loading Java classes for QAndroidCompass...";
-			QJniClass ov(c_full_class_name_);
-			static const JNINativeMethod methods[] = {
-				{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContext},
-				{"setAzimuth", "(JF)V", (void*)Java_setAzimuth},
-			};
-
-			if (!ov.registerNativeMethods(methods, sizeof(methods)))
-			{
-				qWarning() << "Failed to register native methods";
-				return;
-			}
-
-			qDebug() << "Pre-loading Java classes for QAndroidCompass finished successfully";
-		}
-		catch(std::exception & e)
-		{
-			qWarning() << "Exception while registering native methods: " << e.what();
-		}
-	}
 }
 
 
 void QAndroidCompass::start(int32_t delayUs /*= -1*/, int32_t latencyUs /*= -1*/)
 {
-	if (handler_)
+	QJniObject * hdl = handler();
+
+	if (Q_NULLPTR != hdl)
 	{
-		handler_->callParamVoid("start", "II", delayUs, latencyUs);
+		hdl->callParamVoid("start", "II", delayUs, latencyUs);
 	}
 }
 
 
 void QAndroidCompass::stop()
 {
-	if (handler_)
+	QJniObject * hdl = handler();
+
+	if (Q_NULLPTR != hdl)
 	{
-		handler_->callVoid("stop");
+		hdl->callVoid("stop");
 	}
 }
 

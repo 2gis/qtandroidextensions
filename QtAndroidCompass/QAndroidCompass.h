@@ -40,9 +40,10 @@
 #include <QtCore/QScopedPointer>
 #include <QtCore/QWeakPointer>
 #include <QtCore/QMutex>
+#include "JniObjectLinker.h"
 
 
-class QAndroidCompass
+class QAndroidCompass : public JniObjectLinker
 {
 public:
 	class AzimuthListener
@@ -62,7 +63,6 @@ public:
 
 private:
 	void setAzimuth(float azimuth);
-	static void preloadJavaClasses();
 
 private:
 	QScopedPointer<QJniObject> handler_;
