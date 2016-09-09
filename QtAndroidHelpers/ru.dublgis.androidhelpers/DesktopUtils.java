@@ -286,34 +286,30 @@ public class DesktopUtils
 
             final List<ResolveInfo> resolveInfoList = ctx.getPackageManager().queryIntentActivities(new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", to, null)), 0);
 
-            if (resolveInfoList != null && resolveInfoList.size() > 0) {
+            final Intent chooserIntent;
+
+            if (resolveInfoList.isEmpty()) {
+                chooserIntent = Intent.createChooser(intent, null);
+            } else {
                 List<Intent> intentList = new ArrayList<>();
 
                 for (final ResolveInfo resolveInfo : resolveInfoList) {
                     final String packageName = resolveInfo.activityInfo.packageName;
                     final String name = resolveInfo.activityInfo.name;
 
-                    final Intent fakeIntent = (Intent) intent.clone();
-                    fakeIntent.setComponent(new ComponentName(packageName, name));
-                    intentList.add(fakeIntent);
+                    final Intent cloneIntent = (Intent) intent.clone();
+                    cloneIntent.setComponent(new ComponentName(packageName, name));
+                    intentList.add(cloneIntent);
                 }
 
-                Intent firstIntent = intentList.get(0);
-                intentList.remove(0);
-
-                if (!intentList.isEmpty()) {
-                    firstIntent = Intent.createChooser(firstIntent, null);
-                    final Intent[] extraIntents = intentList.toArray(new Intent[intentList.size()]);
-                    firstIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
-                }
-
-                ctx.startActivity(firstIntent);
-            } else {
-                final Intent chooserIntent = Intent.createChooser(intent, null);
-                chooserIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-                ctx.startActivity(chooserIntent);
+                chooserIntent = Intent.createChooser(new Intent(intent.getAction()), null);
+                final Intent[] extraIntents = intentList.toArray(new Intent[intentList.size()]);
+                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
             }
+
+            chooserIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+            ctx.startActivity(chooserIntent);
 
             return true;
         }
