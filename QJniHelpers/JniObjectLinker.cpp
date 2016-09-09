@@ -42,10 +42,16 @@ JniObjectLinker::JniObjectLinker(void * nativePtr, const char * full_class_name,
 	full_class_name_(full_class_name)
 	, preloaded_(false)
 {
-	preloadJavaClasses(methods_list, sizeof_methods_list);
-
-	// Creating Java object
-	handler_.reset(new QJniObject(full_class_name, "J", jlong(nativePtr)));
+	try
+	{
+		preloadJavaClasses(methods_list, sizeof_methods_list);
+		// Creating Java object
+		handler_.reset(new QJniObject(full_class_name, "J", jlong(nativePtr)));
+	}
+	catch (const std::exception & ex)
+	{
+		qWarning() << "Failed to preloadJavaClasses: " << ex.what();
+	}
 }
 
 
@@ -53,7 +59,14 @@ JniObjectLinker::~JniObjectLinker()
 {
 	if (handler_)
 	{
-		handler_->callVoid("cppDestroyed");
+        try
+        {
+			handler_->callVoid("cppDestroyed");
+		}
+		catch (const std::exception & ex)
+		{
+			qWarning() << "Failed to call cppDestroyed: " << ex.what();
+		}
 	}
 }
 
