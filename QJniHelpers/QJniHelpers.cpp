@@ -158,7 +158,7 @@ static inline bool classObjectMayHaveNullClass(const char * class_name)
 QJniBaseException::QJniBaseException(const char * message)
 	: message_(message? message: "JNI: Java exception.")
 {
-	qDebug()<<"QJniHelpers: throwing an exception:"<<what();
+	qDebug() << "QJniHelpers: throwing an exception:" << what();
 }
 
 const char * QJniBaseException::what() const throw()
@@ -191,9 +191,16 @@ QJniFieldNotFoundException::QJniFieldNotFoundException()
 {
 }
 
-QJniJavaCallException::QJniJavaCallException()
+QJniJavaCallException::QJniJavaCallException(const char * callDetails, const char * callDetailsMore)
 	: QJniBaseException("JNI: Java method raised an unhandled exception.")
 {
+	qDebug() << "QJniHelpers: QJniJavaCallException with" << callDetails << "and" <<  callDetailsMore;
+}
+
+QJniJavaCallException::QJniJavaCallException(const char * callDetails)
+	: QJniBaseException("JNI: Java method raised an unhandled exception.")
+{
+	qDebug() << "QJniHelpers: QJniJavaCallException with" << callDetails;
 }
 
 
@@ -506,7 +513,7 @@ void QJniClass::callStaticVoid(const char* method_name)
 	env->CallStaticVoidMethod(class_, mid);
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 }
 
@@ -524,7 +531,7 @@ jint QJniClass::callStaticInt(const char* method_name)
 	jint result = env->CallStaticIntMethod(jClass(), mid);
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 	return result;
 }
@@ -543,7 +550,7 @@ jlong QJniClass::callStaticLong(const char* method_name)
 	jlong result = env->CallStaticLongMethod(jClass(), mid);
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 	return result;
 }
@@ -562,7 +569,7 @@ bool QJniClass::callStaticBoolean(const char* method_name)
 	bool result = env->CallStaticBooleanMethod(jClass(), mid)? true: false;
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 	return result;
 }
@@ -590,7 +597,7 @@ void QJniClass::callStaticParamVoid(const char * method_name, const char * param
 	if (jep.clearException())
 	{
 		qWarning("void QJniClass(%p)::CallStaticParamVoid(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 }
 
@@ -617,7 +624,7 @@ bool QJniClass::callStaticParamBoolean(const char * method_name, const char * pa
 	if (jep.clearException())
 	{
 		qWarning("void QJniClass(%p)::CallStatucParamBoolean(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 	return result;
 }
@@ -645,7 +652,7 @@ jint QJniClass::callStaticParamInt(const char * method_name, const char * param_
 	if (jep.clearException())
 	{
 		qWarning("void QJniClass(%p)::CallStatucParamInt(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 	return result;
 }
@@ -673,7 +680,7 @@ jfloat QJniClass::callStaticParamFloat(const char * method_name, const char * pa
 	if (jep.clearException())
 	{
 		qWarning("void QJniClass(%p)::CallStatucParamFloat(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 	return result;
 }
@@ -702,7 +709,7 @@ QString QJniClass::callStaticParamString(const char * method_name, const char * 
 	if (jep.clearException())
 	{
 		qWarning("void QJniClass(%p)::CallStatucParamString(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 	return ret;
 }
@@ -726,7 +733,7 @@ QString QJniClass::callStaticString(const char *method_name)
 	QString ret = QJniLocalRef(env, env->CallStaticObjectMethod(jClass(), mid));
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 	return ret;
 }
@@ -751,7 +758,7 @@ QJniObject * QJniClass::getStaticObjectField(const char * field_name, const char
 		{
 			env->DeleteLocalRef(jo);
 		}
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(field_name, objname);
 	}
 	return new QJniObject(jo, true, objname);
 }
@@ -770,7 +777,7 @@ QString QJniClass::getStaticStringField(const char * field_name)
 	QString ret = QJniLocalRef(env, env->GetStaticObjectField(class_, fid));
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(field_name);
 	}
 	return ret;
 }
@@ -789,7 +796,7 @@ jint QJniClass::getStaticIntField(const char * field_name)
 	jint result = env->GetStaticIntField(jClass(), fid);
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(field_name);
 	}
 	return result;
 }
@@ -808,7 +815,7 @@ bool QJniClass::getStaticBooleanField(const char * field_name)
 	jint result = env->GetStaticBooleanField(jClass(), fid);
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(field_name);
 	}
 	return (result)? true: false;
 }
@@ -839,7 +846,7 @@ QJniObject* QJniClass::callStaticObject(const char * method_name, const char * o
 		{
 			env->DeleteLocalRef(jret);
 		}
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name, objname);
 	}
 	if (jret == 0)
 	{
@@ -875,7 +882,7 @@ QJniObject * QJniClass::callStaticParamObject(const char * method_name, const ch
 		{
 			env->DeleteLocalRef(jret);
 		}
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name, objname);
 	}
 	return new QJniObject(jret, true, objname);
 }
@@ -901,7 +908,7 @@ bool QJniClass::registerNativeMethods(const JNINativeMethod * methods_list, size
 	jint result = jep.env()->RegisterNatives(checkedClass(), methods_list, sizeof_methods_list/sizeof(JNINativeMethod));
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException("registerNativeMethods with list");
 	}
 	return result == 0;
 }
@@ -1046,7 +1053,7 @@ void QJniObject::callVoid(const char* method_name)
 	env->CallVoidMethod(instance_, mid);
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 }
 
@@ -1064,7 +1071,7 @@ bool QJniObject::callBool(const char* method_name)
 	bool result = (JNI_TRUE==env->CallBooleanMethod(instance_, mid));
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 	return result;
 }
@@ -1083,7 +1090,7 @@ bool QJniObject::callBool(const char* method_name, bool param)
 	bool result = (JNI_TRUE==env->CallBooleanMethod(instance_, mid, jboolean(param)));
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 	return result;
 }
@@ -1102,7 +1109,7 @@ int QJniObject::callInt(const char* method_name)
 	int result = (int)env->CallIntMethod(instance_, mid);
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 	return result;
 }
@@ -1121,7 +1128,7 @@ long long QJniObject::callLong(const char* method_name)
 	long long result = (long long)env->CallLongMethod(instance_, mid);
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 	return result;
 }
@@ -1140,7 +1147,7 @@ float QJniObject::callFloat(const char* method_name)
 	float result = (float)env->CallFloatMethod(instance_, mid);
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 	return result;
 }
@@ -1159,7 +1166,7 @@ float QJniObject::callFloat(const char* method_name, int param)
 	float result = (float)env->CallFloatMethod(instance_, mid, jint(param));
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 	return result;
 }
@@ -1178,7 +1185,7 @@ double QJniObject::callDouble(const char* method_name)
 	double result = (double)env->CallDoubleMethod(instance_, mid);
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 	return result;
 }
@@ -1204,7 +1211,7 @@ QJniObject * QJniObject::callObject(const char * method_name, const char * objna
 		{
 			env->DeleteLocalRef(object);
 		}
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name, objname);
 	}
 	QJniObject * result = new QJniObject(object, true, objname);
 	return result;
@@ -1238,7 +1245,7 @@ QJniObject * QJniObject::callParamObject(const char * method_name, const char * 
 		{
 			env->DeleteLocalRef(jret);
 		}
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name, objname);
 	}
 	return new QJniObject(jret, true, objname);
 }
@@ -1264,7 +1271,7 @@ jint QJniObject::callParamInt(const char* method_name, const char* param_signatu
 	if (jep.clearException())
 	{
 		qWarning("void QJniObject(%p)::callParamInt(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 	return result;
 }
@@ -1290,7 +1297,7 @@ jlong QJniObject::callParamLong(const char* method_name, const char* param_signa
 	if (jep.clearException())
 	{
 		qWarning("void QJniObject(%p)::callParamLong(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 	return result;
 }
@@ -1316,7 +1323,7 @@ jfloat QJniObject::callParamFloat(const char* method_name, const char* param_sig
 	if (jep.clearException())
 	{
 		qWarning("void QJniObject(%p)::callParamFloat(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 	return result;
 }
@@ -1342,7 +1349,7 @@ jdouble QJniObject::callParamDouble(const char* method_name, const char* param_s
 	if (jep.clearException())
 	{
 		qWarning("void QJniObject(%p)::callParamDouble(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 	return result;
 }
@@ -1368,7 +1375,7 @@ jboolean QJniObject::callParamBoolean(const char* method_name, const char* param
 	if (jep.clearException())
 	{
 		qWarning("void QJniObject(%p)::callParamBoolean(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 	return result;
 }
@@ -1388,7 +1395,7 @@ QString QJniObject::callString(const char *method_name)
 	QString ret = QJniLocalRef(env, env->CallObjectMethod(instance_, mid));
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 	return ret;
 }
@@ -1419,7 +1426,7 @@ QString QJniObject::callParamString(const char *method_name, const char* param_s
 
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 
 	return ret;
@@ -1439,7 +1446,7 @@ QString QJniObject::getString(const char *field_name)
 	QString ret = QJniLocalRef(env, env->GetObjectField(instance_, fid));
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(field_name);
 	}
 	return ret;
 }
@@ -1458,7 +1465,7 @@ int QJniObject::getIntField(const char * field_name)
 	int result = (int)env->GetIntField(instance_, fid);
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(field_name);
 	}
 	return result;
 }
@@ -1477,7 +1484,7 @@ float QJniObject::getFloatField(const char * field_name)
 	float result = (float)env->GetFloatField(instance_, fid);
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(field_name);
 	}
 	return result;
 }
@@ -1496,7 +1503,7 @@ void QJniObject::setIntField(const char * field_name, jint value)
 	env->SetIntField(instance_, fid, value);
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(field_name);
 	}
 }
 
@@ -1514,7 +1521,7 @@ void QJniObject::setBooleanField(const char * field_name, jboolean value)
 	env->SetBooleanField(instance_, fid, value);
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(field_name);
 	}
 }
 
@@ -1539,7 +1546,7 @@ QJniObject * QJniObject::getObjectField(const char* field_name, const char * obj
 		{
 			env->DeleteLocalRef(jo);
 		}
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(field_name);
 	}
 	return new QJniObject(jo, true, objname);
 }
@@ -1558,7 +1565,7 @@ QString QJniObject::getStringField(const char * field_name)
 	QString ret = QJniLocalRef(env, env->GetObjectField(instance_, fid));
 	if (jep.clearException())
 	{
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(field_name);
 	}
 	return ret;
 }
@@ -1588,7 +1595,7 @@ void QJniObject::callParamVoid(const char * method_name, const char * param_sign
 	if (jep.clearException())
 	{
 		qWarning("void QJniObject(%p)::callParamVoid(\"%s\", \"%s\", ...): exception occured", this, method_name, param_signature);
-		throw QJniJavaCallException();
+		throw QJniJavaCallException(method_name);
 	}
 }
 

@@ -85,7 +85,8 @@ public:
 class QJniJavaCallException: public QJniBaseException
 {
 public:
-	QJniJavaCallException();
+	QJniJavaCallException(const char * callDetails);
+	QJniJavaCallException(const char * callDetails, const char * callDetailsMore);
 };
 
 
