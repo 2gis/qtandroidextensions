@@ -155,15 +155,15 @@ static inline bool classObjectMayHaveNullClass(const char * class_name)
 // Exceptions
 /////////////////////////////////////////////////////////////////////////////
 
-QJniBaseException::QJniBaseException(const char * message)
-	: message_(message? message: "JNI: Java exception.")
+QJniBaseException::QJniBaseException(const QByteArray & message /*= ""*/)
+	: message_(message.isEmpty() ? "JNI: Java exception." : message)
 {
-	qDebug() << "QJniHelpers: throwing an exception:" << what();
+	qWarning() << "QJniHelpers: throwing an exception:" << what();
 }
 
 const char * QJniBaseException::what() const throw()
 {
-	return message_;
+	return message_.constData();
 }
 
 QJniThreadAttachException::QJniThreadAttachException()
@@ -191,16 +191,11 @@ QJniFieldNotFoundException::QJniFieldNotFoundException()
 {
 }
 
-QJniJavaCallException::QJniJavaCallException(const char * callDetails, const char * callDetailsMore)
-	: QJniBaseException("JNI: Java method raised an unhandled exception.")
-{
-	qDebug() << "QJniHelpers: QJniJavaCallException with" << callDetails << "and" <<  callDetailsMore;
-}
 
-QJniJavaCallException::QJniJavaCallException(const char * callDetails)
-	: QJniBaseException("JNI: Java method raised an unhandled exception.")
+QJniJavaCallException::QJniJavaCallException(const QByteArray & callDetails)
+	: QJniBaseException(QByteArray("JNI: Java method raised an unhandled exception. ").append(callDetails))
 {
-	qDebug() << "QJniHelpers: QJniJavaCallException with" << callDetails;
+	qWarning() << "QJniHelpers: QJniJavaCallException with" << callDetails;
 }
 
 
@@ -758,7 +753,7 @@ QJniObject * QJniClass::getStaticObjectField(const char * field_name, const char
 		{
 			env->DeleteLocalRef(jo);
 		}
-		throw QJniJavaCallException(field_name, objname);
+		throw QJniJavaCallException(QByteArray().append(field_name).append(", ").append(objname));
 	}
 	return new QJniObject(jo, true, objname);
 }
@@ -846,7 +841,7 @@ QJniObject* QJniClass::callStaticObject(const char * method_name, const char * o
 		{
 			env->DeleteLocalRef(jret);
 		}
-		throw QJniJavaCallException(method_name, objname);
+		throw QJniJavaCallException(QByteArray().append(method_name).append(", ").append(objname));
 	}
 	if (jret == 0)
 	{
@@ -882,7 +877,7 @@ QJniObject * QJniClass::callStaticParamObject(const char * method_name, const ch
 		{
 			env->DeleteLocalRef(jret);
 		}
-		throw QJniJavaCallException(method_name, objname);
+		throw QJniJavaCallException(QByteArray().append(method_name).append(", ").append(objname));
 	}
 	return new QJniObject(jret, true, objname);
 }
@@ -1211,7 +1206,7 @@ QJniObject * QJniObject::callObject(const char * method_name, const char * objna
 		{
 			env->DeleteLocalRef(object);
 		}
-		throw QJniJavaCallException(method_name, objname);
+		throw QJniJavaCallException(QByteArray().append(method_name).append(", ").append(objname));
 	}
 	QJniObject * result = new QJniObject(object, true, objname);
 	return result;
@@ -1245,7 +1240,7 @@ QJniObject * QJniObject::callParamObject(const char * method_name, const char * 
 		{
 			env->DeleteLocalRef(jret);
 		}
-		throw QJniJavaCallException(method_name, objname);
+		throw QJniJavaCallException(QByteArray().append(method_name).append(", ").append(objname));
 	}
 	return new QJniObject(jret, true, objname);
 }

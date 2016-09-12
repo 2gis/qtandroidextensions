@@ -38,18 +38,20 @@
 #pragma once
 #include <jni.h>
 #include <QtCore/QString>
+#include <QtCore/QByteArray>
 #include <QtCore/QDebug>
 #include <QtCore/QMutex>
 #include <QtCore/QMutexLocker>
 #include <QtCore/QThreadStorage>
 
+
 class QJniBaseException: public std::exception
 {
 public:
-	QJniBaseException(const char * message = 0);
+	QJniBaseException(const QByteArray & message = "");
 	virtual const char * what() const throw();
 private:
-	const char * message_;
+	const QByteArray message_;
 };
 
 class QJniThreadAttachException: public QJniBaseException
@@ -85,8 +87,7 @@ public:
 class QJniJavaCallException: public QJniBaseException
 {
 public:
-	QJniJavaCallException(const char * callDetails);
-	QJniJavaCallException(const char * callDetails, const char * callDetailsMore);
+	QJniJavaCallException(const QByteArray & callDetails);
 };
 
 
