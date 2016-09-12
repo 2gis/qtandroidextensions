@@ -59,8 +59,8 @@ JniObjectLinker::~JniObjectLinker()
 {
 	if (handler_)
 	{
-        try
-        {
+		try
+		{
 			handler_->callVoid("cppDestroyed");
 		}
 		catch (const std::exception & ex)
