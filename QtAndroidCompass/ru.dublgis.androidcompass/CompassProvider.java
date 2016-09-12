@@ -171,7 +171,7 @@ public class CompassProvider implements SensorEventListener
 
 	public void onSensorChanged(SensorEvent event)
 	{
-		if (event.sensor.getType() == mOrientation.getType())
+		if (event.sensor.getType() == mOrientation.getType() && event.values.length > 0)
 		{
 			setAzimuth(mNativePtr, event.values[0]);
 		}
