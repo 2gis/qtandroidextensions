@@ -50,7 +50,7 @@ JniObjectLinker::JniObjectLinker(void * nativePtr, const char * full_class_name,
 	}
 	catch (const std::exception & ex)
 	{
-		qWarning() << "Failed to preloadJavaClasses: " << ex.what();
+		qCritical() << "Failed to preloadJavaClasses: " << ex.what();
 	}
 }
 
@@ -65,7 +65,7 @@ JniObjectLinker::~JniObjectLinker()
 		}
 		catch (const std::exception & ex)
 		{
-			qWarning() << "Failed to call cppDestroyed: " << ex.what();
+			qCritical() << "Failed to call cppDestroyed: " << ex.what();
 		}
 	}
 }
