@@ -302,9 +302,22 @@ public class DesktopUtils
                     intentList.add(cloneIntent);
                 }
 
-                chooserIntent = Intent.createChooser(new Intent(intent.getAction()), null);
-                final Intent[] extraIntents = intentList.toArray(new Intent[intentList.size()]);
-                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
+                final Intent targetIntent;
+                final Intent extraIntent;
+
+                if (android.os.Build.VERSION.SDK_INT < 23) {
+                    targetIntent = new Intent(Intent.ACTION_CHOOSER);
+                    extraIntent = intentList.get(0);
+                    intentList.remove(0);
+                } else {
+                    targetIntent = new Intent();
+                    extraIntent = new Intent();
+                }
+                chooserIntent = Intent.createChooser(targetIntent, null);
+                chooserIntent.putExtra(Intent.EXTRA_INTENT, extraIntent);
+                if (!intentList.isEmpty()) {
+                    chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentList.toArray(new Intent[intentList.size()]));
+                }
             }
 
             chooserIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
