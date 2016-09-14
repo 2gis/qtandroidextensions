@@ -305,6 +305,7 @@ public class DesktopUtils
                 final Intent targetIntent;
                 final Intent extraIntent;
 
+                // Hack to set the correct `EXTRA INTENT`
                 if (android.os.Build.VERSION.SDK_INT < 23) {
                     targetIntent = new Intent(Intent.ACTION_CHOOSER);
                     extraIntent = intentList.get(0);
