@@ -302,23 +302,9 @@ public class DesktopUtils
                     intentList.add(cloneIntent);
                 }
 
-                final Intent targetIntent;
-                final Intent extraIntent;
-
-                // Hack to set the correct `EXTRA INTENT`
-                if (android.os.Build.VERSION.SDK_INT < 23) {
-                    targetIntent = new Intent(Intent.ACTION_CHOOSER);
-                    extraIntent = intentList.get(0);
-                    intentList.remove(0);
-                } else {
-                    targetIntent = new Intent();
-                    extraIntent = new Intent();
-                }
-                chooserIntent = Intent.createChooser(targetIntent, null);
-                chooserIntent.putExtra(Intent.EXTRA_INTENT, extraIntent);
-                if (!intentList.isEmpty()) {
-                    chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentList.toArray(new Intent[intentList.size()]));
-                }
+                chooserIntent = Intent.createChooser(new Intent(intent.getAction()), null);
+                final Intent[] extraIntents = intentList.toArray(new Intent[intentList.size()]);
+                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
             }
 
             chooserIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
