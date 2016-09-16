@@ -71,7 +71,12 @@ public class LocationManagerProvidersListener extends BroadcastReceiver
 
 	public void onReceive( Context context, Intent intent )
 	{
-		onProvidersChange(native_ptr_);
+		try {
+			onProvidersChange(native_ptr_);
+		}
+		catch (final Throwable ex) {
+			Log.e(TAG, "Failed to call onProvidersChange ", ex);
+		}
 	}
 
 
