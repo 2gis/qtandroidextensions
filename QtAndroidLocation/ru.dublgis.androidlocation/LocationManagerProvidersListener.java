@@ -64,6 +64,7 @@ public class LocationManagerProvidersListener extends BroadcastReceiver
 	//! Called from C++ to notify us that the associated C++ object is being destroyed.
 	public void cppDestroyed()
 	{
+		getActivity().unregisterReceiver(this);
 		native_ptr_ = 0;
 	}
 
