@@ -109,7 +109,7 @@ public class LocationManagerProvidersListener extends BroadcastReceiver
 
 			ret = lm.isProviderEnabled(provider);
 		}
-		catch(Exception e)
+		catch(Throwable e)
 		{
 			Log.e(TAG, "LocationManager failed" + e.getMessage());
 			e.printStackTrace();
