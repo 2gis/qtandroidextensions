@@ -72,7 +72,6 @@ public class CompassProvider implements SensorEventListener
 	//! Called from C++ to notify us that the associated C++ object is being destroyed.
 	public void cppDestroyed()
 	{
-		stop();
 		mNativePtr = 0;
 	}
 

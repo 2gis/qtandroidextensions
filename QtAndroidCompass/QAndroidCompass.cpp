@@ -82,6 +82,7 @@ QAndroidCompass::QAndroidCompass()
 
 QAndroidCompass::~QAndroidCompass()
 {
+	stop();
 }
 
 
