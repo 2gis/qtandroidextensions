@@ -91,7 +91,7 @@ void QAndroidCompass::start(int32_t delayUs /*= -1*/, int32_t latencyUs /*= -1*/
 
 	if (Q_NULLPTR != hdl)
 	{
-		hdl->callParamVoid("start", "II", delayUs, latencyUs);
+		hdl->callParamVoid("start", "II", (jint)delayUs, (jint)latencyUs);
 	}
 }
 
