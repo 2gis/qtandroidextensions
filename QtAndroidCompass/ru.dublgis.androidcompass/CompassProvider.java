@@ -51,7 +51,7 @@ public class CompassProvider implements SensorEventListener
 	private long mNativePtr = 0;
 	private SensorManager mSensorManager;
 	private Sensor mOrientation;
-	private boolean mRegistered = false;
+	private volatile boolean mRegistered = false;
 
 	CompassProvider(long native_ptr)
 	{
@@ -170,7 +170,9 @@ public class CompassProvider implements SensorEventListener
 
 	public void onSensorChanged(SensorEvent event)
 	{
-		if (event.sensor.getType() == mOrientation.getType() && event.values.length > 0)
+		if (event.sensor.getType() == mOrientation.getType()
+				&& event.values.length > 0
+				&& mRegistered)
 		{
 			setAzimuth(mNativePtr, event.values[0]);
 		}
