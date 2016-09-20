@@ -174,7 +174,12 @@ public class CompassProvider implements SensorEventListener
 				&& event.values.length > 0
 				&& mRegistered)
 		{
-			setAzimuth(mNativePtr, event.values[0]);
+			try {
+				setAzimuth(mNativePtr, event.values[0]);
+			}
+			catch (Throwable ex) {
+				Log.e(TAG, "Failed to set azimuth: " + ex);
+			}
 		}
 	}
 
