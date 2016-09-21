@@ -327,9 +327,13 @@ class OffscreenEditText extends OffscreenView
         @Override
         public boolean onTouchEvent(MotionEvent event)
         {
-            if (isOffscreenTouch())
-            {
-                return super.onTouchEvent(event);
+            try {
+                if (isOffscreenTouch())
+                {
+                    return super.onTouchEvent(event);
+                }
+            } catch (final Throwable e) {
+                Log.e(TAG, "onTouchEvent exception: ", e);
             }
             return false;
         }
