@@ -56,5 +56,9 @@ QAndroidAction::~QAndroidAction()
 
 void QAndroidAction::openLocationSourceSettings()
 {
-	handler()->callVoid("openLocationSourceSettings");
+	QJniObject * h = handler();
+	if (h)
+	{
+		h->callVoid("openLocationSourceSettings");
+	}
 }

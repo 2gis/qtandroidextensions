@@ -57,7 +57,7 @@ static void setPositionAttributeFloat(QGeoPositionInfo & info, QGeoPositionInfo:
 static QGeoPositionInfo positionInfoFromJavaLocation(JNIEnv * jniEnv, const jobject & jlocation)
 {
 	QGeoPositionInfo info;
-	QJniObject location(jlocation, true);
+	QJniObject location(jlocation, false);
 
 	if (!location)
 	{
