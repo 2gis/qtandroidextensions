@@ -38,6 +38,7 @@
 package ru.dublgis.androidlocation;
 
 import android.app.Activity;
+import android.os.Build;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -84,10 +85,23 @@ public class GmsLocationProvider
 
 	private long native_ptr_ = 0;
 
-	private GoogleApiClient mGoogleApiClient;
+	private GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
+		.addConnectionCallbacks(this)
+		.addOnConnectionFailedListener(this)
+		.addApi(LocationServices.API)
+		.build();
+
 	private Location mCurrentLocation;
 	private long mLastRequestId = 0;
-	
+
+	private Looper mlocationUpdatesLooper = null;
+	final private Thread mlocationUpdatesThread = new Thread() {
+		public void run() {
+			Looper.prepare();
+			mlocationUpdatesLooper = Looper.myLooper();
+			Looper.loop();
+		}
+	};
 
 	private class RequestHolder {
 		public long mRequestId;
@@ -101,33 +115,34 @@ public class GmsLocationProvider
 		}
 	}
 
-	private Map<Long, RequestHolder> mRequests = new LinkedHashMap<Long, RequestHolder>();
+	final private Map<Long, RequestHolder> mRequests = new LinkedHashMap<Long, RequestHolder>();
 
 
 	public GmsLocationProvider(long native_ptr)
 	{
 		native_ptr_ = native_ptr;
 		googleApiClientStatus(native_ptr_, STATUS_DISCONNECTED);
-
-		runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				buildGoogleApiClient();
-			}
-		});
+		mlocationUpdatesThread.start();
 	}
 
 
 	//! Called from C++ to notify us that the associated C++ object is being destroyed.
-	public void cppDestroyed() {
+	public void cppDestroyed()
+	{
 		Log.i(TAG, "cppDestroyed");
 
+		activate(false);
+
+		if (Build.VERSION.SDK_INT >= 18) {
+			mlocationUpdatesLooper.quitSafely();
+		} else {
+			mlocationUpdatesLooper.quit();
+		}
+
 		try {
-			if (mGoogleApiClient != null) {
-				mGoogleApiClient.disconnect();
-			}
-		} catch (Throwable e) {
-			Log.e(TAG, "Exception while disconnecting from Google API Client: ", e);
+			mlocationUpdatesThread.join(2000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 
 		googleApiClientStatus(native_ptr_, STATUS_DISCONNECTED);
@@ -135,42 +150,19 @@ public class GmsLocationProvider
 	}
 
 
-	protected void buildGoogleApiClient()
-	{
-		Log.i(TAG, "Building GoogleApiClient");
-
-		try 
-		{
-			mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
-					.addConnectionCallbacks(this)
-					.addOnConnectionFailedListener(this)
-					.addApi(LocationServices.API)
-					.build();
-
-			mGoogleApiClient.connect();
-		}
-		catch(Exception e)
-		{
-			Log.e(TAG, "Exception while connecting to Google API Client: " + e);
-		}
-	}
-
-
 	@Override
 	public void onConnected(Bundle connectionHint)
 	{
 		Log.i(TAG, "Connected to GoogleApiClient");
-
 		Location locationToSend = null;
 
-		try
-		{
+		try {
 			Location lastLocation = FusedLocationApi.getLastLocation(mGoogleApiClient);
 
 			synchronized (mRequests) {
 				if (null == mCurrentLocation) {
 					mCurrentLocation = lastLocation;
-				} else if ((null != lastLocation) && (null != mCurrentLocation)) {
+				} else if (null != lastLocation) {
 					if (lastLocation.getTime() > mCurrentLocation.getTime()) {
 						mCurrentLocation = lastLocation;
 					}
@@ -178,9 +170,11 @@ public class GmsLocationProvider
 				locationToSend = mCurrentLocation;
 			}
 		}
-		catch(Exception e)
-		{
-			Log.e(TAG, "onConnected(): Exception while getLastLocation: " + e);
+		catch(SecurityException e) {
+			Log.e(TAG, "onConnected: Exception while getLastLocation, no permissions: ", e);
+		}
+		catch(Exception e) {
+			Log.e(TAG, "onConnected: Exception while getLastLocation: ", e);
 		}
 
 		if (null != locationToSend) {
@@ -213,27 +207,21 @@ public class GmsLocationProvider
 			if (mRequests.containsKey(key)) {
 				final RequestHolder holder = mRequests.get(key);
 
-				runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						if (null != mGoogleApiClient && null != holder.mCallback) {
-							try {
-								PendingResult<Status> result =
-										FusedLocationApi.removeLocationUpdates(mGoogleApiClient, holder.mCallback);
+				if (null != mGoogleApiClient && null != holder.mCallback) {
+					try {
+						PendingResult<Status> result =
+								FusedLocationApi.removeLocationUpdates(mGoogleApiClient, holder.mCallback);
 
-								result.setResultCallback(new ResultCallback<Status>() {
-									@Override
-									public void onResult(@NonNull Status status) {
-										Log.d(TAG, "Result for removeLocationUpdates " + holder.mRequestId + " is " + status);
-									}
-								});
-
-							} catch (Exception e) {
-								Log.e(TAG, "Failed to removeLocationUpdates: " + e.getMessage());
+						result.setResultCallback(new ResultCallback<Status>() {
+							@Override
+							public void onResult(@NonNull Status status) {
+								Log.d(TAG, "Result for removeLocationUpdates " + holder.mRequestId + " is " + status);
 							}
-						}
+						});
+					} catch (Exception e) {
+						Log.e(TAG, "Failed to removeLocationUpdates: ", e);
 					}
-				});
+				}
 			}
 
 			mRequests.remove(key);
@@ -263,33 +251,27 @@ public class GmsLocationProvider
 
 
 	private void processRequest(final RequestHolder holder) {
-		runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					if (mGoogleApiClient.isConnected() && null != holder) {
-						Log.i(TAG, "requestLocationUpdates " + holder.mRequestId);
+		try {
+			if (mGoogleApiClient.isConnected() && null != holder) {
+				Log.i(TAG, "requestLocationUpdates " + holder.mRequestId);
 
-						PendingResult<Status> result =
-							FusedLocationApi.requestLocationUpdates(mGoogleApiClient, holder.mRequest, holder.mCallback, Looper.getMainLooper());
+				PendingResult<Status> result =
+						FusedLocationApi.requestLocationUpdates(mGoogleApiClient, holder.mRequest, holder.mCallback, mlocationUpdatesLooper);
 
-						result.setResultCallback(new ResultCallback<Status>() {
-							@Override
-							public void onResult(@NonNull Status status) {
-								Log.d(TAG, "Result for requestLocationUpdates " + holder.mRequestId + " is " + status);
-							}
-						});
-
-
-					} else if (!mGoogleApiClient.isConnecting()) {
-						Log.i(TAG, "Try mGoogleApiClient.connect in processRequest");
-						mGoogleApiClient.connect();
+				result.setResultCallback(new ResultCallback<Status>() {
+					@Override
+					public void onResult(@NonNull Status status) {
+						Log.d(TAG, "Result for requestLocationUpdates " + holder.mRequestId + " is " + status);
 					}
-				} catch (Exception e) {
-					Log.e(TAG, "Failed to connect GoogleApiClient: " + e.getMessage());
-				}
+				});
 			}
-		});
+		} catch (IllegalStateException e) {
+			Log.e(TAG, "Failed to connect GoogleApiClient, incorrect looper: ", e);
+		} catch (SecurityException e) {
+			Log.e(TAG, "Failed to connect GoogleApiClient, no permissions: ", e);
+		} catch (Exception e) {
+			Log.e(TAG, "Failed to connect GoogleApiClient: ", e);
+		}
 	}
 
 
@@ -410,7 +392,7 @@ public class GmsLocationProvider
 			return ConnectionResult.SUCCESS == errorCode;
 		}
 		catch(Exception e) {
-			Log.e(TAG, "isAvailable(): " + e);
+			Log.e(TAG, "isAvailable(): ", e);
 		}
 
 		return false;
