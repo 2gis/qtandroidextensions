@@ -371,6 +371,18 @@ public class GmsLocationProvider
 	}
 
 
+	public void activate(boolean enable)
+	{
+		if (null != mGoogleApiClient) {
+			if (enable) {
+				mGoogleApiClient.connect();
+			} else {
+				mGoogleApiClient.disconnect();
+			}			
+		}
+	}
+
+
 	static public boolean isAvailable(final Activity activity, final boolean allowDialog)
 	{
 		try {

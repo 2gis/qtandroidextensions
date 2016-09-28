@@ -38,6 +38,7 @@
 #include "QAndroidGmsLocationProvider.h"
 #include <QAndroidQPAPluginGap.h>
 #include <QtPositioning/QGeoPositionInfo>
+#include <QtGui/QGuiApplication>
 
 
 static const char * const c_full_class_name_ = "ru/dublgis/androidlocation/GmsLocationProvider";
@@ -159,6 +160,11 @@ QAndroidGmsLocationProvider::QAndroidGmsLocationProvider(QObject * parent)
 
 	QObject::connect(&requestTimer_, &QTimer::timeout,
 	                 this, &QAndroidGmsLocationProvider::onRequestTimeout);
+
+	QObject::connect(qApp, &QGuiApplication::applicationStateChanged,
+	                 this, &QAndroidGmsLocationProvider::onApplicationStateChanged);
+
+	onApplicationStateChanged(QGuiApplication::applicationState());
 }
 
 
@@ -318,6 +324,24 @@ void QAndroidGmsLocationProvider::stopUpdates(jlong requestId)
 		if (bStopTimer)
 		{
 			requestTimer_.stop();
+		}
+	}
+}
+
+
+void QAndroidGmsLocationProvider::onApplicationStateChanged(Qt::ApplicationState state)
+{
+	qDebug() << state;
+
+	if (handler_)
+	{
+		jboolean enable = (Qt::ApplicationActive == state);
+
+		switch (state)
+		{
+			case Qt::ApplicationSuspended:	//onStop
+			case Qt::ApplicationActive:		//onStart
+				handler_->callParamVoid("activate", "Z", enable);
 		}
 	}
 }

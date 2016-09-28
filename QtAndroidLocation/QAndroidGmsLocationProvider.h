@@ -79,6 +79,7 @@ public slots:
 
 private slots:
 	void onRequestTimeout();
+	void onApplicationStateChanged(Qt::ApplicationState state);
 
 signals:
 	void statusChanged(int);
