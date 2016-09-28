@@ -121,18 +121,14 @@ public class GmsLocationProvider
 	//! Called from C++ to notify us that the associated C++ object is being destroyed.
 	public void cppDestroyed() {
 		Log.i(TAG, "cppDestroyed");
-		runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
-						mGoogleApiClient.disconnect();
-					}
-				} catch (Exception e) {
-					Log.e(TAG, "Exception while disconnecting from Google API Client: " + e);
-				}
+
+		try {
+			if (mGoogleApiClient != null) {
+				mGoogleApiClient.disconnect();
 			}
-		});
+		} catch (Throwable e) {
+			Log.e(TAG, "Exception while disconnecting from Google API Client: ", e);
+		}
 
 		googleApiClientStatus(native_ptr_, STATUS_DISCONNECTED);
 		native_ptr_ = 0;
