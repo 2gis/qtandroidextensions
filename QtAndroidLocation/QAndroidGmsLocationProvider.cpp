@@ -280,6 +280,8 @@ void QAndroidGmsLocationProvider::startUpdates()
 			QMutexLocker lock(&lastLocationSync_);
 			regularUpdadesId_ = id;
 		}
+
+		qDebug() << "id =" << id;
 	}
 }
 
@@ -372,6 +374,8 @@ void QAndroidGmsLocationProvider::requestUpdate(int timeout /*= 0*/)
 			QMutexLocker lock(&lastLocationSync_);
 			requestUpdadesId_ = id;
 		}
+
+		qDebug() << "id =" << id;
 	}
 }
 
