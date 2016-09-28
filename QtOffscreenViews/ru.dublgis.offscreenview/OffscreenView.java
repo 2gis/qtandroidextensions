@@ -223,7 +223,7 @@ abstract class OffscreenView
             context.runOnUiThread(runnable);
             return true;
         }
-        catch (Exception e)
+        catch (final Throwable e)
         {
             Log.e(TAG, "Exception when posting a runnable:", e);
             return false;
@@ -383,7 +383,7 @@ abstract class OffscreenView
                 }
             }
         }
-        catch(Exception e)
+        catch (final Throwable e)
         {
             Log.e(TAG, "Exception in uiAttachViewToQtScreen:", e);
             return false;
@@ -432,7 +432,7 @@ abstract class OffscreenView
                                {
                                    continue;
                                }
-                           } catch(Exception e) {} // ClassCastException
+                           } catch (final Throwable e) {} // ClassCastException
                            child.requestFocus();
                            Log.i(TAG, "Successfully passed focus from "+object_name_);
                            break;
@@ -449,7 +449,7 @@ abstract class OffscreenView
                 return false;
             }
         }
-        catch(Exception e)
+        catch (final Throwable e)
         {
             Log.e(TAG, "Exception in uiDetachViewFromQtScreen:", e);
             return false;
@@ -630,14 +630,21 @@ abstract class OffscreenView
             @Override
             public void run()
             {
-                final View v = getView();
-                if (v != null)
+                try
                 {
-                    if (!enabled)
+                    final View v = getView();
+                    if (v != null)
                     {
-                        uiHideKeyboardFromView();
+                        if (!enabled)
+                        {
+                            uiHideKeyboardFromView();
+                        }
+                        v.setEnabled(enabled);
                     }
-                    v.setEnabled(enabled);
+                }
+                catch (final Throwable e)
+                {
+                    Log.e(TAG, "setEnabled exception: ", e);
                 }
             }
         });
@@ -777,7 +784,7 @@ abstract class OffscreenView
                             }
                         }
                     }
-                    catch(Exception e)
+                    catch (final Throwable e)
                     {
                         Log.e(TAG, "doDrawViewOnTexture painting failed!", e);
                     }
@@ -790,7 +797,7 @@ abstract class OffscreenView
                     // Log.i(TAG, "doDrawViewOnTexture: success, t="+t/1000000.0+"ms");
                 }
             }
-            catch(Exception e)
+            catch (final Throwable e)
             {
                 Log.e(TAG, "doDrawViewOnTexture exception:", e);
             }
@@ -991,7 +998,7 @@ abstract class OffscreenView
                 Log.i(TAG, "uiHideKeyboardFromView: Window token is null");
             }
         }
-        catch (Exception e)
+        catch (final Throwable e)
         {
             Log.e(TAG, "uiHideKeyboardFromView: exception:", e);
         }
@@ -1027,7 +1034,7 @@ abstract class OffscreenView
             }
             imm.showSoftInput(v, InputMethodManager.SHOW_IMPLICIT);
         }
-        catch (Exception e)
+        catch (final Throwable e)
         {
             Log.e(TAG, " uiShowKeyboard: exception:", e);
         }
@@ -1358,7 +1365,7 @@ abstract class OffscreenView
             {
                 return surface_.lockCanvas(new Rect(0, 0, texture_width_, texture_height_));
             }
-            catch(Exception e)
+            catch (final Throwable e)
             {
                 Log.e(TAG, "Failed to lock canvas for "+object_name_, e);
                 return null;
@@ -1376,7 +1383,7 @@ abstract class OffscreenView
                 }
                 has_texture_ = true;
             }
-            catch(Exception e)
+            catch (final Throwable e)
             {
                 Log.e(TAG, "Failed to unlock canvas", e);
             }
@@ -1413,7 +1420,7 @@ abstract class OffscreenView
                 }
                 return true;
             }
-            catch(Exception e)
+            catch (final Throwable e)
             {
                 Log.e(TAG, "Failed to update texture", e);
                 return false;

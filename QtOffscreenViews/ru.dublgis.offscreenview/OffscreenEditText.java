@@ -129,7 +129,7 @@ class OffscreenEditText extends OffscreenView
                 f.setAccessible(true);
                 f.set((TextView)this, 0);
             }
-            catch (Exception e)
+            catch (final Throwable e)
             {
                 Log.e(TAG, "Could not change default cursor behaviour, exception: " + e);
             }
@@ -176,7 +176,7 @@ class OffscreenEditText extends OffscreenView
                     super.onDraw(canvas);
                 }
             }
-            catch (Exception e)
+            catch (final Throwable e)
             {
                 Log.e(TAG, "Exception in onDraw: " + e);
             }
@@ -393,7 +393,7 @@ class OffscreenEditText extends OffscreenView
                     ((MyEditText)getView()).setText(text);
                     need_to_reflow_text_ = false;
                 }
-                catch (Exception e)
+                catch (final Throwable e)
                 {
                     Log.e(TAG, "Exception in setText: " + e);
                 }
@@ -425,11 +425,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                try 
+                try
                 {
                     ((MyEditText)getView()).setTypeface(Typeface.create((name.length() > 0)? name: null, style));
                 }
-                catch (Exception e)
+                catch (final Throwable e)
                 {
                     Log.e(TAG, "Failed to create Typeface with name " + name + ": " + e);
                 }
@@ -442,12 +442,12 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                try 
+                try
                 {
                     Typeface face = Typeface.createFromFile(filename);
                     ((MyEditText)getView()).setTypeface((style==0)? face: Typeface.create(face, style));
                 }
-                catch (Exception e)
+                catch (final Throwable e)
                 {
                     Log.e(TAG, "Failed to create Typeface from file:" + e);
                 }
@@ -463,12 +463,12 @@ class OffscreenEditText extends OffscreenView
                 Activity a = getActivity();
                 if (a != null)
                 {
-                    try 
+                    try
                     {
                         Typeface face = Typeface.createFromAsset(a.getAssets(), filename);
                         ((MyEditText)getView()).setTypeface((style==0)? face: Typeface.create(face, style));
                     }
-                    catch (Exception e)
+                    catch (final Throwable e)
                     {
                         Log.e(TAG, "Failed to create Typeface from asset:" + e);
                     }
@@ -802,7 +802,7 @@ class OffscreenEditText extends OffscreenView
             public void run() {
                 try {
                     ((MyEditText)getView()).setSelection(start, stop);
-                } catch (final Exception e) {
+                } catch (final Throwable e) {
                     Log.e(TAG, "Failed to set bounds to (" + start + ", " + stop + "): " + e);
                 }
             }
