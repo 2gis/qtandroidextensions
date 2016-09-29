@@ -360,7 +360,8 @@ public class GmsLocationProvider
 				mGoogleApiClient.connect();
 			} else {
 				mGoogleApiClient.disconnect();
-			}			
+				googleApiClientStatus(native_ptr_, STATUS_DISCONNECTED);
+			}
 		}
 	}
 
