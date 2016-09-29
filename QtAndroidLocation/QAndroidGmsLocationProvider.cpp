@@ -164,6 +164,9 @@ QAndroidGmsLocationProvider::QAndroidGmsLocationProvider(QObject * parent)
 	QObject::connect(qApp, &QGuiApplication::applicationStateChanged,
 	                 this, &QAndroidGmsLocationProvider::onApplicationStateChanged);
 
+	QObject::connect(this, &QAndroidGmsLocationProvider::checkRequest,
+	                 this, &QAndroidGmsLocationProvider::onCheckRequest);
+
 	onApplicationStateChanged(QGuiApplication::applicationState());
 }
 
@@ -194,18 +197,12 @@ void QAndroidGmsLocationProvider::onStatusChanged(int status)
 
 void QAndroidGmsLocationProvider::onLocationRecieved(const QGeoPositionInfo &location, jboolean initial, jlong requestId)
 {
-	bool stopUpdates = false;
-
 	{
 		QMutexLocker lock(&lastLocationSync_);
 		lastLocation_ = location;
-		stopUpdates = (requestId != regularUpdadesId_);
 	}
 
-	if (stopUpdates)
-	{
-		QAndroidGmsLocationProvider::stopUpdates(requestId);
-	}
+	emit checkRequest(requestId);
 
 	if (!initial)
 	{
@@ -343,6 +340,22 @@ void QAndroidGmsLocationProvider::onApplicationStateChanged(Qt::ApplicationState
 			case Qt::ApplicationActive:		//onStart
 				handler_->callParamVoid("activate", "Z", enable);
 		}
+	}
+}
+
+
+void QAndroidGmsLocationProvider::onCheckRequest(long requestId)
+{
+	bool stop = false;
+
+	{
+		QMutexLocker lock(&lastLocationSync_);
+		stop = requestId != regularUpdadesId_;
+	}
+
+	if (stop)
+	{
+		QAndroidGmsLocationProvider::stopUpdates(requestId);		
 	}
 }
 
