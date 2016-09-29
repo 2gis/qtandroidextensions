@@ -328,8 +328,6 @@ void QAndroidGmsLocationProvider::stopUpdates(jlong requestId)
 
 void QAndroidGmsLocationProvider::onApplicationStateChanged(Qt::ApplicationState state)
 {
-	qDebug() << state;
-
 	if (handler_)
 	{
 		jboolean enable = (Qt::ApplicationActive == state);
