@@ -280,6 +280,9 @@ public:
 	//! Return the scrolled top position of this view.
 	int getScrollY();
 
+	void setScrollX(int x);
+	void setScrollY(int y);
+
 	//! Return the width measurement information for this view as computed by the most recent call to measure(int, int).
 	int getMeasuredWidth();
 

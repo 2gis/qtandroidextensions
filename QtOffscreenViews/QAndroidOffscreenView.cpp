@@ -864,6 +864,23 @@ int QAndroidOffscreenView::getScrollY()
 	return 0; // No scroll yet
 }
 
+void QAndroidOffscreenView::setScrollX(int x)
+{
+	if (offscreen_view_)
+	{
+		offscreen_view_->callVoid("setScrollX", static_cast<jint>(x));
+	}
+}
+
+void QAndroidOffscreenView::setScrollY(int y)
+{
+	if (offscreen_view_)
+	{
+		offscreen_view_->callVoid("setScrollY", static_cast<jint>(y));
+	}
+}
+
+
 int QAndroidOffscreenView::getMeasuredWidth()
 {
 	if (offscreen_view_)

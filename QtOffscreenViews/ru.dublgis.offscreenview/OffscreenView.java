@@ -1505,6 +1505,36 @@ abstract class OffscreenView
         });
     }
 
+    public void setScrollX(final int x)
+    {
+        runViewAction(new Runnable() {
+            @Override
+            public void run()
+            {
+                final View v = getView();
+                if (v != null)
+                {
+                    v.setScrollX(x);
+                }
+            }
+        });
+    }
+
+    public void setScrollY(final int y)
+    {
+        runViewAction(new Runnable() {
+            @Override
+            public void run()
+            {
+                final View v = getView();
+                if (v != null)
+                {
+                    v.setScrollY(y);
+                }
+            }
+        });
+    }
+
     public void setSoftInputModeResize()
     {
         setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);

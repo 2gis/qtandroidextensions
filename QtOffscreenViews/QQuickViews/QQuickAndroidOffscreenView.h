@@ -13,13 +13,13 @@
   modification, are permitted provided that the following conditions are met:
 
   * Redistributions of source code must retain the above copyright notice,
-    this list of conditions and the following disclaimer.
+	this list of conditions and the following disclaimer.
   * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
   * Neither the name of the DoubleGIS, LLC nor the names of its contributors
-    may be used to endorse or promote products derived from this software
-    without specific prior written permission.
+	may be used to endorse or promote products derived from this software
+	without specific prior written permission.
 
   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -45,7 +45,7 @@
  */
 class QQuickAndroidOffscreenView : public QQuickItem
 {
-    Q_OBJECT
+	Q_OBJECT
 	Q_PROPERTY(QColor backgroundColor READ getBackgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged)
 public:
 	QQuickAndroidOffscreenView(QAndroidOffscreenView * aview);
@@ -69,13 +69,21 @@ public slots:
 
 	//! Make sure software keyboard is shown for this control.
 	void showKeyboard() { androidView()->showKeyboard(); }
-	
+
 	void setHideKeyboardOnFocusLoss(bool hide) { androidView()->setHideKeyboardOnFocusLoss(hide); }
 
 	void setSoftInputModeResize() { androidView()->setSoftInputModeResize(); }
 	void setSoftInputModeAdjustPan() { androidView()->setSoftInputModeAdjustPan(); }
 
+	// A workaround test function, do not use
 	void reattachView() { androidView()->reattachView(); }
+
+	// Direct control on Android widget focusing. This typically should not be called
+	// because focusing is automatically done in focusInEvent()/focusOutEvent().
+	void setFocused(bool focused) { androidView()->setFocused(focused); }
+
+	void setScrollX(int x)  { androidView()->setScrollX(x); }
+	void setScrollY(int y)  { androidView()->setScrollY(y); }
 
 signals:
 	void viewCreated();
