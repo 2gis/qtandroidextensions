@@ -294,6 +294,9 @@ public:
 	void setSoftInputModeResize();
 	void setSoftInputModeAdjustPan();
 
+	//! Test function for lib developers, don't use it
+	void testFunction();
+
 public slots:
 	/*!
 	 * Free Android view and OpenGL resources. The object will be unusable after that.

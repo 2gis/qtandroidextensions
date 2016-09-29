@@ -880,7 +880,6 @@ void QAndroidOffscreenView::setScrollY(int y)
 	}
 }
 
-
 int QAndroidOffscreenView::getMeasuredWidth()
 {
 	if (offscreen_view_)
@@ -956,6 +955,15 @@ void QAndroidOffscreenView::setSoftInputModeAdjustPan()
 		offscreen_view_->callVoid("setSoftInputModeAdjustPan");
 	}
 }
+
+void QAndroidOffscreenView::testFunction()
+{
+	if (offscreen_view_)
+	{
+		offscreen_view_->callVoid("testFunction");
+	}
+}
+
 
 int QColorToAndroidColor(const QColor & color)
 {

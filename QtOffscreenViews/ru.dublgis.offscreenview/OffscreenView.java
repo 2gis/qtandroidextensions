@@ -1535,6 +1535,21 @@ abstract class OffscreenView
         });
     }
 
+    // Test function for development experiments, don't use it!
+    public void testFunction()
+    {
+        runViewAction(new Runnable() {
+            @Override
+            public void run()
+            {
+                Log.d(TAG, "testFunction runnable!");
+                ViewGroup content = (ViewGroup)getActivity().findViewById(android.R.id.content);
+                View mChildOfContent = content.getChildAt(0);
+                mChildOfContent.requestLayout();
+            }
+        });
+    }
+
     public void setSoftInputModeResize()
     {
         setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);

@@ -82,8 +82,11 @@ public slots:
 	// because focusing is automatically done in focusInEvent()/focusOutEvent().
 	void setFocused(bool focused) { androidView()->setFocused(focused); }
 
-	void setScrollX(int x)  { androidView()->setScrollX(x); }
-	void setScrollY(int y)  { androidView()->setScrollY(y); }
+	void setScrollX(int x) { androidView()->setScrollX(x); }
+	void setScrollY(int y) { androidView()->setScrollY(y); }
+
+	// Test function for lib developers, don't use it
+	void testFunction() { androidView()->testFunction(); }
 
 signals:
 	void viewCreated();
