@@ -287,7 +287,7 @@ void QAndroidGmsLocationProvider::startUpdates()
 			regularUpdadesId_ = id;
 		}
 
-		qDebug() << "id =" << id;
+		qDebug() << "updates id =" << id;
 	}
 }
 
@@ -399,7 +399,7 @@ void QAndroidGmsLocationProvider::requestUpdate(int timeout /*= 0*/)
 			requestUpdadesId_ = id;
 		}
 
-		qDebug() << "id =" << id;
+		qDebug() << "request id =" << id;
 	}
 }
 
