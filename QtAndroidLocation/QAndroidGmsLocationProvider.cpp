@@ -337,6 +337,10 @@ void QAndroidGmsLocationProvider::onApplicationStateChanged(Qt::ApplicationState
 			case Qt::ApplicationSuspended:	//onStop
 			case Qt::ApplicationActive:		//onStart
 				handler_->callParamVoid("activate", "Z", enable);
+				break;
+			default:
+				// do nothing
+				break;
 		}
 	}
 }
