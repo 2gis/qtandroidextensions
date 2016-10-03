@@ -224,7 +224,12 @@ QJniEnvPtr::QJniEnvPtr(JNIEnv * env)
 			errsv = g_JavaVm->AttachCurrentThread(&env_, 0);
 			if (errsv != 0)
 			{
-				qWarning("Error attaching current thread %d: %d", (int)gettid(), errsv);
+				qCritical("Error attaching current thread %d: %d", (int)gettid(), errsv);
+				throw QJniThreadAttachException();
+			}
+			if (!env_)
+			{
+				qCritical("Error attaching current thread %d - returned env ptr is null.", (int)gettid());
 				throw QJniThreadAttachException();
 			}
 			if (!g_JavaThreadDetacher.hasLocalData())
@@ -428,6 +433,15 @@ QJniClass::QJniClass(jclass clazz)
 QJniClass::QJniClass(const char * full_class_name)
 	: class_(0)
 {
+	if (!full_class_name)
+	{
+		throw QJniBaseException("Null class name in QJniClass::QJniClass");
+	}
+	if (!(*full_class_name))
+	{
+		throw QJniBaseException("Empty class name in QJniClass::QJniClass");
+	}
+
 	QJniEnvPtr jep;
 	jclass cls = jep.findClass(full_class_name); // this is a preloaded global ref, we don't need to delete it as a local ref
 	if (jep.clearException())
@@ -926,12 +940,12 @@ QJniObject::QJniObject(jobject instance, bool take_ownership, const char * known
 	}
 }
 
-QJniObject::QJniObject(const QJniClass &clazz, const char* param_signature, ...)
+QJniObject::QJniObject(const QJniClass & clazz, const char * param_signature, ...)
 	: QJniClass(clazz)
 	, instance_(0)
 {
 	QJniEnvPtr jep;
-	JNIEnv* env = jep.env();
+	JNIEnv * env = jep.env();
 
 	QByteArray signature("(");
 	if (param_signature)
@@ -964,12 +978,12 @@ QJniObject::QJniObject(const QJniClass &clazz, const char* param_signature, ...)
 	initObject(env, obj);
 }
 
-QJniObject::QJniObject(const char* class_name, const char* param_signature, ...)
+QJniObject::QJniObject(const char * class_name, const char * param_signature, ...)
 	: QJniClass(class_name)
 	, instance_(0)
 {
 	QJniEnvPtr jep;
-	JNIEnv* env = jep.env();
+	JNIEnv * env = jep.env();
 
 	QByteArray signature("(");
 	if (param_signature)
@@ -996,6 +1010,10 @@ QJniObject::QJniObject(const char* class_name, const char* param_signature, ...)
 	if (jep.clearException())
 	{
 		throw QJniBaseException();
+	}
+	if (!obj.jObject())
+	{
+		throw QJniBaseException(QByteArray("Object constructor returned null for ").append(class_name));
 	}
 
 	// it is dangerous to go alone, use this
@@ -1019,7 +1037,7 @@ jobject QJniObject::takeJobjectOver()
 	return ret;
 }
 
-void QJniObject::initObject(JNIEnv* env, jobject instance, bool can_have_null_class)
+void QJniObject::initObject(JNIEnv * env, jobject instance, bool can_have_null_class)
 {
 	VERBOSE(qDebug("QJniObject::init(JNIEnv* env, jobject instance) %p", this));
 	if (!can_have_null_class)
@@ -1031,6 +1049,10 @@ void QJniObject::initObject(JNIEnv* env, jobject instance, bool can_have_null_cl
 	if (jep.clearException())
 	{
 		throw QJniBaseException();
+	}
+	if (instance && !instance_)
+	{
+		throw QJniBaseException("Failed to make additional global reference to an existing object.");
 	}
 }
 
