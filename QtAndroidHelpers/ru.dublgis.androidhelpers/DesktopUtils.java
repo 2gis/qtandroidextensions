@@ -272,7 +272,7 @@ public class DesktopUtils
             if (attachment.length > 0) {
                 final ArrayList<Uri> uri = new ArrayList<>();
 
-                if (android.os.Build.VERSION.SDK_INT < 23) {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
                     for (final String fileName: attachment) {
                         uri.add(Uri.fromFile(new File(fileName)));
                     }
@@ -304,7 +304,7 @@ public class DesktopUtils
 
                 mailtoIntentResolvers.removeSamePackages(messageIntentResolvers.getResolveInfos());
 
-                List<Intent> intentList = new ArrayList<>();
+                final List<Intent> intentList = new ArrayList<>();
 
                 for (final ActivityInfo activityInfo : mailtoIntentResolvers.getResolveInfos()) {
                     final String packageName = activityInfo.getPackageName();
@@ -315,14 +315,17 @@ public class DesktopUtils
                     intentList.add(cloneIntent);
                 }
 
-                final Intent extraIntent = intentList.get(0);
+                final Intent targetIntent = intentList.get(0);
                 intentList.remove(0);
 
-                chooserIntent = Intent.createChooser(new Intent(), null);
-                chooserIntent.putExtra(Intent.EXTRA_INTENT, extraIntent);
+                chooserIntent = Intent.createChooser(targetIntent, null);
                 if (!intentList.isEmpty()) {
                     final Intent[] extraIntents = intentList.toArray(new Intent[intentList.size()]);
-                    chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
+                    } else {
+                        chooserIntent.putExtra(Intent.EXTRA_ALTERNATE_INTENTS, extraIntents);
+                    }
                 }
             }
 
