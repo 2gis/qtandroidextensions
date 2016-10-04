@@ -956,6 +956,14 @@ void QAndroidOffscreenView::setSoftInputModeAdjustPan()
 	}
 }
 
+void QAndroidOffscreenView::setSoftInputModeAdjustNothing()
+{
+	if (offscreen_view_)
+	{
+		offscreen_view_->callVoid("setSoftInputModeAdjustNothing");
+	}
+}
+
 void QAndroidOffscreenView::testFunction()
 {
 	if (offscreen_view_)

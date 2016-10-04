@@ -74,6 +74,7 @@ public slots:
 
 	void setSoftInputModeResize() { androidView()->setSoftInputModeResize(); }
 	void setSoftInputModeAdjustPan() { androidView()->setSoftInputModeAdjustPan(); }
+	void setSoftInputModeAdjustNothing() { androidView()->setSoftInputModeAdjustNothing(); }
 
 	// A workaround test function, do not use
 	void reattachView() { androidView()->reattachView(); }

@@ -1560,6 +1560,14 @@ abstract class OffscreenView
         setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
     }
 
+    public void setSoftInputModeAdjustNothing()
+    {
+        if (Build.VERSION.SDK_INT >= 11)
+        {
+            setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
+        }
+    }
+
     public native void nativeUpdate(long nativeptr);
     public native Activity getActivity();
     public native void nativeViewCreated(long nativeptr);
