@@ -79,10 +79,13 @@ public slots:
 
 private slots:
 	void onRequestTimeout();
+	void onApplicationStateChanged(Qt::ApplicationState state);
+	void onCheckRequest(long requestId);
 
 signals:
 	void statusChanged(int);
 	void locationRecieved(const QGeoPositionInfo&);
+	void checkRequest(long requestId);
 
 public:
 	static bool isAvailable(jboolean allowDialog);
