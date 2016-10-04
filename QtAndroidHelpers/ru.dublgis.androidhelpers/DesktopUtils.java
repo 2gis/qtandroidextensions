@@ -36,20 +36,25 @@
 
 package ru.dublgis.androidhelpers;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.TreeSet;
 
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
+import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
 import android.telephony.TelephonyManager;
 import android.provider.Settings.Secure;
@@ -267,7 +272,7 @@ public class DesktopUtils
             if (attachment.length > 0) {
                 final ArrayList<Uri> uri = new ArrayList<>();
 
-                if (android.os.Build.VERSION.SDK_INT < 23) {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
                     for (final String fileName: attachment) {
                         uri.add(Uri.fromFile(new File(fileName)));
                     }
@@ -284,32 +289,43 @@ public class DesktopUtils
                 intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uri);
             }
 
-            final List<ResolveInfo> resolveInfoList = ctx.getPackageManager().queryIntentActivities(new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", to, null)), 0);
+            final IntentResolverInfo mailtoIntentResolvers = new IntentResolverInfo(ctx.getPackageManager());
+            mailtoIntentResolvers.appendResolvers(new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", to, null)));
 
             final Intent chooserIntent;
 
-            if (resolveInfoList.isEmpty()) {
+            if (mailtoIntentResolvers.isEmpty()) {
                 chooserIntent = Intent.createChooser(intent, null);
             } else {
-                List<Intent> intentList = new ArrayList<>();
+                final IntentResolverInfo messageIntentResolvers = new IntentResolverInfo(ctx.getPackageManager());
+                messageIntentResolvers.appendResolvers(new Intent(Intent.ACTION_SENDTO, Uri.fromParts("sms", "", null)));
+                messageIntentResolvers.appendResolvers(new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mms", "", null)));
+                messageIntentResolvers.appendResolvers(new Intent(Intent.ACTION_SENDTO, Uri.fromParts("tel", "", null)));
 
-                for (final ResolveInfo resolveInfo : resolveInfoList) {
-                    final String packageName = resolveInfo.activityInfo.packageName;
-                    final String name = resolveInfo.activityInfo.name;
+                mailtoIntentResolvers.removeSamePackages(messageIntentResolvers.getResolveInfos());
+
+                final List<Intent> intentList = new ArrayList<>();
+
+                for (final ActivityInfo activityInfo : mailtoIntentResolvers.getResolveInfos()) {
+                    final String packageName = activityInfo.getPackageName();
+                    final String name = activityInfo.getName();
 
                     final Intent cloneIntent = (Intent) intent.clone();
                     cloneIntent.setComponent(new ComponentName(packageName, name));
                     intentList.add(cloneIntent);
                 }
 
-                final Intent extraIntent = intentList.get(0);
+                final Intent targetIntent = intentList.get(0);
                 intentList.remove(0);
 
-                chooserIntent = Intent.createChooser(new Intent(), null);
-                chooserIntent.putExtra(Intent.EXTRA_INTENT, extraIntent);
+                chooserIntent = Intent.createChooser(targetIntent, null);
                 if (!intentList.isEmpty()) {
                     final Intent[] extraIntents = intentList.toArray(new Intent[intentList.size()]);
-                    chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
+                    } else {
+                        chooserIntent.putExtra(Intent.EXTRA_ALTERNATE_INTENTS, extraIntents);
+                    }
                 }
             }
 
@@ -538,5 +554,82 @@ public class DesktopUtils
     public static String getDefaultLocaleName()
     {
         return Locale.getDefault().toString();
+    }
+
+
+    private static class ActivityInfo implements Comparable<ActivityInfo> {
+        private @NonNull String mPackageName = "";
+        private @NonNull String mName = "";
+
+        ActivityInfo(final @NonNull String name, final @NonNull String packageName) {
+            mName = name;
+            mPackageName = packageName;
+        }
+
+        public String getPackageName() {
+            return mPackageName;
+        }
+
+        public String getName() {
+            return mName;
+        }
+
+        @Override
+        public int compareTo(@NonNull ActivityInfo another) {
+            final int packageNameCompare = mPackageName.compareTo(another.mPackageName);
+
+            if (0 == packageNameCompare) {
+                return mName.compareTo(another.mName);
+            }
+
+            return packageNameCompare;
+        }
+    }
+
+
+    private static class IntentResolverInfo {
+        private final PackageManager mPackageManager;
+        final Set<ActivityInfo> mResolveInfoList = new TreeSet<>();
+
+        IntentResolverInfo(final PackageManager packageManager) {
+            mPackageManager = packageManager;
+        }
+
+        public boolean isEmpty() {
+            return getResolveInfos().isEmpty();
+        }
+
+        Set<ActivityInfo> getResolveInfos() {
+            return mResolveInfoList;
+        }
+
+        void appendResolvers(final Intent intent) {
+            final List<ResolveInfo> resolveInfoList = mPackageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+
+            for (final ResolveInfo resolveInfo : resolveInfoList) {
+                mResolveInfoList.add(new ActivityInfo(resolveInfo.activityInfo.name, resolveInfo.activityInfo.packageName));
+            }
+        }
+
+        void removeSamePackages(final Set<ActivityInfo> resolveInfoSet) {
+            for (final ActivityInfo resolveInfo : resolveInfoSet) {
+                if (mResolveInfoList.isEmpty()) {
+                    break;
+                }
+
+                for (final Iterator<ActivityInfo> iterator = mResolveInfoList.iterator(); iterator.hasNext();) {
+                    final ActivityInfo storedResolveInfo = iterator.next();
+
+                    if (storedResolveInfo.getPackageName().equalsIgnoreCase(resolveInfo.getPackageName())) {
+                        iterator.remove();
+                    }
+                }
+            }
+        }
+
+        @Override
+        public String toString() {
+            return super.toString() + "; " + mResolveInfoList.toString();
+        }
     }
 }
