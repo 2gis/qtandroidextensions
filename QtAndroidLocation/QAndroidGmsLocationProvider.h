@@ -84,7 +84,7 @@ private slots:
 
 signals:
 	void statusChanged(int);
-	void locationRecieved(const QGeoPositionInfo&);
+	void locationRecieved(QGeoPositionInfo);
 	void checkRequest(long requestId);
 
 public:

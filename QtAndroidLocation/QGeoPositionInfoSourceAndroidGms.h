@@ -73,7 +73,7 @@ public Q_SLOTS:
 
 	virtual void requestUpdate(int timeout = 0);
 
-	void processRegularPositionUpdate(const QGeoPositionInfo& location);
+	void processRegularPositionUpdate(QGeoPositionInfo location);
 
 	void locationProviderDisabled();
 	void onStatusChanged(int);

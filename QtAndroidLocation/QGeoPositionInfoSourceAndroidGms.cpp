@@ -60,19 +60,19 @@ QGeoPositionInfoSourceAndroidGms::QGeoPositionInfoSourceAndroidGms(QObject * par
 
 	if (providersListener_)
 	{
-		QObject::connect(providersListener_, SIGNAL(providersChange(bool)),
-							this, SLOT(onProvidersChange(bool)));
+		QObject::connect(providersListener_, &QLocationManagerProvidersListener::providersChange,
+							this, &QGeoPositionInfoSourceAndroidGms::onProvidersChange);
 
 		onProvidersChange(providersListener_->isActiveProvidersEnabled());
 	}
 
 	if (regularProvider_)
 	{
-		QObject::connect(regularProvider_, SIGNAL(locationRecieved(const QGeoPositionInfo&)),
-						  this, SLOT(processRegularPositionUpdate(const QGeoPositionInfo&)));
+		QObject::connect(regularProvider_, &QAndroidGmsLocationProvider::locationRecieved,
+						  this, &QGeoPositionInfoSourceAndroidGms::processRegularPositionUpdate);
 
-		QObject::connect(regularProvider_, SIGNAL(statusChanged(int)),
-						  this, SLOT(onStatusChanged(int)));
+		QObject::connect(regularProvider_, &QAndroidGmsLocationProvider::statusChanged,
+						  this, &QGeoPositionInfoSourceAndroidGms::onStatusChanged);
 	}
 }
 
@@ -226,7 +226,7 @@ void QGeoPositionInfoSourceAndroidGms::requestUpdate(int timeout)
 }
 
 
-void QGeoPositionInfoSourceAndroidGms::processRegularPositionUpdate(const QGeoPositionInfo& location)
+void QGeoPositionInfoSourceAndroidGms::processRegularPositionUpdate(QGeoPositionInfo location)
 {
 	emit positionUpdated(location);
 }
