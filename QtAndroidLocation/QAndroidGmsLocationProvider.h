@@ -40,6 +40,7 @@
 #include <QtCore/QTimer>
 #include <QJniHelpers.h>
 #include <QtPositioning/QGeoPositionInfo>
+#include <IJniObjectLinker.h>
 
 
 /*!
@@ -48,6 +49,7 @@
 class QAndroidGmsLocationProvider: public QObject
 {
 	Q_OBJECT
+	JNI_LINKER_DECL(QAndroidGmsLocationProvider)
 
 public:
 	enum enStatus
@@ -94,8 +96,6 @@ public:
 	void setPriority(enPriority priority);
 	QGeoPositionInfo lastKnownPosition() const;
 
-	static void preloadJavaClasses();
-
 private:
 	void stopUpdates(jlong requestId);
 	void onStatusChanged(int status);
@@ -107,7 +107,6 @@ private:
 	friend void JNICALL Java_GooglePlayServiceLocationProvider_locationStatus(JNIEnv * env, jobject, jlong param, jint state);
 
 private:
-	QScopedPointer<QJniObject> handler_;
 	QGeoPositionInfo lastLocation_;
 	mutable QMutex lastLocationSync_;
 
