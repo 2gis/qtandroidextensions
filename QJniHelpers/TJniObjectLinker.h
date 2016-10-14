@@ -38,6 +38,8 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QThread>
+#include <QtCore/QSet>
+#include <QtCore/QSharedPointer>
 #include <QtWidgets/QApplication>
 #include <QJniHelpers.h>
 #include <QAndroidQPAPluginGap.h>
@@ -50,89 +52,144 @@ class TJniObjectLinker
 	: public IJniObjectLinker
 {
 public:
-	TJniObjectLinker(TNative * nativePtr)
-	{
-		try
-		{
-			QByteArray javaFullClassName = preloadJavaClasses();
-			handler_.reset(new QJniObject(javaFullClassName, "J", jlong(nativePtr)));
-		}
-		catch (const std::exception & ex)
-		{
-			qCritical() << "Failed to preloadJavaClasses: " << ex.what();
-		}
-	}
-
-
-	virtual ~TJniObjectLinker()
-	{
-		if (handler_)
-		{
-			try
-			{
-				handler_->callVoid("cppDestroyed");
-				handler_.reset();
-			}
-			catch (const std::exception & ex)
-			{
-				qCritical() << "Failed to call cppDestroyed: " << ex.what();
-			}
-		}
-	}
-
-
-	static QByteArray preloadJavaClasses()
-	{
-		QByteArray javaFullClassName;
-		const JNINativeMethod * methods_list = NULL;
-		size_t sizeof_methods_list = 0;
-		TNative::getNativeMethods(javaFullClassName, &methods_list, sizeof_methods_list);
-
-		QMutexLocker locker(&mutex_);
-
-		if (!preloaded_)
-		{
-			preloaded_ = true;
-
-			qDebug() << "Preloading jni for" << javaFullClassName;
-			Q_ASSERT(QApplication::instance()->thread() == QThread::currentThread());
-
-			QAndroidQPAPluginGap::preloadJavaClasses();
-			QAndroidQPAPluginGap::preloadJavaClass(javaFullClassName);
-
-			QJniClass ov(javaFullClassName);
-
-			if (!ov.registerNativeMethods(methods_list, sizeof_methods_list))
-			{
-				qCritical() << "Failed to register native methods";
-			}
-		}
-
-		return javaFullClassName;
-	}
-
+	TJniObjectLinker(TNative * nativePtr);
+	virtual ~TJniObjectLinker();
+	static TNative * getClient(jlong ptr);
+	static QByteArray preloadJavaClasses();
+	static QSharedPointer<QMutexLocker> getLocker();
 
 protected:
-	QJniObject * handler() const
-	{
-		return handler_.data();
-	}
-
+	QJniObject * handler() const;
 
 private:
 	QScopedPointer<QJniObject> handler_;
+	jlong nativePtr_;
+
 	static bool preloaded_;
+	static QSet<jlong> qwerty_;
 	static QMutex mutex_;
 };
 
 
+template <typename TNative> QSet<jlong>     TJniObjectLinker<TNative>::qwerty_;
+template <typename TNative> QMutex          TJniObjectLinker<TNative>::mutex_(QMutex::Recursive);
+template <typename TNative> bool            TJniObjectLinker<TNative>::preloaded_ = false;
+
+
+template <typename TNative>
+TJniObjectLinker<TNative>::TJniObjectLinker(TNative * nativePtr)
+	: nativePtr_(jlong(nativePtr))
+{
+	{
+		QMutexLocker locker(&mutex_);
+		Q_ASSERT(!qwerty_.contains(nativePtr_));
+		qwerty_.insert(nativePtr_);
+	}
+
+	try
+	{
+		QByteArray javaFullClassName = preloadJavaClasses();
+		handler_.reset(new QJniObject(javaFullClassName, "J", nativePtr_));
+	}
+	catch (const std::exception & ex)
+	{
+		qCritical() << "Failed to preloadJavaClasses: " << ex.what();
+	}
+}
+
+
+template <typename TNative>
+TJniObjectLinker<TNative>::~TJniObjectLinker()
+{
+	{
+		QMutexLocker locker(&mutex_);
+		Q_ASSERT(qwerty_.contains(nativePtr_));
+		qwerty_.remove(nativePtr_);
+	}
+
+	if (handler_)
+	{
+		try
+		{
+			handler_->callVoid("cppDestroyed");
+			handler_.reset();
+		}
+		catch (const std::exception & ex)
+		{
+			qCritical() << "Failed to call cppDestroyed: " << ex.what();
+		}
+	}
+}
+
+
+template <typename TNative>
+TNative * TJniObjectLinker<TNative>::getClient(jlong ptr)
+{
+	QMutexLocker locker(&mutex_);
+	
+	if (qwerty_.contains(ptr))
+	{
+		return reinterpret_cast<TNative*>(ptr);
+	}
+
+	return NULL;
+}
+
+
+template <typename TNative>
+QByteArray TJniObjectLinker<TNative>::preloadJavaClasses()
+{
+	QByteArray javaFullClassName;
+	const JNINativeMethod * methods_list = NULL;
+	size_t sizeof_methods_list = 0;
+	TNative::getNativeMethods(javaFullClassName, &methods_list, sizeof_methods_list);
+
+	QMutexLocker locker(&mutex_);
+
+	if (!preloaded_)
+	{
+		preloaded_ = true;
+
+		qDebug() << "Preloading jni for" << javaFullClassName;
+		Q_ASSERT(QApplication::instance()->thread() == QThread::currentThread());
+
+		QAndroidQPAPluginGap::preloadJavaClasses();
+		QAndroidQPAPluginGap::preloadJavaClass(javaFullClassName);
+
+		QJniClass ov(javaFullClassName);
+
+		if (!ov.registerNativeMethods(methods_list, sizeof_methods_list))
+		{
+			qCritical() << "Failed to register native methods";
+		}
+	}
+
+	return javaFullClassName;
+}
+
+
+template <typename TNative>
+QJniObject * TJniObjectLinker<TNative>::handler() const
+{
+	return handler_.data();
+}
+
+
+template <typename TNative>
+QSharedPointer<QMutexLocker> TJniObjectLinker<TNative>::getLocker()
+{
+	QSharedPointer<QMutexLocker> locker(new QMutexLocker(&mutex_));
+	return locker;
+}
+
+
+#define JNI_LINKER_OBJECT(nativeClass, object)                                                                                              \
+	QSharedPointer<QMutexLocker> locker = nativeClass::JniObjectLinker::getLocker();                                                        \
+	nativeClass * object = nativeClass::JniObjectLinker::getClient(param);                                                                  \
+	
+
+
 #define JNI_LINKER_IMPL(nativeClass, java_class_name, methods)                                                                              \
-                                                                                                                                            \
-template <>                                                                                                                                 \
-QMutex TJniObjectLinker<nativeClass>::mutex_(QMutex::NonRecursive);                                                                         \
-                                                                                                                                            \
-template <>                                                                                                                                 \
-bool TJniObjectLinker<nativeClass>::preloaded_ = false;                                                                                     \
                                                                                                                                             \
 void nativeClass::preloadJavaClasses()                                                                                                      \
 {                                                                                                                                           \
