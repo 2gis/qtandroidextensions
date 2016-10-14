@@ -93,24 +93,15 @@ static QGeoPositionInfo positionInfoFromJavaLocation(JNIEnv * jniEnv, const jobj
 
 Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationStatus(JNIEnv * env, jobject, jlong param, jint state)
 {
-	try
-	{
-		if (param)
-		{
-			void * vp = reinterpret_cast<void*>(param);
-			QAndroidGmsLocationProvider * proxy = reinterpret_cast<QAndroidGmsLocationProvider*>(vp);
-			proxy->onStatusChanged(state);
-			return;
-		}
-		else
-		{
-			qWarning() << __FUNCTION__ << "Zero param!";
-		}
+	JNI_LINKER_OBJECT(QAndroidGmsLocationProvider, obj)
 
-	}
-	catch (std::exception & e)
+	if (obj)
 	{
-		qWarning() << __FUNCTION__ << " exception: " << e.what();
+		obj->onStatusChanged(state);
+	}
+	else
+	{
+		qWarning() << __FUNCTION__ << "Zero param!";
 	}
 }
 
@@ -122,24 +113,16 @@ Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationReciev
 		return;
 	}
 
-	try
+	JNI_LINKER_OBJECT(QAndroidGmsLocationProvider, obj)
+
+	if (obj)
 	{
-		if (param)
-		{
-			void * vp = reinterpret_cast<void*>(param);
-			QAndroidGmsLocationProvider * proxy = reinterpret_cast<QAndroidGmsLocationProvider*>(vp);
-			QGeoPositionInfo posInfo = positionInfoFromJavaLocation(env, location);
-			proxy->onLocationRecieved(posInfo, initial, requestId);
-			return;
-		}
-		else
-		{
-			qWarning() << __FUNCTION__ << "Zero param!";
-		}
+		QGeoPositionInfo posInfo = positionInfoFromJavaLocation(env, location);
+		obj->onLocationRecieved(posInfo, initial, requestId);
 	}
-	catch (std::exception & e)
+	else
 	{
-		qWarning() << __FUNCTION__ << " exception: " << e.what();
+		qWarning() << __FUNCTION__ << "Zero param!";
 	}
 }
 
