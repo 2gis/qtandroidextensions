@@ -251,6 +251,11 @@ public:
 	 */
 	bool registerNativeMethods(const JNINativeMethod * methods_list, size_t sizeof_methods_list);
 
+	/*!
+	 * Unregister native methods in the wrapped class.
+	 */
+	bool unregisterNativeMethods();
+
 	QJniClass & operator=(const QJniClass &other);
 
 	operator bool() const { return class_ != 0; }
