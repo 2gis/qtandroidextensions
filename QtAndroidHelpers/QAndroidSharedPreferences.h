@@ -38,11 +38,13 @@
 
 #include <QtCore/QObject>
 #include <QJniHelpers.h>
+#include <IJniObjectLinker.h>
 
 
 class QAndroidSharedPreferences : public QObject
 {
 	Q_OBJECT
+	JNI_LINKER_DECL(QAndroidSharedPreferences)
 
 public:
 	QAndroidSharedPreferences(QObject * parent = 0);
@@ -54,11 +56,5 @@ public:
 
 	void writeInt(const QString & key, int32_t value);
 	int32_t readInt(const QString & key, int32_t valueDefault);
-
-private:
-	static void preloadJavaClasses();
-
-private:
-	QScopedPointer<QJniObject> java_handler_;
 };
 

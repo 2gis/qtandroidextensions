@@ -38,6 +38,7 @@
 
 #include <QJniHelpers.h>
 #include "QLocks/QLockedObject.h"
+#include <IJniObjectLinker.h>
 
 
 /*!
@@ -47,6 +48,7 @@
 class QAndroidWiFiLocker: public QLocks::QLockedObject
 {
 	Q_DISABLE_COPY(QAndroidWiFiLocker)
+	JNI_LINKER_DECL(QAndroidWiFiLocker)
 
 public:
 	static QAndroidWiFiLocker& instance();
@@ -58,13 +60,9 @@ private:
 public:
 	bool isLocked();
 	bool isWifiEnabled();
-	static void preloadJavaClasses();
 
 private:
 	virtual void lock();
 	virtual void unlock();
-
-private:
-	QScopedPointer<QJniObject> java_handler_;
 };
 

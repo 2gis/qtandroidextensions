@@ -38,6 +38,7 @@
 
 #include <QJniHelpers.h>
 #include "QLocks/QLockedObject.h"
+#include <IJniObjectLinker.h>
 
 
 /*!
@@ -47,6 +48,7 @@
 class QAndroidScreenLocker: public QLocks::QLockedObject
 {
 	Q_DISABLE_COPY(QAndroidScreenLocker)
+	JNI_LINKER_DECL(QAndroidScreenLocker)
 
 public:
 	static QAndroidScreenLocker& instance();
@@ -57,13 +59,9 @@ private:
 
 public:
 	bool isLocked();
-	static void preloadJavaClasses();
 
 private:
 	virtual void lock();
 	virtual void unlock();
-
-private:
-	QScopedPointer<QJniObject> java_handler_;
 };
 

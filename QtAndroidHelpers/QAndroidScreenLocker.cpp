@@ -37,9 +37,18 @@
 #include "QAndroidScreenLocker.h"
 
 #include <QAndroidQPAPluginGap.h>
+#include <TJniObjectLinker.h>
 
 
 static const char * const c_full_class_name_ = "ru/dublgis/androidhelpers/ScreenLocker";
+
+static const JNINativeMethod methods[] =
+{
+	{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContext},
+};
+
+
+JNI_LINKER_IMPL(QAndroidScreenLocker, c_full_class_name_, methods)
 
 
 QAndroidScreenLocker & QAndroidScreenLocker::instance()
@@ -49,64 +58,43 @@ QAndroidScreenLocker & QAndroidScreenLocker::instance()
 }
 
 
-QAndroidScreenLocker::QAndroidScreenLocker() :
-	QLocks::QLockedObject(true)
+QAndroidScreenLocker::QAndroidScreenLocker()
+	: QLocks::QLockedObject(true)
+	, jniLinker_(new JniObjectLinker(this))
 {
-	preloadJavaClasses();
-
-	// Creating Java object
-	java_handler_.reset(new QJniObject(c_full_class_name_, "J",
-	                                   jlong(reinterpret_cast<void *>(this))));
 }
 
 
 QAndroidScreenLocker::~QAndroidScreenLocker()
 {
-	if (java_handler_)
-	{
-		java_handler_->callVoid("cppDestroyed");
-		java_handler_.reset();
-	}
-}
-
-
-void QAndroidScreenLocker::preloadJavaClasses()
-{
-	static volatile bool preloaded_ = false;
-
-	if (!preloaded_)
-	{
-		preloaded_ = true;
-
-		QAndroidQPAPluginGap::preloadJavaClasses();
-		QAndroidQPAPluginGap::preloadJavaClass(c_full_class_name_);
-
-		QJniClass ov(c_full_class_name_);
-		static const JNINativeMethod methods[] =
-		{
-			{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContext},
-		};
-
-		ov.registerNativeMethods(methods, sizeof(methods));
-	}
 }
 
 
 void QAndroidScreenLocker::lock()
 {
-	java_handler_->callBool("Lock");
+	if (isJniReady())
+	{
+		jni()->callBool("Lock");
+	}
 	Q_ASSERT(isLocked());
 }
 
 
 void QAndroidScreenLocker::unlock()
 {
-	java_handler_->callVoid("Unlock");
+	if (isJniReady())
+	{
+		jni()->callVoid("Unlock");
+	}
 }
 
 
 bool QAndroidScreenLocker::isLocked()
 {
-	return java_handler_->callBool("IsLocked");
+	if (isJniReady())
+	{
+		return jni()->callBool("IsLocked");
+	}
+	return false;
 }
 
