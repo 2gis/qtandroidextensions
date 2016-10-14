@@ -38,6 +38,7 @@
 
 #include "QAndroidCellDataProvider.h"
 #include <QAndroidQPAPluginGap.h>
+#include "TJniObjectLinker.h"
 
 
 namespace Mobility {
@@ -67,11 +68,12 @@ static const JNINativeMethod methods[] = {
 };
 
 
+JNI_LINKER_IMPL(QAndroidCellDataProvider, "ru/dublgis/androidhelpers/mobility/CellListener", methods)
 
 
-QAndroidCellDataProvider::QAndroidCellDataProvider(QObject * parent /*= 0*/) : 
-	QObject(parent)
-	, JniObjectLinker(reinterpret_cast<void*>(this), "ru/dublgis/androidhelpers/mobility/CellListener", methods, sizeof(methods))
+QAndroidCellDataProvider::QAndroidCellDataProvider(QObject * parent /*= 0*/)
+	: QObject(parent)
+	, jniLinker_(new JniObjectLinker(this))
 {
 }
 
@@ -83,13 +85,19 @@ QAndroidCellDataProvider::~QAndroidCellDataProvider()
 
 void QAndroidCellDataProvider::start()
 {
-	handler()->callBool("start");
+	if (isJniReady())
+	{
+		jni()->callBool("start");	
+	}	
 }
 
 
 void QAndroidCellDataProvider::stop()
 {
-	handler()->callVoid("stop");
+	if (isJniReady())
+	{
+		jni()->callVoid("stop");
+	}
 }
 
 

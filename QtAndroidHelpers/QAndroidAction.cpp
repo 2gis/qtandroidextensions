@@ -37,6 +37,9 @@
 
 #include "QAndroidAction.h"
 #include <QAndroidQPAPluginGap.h>
+#include "TJniObjectLinker.h"
+
+
 
 
 static const JNINativeMethod methods[] = {
@@ -44,9 +47,12 @@ static const JNINativeMethod methods[] = {
 };
 
 
-QAndroidAction::QAndroidAction(QObject * parent) :
-	QObject(parent)
-	, JniObjectLinker(reinterpret_cast<void*>(this), "ru/dublgis/androidhelpers/Action", methods, sizeof(methods))
+JNI_LINKER_IMPL(QAndroidAction, "ru/dublgis/androidhelpers/Action", methods)
+
+
+QAndroidAction::QAndroidAction(QObject * parent)
+	: QObject(parent)
+	, jniLinker_(new JniObjectLinker(this))
 {}
 
 
@@ -56,9 +62,8 @@ QAndroidAction::~QAndroidAction()
 
 void QAndroidAction::openLocationSourceSettings()
 {
-	QJniObject * h = handler();
-	if (h)
+	if (isJniReady())
 	{
-		h->callVoid("openLocationSourceSettings");
+		jni()->callVoid("openLocationSourceSettings");
 	}
 }

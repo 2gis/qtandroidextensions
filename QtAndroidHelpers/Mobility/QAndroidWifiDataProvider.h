@@ -40,15 +40,16 @@
 
 #include <QtCore/QObject>
 #include <QJniHelpers.h>
-#include "JniObjectLinker.h"
+#include "IJniObjectLinker.h"
 #include "WifiData.h"
 
 
 namespace Mobility {
 
-class QAndroidWifiDataProvider : public QObject, public JniObjectLinker
+class QAndroidWifiDataProvider : public QObject
 {
 	Q_OBJECT
+	JNI_LINKER_DECL(QAndroidWifiDataProvider)
 
 public:
 	QAndroidWifiDataProvider(QObject * parent = 0);

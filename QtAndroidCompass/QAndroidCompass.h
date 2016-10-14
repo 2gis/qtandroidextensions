@@ -40,11 +40,13 @@
 #include <QtCore/QScopedPointer>
 #include <QtCore/QWeakPointer>
 #include <QtCore/QMutex>
-#include "JniObjectLinker.h"
+#include "IJniObjectLinker.h"
 
 
-class QAndroidCompass : public JniObjectLinker
+class QAndroidCompass
 {
+	JNI_LINKER_DECL(QAndroidCompass)
+
 public:
 	class AzimuthListener
 	{
@@ -65,7 +67,6 @@ private:
 	void setAzimuth(float azimuth);
 
 private:
-	QScopedPointer<QJniObject> handler_;
 	QWeakPointer<AzimuthListener> azimuth_listener_;
 	QMutex send_mutex_;
 

@@ -37,6 +37,7 @@
 #include <QAndroidQPAPluginGap.h>
 #include <QJniHelpers.h>
 #include "QNmeaListener.h"
+#include "TJniObjectLinker.h"
 
 static const char c_full_class_name[] = "ru/dublgis/androidgpslocation/NmeaListener";
 
@@ -69,20 +70,33 @@ Q_DECL_EXPORT void JNICALL Java_NmeaListener_OnNmeaReceivedNative(JNIEnv * env, 
 	}
 }
 
+
 static const JNINativeMethod methods[] = {
 	{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity},
 	{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContext},
 	{"OnNmeaReceivedNative", "(JJLjava/lang/String;)V", (void*)Java_NmeaListener_OnNmeaReceivedNative},
 };
 
+
+JNI_LINKER_IMPL(QNmeaListener, c_full_class_name, methods)
+
+
 QNmeaListener::QNmeaListener(QObject * parent)
 	: QObject(parent)
-	, JniObjectLinker(reinterpret_cast<void*>(this), c_full_class_name, methods, sizeof(methods))
+	, jniLinker_(new JniObjectLinker(this))
 {
-	handler()->callVoid("StartListening");
+	if (isJniReady())
+	{
+		jni()->callVoid("StartListening");
+	}
 }
+
 
 QNmeaListener::~QNmeaListener()
 {
-	handler()->callVoid("StopListening");
+	if (isJniReady())
+	{
+		jni()->callVoid("StopListening");
+	}
 }
+

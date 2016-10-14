@@ -36,14 +36,15 @@
 #pragma once
 
 #include <QtCore/QObject>
-#include "JniObjectLinker.h"
+#include "IJniObjectLinker.h"
 
 /*!
  * Class for receiving  NMEA sentences from the GPS.
  */
-class QNmeaListener : public QObject, public JniObjectLinker
+class QNmeaListener : public QObject
 {
 	Q_OBJECT
+	JNI_LINKER_DECL(QNmeaListener)
 
 public:
 	QNmeaListener(QObject * parent);

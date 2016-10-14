@@ -38,12 +38,13 @@
 
 #include <QtCore/QObject>
 #include <QJniHelpers.h>
-#include "JniObjectLinker.h"
+#include "IJniObjectLinker.h"
 
 
-class QAndroidAction : public QObject, public JniObjectLinker
+class QAndroidAction : public QObject
 {
 	Q_OBJECT
+	JNI_LINKER_DECL(QAndroidAction)
 
 public:
 	QAndroidAction(QObject * parent = 0);

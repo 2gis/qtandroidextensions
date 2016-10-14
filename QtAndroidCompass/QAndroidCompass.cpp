@@ -40,6 +40,7 @@
 #include <QAndroidQPAPluginGap.h>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QMutexLocker>
+#include "TJniObjectLinker.h"
 
 
 
@@ -74,8 +75,11 @@ static const JNINativeMethod methods[] = {
 };
 
 
+JNI_LINKER_IMPL(QAndroidCompass, "ru/dublgis/androidcompass/CompassProvider", methods)
+
+
 QAndroidCompass::QAndroidCompass()
-	: JniObjectLinker(reinterpret_cast<void*>(this), "ru/dublgis/androidcompass/CompassProvider", methods, sizeof(methods))
+	: jniLinker_(new JniObjectLinker(this))
 {
 }
 
@@ -88,22 +92,18 @@ QAndroidCompass::~QAndroidCompass()
 
 void QAndroidCompass::start(int32_t delayUs /*= -1*/, int32_t latencyUs /*= -1*/)
 {
-	QJniObject * hdl = handler();
-
-	if (Q_NULLPTR != hdl)
+	if (isJniReady())
 	{
-		hdl->callParamVoid("start", "II", static_cast<jint>(delayUs), static_cast<jint>(latencyUs));
+		jni()->callParamVoid("start", "II", static_cast<jint>(delayUs), static_cast<jint>(latencyUs));
 	}
 }
 
 
 void QAndroidCompass::stop()
 {
-	QJniObject * hdl = handler();
-
-	if (Q_NULLPTR != hdl)
+	if (isJniReady())
 	{
-		hdl->callVoid("stop");
+		jni()->callVoid("stop");
 	}
 }
 

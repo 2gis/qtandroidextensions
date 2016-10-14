@@ -38,6 +38,7 @@
 
 #include "QAndroidWifiDataProvider.h"
 #include <QAndroidQPAPluginGap.h>
+#include "TJniObjectLinker.h"
 
 
 namespace Mobility {
@@ -68,9 +69,12 @@ static const JNINativeMethod methods[] = {
 };
 
 
-QAndroidWifiDataProvider::QAndroidWifiDataProvider(QObject * parent /*= 0*/) : 
-	QObject(parent)
-	, JniObjectLinker(reinterpret_cast<void*>(this), "ru/dublgis/androidhelpers/mobility/WifiListener", methods, sizeof(methods))
+JNI_LINKER_IMPL(QAndroidWifiDataProvider, "ru/dublgis/androidhelpers/mobility/WifiListener", methods)
+
+
+QAndroidWifiDataProvider::QAndroidWifiDataProvider(QObject * parent /*= 0*/)
+	: QObject(parent)
+	, jniLinker_(new JniObjectLinker(this))
 	, started_(false)
 {
 }
@@ -88,13 +92,20 @@ void QAndroidWifiDataProvider::start()
 		return;
 	}
 
-	started_ = handler()->callBool("start");
+	if (isJniReady())
+	{
+		started_ = jni()->callBool("start");
+	}
 }
 
 
 void QAndroidWifiDataProvider::stop()
 {
-	handler()->callVoid("stop");
+	if (isJniReady())
+	{
+		jni()->callVoid("stop");
+	}
+
 	started_ = false;
 }
 
@@ -107,7 +118,12 @@ void QAndroidWifiDataProvider::scanUpdate()
 
 QString QAndroidWifiDataProvider::getSignalsData()
 {
-	return handler()->callString("getLastWifiScanResultsTable");
+	if (isJniReady())
+	{
+		return jni()->callString("getLastWifiScanResultsTable");
+	}
+
+	return QString::null;
 }
 
 

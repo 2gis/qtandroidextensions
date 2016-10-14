@@ -38,13 +38,14 @@
 
 #include <QtCore/QObject>
 #include <QJniHelpers.h>
-#include "JniObjectLinker.h"
+#include "IJniObjectLinker.h"
 
 namespace Mobility {
 
-class QAndroidBatteryDataProvider : public QObject, public JniObjectLinker
+class QAndroidBatteryDataProvider : public QObject
 {
 	Q_OBJECT
+	JNI_LINKER_DECL(QAndroidBatteryDataProvider)
 
 public:
 	QAndroidBatteryDataProvider(QObject * parent = 0);

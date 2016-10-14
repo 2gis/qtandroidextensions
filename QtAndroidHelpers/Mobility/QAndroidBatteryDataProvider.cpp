@@ -36,6 +36,7 @@
 
 #include "QAndroidBatteryDataProvider.h"
 #include <QAndroidQPAPluginGap.h>
+#include "TJniObjectLinker.h"
 
 
 namespace Mobility {
@@ -64,11 +65,12 @@ static const JNINativeMethod methods[] = {
 };
 
 
+JNI_LINKER_IMPL(QAndroidBatteryDataProvider, "ru/dublgis/androidhelpers/mobility/BatteryListener", methods)
 
 
 QAndroidBatteryDataProvider::QAndroidBatteryDataProvider(QObject * parent)
 	: QObject(parent)
-	, JniObjectLinker(reinterpret_cast<void*>(this), "ru/dublgis/androidhelpers/mobility/BatteryListener", methods, sizeof(methods))
+	, jniLinker_(new JniObjectLinker(this))
 {
 }
 
@@ -80,20 +82,18 @@ QAndroidBatteryDataProvider::~QAndroidBatteryDataProvider()
 
 void QAndroidBatteryDataProvider::start()
 {
-	QJniObject * hdl = handler();
-	if (Q_NULLPTR != hdl)
+	if (isJniReady())
 	{
-		hdl->callBool("start");
+		jni()->callBool("start");
 	}
 }
 
 
 void QAndroidBatteryDataProvider::stop()
 {
-	QJniObject * hdl = handler();
-	if (Q_NULLPTR != hdl)
+	if (isJniReady())
 	{
-		hdl->callVoid("stop");
+		jni()->callVoid("stop");
 	}
 }
 
