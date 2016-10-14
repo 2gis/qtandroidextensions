@@ -6,10 +6,10 @@ android-g++ {
     HEADERS += \
         $$PWD/QJniHelpers.h \
         $$PWD/QAndroidQPAPluginGap.h \
-        $$PWD/JniObjectLinker.h \
+        $$PWD/IJniObjectLinker.h \
+        $$PWD/TJniObjectLinker.h \
 
     SOURCES += \
         $$PWD/QJniHelpers.cpp \
         $$PWD/QAndroidQPAPluginGap.cpp \
-        $$PWD/JniObjectLinker.cpp \
 }

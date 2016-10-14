@@ -34,59 +34,31 @@
     THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "JniObjectLinker.h"
-#include <QAndroidQPAPluginGap.h>
+#pragma once
 
 
-JniObjectLinker::JniObjectLinker(void * nativePtr, const char * full_class_name, const JNINativeMethod * methods_list, size_t sizeof_methods_list) : 
-	full_class_name_(full_class_name)
-	, preloaded_(false)
+#include <QJniHelpers.h>
+
+
+class IJniObjectLinker
 {
-	try
-	{
-		preloadJavaClasses(methods_list, sizeof_methods_list);
-		// Creating Java object
-		handler_.reset(new QJniObject(full_class_name, "J", jlong(nativePtr)));
-	}
-	catch (const std::exception & ex)
-	{
-		qCritical() << "Failed to preloadJavaClasses: " << ex.what();
-	}
-}
+public:
+	virtual ~IJniObjectLinker() {};
+	virtual QJniObject * handler() const = 0;
+};
 
 
-JniObjectLinker::~JniObjectLinker()
-{
-	if (handler_)
-	{
-		try
-		{
-			handler_->callVoid("cppDestroyed");
-		}
-		catch (const std::exception & ex)
-		{
-			qCritical() << "Failed to call cppDestroyed: " << ex.what();
-		}
-	}
-}
+template <typename TNative> class TJniObjectLinker;
 
 
-QJniObject * JniObjectLinker::handler() const
-{
-	return handler_.data();
-}
+#define JNI_LINKER_DECL(nativeClass)                                                                                                     \
+public:                                                                                                                                  \
+	static void preloadJavaClasses();                                                                                                    \
+private:                                                                                                                                 \
+	bool isJniReady() const;                                                                                                             \
+	QJniObject * jni() const;                                                                                                            \
+	static void getNativeMethods(QByteArray & javaFullClassName, const JNINativeMethod ** methods_list, size_t & sizeof_methods_list);   \
+	friend class TJniObjectLinker<nativeClass>;                                                                                          \
+	typedef TJniObjectLinker<nativeClass> JniObjectLinker;                                                                               \
+	QScopedPointer<IJniObjectLinker> jniLinker_;                                                                                         \
 
-
-void JniObjectLinker::preloadJavaClasses(const JNINativeMethod * methods_list, size_t sizeof_methods_list)
-{
-	if (!preloaded_)
-	{
-		preloaded_ = true;
-
-		QAndroidQPAPluginGap::preloadJavaClasses();
-		QAndroidQPAPluginGap::preloadJavaClass(full_class_name_.constData());
-
-		QJniClass ov(full_class_name_);
-		ov.registerNativeMethods(methods_list, sizeof_methods_list);
-	}
-}
