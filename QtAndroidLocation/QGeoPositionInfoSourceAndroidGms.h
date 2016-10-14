@@ -57,6 +57,7 @@ public:
 public:
 	static bool isAvailable(bool allowDialog = false);
 	static int getGmsVersion();
+	static void preloadJavaClasses();
 
 public:
 	// From QGeoPositionInfoSource

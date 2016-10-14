@@ -83,6 +83,12 @@ QGeoPositionInfoSourceAndroidGms::~QGeoPositionInfoSourceAndroidGms()
 }
 
 
+void QGeoPositionInfoSourceAndroidGms::preloadJavaClasses()
+{
+	QAndroidGmsLocationProvider::preloadJavaClasses();
+}
+
+
 bool QGeoPositionInfoSourceAndroidGms::isAvailable(bool allowDialog /*= false*/)
 {
 	return QAndroidGmsLocationProvider::isAvailable(allowDialog);
