@@ -50,7 +50,7 @@ class QAndroidWifiDataProvider : public QObject, public JniObjectLinker
 {
 	Q_OBJECT
 
-public: 
+public:
 	QAndroidWifiDataProvider(QObject * parent = 0);
 	virtual ~QAndroidWifiDataProvider();
 

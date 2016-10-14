@@ -59,7 +59,7 @@ public:
 	bool isLocked();
 	static void preloadJavaClasses();
 
-private:	
+private:
 	virtual void lock();
 	virtual void unlock();
 

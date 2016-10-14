@@ -60,7 +60,7 @@ public:
 	bool isWifiEnabled();
 	static void preloadJavaClasses();
 
-private:	
+private:
 	virtual void lock();
 	virtual void unlock();
 
