@@ -83,7 +83,7 @@ public class GmsLocationProvider
 	public final static int STATUS_REQUEST_SUCCESS		= 4;
 	public final static int STATUS_REQUEST_FAIL			= 5;
 
-	private long native_ptr_ = 0;
+	private volatile long native_ptr_ = 0;
 
 	private GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
 		.addConnectionCallbacks(this)
@@ -131,6 +131,9 @@ public class GmsLocationProvider
 	{
 		Log.i(TAG, "cppDestroyed");
 
+		googleApiClientStatus(native_ptr_, STATUS_DISCONNECTED);
+		native_ptr_ = 0;
+		
 		activate(false);
 
 		if (Build.VERSION.SDK_INT >= 18) {
@@ -144,9 +147,6 @@ public class GmsLocationProvider
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-
-		googleApiClientStatus(native_ptr_, STATUS_DISCONNECTED);
-		native_ptr_ = 0;
 	}
 
 
