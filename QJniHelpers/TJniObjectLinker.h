@@ -83,12 +83,12 @@ public:
 
 	static QByteArray preloadJavaClasses()
 	{
-		static bool preloaded_ = false;
-
 		QByteArray javaFullClassName;
 		const JNINativeMethod * methods_list = NULL;
 		size_t sizeof_methods_list = 0;
 		TNative::getNativeMethods(javaFullClassName, &methods_list, sizeof_methods_list);
+
+		QMutexLocker locker(&mutex_);
 
 		if (!preloaded_)
 		{
@@ -121,10 +121,18 @@ protected:
 
 private:
 	QScopedPointer<QJniObject> handler_;
+	static bool preloaded_;
+	static QMutex mutex_;
 };
 
 
 #define JNI_LINKER_IMPL(nativeClass, java_class_name, methods)                                                                              \
+                                                                                                                                            \
+template <>                                                                                                                                 \
+QMutex TJniObjectLinker<nativeClass>::mutex_(QMutex::NonRecursive);                                                                         \
+                                                                                                                                            \
+template <>                                                                                                                                 \
+bool TJniObjectLinker<nativeClass>::preloaded_ = false;                                                                                     \
                                                                                                                                             \
 void nativeClass::preloadJavaClasses()                                                                                                      \
 {                                                                                                                                           \
