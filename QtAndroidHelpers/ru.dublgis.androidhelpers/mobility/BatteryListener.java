@@ -75,9 +75,9 @@ public class BatteryListener extends BroadcastReceiver
             }
             return true;
         }
-        catch (final Exception e)
+        catch (final Throwable e)
         {
-            Log.e(LOG_TAG, "Exception while starting BatteryListener: " + e);
+            Log.e(LOG_TAG, "Exception while starting BatteryListener: ", e);
             return false;
         }
     }
@@ -94,23 +94,40 @@ public class BatteryListener extends BroadcastReceiver
                Log.d(LOG_TAG, "BatteryListener stop: was not started!");
             }
         }
-        catch (final Exception e)
+        catch (final Throwable e)
         {
-            Log.e(LOG_TAG, "Exception while stopping: " + e);
+            Log.e(LOG_TAG, "Exception while stopping: ", e);
         }
     }
 
-    // on new battery info
-    public synchronized void onReceive(Context c, Intent intent)
+    // New battery info received
+    public synchronized void onReceive(Context c, Intent batteryStatus)
     {
-        if (verbose_)
-        {
-            Log.d(LOG_TAG, "BatteryListener onReceive");
+        try {
+            if (verbose_) {
+                Log.d(LOG_TAG, "BatteryListener onReceive");
+            }
+            // The level is typically expessed in % but may be other (use EXTRA_SCALE!)
+            final int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+            final int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+            final int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
+            if (level >= 0 && scale > 0 && status >= 0)
+            {
+                if (status == BatteryManager.BATTERY_STATUS_UNKNOWN) {
+                    Log.d(LOG_TAG, "BatteryListener onReceive: battery status is unknown.");
+                    return;
+                }
+                final boolean isCharging =
+                    (status == BatteryManager.BATTERY_STATUS_CHARGING)
+                    || (status == BatteryManager.BATTERY_STATUS_FULL);
+                final int batteryPct = (100 * level) / scale; // Round down is OK IMHO
+                // Log.d(LOG_TAG, "BatteryListener.onReceive: level=" + level + ", scale=" + scale + ", status=" + status
+                //      + ", isCharging=" + isCharging + ", batteryPct=" + batteryPct);
+                batteryInfoUpdate(native_ptr_, isCharging, batteryPct);
+            }
+        } catch (final Throwable e) {
+            Log.e(LOG_TAG, "BatteryListener onReceive exception: " , e);
         }
-
-        int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0);
-        boolean plugged = 0 != intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0);
-        batteryInfoUpdate(native_ptr_, plugged, level);
     }
 
     private native void batteryInfoUpdate(long native_ptr, boolean unplugged, int level);
