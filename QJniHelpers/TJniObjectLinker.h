@@ -38,6 +38,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QThread>
+#include <QtCore/QReadLocker>
 #include <QtCore/QSet>
 #include <QtCore/QSharedPointer>
 #include <QtWidgets/QApplication>
@@ -56,7 +57,7 @@ public:
 	virtual ~TJniObjectLinker();
 	static TNative * getClient(jlong ptr);
 	static QByteArray preloadJavaClasses();
-	static QSharedPointer<QMutexLocker> getLocker();
+	static QSharedPointer<QReadLocker> getLocker();
 
 protected:
 	QJniObject * handler() const;
@@ -67,12 +68,12 @@ private:
 
 	static bool preloaded_;
 	static QSet<jlong> qwerty_;
-	static QMutex mutex_;
+	static QReadWriteLock mutex_;
 };
 
 
 template <typename TNative> QSet<jlong>     TJniObjectLinker<TNative>::qwerty_;
-template <typename TNative> QMutex          TJniObjectLinker<TNative>::mutex_(QMutex::Recursive);
+template <typename TNative> QReadWriteLock  TJniObjectLinker<TNative>::mutex_(QReadWriteLock::Recursive);
 template <typename TNative> bool            TJniObjectLinker<TNative>::preloaded_ = false;
 
 
@@ -81,7 +82,7 @@ TJniObjectLinker<TNative>::TJniObjectLinker(TNative * nativePtr)
 	: nativePtr_(jlong(nativePtr))
 {
 	{
-		QMutexLocker locker(&mutex_);
+		QWriteLocker locker(&mutex_);
 		Q_ASSERT(!qwerty_.contains(nativePtr_));
 		qwerty_.insert(nativePtr_);
 	}
@@ -102,7 +103,7 @@ template <typename TNative>
 TJniObjectLinker<TNative>::~TJniObjectLinker()
 {
 	{
-		QMutexLocker locker(&mutex_);
+		QWriteLocker locker(&mutex_);
 		Q_ASSERT(qwerty_.contains(nativePtr_));
 		qwerty_.remove(nativePtr_);
 	}
@@ -125,8 +126,8 @@ TJniObjectLinker<TNative>::~TJniObjectLinker()
 template <typename TNative>
 TNative * TJniObjectLinker<TNative>::getClient(jlong ptr)
 {
-	QMutexLocker locker(&mutex_);
-	
+	QReadLocker locker(&mutex_);
+
 	if (qwerty_.contains(ptr))
 	{
 		return reinterpret_cast<TNative*>(ptr);
@@ -144,7 +145,7 @@ QByteArray TJniObjectLinker<TNative>::preloadJavaClasses()
 	size_t sizeof_methods_list = 0;
 	TNative::getNativeMethods(javaFullClassName, &methods_list, sizeof_methods_list);
 
-	QMutexLocker locker(&mutex_);
+	QWriteLocker locker(&mutex_);
 
 	if (!preloaded_)
 	{
@@ -176,17 +177,17 @@ QJniObject * TJniObjectLinker<TNative>::handler() const
 
 
 template <typename TNative>
-QSharedPointer<QMutexLocker> TJniObjectLinker<TNative>::getLocker()
+QSharedPointer<QReadLocker> TJniObjectLinker<TNative>::getLocker()
 {
-	QSharedPointer<QMutexLocker> locker(new QMutexLocker(&mutex_));
+	QSharedPointer<QReadLocker> locker(new QReadLocker(&mutex_));
 	return locker;
 }
 
 
 #define JNI_LINKER_OBJECT(nativeClass, object)                                                                                              \
-	QSharedPointer<QMutexLocker> locker = nativeClass::JniObjectLinker::getLocker();                                                        \
+	QSharedPointer<QReadLocker> locker = nativeClass::JniObjectLinker::getLocker();                                                         \
 	nativeClass * object = nativeClass::JniObjectLinker::getClient(param);                                                                  \
-	
+
 
 
 #define JNI_LINKER_IMPL(nativeClass, java_class_name, methods)                                                                              \
