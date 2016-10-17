@@ -59,7 +59,7 @@ public class CellListener
 
     private TelephonyManager mTelMan = null;
     private CellLocation mLastLocation = null;
-    private long native_ptr_ = 0;
+    private volatile long native_ptr_ = 0;
 
     private TrueCellListener mListener = null;
     private Thread mListenerThread = null;

@@ -47,7 +47,7 @@ public class BatteryListener extends BroadcastReceiver
 {
     final private static String LOG_TAG = "Grym/BatteryListener";
     final private static boolean verbose_ = false;
-    private long native_ptr_ = 0;
+    private volatile long native_ptr_ = 0;
     private boolean started_ = false;
 
     public BatteryListener(long native_ptr)

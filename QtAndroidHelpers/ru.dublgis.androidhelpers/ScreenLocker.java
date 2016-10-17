@@ -44,7 +44,7 @@ import android.util.Log;
 class ScreenLocker
 {
 	public static final String TAG = "Grym/ScreenLocker";
-	private long native_ptr_ = 0;
+	private volatile long native_ptr_ = 0;
 	private PowerManager.WakeLock mLock = null;
 
 

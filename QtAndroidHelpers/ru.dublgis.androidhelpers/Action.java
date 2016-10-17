@@ -45,7 +45,7 @@ import android.content.Intent;
 public class Action
 {
 	public static final String TAG = "Grym/Action";
-	private long native_ptr_ = 0;
+	private volatile long native_ptr_ = 0;
 
 
 	public Action(long native_ptr)

@@ -51,7 +51,7 @@ import android.os.Handler;
 public class DialogHelper
 {
     public static final String TAG = "Grym/DialogHelper";
-    private long native_ptr_ = 0;
+    private volatile long native_ptr_ = 0;
     private Semaphore semaphore_ = new Semaphore(1);
 
     public DialogHelper(long native_ptr)
