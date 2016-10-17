@@ -38,6 +38,7 @@
 #include <QtCore/QString>
 #include <QtCore/QObject>
 #include <QJniHelpers.h>
+#include <IJniObjectLinker.h>
 
 /*
 
@@ -80,6 +81,7 @@ context one needs a permission in the AndroidManifest.xml:
 class QAndroidDialog: public QObject
 {
 	Q_OBJECT
+	JNI_LINKER_DECL(QAndroidDialog)
 public:
 	static const int
 		ANDROID_DIALOGINTERFACE_BUTTON_POSITIVE = -1,
@@ -89,7 +91,6 @@ public:
 	QAndroidDialog(QObject * parent = 0);
 	virtual ~QAndroidDialog();
 
-	static void preloadJavaClasses();
 	static void setInteractiveMode(bool interactive);
 	static bool isInteractiveMode();
 
@@ -156,7 +157,6 @@ private:
 	void showMessageCallback(int button);
 
 private:
-	QScopedPointer<QJniObject> dialog_helper_;
 	bool delete_self_on_close_;
 	int result_button_;
 	static bool interactive_;
