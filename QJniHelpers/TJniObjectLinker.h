@@ -91,6 +91,12 @@ TJniObjectLinker<TNative>::TJniObjectLinker(TNative * nativePtr)
 	{
 		QByteArray javaFullClassName = preloadJavaClasses();
 		handler_.reset(new QJniObject(javaFullClassName, "J", nativePtr_));
+
+		if (!handler_->jObject())
+		{
+			qCritical() << "Failed to create " << javaFullClassName << " instance!";
+			handler_.reset();
+		}
 	}
 	catch (const std::exception & ex)
 	{
