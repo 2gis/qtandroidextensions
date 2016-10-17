@@ -113,6 +113,10 @@ public class BatteryListener extends BroadcastReceiver
             final int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
             if (level >= 0 && scale > 0 && status >= 0)
             {
+                if (status == BatteryManager.BATTERY_STATUS_UNKNOWN) {
+                    Log.d(LOG_TAG, "BatteryListener onReceive: battery status is unknown.");
+                    return;
+                }
                 final boolean isCharging =
                     (status == BatteryManager.BATTERY_STATUS_CHARGING)
                     || (status == BatteryManager.BATTERY_STATUS_FULL);
