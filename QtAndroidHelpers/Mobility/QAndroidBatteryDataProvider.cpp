@@ -43,16 +43,12 @@ namespace Mobility {
 
 Q_DECL_EXPORT void JNICALL Java_BatteryListener_batteryInfoUpdate(JNIEnv *, jobject, jlong native_ptr, jboolean plugged, jint level)
 {
-	if (native_ptr)
-	{
-		void * vp = reinterpret_cast<void*>(native_ptr);
-		Mobility::QAndroidBatteryDataProvider * proxy = reinterpret_cast<Mobility::QAndroidBatteryDataProvider*>(vp);
+	JNI_LINKER_OBJECT(Mobility::QAndroidBatteryDataProvider, native_ptr, proxy)
 
-		if (proxy)
-		{
-			proxy->batteryInfo(plugged, level);
-			return;
-		}
+	if (proxy)
+	{
+		proxy->batteryInfo(plugged, level);
+		return;
 	}
 
 	qWarning() << __FUNCTION__ << "Zero param!";

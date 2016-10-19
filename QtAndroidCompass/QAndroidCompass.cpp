@@ -48,23 +48,11 @@ Q_DECL_EXPORT void JNICALL Java_setAzimuth(JNIEnv * env, jobject, jlong inst, jf
 {
 	Q_UNUSED(env);
 
-	try
+	JNI_LINKER_OBJECT(QAndroidCompass, inst, proxy)
+
+	if (proxy)
 	{
-		if (inst)
-		{
-			void * vp = reinterpret_cast<void*>(inst);
-			QAndroidCompass * proxy = reinterpret_cast<QAndroidCompass*>(vp);
-			proxy->setAzimuth(azimuth);
-			return;
-		}
-		else
-		{
-			qWarning() << __FUNCTION__ << "Zero param!";
-		}
-	}
-	catch (std::exception & e)
-	{
-		qWarning() << __FUNCTION__ << " exception: " << e.what();
+		proxy->setAzimuth(azimuth);
 	}
 }
 

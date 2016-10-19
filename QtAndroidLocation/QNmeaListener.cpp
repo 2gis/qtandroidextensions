@@ -43,31 +43,25 @@ static const char c_full_class_name[] = "ru/dublgis/androidgpslocation/NmeaListe
 
 Q_DECL_EXPORT void JNICALL Java_NmeaListener_OnNmeaReceivedNative(JNIEnv * env, jobject, jlong param, jlong timestamp, jstring str)
 {
-	try
-	{
-		if (param)
-		{
-			QNmeaListener * proxy = reinterpret_cast<QNmeaListener*>(reinterpret_cast<void*>(param));
+	JNI_LINKER_OBJECT(QNmeaListener, param, proxy)
 
-			try
-			{
-				QJniEnvPtr env_ptr(env);
-				emit proxy->nmeaMessage(static_cast<qint64>(timestamp), env_ptr.QStringFromJString(str));
-			}
-			catch (std::exception & e)
-			{
-				qWarning() << __FUNCTION__ << " exception: " << e.what();
-			}
-		}
-		else
-		{
-			qWarning() << __FUNCTION__ << "Zero param!";
-		}
-	}
-	catch (std::exception & e)
+	if (proxy)
 	{
-		qWarning() << __FUNCTION__ << " exception: " << e.what();
+		try
+		{
+			QJniEnvPtr env_ptr(env);
+			emit proxy->nmeaMessage(static_cast<qint64>(timestamp), env_ptr.QStringFromJString(str));
+		}
+		catch (std::exception & e)
+		{
+			qWarning() << __FUNCTION__ << " exception: " << e.what();
+		}
 	}
+	else
+	{
+		qWarning() << __FUNCTION__ << "Zero param!";
+	}
+
 }
 
 
