@@ -44,7 +44,7 @@ bool QAndroidDialog::interactive_ = true;
 
 Q_DECL_EXPORT void JNICALL Java_DialogHelper_DialogHelper_showMessageCallback(JNIEnv *, jobject, jlong param, jint button)
 {
-	JNI_LINKER_OBJECT(QAndroidDialog, proxy)
+	JNI_LINKER_OBJECT(QAndroidDialog, param, proxy)
 
 	if (proxy)
 	{

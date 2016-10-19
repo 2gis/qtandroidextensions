@@ -93,7 +93,7 @@ static QGeoPositionInfo positionInfoFromJavaLocation(JNIEnv * jniEnv, const jobj
 
 Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationStatus(JNIEnv * env, jobject, jlong param, jint state)
 {
-	JNI_LINKER_OBJECT(QAndroidGmsLocationProvider, obj)
+	JNI_LINKER_OBJECT(QAndroidGmsLocationProvider, param, obj)
 
 	if (obj)
 	{
@@ -113,7 +113,7 @@ Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationReciev
 		return;
 	}
 
-	JNI_LINKER_OBJECT(QAndroidGmsLocationProvider, obj)
+	JNI_LINKER_OBJECT(QAndroidGmsLocationProvider, param, obj)
 
 	if (obj)
 	{

@@ -190,7 +190,7 @@ QSharedPointer<QReadLocker> TJniObjectLinker<TNative>::getLocker()
 }
 
 
-#define JNI_LINKER_OBJECT(nativeClass, object)                                                                                              \
+#define JNI_LINKER_OBJECT(nativeClass, param, object)                                                                                       \
 	QSharedPointer<QReadLocker> locker = nativeClass::JniObjectLinker::getLocker();                                                         \
 	nativeClass * object = nativeClass::JniObjectLinker::getClient(param);                                                                  \
 
