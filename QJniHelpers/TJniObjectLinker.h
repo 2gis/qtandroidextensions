@@ -67,12 +67,12 @@ private:
 	jlong nativePtr_;
 
 	static bool preloaded_;
-	static QSet<jlong> qwerty_;
+	static QSet<jlong> clients_;
 	static QReadWriteLock mutex_;
 };
 
 
-template <typename TNative> QSet<jlong>     TJniObjectLinker<TNative>::qwerty_;
+template <typename TNative> QSet<jlong>     TJniObjectLinker<TNative>::clients_;
 template <typename TNative> QReadWriteLock  TJniObjectLinker<TNative>::mutex_(QReadWriteLock::Recursive);
 template <typename TNative> bool            TJniObjectLinker<TNative>::preloaded_ = false;
 
@@ -83,8 +83,8 @@ TJniObjectLinker<TNative>::TJniObjectLinker(TNative * nativePtr)
 {
 	{
 		QWriteLocker locker(&mutex_);
-		Q_ASSERT(!qwerty_.contains(nativePtr_));
-		qwerty_.insert(nativePtr_);
+		Q_ASSERT(!clients_.contains(nativePtr_));
+		clients_.insert(nativePtr_);
 	}
 
 	try
@@ -110,8 +110,8 @@ TJniObjectLinker<TNative>::~TJniObjectLinker()
 {
 	{
 		QWriteLocker locker(&mutex_);
-		Q_ASSERT(qwerty_.contains(nativePtr_));
-		qwerty_.remove(nativePtr_);
+		Q_ASSERT(clients_.contains(nativePtr_));
+		clients_.remove(nativePtr_);
 	}
 
 	if (handler_)
@@ -134,7 +134,7 @@ TNative * TJniObjectLinker<TNative>::getClient(jlong ptr)
 {
 	QReadLocker locker(&mutex_);
 
-	if (qwerty_.contains(ptr))
+	if (clients_.contains(ptr))
 	{
 		return reinterpret_cast<TNative*>(ptr);
 	}
