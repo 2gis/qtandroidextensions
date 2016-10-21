@@ -158,7 +158,7 @@ QByteArray TJniObjectLinker<TNative>::preloadJavaClasses()
 		preloaded_ = true;
 
 		qDebug() << "Preloading jni for" << javaFullClassName;
-		Q_ASSERT(QApplication::instance()->thread() == QThread::currentThread());
+		Q_ASSERT(!QApplication::instance() || QApplication::instance()->thread() == QThread::currentThread());
 
 		QAndroidQPAPluginGap::preloadJavaClasses();
 		QAndroidQPAPluginGap::preloadJavaClass(javaFullClassName);
