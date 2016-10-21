@@ -39,6 +39,7 @@
 #include <QAndroidQPAPluginGap.h>
 #include <QtPositioning/QGeoPositionInfo>
 #include <QtGui/QGuiApplication>
+#include <TJniObjectLinker.h>
 
 
 static const char * const c_full_class_name_ = "ru/dublgis/androidlocation/GmsLocationProvider";
@@ -92,24 +93,15 @@ static QGeoPositionInfo positionInfoFromJavaLocation(JNIEnv * jniEnv, const jobj
 
 Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationStatus(JNIEnv * env, jobject, jlong param, jint state)
 {
-	try
-	{
-		if (param)
-		{
-			void * vp = reinterpret_cast<void*>(param);
-			QAndroidGmsLocationProvider * proxy = reinterpret_cast<QAndroidGmsLocationProvider*>(vp);
-			proxy->onStatusChanged(state);
-			return;
-		}
-		else
-		{
-			qWarning() << __FUNCTION__ << "Zero param!";
-		}
+	JNI_LINKER_OBJECT(QAndroidGmsLocationProvider, param, obj)
 
-	}
-	catch (std::exception & e)
+	if (obj)
 	{
-		qWarning() << __FUNCTION__ << " exception: " << e.what();
+		obj->onStatusChanged(state);
+	}
+	else
+	{
+		qWarning() << __FUNCTION__ << "Zero param!";
 	}
 }
 
@@ -121,30 +113,33 @@ Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationReciev
 		return;
 	}
 
-	try
+	JNI_LINKER_OBJECT(QAndroidGmsLocationProvider, param, obj)
+
+	if (obj)
 	{
-		if (param)
-		{
-			void * vp = reinterpret_cast<void*>(param);
-			QAndroidGmsLocationProvider * proxy = reinterpret_cast<QAndroidGmsLocationProvider*>(vp);
-			QGeoPositionInfo posInfo = positionInfoFromJavaLocation(env, location);
-			proxy->onLocationRecieved(posInfo, initial, requestId);
-			return;
-		}
-		else
-		{
-			qWarning() << __FUNCTION__ << "Zero param!";
-		}
+		QGeoPositionInfo posInfo = positionInfoFromJavaLocation(env, location);
+		obj->onLocationRecieved(posInfo, initial, requestId);
 	}
-	catch (std::exception & e)
+	else
 	{
-		qWarning() << __FUNCTION__ << " exception: " << e.what();
+		qWarning() << __FUNCTION__ << "Zero param!";
 	}
 }
 
 
+static const JNINativeMethod methods[] = {
+	{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity},
+	{"googleApiClientStatus", "(JI)V", (void*)Java_GooglePlayServiceLocationProvider_locationStatus},
+	{"googleApiClientLocation", "(JLandroid/location/Location;ZJ)V", (void*)Java_GooglePlayServiceLocationProvider_locationRecieved},
+};
+
+
+JNI_LINKER_IMPL(QAndroidGmsLocationProvider, c_full_class_name_, methods)
+
+
 QAndroidGmsLocationProvider::QAndroidGmsLocationProvider(QObject * parent)
 	: QObject(parent)
+	, jniLinker_(new JniObjectLinker(this))
 	, reqiredInterval_(1500)
 	, minimumInterval_(1000)
 	, priority_(PRIORITY_NO_POWER)
@@ -152,12 +147,6 @@ QAndroidGmsLocationProvider::QAndroidGmsLocationProvider(QObject * parent)
 	, requestUpdadesId_(0)
 	, requestTimer_(this) // should be set due to parent's move to moveToThread operation
 {
-	preloadJavaClasses();
-
-	// Creating Java object
-	handler_.reset(new QJniObject(c_full_class_name_, "J",
-	                              jlong(reinterpret_cast<void *>(this))));
-
 	QObject::connect(&requestTimer_, &QTimer::timeout,
 	                 this, &QAndroidGmsLocationProvider::onRequestTimeout);
 
@@ -173,11 +162,6 @@ QAndroidGmsLocationProvider::QAndroidGmsLocationProvider(QObject * parent)
 
 QAndroidGmsLocationProvider::~QAndroidGmsLocationProvider()
 {
-	if (handler_)
-	{
-		handler_->callVoid("cppDestroyed");
-		handler_.reset();
-	}
 }
 
 
@@ -211,40 +195,6 @@ void QAndroidGmsLocationProvider::onLocationRecieved(const QGeoPositionInfo &loc
 }
 
 
-void QAndroidGmsLocationProvider::preloadJavaClasses()
-{
-	static volatile bool preloaded_ = false;
-
-	if (!preloaded_)
-	{
-		try
-		{
-			preloaded_ = true;
-
-			QAndroidQPAPluginGap::preloadJavaClasses();
-			QAndroidQPAPluginGap::preloadJavaClass(c_full_class_name_);
-
-			qDebug() << "Pre-loading Java classes for Google Play Services positioning...";
-			QJniClass ov(c_full_class_name_);
-			static const JNINativeMethod methods[] = {
-				{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity},
-				{"googleApiClientStatus", "(JI)V", (void*)Java_GooglePlayServiceLocationProvider_locationStatus},
-				{"googleApiClientLocation", "(JLandroid/location/Location;ZJ)V", (void*)Java_GooglePlayServiceLocationProvider_locationRecieved},
-			};
-
-			if (!ov.registerNativeMethods(methods, sizeof(methods)))
-			{
-				qWarning() << "Failed to register native methods";
-			}
-		}
-		catch(std::exception & e)
-		{
-			qWarning() << "Exception while registering native methods: " << e.what();
-		}
-	}
-}
-
-
 void QAndroidGmsLocationProvider::setPriority(enPriority priority)
 {
 	priority_ = priority;
@@ -263,14 +213,14 @@ void QAndroidGmsLocationProvider::startUpdates()
 	qDebug() << __FUNCTION__;
 	stopUpdates();
 
-	if (handler_)
+	if (isJniReady())
 	{
 		jlong maxWaitTime = 0;
 		jint numUpdates = 0;
 		jlong expirationDuration = 0;
 		jlong expirationTime = 0;
 
-		jlong id = handler_->callParamLong("startLocationUpdates", "IJJJIJJ",
+		jlong id = jni()->callParamLong("startLocationUpdates", "IJJJIJJ",
 		                                   (jint)priority_,
 		                                   reqiredInterval_,
 		                                   minimumInterval_,
@@ -307,9 +257,9 @@ void QAndroidGmsLocationProvider::stopUpdates(jlong requestId)
 {
 	qDebug() << __FUNCTION__ << "(" << requestId << ")";
 
-	if (handler_)
+	if (isJniReady())
 	{
-		handler_->callParamVoid("stopLocationUpdates", "J", requestId);
+		jni()->callParamVoid("stopLocationUpdates", "J", requestId);
 
 		bool bStopTimer = false;
 
@@ -328,7 +278,7 @@ void QAndroidGmsLocationProvider::stopUpdates(jlong requestId)
 
 void QAndroidGmsLocationProvider::onApplicationStateChanged(Qt::ApplicationState state)
 {
-	if (handler_)
+	if (isJniReady())
 	{
 		jboolean enable = (Qt::ApplicationActive == state);
 
@@ -336,7 +286,7 @@ void QAndroidGmsLocationProvider::onApplicationStateChanged(Qt::ApplicationState
 		{
 			case Qt::ApplicationSuspended:	//onStop
 			case Qt::ApplicationActive:		//onStart
-				handler_->callParamVoid("activate", "Z", enable);
+				jni()->callParamVoid("activate", "Z", enable);
 				break;
 			default:
 				// do nothing
@@ -393,14 +343,14 @@ void QAndroidGmsLocationProvider::requestUpdate(int timeout /*= 0*/)
 	requestTimer_.setSingleShot(true);
 	requestTimer_.start(timeout);
 
-	if (handler_)
+	if (isJniReady())
 	{
 		jlong maxWaitTime = 0;
 		jint numUpdates = 1;
 		jlong expirationDuration = timeout;
 		jlong expirationTime = 0;
 
-		jlong id = handler_->callParamLong("startLocationUpdates", "IJJJIJJ",
+		jlong id = jni()->callParamLong("startLocationUpdates", "IJJJIJJ",
 		                    (jint)priority_,
 		                    reqiredInterval_,
 		                    minimumInterval_,

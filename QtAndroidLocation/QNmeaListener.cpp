@@ -37,37 +37,33 @@
 #include <QAndroidQPAPluginGap.h>
 #include <QJniHelpers.h>
 #include "QNmeaListener.h"
+#include "TJniObjectLinker.h"
 
 static const char c_full_class_name[] = "ru/dublgis/androidgpslocation/NmeaListener";
 
 Q_DECL_EXPORT void JNICALL Java_NmeaListener_OnNmeaReceivedNative(JNIEnv * env, jobject, jlong param, jlong timestamp, jstring str)
 {
-	try
-	{
-		if (param)
-		{
-			QNmeaListener * proxy = reinterpret_cast<QNmeaListener*>(reinterpret_cast<void*>(param));
+	JNI_LINKER_OBJECT(QNmeaListener, param, proxy)
 
-			try
-			{
-				QJniEnvPtr env_ptr(env);
-				emit proxy->nmeaMessage(static_cast<qint64>(timestamp), env_ptr.QStringFromJString(str));
-			}
-			catch (std::exception & e)
-			{
-				qWarning() << __FUNCTION__ << " exception: " << e.what();
-			}
-		}
-		else
-		{
-			qWarning() << __FUNCTION__ << "Zero param!";
-		}
-	}
-	catch (std::exception & e)
+	if (proxy)
 	{
-		qWarning() << __FUNCTION__ << " exception: " << e.what();
+		try
+		{
+			QJniEnvPtr env_ptr(env);
+			emit proxy->nmeaMessage(static_cast<qint64>(timestamp), env_ptr.QStringFromJString(str));
+		}
+		catch (std::exception & e)
+		{
+			qWarning() << __FUNCTION__ << " exception: " << e.what();
+		}
 	}
+	else
+	{
+		qWarning() << __FUNCTION__ << "Zero param!";
+	}
+
 }
+
 
 static const JNINativeMethod methods[] = {
 	{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity},
@@ -75,14 +71,26 @@ static const JNINativeMethod methods[] = {
 	{"OnNmeaReceivedNative", "(JJLjava/lang/String;)V", (void*)Java_NmeaListener_OnNmeaReceivedNative},
 };
 
+
+JNI_LINKER_IMPL(QNmeaListener, c_full_class_name, methods)
+
+
 QNmeaListener::QNmeaListener(QObject * parent)
 	: QObject(parent)
-	, JniObjectLinker(reinterpret_cast<void*>(this), c_full_class_name, methods, sizeof(methods))
+	, jniLinker_(new JniObjectLinker(this))
 {
-	handler()->callVoid("StartListening");
+	if (isJniReady())
+	{
+		jni()->callVoid("StartListening");
+	}
 }
+
 
 QNmeaListener::~QNmeaListener()
 {
-	handler()->callVoid("StopListening");
+	if (isJniReady())
+	{
+		jni()->callVoid("StopListening");
+	}
 }
+

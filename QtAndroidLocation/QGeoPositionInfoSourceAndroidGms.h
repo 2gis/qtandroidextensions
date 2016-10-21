@@ -57,6 +57,7 @@ public:
 public:
 	static bool isAvailable(bool allowDialog = false);
 	static int getGmsVersion();
+	static void preloadJavaClasses();
 
 public:
 	// From QGeoPositionInfoSource
@@ -73,7 +74,7 @@ public Q_SLOTS:
 
 	virtual void requestUpdate(int timeout = 0);
 
-	void processRegularPositionUpdate(const QGeoPositionInfo& location);
+	void processRegularPositionUpdate(QGeoPositionInfo location);
 
 	void locationProviderDisabled();
 	void onStatusChanged(int);

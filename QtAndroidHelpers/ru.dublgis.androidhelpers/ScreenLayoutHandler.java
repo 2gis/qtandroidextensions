@@ -46,7 +46,7 @@ import android.view.Window;
 public class ScreenLayoutHandler implements ViewTreeObserver.OnGlobalLayoutListener, ViewTreeObserver.OnScrollChangedListener
 {
     public static final String TAG = "Grym/ScrnLayoutHandler";
-    private long native_ptr_ = 0;
+    private volatile long native_ptr_ = 0;
 
     public ScreenLayoutHandler(long native_ptr)
     {

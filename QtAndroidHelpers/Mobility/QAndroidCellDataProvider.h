@@ -40,15 +40,16 @@
 
 #include <QtCore/QObject>
 #include <QJniHelpers.h>
-#include "JniObjectLinker.h"
+#include "IJniObjectLinker.h"
 #include "CellData.h"
 
 
 namespace Mobility {
 
-class QAndroidCellDataProvider : public QObject, public JniObjectLinker
+class QAndroidCellDataProvider : public QObject
 {
 	Q_OBJECT
+	JNI_LINKER_DECL(QAndroidCellDataProvider)
 
 public:
 	QAndroidCellDataProvider(QObject * parent = 0);

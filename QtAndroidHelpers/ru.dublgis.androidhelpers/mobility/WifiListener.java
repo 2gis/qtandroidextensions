@@ -54,7 +54,7 @@ public class WifiListener extends BroadcastReceiver
 {
 	final static String LOG_TAG = "Grym/WifiListener";
 	final private static boolean verbose = false;
-	private long native_ptr_ = 0;
+	private volatile long native_ptr_ = 0;
 	private WifiManager mWifiMan = null;
 
 

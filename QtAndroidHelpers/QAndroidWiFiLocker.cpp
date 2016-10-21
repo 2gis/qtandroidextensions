@@ -37,9 +37,19 @@
 #include "QAndroidWiFiLocker.h"
 
 #include <QAndroidQPAPluginGap.h>
+#include <TJniObjectLinker.h>
 
 
 static const char * const c_full_class_name_ = "ru/dublgis/androidhelpers/WifiLocker";
+
+
+static const JNINativeMethod methods[] =
+{
+	{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContext},
+};
+
+
+JNI_LINKER_IMPL(QAndroidWiFiLocker, c_full_class_name_, methods)
 
 
 QAndroidWiFiLocker & QAndroidWiFiLocker::instance()
@@ -49,73 +59,53 @@ QAndroidWiFiLocker & QAndroidWiFiLocker::instance()
 }
 
 
-QAndroidWiFiLocker::QAndroidWiFiLocker() :
-	QLocks::QLockedObject(false)
+QAndroidWiFiLocker::QAndroidWiFiLocker()
+	: QLocks::QLockedObject(false)
+	, jniLinker_(new JniObjectLinker(this))
 {
-	preloadJavaClasses();
-
-	// Creating Java object
-	java_handler_.reset(new QJniObject(c_full_class_name_, "J",
-	                                   jlong(reinterpret_cast<void *>(this))));
 }
 
 
 QAndroidWiFiLocker::~QAndroidWiFiLocker()
 {
-	if (java_handler_)
-	{
-		java_handler_->callVoid("cppDestroyed");
-		java_handler_.reset();
-	}
-}
-
-
-void QAndroidWiFiLocker::preloadJavaClasses()
-{
-	static volatile bool preloaded_ = false;
-
-	if (!preloaded_)
-	{
-		preloaded_ = true;
-
-		QAndroidQPAPluginGap::preloadJavaClasses();
-		QAndroidQPAPluginGap::preloadJavaClass(c_full_class_name_);
-
-		QJniClass ov(c_full_class_name_);
-		static const JNINativeMethod methods[] =
-		{
-			{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContext},
-		};
-
-		ov.registerNativeMethods(methods, sizeof(methods));
-	}
 }
 
 
 void QAndroidWiFiLocker::lock()
 {
-	java_handler_->callBool("Lock");
+	if (isJniReady())
+	{
+		jni()->callBool("Lock");
+	}
 	Q_ASSERT(isLocked());
 }
 
 
 void QAndroidWiFiLocker::unlock()
 {
-	java_handler_->callVoid("Unlock");
+	if (isJniReady())
+	{
+		jni()->callVoid("Unlock");
+	}
 }
 
 
 bool QAndroidWiFiLocker::isLocked()
 {
-	return java_handler_->callBool("IsLocked");
+	if (isJniReady())
+	{
+		return jni()->callBool("IsLocked");
+	}
+
+	return false;
 }
 
 
 bool QAndroidWiFiLocker::isWifiEnabled()
 {
-	if (java_handler_)
+	if (isJniReady())
 	{
-		return java_handler_->callBool("IsWifiEnabled");
+		return jni()->callBool("IsWifiEnabled");
 	}
 
 	return false;

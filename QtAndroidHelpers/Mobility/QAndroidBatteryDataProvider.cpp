@@ -36,22 +36,19 @@
 
 #include "QAndroidBatteryDataProvider.h"
 #include <QAndroidQPAPluginGap.h>
+#include "TJniObjectLinker.h"
 
 
 namespace Mobility {
 
 Q_DECL_EXPORT void JNICALL Java_BatteryListener_batteryInfoUpdate(JNIEnv *, jobject, jlong native_ptr, jboolean plugged, jint level)
 {
-	if (native_ptr)
-	{
-		void * vp = reinterpret_cast<void*>(native_ptr);
-		Mobility::QAndroidBatteryDataProvider * proxy = reinterpret_cast<Mobility::QAndroidBatteryDataProvider*>(vp);
+	JNI_LINKER_OBJECT(Mobility::QAndroidBatteryDataProvider, native_ptr, proxy)
 
-		if (proxy)
-		{
-			proxy->batteryInfo(plugged, level);
-			return;
-		}
+	if (proxy)
+	{
+		proxy->batteryInfo(plugged, level);
+		return;
 	}
 
 	qWarning() << __FUNCTION__ << "Zero param!";
@@ -64,11 +61,12 @@ static const JNINativeMethod methods[] = {
 };
 
 
+JNI_LINKER_IMPL(QAndroidBatteryDataProvider, "ru/dublgis/androidhelpers/mobility/BatteryListener", methods)
 
 
 QAndroidBatteryDataProvider::QAndroidBatteryDataProvider(QObject * parent)
 	: QObject(parent)
-	, JniObjectLinker(reinterpret_cast<void*>(this), "ru/dublgis/androidhelpers/mobility/BatteryListener", methods, sizeof(methods))
+	, jniLinker_(new JniObjectLinker(this))
 {
 }
 
@@ -80,20 +78,18 @@ QAndroidBatteryDataProvider::~QAndroidBatteryDataProvider()
 
 void QAndroidBatteryDataProvider::start()
 {
-	QJniObject * hdl = handler();
-	if (Q_NULLPTR != hdl)
+	if (isJniReady())
 	{
-		hdl->callBool("start");
+		jni()->callBool("start");
 	}
 }
 
 
 void QAndroidBatteryDataProvider::stop()
 {
-	QJniObject * hdl = handler();
-	if (Q_NULLPTR != hdl)
+	if (isJniReady())
 	{
-		hdl->callVoid("stop");
+		jni()->callVoid("stop");
 	}
 }
 

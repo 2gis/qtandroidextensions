@@ -37,21 +37,19 @@
 #include <QAndroidQPAPluginGap.h>
 #include <QAndroidScreenOrientation.h>
 #include "QAndroidDialog.h"
+#include <TJniObjectLinker.h>
 
 static const char * const c_full_class_name_ = "ru/dublgis/androidhelpers/DialogHelper";
 bool QAndroidDialog::interactive_ = true;
 
 Q_DECL_EXPORT void JNICALL Java_DialogHelper_DialogHelper_showMessageCallback(JNIEnv *, jobject, jlong param, jint button)
 {
-	if (param)
+	JNI_LINKER_OBJECT(QAndroidDialog, param, proxy)
+
+	if (proxy)
 	{
-		void * vp = reinterpret_cast<void*>(param);
-		QAndroidDialog * proxy = reinterpret_cast<QAndroidDialog*>(vp);
-		if (proxy)
-		{
-			proxy->showMessageCallback(int(button));
-			return;
-		}
+		proxy->showMessageCallback(int(button));
+		return;
 	}
 
 	qWarning() << __FUNCTION__ << "Zero param, button =" << button;
@@ -59,45 +57,26 @@ Q_DECL_EXPORT void JNICALL Java_DialogHelper_DialogHelper_showMessageCallback(JN
 
 QAndroidDialog::QAndroidDialog(QObject * parent /*= 0*/)
 	: QObject(parent)
+	, jniLinker_(new JniObjectLinker(this))
 	, delete_self_on_close_(false)
 	, result_button_(0)
 {
-	preloadJavaClasses();
-	dialog_helper_.reset(new QJniObject(c_full_class_name_, "J", (jlong)this));
-
-	if (!dialog_helper_->jObject())
-	{
-		qCritical() << "Failed to create DialogHelper instance!";
-		dialog_helper_.reset();
-	}
 }
 
 QAndroidDialog::~QAndroidDialog()
 {
-	if (dialog_helper_)
-	{
-		dialog_helper_->callVoid("cppDestroyed");
-		dialog_helper_.reset();
-	}
 }
 
-void QAndroidDialog::preloadJavaClasses()
-{
-	static bool s_preloaded = false;
 
-	if (!s_preloaded)
-	{
-		QAndroidQPAPluginGap::preloadJavaClass(c_full_class_name_);
-		QJniClass ov(c_full_class_name_);
-		static const JNINativeMethod methods[] = {
-			{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity},
-			{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContext},
-			{"showMessageCallback", "(JI)V", (void*)Java_DialogHelper_DialogHelper_showMessageCallback},
-		};
-		ov.registerNativeMethods(methods, sizeof(methods));
-		s_preloaded = true;
-	}
-}
+static const JNINativeMethod methods[] = {
+	{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity},
+	{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContext},
+	{"showMessageCallback", "(JI)V", (void*)Java_DialogHelper_DialogHelper_showMessageCallback},
+};
+
+
+JNI_LINKER_IMPL(QAndroidDialog, c_full_class_name_, methods)
+
 
 void QAndroidDialog::setInteractiveMode(bool interactive)
 {
@@ -129,7 +108,7 @@ void QAndroidDialog::showMessage(
 		return;
 	}
 
-	if (dialog_helper_)
+	if (isJniReady())
 	{
 		if (pause)
 		{
@@ -140,7 +119,7 @@ void QAndroidDialog::showMessage(
 		// Currently, we check it via customContextSet(), but this might not always be the right way.
 		bool in_activity = !QAndroidQPAPluginGap::customContextSet();
 		int orientation = (lock_rotation && in_activity)? QAndroidScreenOrientation::getCurrentFixedOrientation(): -1;
-		dialog_helper_->callParamVoid("showMessage",
+		jni()->callParamVoid("showMessage",
 			"Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZIZ",
 			QJniLocalRef(title).jObject(),
 			QJniLocalRef(explanation).jObject(),

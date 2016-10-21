@@ -46,7 +46,7 @@ public class NmeaListener implements GpsStatus.NmeaListener
 {
 	public static final String TAG = "Grym/NmeaListener";
 
-	private long native_ptr_ = 0;
+	private volatile long native_ptr_ = 0;
 	private boolean listening_= false;
 
 	NmeaListener(long native_ptr)

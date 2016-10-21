@@ -40,6 +40,7 @@
 #include <QAndroidQPAPluginGap.h>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QMutexLocker>
+#include "TJniObjectLinker.h"
 
 
 
@@ -47,23 +48,11 @@ Q_DECL_EXPORT void JNICALL Java_setAzimuth(JNIEnv * env, jobject, jlong inst, jf
 {
 	Q_UNUSED(env);
 
-	try
+	JNI_LINKER_OBJECT(QAndroidCompass, inst, proxy)
+
+	if (proxy)
 	{
-		if (inst)
-		{
-			void * vp = reinterpret_cast<void*>(inst);
-			QAndroidCompass * proxy = reinterpret_cast<QAndroidCompass*>(vp);
-			proxy->setAzimuth(azimuth);
-			return;
-		}
-		else
-		{
-			qWarning() << __FUNCTION__ << "Zero param!";
-		}
-	}
-	catch (std::exception & e)
-	{
-		qWarning() << __FUNCTION__ << " exception: " << e.what();
+		proxy->setAzimuth(azimuth);
 	}
 }
 
@@ -74,8 +63,11 @@ static const JNINativeMethod methods[] = {
 };
 
 
+JNI_LINKER_IMPL(QAndroidCompass, "ru/dublgis/androidcompass/CompassProvider", methods)
+
+
 QAndroidCompass::QAndroidCompass()
-	: JniObjectLinker(reinterpret_cast<void*>(this), "ru/dublgis/androidcompass/CompassProvider", methods, sizeof(methods))
+	: jniLinker_(new JniObjectLinker(this))
 {
 }
 
@@ -88,22 +80,18 @@ QAndroidCompass::~QAndroidCompass()
 
 void QAndroidCompass::start(int32_t delayUs /*= -1*/, int32_t latencyUs /*= -1*/)
 {
-	QJniObject * hdl = handler();
-
-	if (Q_NULLPTR != hdl)
+	if (isJniReady())
 	{
-		hdl->callParamVoid("start", "II", static_cast<jint>(delayUs), static_cast<jint>(latencyUs));
+		jni()->callParamVoid("start", "II", static_cast<jint>(delayUs), static_cast<jint>(latencyUs));
 	}
 }
 
 
 void QAndroidCompass::stop()
 {
-	QJniObject * hdl = handler();
-
-	if (Q_NULLPTR != hdl)
+	if (isJniReady())
 	{
-		hdl->callVoid("stop");
+		jni()->callVoid("stop");
 	}
 }
 

@@ -37,72 +37,56 @@
 #include "QAndroidSharedPreferences.h"
 
 #include <QAndroidQPAPluginGap.h>
+#include <TJniObjectLinker.h>
 
 
 static const char * const c_full_class_name_ = "ru/dublgis/androidhelpers/SharedPreferencesHelper";
 
 
-
-QAndroidSharedPreferences::QAndroidSharedPreferences(QObject * parent /*= 0*/) : 
-	QObject(parent)
+static const JNINativeMethod methods[] = 
 {
-	preloadJavaClasses();
+	{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContext},
+};
 
-	// Creating Java object
-	java_handler_.reset(new QJniObject(c_full_class_name_, "J",
-		jlong(reinterpret_cast<void*>(this))));
+
+JNI_LINKER_IMPL(QAndroidSharedPreferences, c_full_class_name_, methods)
+
+
+QAndroidSharedPreferences::QAndroidSharedPreferences(QObject * parent /*= 0*/)
+	: QObject(parent)
+	, jniLinker_(new JniObjectLinker(this))
+{
 }
 
 
 QAndroidSharedPreferences::~QAndroidSharedPreferences()
 {
-	if (java_handler_)
-	{
-		java_handler_->callVoid("cppDestroyed");
-		java_handler_.reset();
-	}
-}
-
-
-void QAndroidSharedPreferences::preloadJavaClasses()
-{
-	static volatile bool preloaded_ = false;
-
-	if (!preloaded_)
-	{
-		preloaded_ = true;
-
-		QAndroidQPAPluginGap::preloadJavaClasses();
-		QAndroidQPAPluginGap::preloadJavaClass(c_full_class_name_);
-
-		QJniClass ov(c_full_class_name_);
-		static const JNINativeMethod methods[] = 
-		{
-			{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContext},
-		};
-
-		ov.registerNativeMethods(methods, sizeof(methods));
-	}
 }
 
 
 void QAndroidSharedPreferences::writeString(const QString &key, const QString &value)
 {
-	QJniEnvPtr jep;
-	java_handler_->callParamVoid("WriteString", "Ljava/lang/String;Ljava/lang/String;", 
+	if (isJniReady())
+	{
+		QJniEnvPtr jep;
+		jni()->callParamVoid("WriteString", "Ljava/lang/String;Ljava/lang/String;", 
 										QJniLocalRef(jep, key).jObject(), QJniLocalRef(jep, value).jObject());
+	}
 }
 
 
 QString QAndroidSharedPreferences::readString(const QString & key, const QString & valueDefault)
 {
 	QJniEnvPtr jep;
-	QString ret;
+	QString ret = valueDefault;
 
 	try 
 	{
-		ret = java_handler_->callParamString("ReadString", "Ljava/lang/String;Ljava/lang/String;", 
+		if (isJniReady())
+		{
+			ret = jni()->callParamString("ReadString", "Ljava/lang/String;Ljava/lang/String;", 
 										QJniLocalRef(jep, key).jObject(), QJniLocalRef(jep, valueDefault).jObject());
+		}
 
 	}
 	catch (const std::exception & e)
@@ -116,16 +100,24 @@ QString QAndroidSharedPreferences::readString(const QString & key, const QString
 
 void QAndroidSharedPreferences::writeInt(const QString & key, int32_t value)
 {
-	QJniEnvPtr jep;
-	java_handler_->callParamVoid("WriteInt", "Ljava/lang/String;I", 
+	if (isJniReady())
+	{
+		QJniEnvPtr jep;
+		jni()->callParamVoid("WriteInt", "Ljava/lang/String;I", 
 										QJniLocalRef(jep, key).jObject(), value);
+	}
 }
 
 
 int32_t QAndroidSharedPreferences::readInt(const QString & key, int32_t valueDefault)
 {
-	QJniEnvPtr jep;
-	return java_handler_->callParamInt("ReadInt", "Ljava/lang/String;I", 
+	if (isJniReady())
+	{
+		QJniEnvPtr jep;
+		return jni()->callParamInt("ReadInt", "Ljava/lang/String;I", 
 										QJniLocalRef(jep, key).jObject(), valueDefault);
+	}
+
+	return valueDefault;
 }
 

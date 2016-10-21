@@ -923,6 +923,18 @@ bool QJniClass::registerNativeMethods(const JNINativeMethod * methods_list, size
 }
 
 
+bool QJniClass::unregisterNativeMethods()
+{
+	QJniEnvPtr jep;
+	jint result = jep.env()->UnregisterNatives(checkedClass());
+	if (jep.clearException())
+	{
+		throw QJniJavaCallException("unregisterNativeMethods");
+	}
+	return result == 0;
+}
+
+
 /////////////////////////////////////////////////////////////////////////////
 // QJniObject
 /////////////////////////////////////////////////////////////////////////////

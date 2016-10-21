@@ -44,7 +44,7 @@ import android.util.Log;
 class WifiLocker
 {
 	public static final String TAG = "Grym/WifiLocker";
-	private long native_ptr_ = 0;
+	private volatile long native_ptr_ = 0;
 	private WifiManager.WifiLock mLock = null;
 
 
