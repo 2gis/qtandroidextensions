@@ -54,6 +54,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
 import android.telephony.TelephonyManager;
@@ -110,6 +111,24 @@ public class DesktopUtils
             Log.e(TAG, "GetNetworkType exception: "+e);
         }
         return -1;
+    }
+
+    // Open application settings
+    public static void showApplicationSettings(final Context ctx) {
+        try {
+            final Intent intent = new Intent();
+
+            intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+            intent.addCategory(Intent.CATEGORY_DEFAULT);
+            intent.setData(Uri.fromParts("package", ctx.getPackageName(), null));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+            intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+
+            ctx.startActivity(intent);
+        } catch (final Throwable throwable) {
+            Log.e(TAG, "showApplicationSettings throwable: " + throwable);
+        }
     }
 
     // Show generic "send to" menu
