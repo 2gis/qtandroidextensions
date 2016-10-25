@@ -54,14 +54,18 @@ public class ToastHelper
             handler.post(new Runnable() {
                @Override
                public void run() {
-                   Toast toast = Toast.makeText(a, text, duration);
-                   toast.show();
+                   try {
+                       Toast toast = Toast.makeText(a, text, duration);
+                       toast.show();
+                   } catch (final Throwable e) {
+                       Log.e(TAG, "showToast: runnable exception: ", e);
+                   }
                }
             });
         }
-        catch(Exception e)
+        catch (final Throwable e)
         {
-            Log.e(TAG, "showToast: exception: "+e);
+            Log.e(TAG, "showToast: exception: ", e);
         }
     }
 }
