@@ -46,7 +46,6 @@ import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
 import android.text.method.PasswordTransformationMethod;
-import android.util.Log;
 import android.view.inputmethod.EditorInfo;
 import android.view.ViewGroup;
 import android.view.KeyEvent;
@@ -55,6 +54,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.graphics.Canvas;
 import android.text.TextUtils;
+
+import ru.dublgis.androidhelpers.Log;
+
 
 class OffscreenEditText extends OffscreenView
 {

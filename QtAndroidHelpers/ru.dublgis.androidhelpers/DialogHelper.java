@@ -43,7 +43,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.DialogInterface;
-import android.util.Log;
 import android.view.WindowManager;
 import android.os.Looper;
 import android.os.Handler;

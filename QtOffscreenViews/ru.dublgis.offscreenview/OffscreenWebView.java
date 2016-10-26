@@ -43,7 +43,6 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.net.http.SslError;
 import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -54,6 +53,9 @@ import android.webkit.WebResourceResponse;
 import android.webkit.HttpAuthHandler;
 import android.webkit.SslErrorHandler;
 import android.graphics.Canvas;
+
+import ru.dublgis.androidhelpers.Log;
+
 
 class OffscreenWebView extends OffscreenView
 {

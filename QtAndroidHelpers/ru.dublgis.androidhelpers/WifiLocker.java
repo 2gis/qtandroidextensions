@@ -38,7 +38,6 @@ package ru.dublgis.androidhelpers;
 
 import android.content.Context;
 import android.net.wifi.WifiManager;
-import android.util.Log;
 
 
 class WifiLocker

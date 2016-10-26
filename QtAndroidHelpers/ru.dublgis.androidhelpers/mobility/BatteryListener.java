@@ -41,7 +41,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.BatteryManager;
-import android.util.Log;
+
+import ru.dublgis.androidhelpers.Log;
+
 
 public class BatteryListener extends BroadcastReceiver
 {

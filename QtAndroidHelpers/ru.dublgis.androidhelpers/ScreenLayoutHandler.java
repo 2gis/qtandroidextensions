@@ -37,7 +37,6 @@
 package ru.dublgis.androidhelpers;
 
 import android.app.Activity;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.Window;

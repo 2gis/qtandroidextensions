@@ -48,7 +48,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.SystemClock;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.MotionEvent;
@@ -56,6 +55,9 @@ import android.view.Surface;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.graphics.Canvas;
+
+import ru.dublgis.androidhelpers.Log;
+
 
 /*!
  * A base class for all Android off-screen views which implements any common interfaces and functionality.
