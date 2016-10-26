@@ -78,6 +78,13 @@ int getNetworkType()
 	return static_cast<int>(du.callStaticParamInt("getNetworkType", "Landroid/content/Context;", activity.jObject()));
 }
 
+void showApplicationSettings()
+{
+	QJniClass du(c_full_class_name_);
+	QAndroidQPAPluginGap::Context activity;
+	du.callStaticParamVoid("showApplicationSettings", "Landroid/content/Context;", activity.jObject());
+}
+
 bool sendTo(const QString & chooser_caption, const QString & text, const QString & content_type)
 {
 	QJniClass du(c_full_class_name_);

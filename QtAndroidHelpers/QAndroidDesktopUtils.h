@@ -51,6 +51,8 @@ bool isInternetActive();
 // for possible returned values.
 int getNetworkType();
 
+void showApplicationSettings();
+
 bool sendTo(const QString & chooser_caption, const QString & text, const QString & content_type);
 bool sendSMS(const QString & number, const QString & text);
 
