@@ -38,7 +38,6 @@ package ru.dublgis.androidhelpers;
 
 import java.io.File;
 import android.content.Context;
-import android.util.Log;
 
 public class DirectoriesHelper
 {

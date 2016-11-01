@@ -41,7 +41,6 @@ import android.app.Activity;
 import android.os.Build;
 import android.os.Looper;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.app.Dialog;
 
 import java.lang.Exception;
@@ -67,6 +66,8 @@ import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationResult;
 
 import java.util.Map;
+
+import ru.dublgis.androidhelpers.Log;
 
 import static com.google.android.gms.location.LocationServices.FusedLocationApi;
 

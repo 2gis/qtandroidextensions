@@ -37,7 +37,6 @@
 package ru.dublgis.androidlocation;
 
 import android.location.LocationManager;
-import android.util.Log;
 
 import android.app.Activity;
 import android.content.Context;
@@ -45,7 +44,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.BroadcastReceiver;
 
-
+import ru.dublgis.androidhelpers.Log;
 
 
 public class LocationManagerProvidersListener extends BroadcastReceiver

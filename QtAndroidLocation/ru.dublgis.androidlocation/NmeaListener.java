@@ -36,11 +36,13 @@
 package ru.dublgis.androidlocation;
 
 import android.app.Activity;
-import android.util.Log;
 
 import android.location.*;
 
 import android.content.Context;
+
+import ru.dublgis.androidhelpers.Log;
+
 
 public class NmeaListener implements GpsStatus.NmeaListener
 {

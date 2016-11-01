@@ -37,7 +37,6 @@
 
 package ru.dublgis.androidhelpers;
 
-import android.util.Log;
 import android.content.SharedPreferences;
 import android.content.Context;
 

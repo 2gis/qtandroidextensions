@@ -38,7 +38,6 @@
 
 package ru.dublgis.androidhelpers.mobility;
 
-import android.util.Log;
 import android.content.Context;
 import android.os.Looper;
 
@@ -49,7 +48,7 @@ import android.telephony.gsm.GsmCellLocation;
 import android.telephony.cdma.CdmaCellLocation;
 import android.telephony.SignalStrength;
 
-
+import ru.dublgis.androidhelpers.Log;
 
 
 public class CellListener

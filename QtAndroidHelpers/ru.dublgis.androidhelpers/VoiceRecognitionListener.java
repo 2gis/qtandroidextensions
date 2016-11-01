@@ -49,7 +49,6 @@ import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.RecognitionListener;
-import android.util.Log;
 
 
 public class VoiceRecognitionListener implements RecognitionListener {

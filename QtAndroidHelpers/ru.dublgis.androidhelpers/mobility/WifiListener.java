@@ -38,7 +38,6 @@
 
 package ru.dublgis.androidhelpers.mobility;
 
-import android.util.Log;
 import java.util.List;
 import java.util.Iterator;
 import android.content.BroadcastReceiver;
@@ -47,6 +46,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
 import android.net.wifi.ScanResult;
+
+import ru.dublgis.androidhelpers.Log;
 
 
 // Listens for wifi scan results. Passes them.

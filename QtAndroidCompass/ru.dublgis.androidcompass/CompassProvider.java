@@ -37,12 +37,13 @@
 
 package ru.dublgis.androidcompass;
 
-import android.util.Log;
 import android.content.Context;
 import android.hardware.SensorManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorEvent;
+
+import ru.dublgis.androidhelpers.Log;
 
 
 public class CompassProvider implements SensorEventListener

@@ -59,7 +59,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
 import android.telephony.TelephonyManager;
 import android.provider.Settings.Secure;
-import android.util.Log;
 
 
 public class DesktopUtils
