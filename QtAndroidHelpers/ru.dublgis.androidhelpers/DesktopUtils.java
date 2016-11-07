@@ -536,13 +536,12 @@ public class DesktopUtils
     {
        try
        {
-           Build b = new Build();
-           if (b != null)
+           if (Build.VERSION.SDK_INT >= 9)
            {
-               return b.SERIAL;
+               return Build.SERIAL;
            }
        }
-       catch (Exception e)
+       catch (final Throwable e)
        {
            Log.e(TAG, "getBuildSerial exception: "+e);
        }
