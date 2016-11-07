@@ -1465,16 +1465,9 @@ abstract class OffscreenView
     }
 
     //! Can be called from either C++ or here to get avaialble API level.
-    private static int api_level_ = 0;
     final public static int getApiLevel()
     {
-        if (api_level_ < 1)
-        {
-            Build b = new Build();
-            Build.VERSION ver = new Build.VERSION();
-            api_level_ = ver.SDK_INT;
-        }
-        return api_level_;
+        return Build.VERSION.SDK_INT;
     }
 
     //! Called from C++ to get currently visibile rectangle of the view.
