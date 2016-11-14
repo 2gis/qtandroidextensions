@@ -47,14 +47,7 @@ namespace Mobility {
 Q_DECL_EXPORT void JNICALL Java_WifiListener_scanUpdate(JNIEnv *, jobject, jlong native_ptr)
 {
 	JNI_LINKER_OBJECT(Mobility::QAndroidWifiDataProvider, native_ptr, proxy)
-
-	if (proxy)
-	{
-		proxy->scanUpdate();
-		return;
-	}
-
-	qWarning() << __FUNCTION__ << "Zero param!";
+	proxy->scanUpdate();
 }
 
 

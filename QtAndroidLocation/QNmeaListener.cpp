@@ -45,23 +45,15 @@ Q_DECL_EXPORT void JNICALL Java_NmeaListener_OnNmeaReceivedNative(JNIEnv * env, 
 {
 	JNI_LINKER_OBJECT(QNmeaListener, param, proxy)
 
-	if (proxy)
+	try
 	{
-		try
-		{
-			QJniEnvPtr env_ptr(env);
-			emit proxy->nmeaMessage(static_cast<qint64>(timestamp), env_ptr.QStringFromJString(str));
-		}
-		catch (std::exception & e)
-		{
-			qWarning() << __FUNCTION__ << " exception: " << e.what();
-		}
+		QJniEnvPtr env_ptr(env);
+		emit proxy->nmeaMessage(static_cast<qint64>(timestamp), env_ptr.QStringFromJString(str));
 	}
-	else
+	catch (std::exception & e)
 	{
-		qWarning() << __FUNCTION__ << "Zero param!";
+		qWarning() << __FUNCTION__ << " exception: " << e.what();
 	}
-
 }
 
 
