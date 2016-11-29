@@ -46,14 +46,7 @@ namespace Mobility {
 Q_DECL_EXPORT void JNICALL Java_CellListener_cellUpdate(JNIEnv *, jobject, jlong native_ptr, jint cid, jint lac, jint mcc, jint mnc, jint rssi)
 {
 	JNI_LINKER_OBJECT(Mobility::QAndroidCellDataProvider, native_ptr, proxy)
-
-	if (proxy)
-	{
-		proxy->cellUpdate(cid, lac, mcc, mnc, rssi);
-		return;
-	}
-
-	qWarning() << __FUNCTION__ << "Zero param!";
+	proxy->cellUpdate(cid, lac, mcc, mnc, rssi);
 }
 
 

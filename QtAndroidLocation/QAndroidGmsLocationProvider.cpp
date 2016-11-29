@@ -94,15 +94,7 @@ static QGeoPositionInfo positionInfoFromJavaLocation(JNIEnv * jniEnv, const jobj
 Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationStatus(JNIEnv * env, jobject, jlong param, jint state)
 {
 	JNI_LINKER_OBJECT(QAndroidGmsLocationProvider, param, obj)
-
-	if (obj)
-	{
-		obj->onStatusChanged(state);
-	}
-	else
-	{
-		qWarning() << __FUNCTION__ << "Zero param!";
-	}
+	obj->onStatusChanged(state);
 }
 
 
@@ -114,16 +106,8 @@ Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationReciev
 	}
 
 	JNI_LINKER_OBJECT(QAndroidGmsLocationProvider, param, obj)
-
-	if (obj)
-	{
-		QGeoPositionInfo posInfo = positionInfoFromJavaLocation(env, location);
-		obj->onLocationRecieved(posInfo, initial, requestId);
-	}
-	else
-	{
-		qWarning() << __FUNCTION__ << "Zero param!";
-	}
+	QGeoPositionInfo posInfo = positionInfoFromJavaLocation(env, location);
+	obj->onLocationRecieved(posInfo, initial, requestId);
 }
 
 

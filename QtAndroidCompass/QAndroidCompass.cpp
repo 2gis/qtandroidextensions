@@ -49,11 +49,7 @@ Q_DECL_EXPORT void JNICALL Java_setAzimuth(JNIEnv * env, jobject, jlong inst, jf
 	Q_UNUSED(env);
 
 	JNI_LINKER_OBJECT(QAndroidCompass, inst, proxy)
-
-	if (proxy)
-	{
-		proxy->setAzimuth(azimuth);
-	}
+	proxy->setAzimuth(azimuth);
 }
 
 
