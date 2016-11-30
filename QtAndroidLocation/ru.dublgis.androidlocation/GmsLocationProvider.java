@@ -208,7 +208,7 @@ public class GmsLocationProvider
 			if (mRequests.containsKey(key)) {
 				final RequestHolder holder = mRequests.get(key);
 
-				if (null != mGoogleApiClient && null != holder.mCallback) {
+				if (null != mGoogleApiClient && mGoogleApiClient.isConnected() && null != holder.mCallback) {
 					try {
 						PendingResult<Status> result =
 								FusedLocationApi.removeLocationUpdates(mGoogleApiClient, holder.mCallback);
