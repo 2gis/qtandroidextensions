@@ -70,9 +70,6 @@ static void ClearOpenGLState()
 	glDisable(GL_STENCIL_TEST);
 	glDisable(GL_SCISSOR_TEST);
 
-	glColorMask(true, true, true, true);
-	glClearColor(0, 0, 0, 0);
-
 	glDepthMask(true);
 	glDepthFunc(GL_LESS);
 	glClearDepthf(1);
@@ -81,8 +78,8 @@ static void ClearOpenGLState()
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	glStencilFunc(GL_ALWAYS, 0, 0xff);
 
-	glDisable(GL_BLEND);
-	glBlendFunc(GL_ONE, GL_ZERO);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_ONE, GL_ONE);
 
 	glUseProgram(0);
 }
@@ -111,12 +108,14 @@ QQuickAndroidOffscreenView::QQuickAndroidOffscreenView(QAndroidOffscreenView * a
 	aview_->setAttachingMode(is_interactive_);
 }
 
-void QQuickAndroidOffscreenView::setBackgroundColor(QColor color)
+void QQuickAndroidOffscreenView::setBackgroundColor(const QColor & color)
 {
 	if (color != androidView()->fillColor())
 	{
 		androidView()->setFillColor(color);
 		emit backgroundColorChanged(color);
+		redraw_texture_needed_ = true;
+		update();
 	}
 }
 
@@ -258,7 +257,7 @@ QSGNode * QQuickAndroidOffscreenView::updatePaintNode(QSGNode * node, UpdatePain
 			window()->createTextureFromId(
 				n->fbo_->texture(),
 				n->fbo_->size(),
-				0)); // QQuickWindow::TextureHasAlphaChannel
+				QQuickWindow::TextureHasAlphaChannel)); 
 		n->setFiltering(QSGTexture::Nearest);
 		n->setRect(0, 0, width(), height());
 		redraw_texture_needed_ = true;
@@ -271,15 +270,14 @@ QSGNode * QQuickAndroidOffscreenView::updatePaintNode(QSGNode * node, UpdatePain
 		{
 			glViewport(0, 0, n->fbo_->width(), n->fbo_->height());
 			ClearOpenGLState();
+
+			QColor c = getBackgroundColor();
+			glClearColor(c.redF(), c.greenF(), c.blueF(), c.alphaF());
+			glClear(GL_COLOR_BUFFER_BIT);
+
 			if (aview_)
 			{
 				aview_->paintGL(0, 0, width(), height(), true);
-			}
-			else
-			{
-				QColor c = getBackgroundColor();
-				glClearColor(c.redF(), c.greenF(), c.blueF(), c.alphaF());
-				glClear(GL_COLOR_BUFFER_BIT);
 			}
 		}
 		n->fbo_->bindDefault();

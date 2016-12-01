@@ -53,6 +53,8 @@ import android.view.MotionEvent;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.graphics.Canvas;
+import android.graphics.PorterDuff;
+import android.graphics.Color;
 import android.text.TextUtils;
 
 import ru.dublgis.androidhelpers.Log;
@@ -188,7 +190,7 @@ class OffscreenEditText extends OffscreenView
         {
             // A text view has transparent background by default, which is not what we expect.
             synchronized(view_variables_mutex_) {
-                canvas.drawARGB(fill_a_, fill_r_, fill_g_, fill_b_);
+                canvas.drawColor(Color.argb(fill_a_, fill_r_, fill_g_, fill_b_), PorterDuff.Mode.SRC);
             }
             super.onDraw(canvas);
         }
@@ -650,6 +652,7 @@ class OffscreenEditText extends OffscreenView
             @Override
             public void run(){
                 ((MyEditText)getView()).setTextColor(color);
+                invalidateOffscreenView();
             }
         });
     }
@@ -989,4 +992,3 @@ class OffscreenEditText extends OffscreenView
         system_draw_ = mode;
     }
 }
-

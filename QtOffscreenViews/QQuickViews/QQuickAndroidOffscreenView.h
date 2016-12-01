@@ -47,11 +47,12 @@ class QQuickAndroidOffscreenView : public QQuickItem
 {
 	Q_OBJECT
 	Q_PROPERTY(QColor backgroundColor READ getBackgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged)
+
 public:
 	QQuickAndroidOffscreenView(QAndroidOffscreenView * aview);
 
 	QColor getBackgroundColor() const { return androidView()->fillColor(); }
-	void setBackgroundColor(QColor color);
+	void setBackgroundColor(const QColor & color);
 
 public slots:
 	/*!
@@ -122,5 +123,3 @@ private:
 	bool redraw_texture_needed_;
 	QPoint last_set_position_;
 };
-
-

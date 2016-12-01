@@ -55,6 +55,8 @@ import android.view.Surface;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.graphics.Canvas;
+import android.graphics.PorterDuff;
+import android.graphics.Color;
 
 import ru.dublgis.androidhelpers.Log;
 
@@ -782,7 +784,7 @@ abstract class OffscreenView
                         {
                             synchronized(view_variables_mutex_)
                             {
-                                canvas.drawARGB(fill_a_, fill_r_, fill_g_, fill_b_);
+                                canvas.drawColor(Color.argb(fill_a_, fill_r_, fill_g_, fill_b_), PorterDuff.Mode.SRC);
                             }
                         }
                     }
@@ -1170,6 +1172,7 @@ abstract class OffscreenView
             fill_g_ = g;
             fill_b_ = b;
         }
+        invalidateOffscreenView();
     }
 
     public int getScrollX()
