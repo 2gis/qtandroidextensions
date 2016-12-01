@@ -861,7 +861,7 @@ QString QAndroidSpeechRecognizer::errorCodeToMessage(int code)
 bool QAndroidSpeechRecognizer::startVoiceRecognitionActivity(
 	int request_code
 	, const QString & prompt
-	, const QString & language_model)
+	, const QString & language_model) const
 {
 	try
 	{

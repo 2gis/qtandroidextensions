@@ -188,7 +188,7 @@ public slots:
 	bool startVoiceRecognitionActivity(
 		int request_code
 		, const QString & prompt = QString()
-		, const QString & language_model = QString());
+		, const QString & language_model = QString()) const;
 
 signals:
 	void listeningChanged(bool listening);
