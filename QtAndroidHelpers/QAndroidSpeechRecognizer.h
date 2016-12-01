@@ -178,6 +178,18 @@ public slots:
 	int permissionRequestCode() const;
 	void setPermissionRequestCode(int code);
 
+	// This is a function which allows to implement voice recognition without implementing
+	// any UI. In this case, you have to implement onActivityResult(int requestCode,
+	// int resultCode, Intent data) in your activity and handle result of the activity there.
+	// You can use this helper:
+	// ru.dublgis.androidhelpers.VoiceRecognitionListener.getVoiceRecognitionActivityResult()
+	// If prompt is empty, it is not set for the activity.
+	// If language_model is empty, ANDROID_RECOGNIZERINTENT_LANGUAGE_MODEL_FREE_FORM is used.
+	bool startVoiceRecognitionActivity(
+		int request_code
+		, const QString & prompt = QString()
+		, const QString & language_model = QString()) const;
+
 signals:
 	void listeningChanged(bool listening);
 	void beginningOfSpeech();

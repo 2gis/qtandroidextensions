@@ -53,7 +53,7 @@ import android.speech.RecognitionListener;
 
 public class VoiceRecognitionListener implements RecognitionListener {
     private long mNativePtr = 0;
-    private final String TAG = "Grym/SpeechRecognizer";
+    private static final String TAG = "Grym/SpeechRecognizer";
     private Activity mActivity = null;
     private SpeechRecognizer mSpeechRecognizer = null;
 
@@ -310,6 +310,58 @@ public class VoiceRecognitionListener implements RecognitionListener {
 
     }
 
+    // Called from C++ to start external Activity to recognize speech
+    public static boolean startVoiceRecognitionActivity(final Activity activity, final int request_code, final String prompt, final String language_model)
+    {
+        try {
+            Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, language_model); // E.g.: RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+            if (prompt != null && !prompt.isEmpty()) {
+                intent.putExtra(RecognizerIntent.EXTRA_PROMPT, prompt);
+            }
+            activity.startActivityForResult(intent, request_code);
+            return true;
+        } catch (final Throwable e) {
+            Log.e(TAG, "startVoiceRecognitionActivity exception: ", e);
+        }
+        return false;
+    }
+
+    // Call this from void Activity.onActivityResult(int requestCode, int resultCode, Intent data)
+    // to get recognized voice input. The result_code should be the same as used for call to
+    // startVoiceRecognitionActivity(). If the result is not a voice input or nothing is recognized
+    // the function returns null.
+    // Example:
+    //
+    // @Override
+    // public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    //     ...
+    //     if (requestCode == 1245 // the same code you used for startVoiceRecognitionActivity()
+    //         && resultCode == RESULT_OK)
+    //     {
+    //         final String text = getVoiceRecognitionActivityResult(data);
+    //         if (text != null) {
+    //             ... // Pass the text to the application
+    //         }
+    //     }
+    //     ...
+    // }
+    //
+    public static String getVoiceRecognitionActivityResult(final Intent data)
+    {
+        try {
+            final ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+            if (matches != null && !matches.isEmpty()) {
+                final String result = matches.get(0);
+                if (result != null && !result.isEmpty()) {
+                    return result;
+                }
+            }
+        } catch (final Throwable e) {
+            Log.e(TAG, "getVoiceRecognitionActivityResult exception: ", e);
+        }
+        return null;
+    }
 
     public native void nativeOnBeginningOfSpeech(long ptr);
     // public native void onBufferReceived(long ptr byte[] buffer);

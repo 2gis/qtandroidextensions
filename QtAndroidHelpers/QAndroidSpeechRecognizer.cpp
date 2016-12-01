@@ -857,3 +857,30 @@ QString QAndroidSpeechRecognizer::errorCodeToMessage(int code)
 		return tr("An unknown voice recognition error occured.");
 	}
 }
+
+bool QAndroidSpeechRecognizer::startVoiceRecognitionActivity(
+	int request_code
+	, const QString & prompt
+	, const QString & language_model) const
+{
+	try
+	{
+		const QString & model = (language_model.isEmpty())?
+			ANDROID_RECOGNIZERINTENT_LANGUAGE_MODEL_FREE_FORM
+			: language_model;
+		jboolean result = QJniClass(c_recognition_listener_class_name_).callStaticParamBoolean(
+			"startVoiceRecognitionActivity"
+			, "Landroid/app/Activity;ILjava/lang/String;Ljava/lang/String;"
+			, QAndroidQPAPluginGap::Context().jObject()
+			, static_cast<jint>(request_code)
+			, QJniLocalRef(prompt).jObject()
+			, QJniLocalRef(model).jObject());
+		return static_cast<bool>(result);
+	}
+	catch (const std::exception & e)
+	{
+		qWarning() << "startVoiceRecognitionActivity JNI exception:" << e.what();
+		return false;
+	}
+}
+
