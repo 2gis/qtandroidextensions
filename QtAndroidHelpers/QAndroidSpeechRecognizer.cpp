@@ -875,7 +875,7 @@ bool QAndroidSpeechRecognizer::startVoiceRecognitionActivity(
 			, static_cast<jint>(request_code)
 			, QJniLocalRef(prompt).jObject()
 			, QJniLocalRef(model).jObject());
-		return (result)? true: false;
+		return static_cast<bool>(result);
 	}
 	catch (const std::exception & e)
 	{
