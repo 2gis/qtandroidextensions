@@ -38,11 +38,15 @@
 package ru.dublgis.androidhelpers;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 // import android.os.Handler;
 // import android.os.Looper;
 import android.os.Bundle;
@@ -310,6 +314,27 @@ public class VoiceRecognitionListener implements RecognitionListener {
 
     }
 
+    // Check if there's a voice recognition activity
+    public static boolean isVoiceRecognitionActivityAvailable(final Activity activity)
+    {
+        try {
+            final Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+            final PackageManager manager = activity.getPackageManager();
+            final List<ResolveInfo> infos = manager.queryIntentActivities(intent, 0);
+            if (infos != null) {
+                final int count = infos.size();
+                Log.d(TAG, "isVoiceRecognitionActivityAvailable: found " + count + " apps to handle the request.");
+                if (count > 0) {
+                    return true;
+                }
+            }
+        } catch (final Throwable e) {
+            Log.e(TAG, "isVoiceRecognitionActivityAvailable exception: ", e);
+        }
+        return false;
+
+    }
+
     // Called from C++ to start external Activity to recognize speech
     public static boolean startVoiceRecognitionActivity(final Activity activity, final int request_code, final String prompt, final String language_model)
     {
@@ -321,6 +346,8 @@ public class VoiceRecognitionListener implements RecognitionListener {
             }
             activity.startActivityForResult(intent, request_code);
             return true;
+        } catch (final ActivityNotFoundException e) {
+            Log.w(TAG, "startVoiceRecognitionActivity: voice recognition activity is not available: ", e);
         } catch (final Throwable e) {
             Log.e(TAG, "startVoiceRecognitionActivity exception: ", e);
         }

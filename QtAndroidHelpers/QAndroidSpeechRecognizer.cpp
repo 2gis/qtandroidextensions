@@ -858,6 +858,23 @@ QString QAndroidSpeechRecognizer::errorCodeToMessage(int code)
 	}
 }
 
+bool QAndroidSpeechRecognizer::isVoiceRecognitionActivityAvailable() const
+{
+	try
+	{
+		jboolean result = QJniClass(c_recognition_listener_class_name_).callStaticParamBoolean(
+			"isVoiceRecognitionActivityAvailable"
+			, "Landroid/app/Activity;"
+			, QAndroidQPAPluginGap::Context().jObject());
+		return static_cast<bool>(result);
+	}
+	catch (const std::exception & e)
+	{
+		qWarning() << "isVoiceRecognitionActivityAvailable JNI exception:" << e.what();
+		return false;
+	}
+}
+
 bool QAndroidSpeechRecognizer::startVoiceRecognitionActivity(
 	int request_code
 	, const QString & prompt
@@ -883,4 +900,32 @@ bool QAndroidSpeechRecognizer::startVoiceRecognitionActivity(
 		return false;
 	}
 }
+
+bool QAndroidSpeechRecognizer::isRecognitionAvailableCached() const
+{
+	static bool checked = false;
+	static bool available = false;
+	if (!checked)
+	{
+		available = isRecognitionAvailable();
+		checked = true;
+		qDebug() << "isRecognitionAvailableCached:" << available;
+	}
+	return available;
+}
+
+bool QAndroidSpeechRecognizer::isVoiceRecognitionActivityAvailableCached() const
+{
+	static bool checked = false;
+	static bool available = false;
+	if (!checked)
+	{
+		available = isVoiceRecognitionActivityAvailable();
+		checked = true;
+		qDebug() << "isVoiceRecognitionActivityAvailableCached:" << available;
+	}
+	return available;
+}
+
+
 

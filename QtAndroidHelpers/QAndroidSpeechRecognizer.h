@@ -126,6 +126,8 @@ public slots:
 	// Note: see also checkRuntimePermissions(bool) - we may have the voice recognition
 	// but no permission to use it.
 	bool isRecognitionAvailable() const;
+	// Version of isRecognitionAvailable() that only does the check once per session.
+	bool isRecognitionAvailableCached() const;
 	// Make sure to call setPermissionRequestCode(int) before doing it.
 	bool startListening(const QString & action);
 	void stopListening();
@@ -177,6 +179,11 @@ public slots:
 
 	int permissionRequestCode() const;
 	void setPermissionRequestCode(int code);
+
+	// See startVoiceRecognitionActivity
+	bool isVoiceRecognitionActivityAvailable() const;
+	// Version of isVoiceRecognitionActivityAvailable() that only does the check once per session.
+	bool isVoiceRecognitionActivityAvailableCached() const;
 
 	// This is a function which allows to implement voice recognition without implementing
 	// any UI. In this case, you have to implement onActivityResult(int requestCode,
