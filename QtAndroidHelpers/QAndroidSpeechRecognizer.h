@@ -178,6 +178,9 @@ public slots:
 	int permissionRequestCode() const;
 	void setPermissionRequestCode(int code);
 
+	// See startVoiceRecognitionActivity
+	bool isVoiceRecognitionActivityAvailable();
+
 	// This is a function which allows to implement voice recognition without implementing
 	// any UI. In this case, you have to implement onActivityResult(int requestCode,
 	// int resultCode, Intent data) in your activity and handle result of the activity there.
