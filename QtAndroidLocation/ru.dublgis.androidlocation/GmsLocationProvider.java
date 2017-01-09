@@ -38,6 +38,7 @@
 package ru.dublgis.androidlocation;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Build;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -49,6 +50,7 @@ import java.util.LinkedHashMap;
 
 import android.os.Bundle;
 import android.location.Location;
+import android.support.v4.content.ContextCompat;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -69,6 +71,9 @@ import java.util.Map;
 
 import ru.dublgis.androidhelpers.Log;
 
+import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static com.google.android.gms.location.LocationServices.FusedLocationApi;
 
 
@@ -255,6 +260,13 @@ public class GmsLocationProvider
 		try {
 			if (mGoogleApiClient.isConnected() && null != holder) {
 				Log.i(TAG, "requestLocationUpdates " + holder.mRequestId);
+
+				Context ctx = getActivity();
+				if (Build.VERSION.SDK_INT >= 23 &&
+						PERMISSION_DENIED == ContextCompat.checkSelfPermission(ctx, ACCESS_FINE_LOCATION) &&
+						PERMISSION_DENIED == ContextCompat.checkSelfPermission(ctx, ACCESS_COARSE_LOCATION)) {
+					return;
+				}
 
 				PendingResult<Status> result =
 						FusedLocationApi.requestLocationUpdates(mGoogleApiClient, holder.mRequest, holder.mCallback, mlocationUpdatesLooper);
