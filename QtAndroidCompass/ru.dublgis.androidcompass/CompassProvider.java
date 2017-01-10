@@ -86,7 +86,7 @@ public class CompassProvider implements SensorEventListener
 
 		if (null == mSensorManager || null == mOrientation)
 		{
-			Log.e(TAG, "Sensors are null");
+			Log.w(TAG, "Sensors are null");
 			return;
 		}
 
