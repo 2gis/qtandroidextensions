@@ -3,10 +3,11 @@
 
 	Author:
 	Vyacheslav O. Koscheev <vok1980@gmail.com>
+	Sergey A.Galin <sergey.galin@gmail.com>
 
 	Distrbuted under The BSD License
 
-	Copyright (c) 2015, DoubleGIS, LLC.
+	Copyright (c) 2017, DoubleGIS, LLC.
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -33,24 +34,33 @@
 	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 	THE POSSIBILITY OF SUCH DAMAGE.
 */
-	
+
 package ru.dublgis.androidhelpers;
 
 import android.content.Context;
 import android.os.PowerManager;
 
 
-class ScreenLocker
+class WakeLocker
 {
-	public static final String TAG = "Grym/ScreenLocker";
+	public static final String TAG = "Grym/WakeLocker";
 	private volatile long native_ptr_ = 0;
 	private PowerManager.WakeLock mLock = null;
+	private int mMode = PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE;
 
 
-	public ScreenLocker(long native_ptr)
+	public WakeLocker(final long native_ptr)
 	{
-		Log.i(TAG, "ScreenLocker constructor");
+		Log.i(TAG, "WakeLocker constructor");
 		native_ptr_ = native_ptr;
+	}
+
+
+	// From C++
+	// This function should be called only once before lock/unlock.
+	public void setMode(final int lockMode)
+	{
+		mMode = lockMode;
 	}
 
 
@@ -63,28 +73,24 @@ class ScreenLocker
 
 	private void createLock()
 	{
-		Log.i(TAG, "createLock");
-
-		try 
+		Log.i(TAG, "createLock " + mMode);
+		try
 		{
-			PowerManager powerManager = (PowerManager)getContext().getSystemService(Context.POWER_SERVICE);
-			
+			final PowerManager powerManager = (PowerManager)getContext().getSystemService(Context.POWER_SERVICE);
 			if (powerManager != null)
 			{
-				mLock = powerManager.newWakeLock(
-                    PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, TAG);
+				mLock = powerManager.newWakeLock(mMode, TAG);
 			}
 			else
 			{
 				Log.w(TAG, "PowerManager is null! No control over backlight or suspend.");
 			}
 		}
-		catch (Exception e)
+		catch (final Throwable e)
 		{
 			Log.e(TAG, "Exception in PowerController (power manager init): " + e);
 		}
 	}
-
 
 	public boolean Lock()
 	{
@@ -95,7 +101,7 @@ class ScreenLocker
 
 		if (null == mLock)
 		{
-			Log.e(TAG, "no mLock");
+			Log.e(TAG, "Failed to create the lock!");
 			return false;
 		}
 
@@ -106,9 +112,9 @@ class ScreenLocker
 				mLock.acquire();
 			}
 		}
-		catch (Exception e)
+		catch (final Throwable e)
 		{
-			Log.e(TAG, "Failed to acquire lock: " + e);
+			Log.e(TAG, "Failed to acquire lock for mode " + mMode + ": " + e);
 		}
 
 		return IsLocked();
@@ -118,31 +124,31 @@ class ScreenLocker
 	public boolean IsLocked()
 	{
 		boolean ret = mLock != null && mLock.isHeld();
-		Log.i(TAG, "IsLocked = " + ret);
+		Log.i(TAG, "IsLocked: " + ret + " (mode: " + mMode + ")");
 		return ret;
 	}
 
 
 	public void Unlock()
 	{
-		Log.i(TAG, "Unlock");
+		Log.i(TAG, "Unlock " + mMode);
 
 		if (null == mLock)
 		{
-			Log.e(TAG, "no mLock");
+			Log.e(TAG, "Trying to unlock when not locked!");
 			return;
 		}
 
-		try 
+		try
 		{
 			if (mLock.isHeld())
 			{
 				mLock.release();
 			}
 		}
-		catch (Exception e)
+		catch (final Throwable e)
 		{
-			Log.e(TAG, "Failed to release lock: " + e);
+			Log.e(TAG, "Failed to release lock for mode " + mMode + ": " + e);
 		}
 	}
 

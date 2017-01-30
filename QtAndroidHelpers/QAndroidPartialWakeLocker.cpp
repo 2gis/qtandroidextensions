@@ -35,7 +35,7 @@
 	THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "QAndroidScreenLocker.h"
+#include "QAndroidPartialWakeLocker.h"
 
 #include <QAndroidQPAPluginGap.h>
 #include <TJniObjectLinker.h>
@@ -49,34 +49,34 @@ static const JNINativeMethod methods[] =
 };
 
 
-JNI_LINKER_IMPL(QAndroidScreenLocker, c_full_class_name_, methods)
+JNI_LINKER_IMPL(QAndroidPartialWakeLocker, c_full_class_name_, methods)
 
 
-QAndroidScreenLocker & QAndroidScreenLocker::instance()
+QAndroidPartialWakeLocker & QAndroidPartialWakeLocker::instance()
 {
-	static QAndroidScreenLocker obj;
+	static QAndroidPartialWakeLocker obj;
 	return obj;
 }
 
 
-QAndroidScreenLocker::QAndroidScreenLocker()
+QAndroidPartialWakeLocker::QAndroidPartialWakeLocker()
 	: QLocks::QLockedObject(true)
 	, jniLinker_(new JniObjectLinker(this))
 {
 	if (isJniReady())
 	{
-		// PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE
-		jni()->callVoid("setMode", static_cast<jint>(0x0000000a | 0x20000000));
+		// PowerManager.PARTIAL_WAKE_LOCK
+		jni()->callVoid("setMode", static_cast<jint>(0x00000001));
 	}
 }
 
 
-QAndroidScreenLocker::~QAndroidScreenLocker()
+QAndroidPartialWakeLocker::~QAndroidPartialWakeLocker()
 {
 }
 
 
-void QAndroidScreenLocker::lock()
+void QAndroidPartialWakeLocker::lock()
 {
 	if (isJniReady())
 	{
@@ -86,7 +86,7 @@ void QAndroidScreenLocker::lock()
 }
 
 
-void QAndroidScreenLocker::unlock()
+void QAndroidPartialWakeLocker::unlock()
 {
 	if (isJniReady())
 	{
@@ -95,7 +95,7 @@ void QAndroidScreenLocker::unlock()
 }
 
 
-bool QAndroidScreenLocker::isLocked()
+bool QAndroidPartialWakeLocker::isLocked()
 {
 	if (isJniReady())
 	{
