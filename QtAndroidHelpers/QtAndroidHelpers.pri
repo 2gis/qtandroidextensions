@@ -28,10 +28,12 @@ HEADERS += \
     $$PWD/QAndroidDesktopUtils.h \
     $$PWD/QAndroidStorages_.h \
     $$PWD/QAndroidStorages_p.h
+    $$PWD/QAndroidPartialWakeLocker.h
 
 SOURCES += \
     $$PWD/QAndroidSharedPreferences.cpp \
     $$PWD/QAndroidScreenLocker.cpp \
+    $$PWD/QAndroidPartialWakeLocker.cpp \
     $$PWD/QAndroidWiFiLocker.cpp \
     $$PWD/Mobility/QAndroidCellDataProvider.cpp \
     $$PWD/Mobility/QAndroidWifiDataProvider.cpp \

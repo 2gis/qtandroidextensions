@@ -35,72 +35,35 @@
 	THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "QAndroidScreenLocker.h"
+#pragma once
 
-#include <QAndroidQPAPluginGap.h>
-#include <TJniObjectLinker.h>
+#include <QJniHelpers.h>
+#include "QLocks/QLockedObject.h"
+#include <IJniObjectLinker.h>
 
 
-static const char * const c_full_class_name_ = "ru/dublgis/androidhelpers/WakeLocker";
-
-static const JNINativeMethod methods[] =
+/*!
+ *  Class for keeping CPU running.
+ *  See: https://developer.android.com/reference/android/os/PowerManager.html#PARTIAL_WAKE_LOCK
+ *  To lock it call method getLock() and keep returned value while you need the lock.
+ */
+class QAndroidPartialWakeLocker: public QLocks::QLockedObject
 {
-	{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContext},
+	Q_DISABLE_COPY(QAndroidPartialWakeLocker)
+	JNI_LINKER_DECL(QAndroidPartialWakeLocker)
+
+public:
+	static QAndroidPartialWakeLocker & instance();
+
+private:
+	QAndroidPartialWakeLocker();
+	virtual ~QAndroidPartialWakeLocker();
+
+public:
+	bool isLocked();
+
+private:
+	virtual void lock();
+	virtual void unlock();
 };
-
-
-JNI_LINKER_IMPL(QAndroidScreenLocker, c_full_class_name_, methods)
-
-
-QAndroidScreenLocker & QAndroidScreenLocker::instance()
-{
-	static QAndroidScreenLocker obj;
-	return obj;
-}
-
-
-QAndroidScreenLocker::QAndroidScreenLocker()
-	: QLocks::QLockedObject(true)
-	, jniLinker_(new JniObjectLinker(this))
-{
-	if (isJniReady())
-	{
-		// PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE
-		jni()->callVoid("setMode", static_cast<jint>(0x0000000a | 0x20000000));
-	}
-}
-
-
-QAndroidScreenLocker::~QAndroidScreenLocker()
-{
-}
-
-
-void QAndroidScreenLocker::lock()
-{
-	if (isJniReady())
-	{
-		jni()->callBool("Lock");
-	}
-	Q_ASSERT(isLocked());
-}
-
-
-void QAndroidScreenLocker::unlock()
-{
-	if (isJniReady())
-	{
-		jni()->callVoid("Unlock");
-	}
-}
-
-
-bool QAndroidScreenLocker::isLocked()
-{
-	if (isJniReady())
-	{
-		return jni()->callBool("IsLocked");
-	}
-	return false;
-}
 

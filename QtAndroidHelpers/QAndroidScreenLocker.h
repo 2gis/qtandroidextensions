@@ -1,12 +1,13 @@
 /*
 	Offscreen Android Views library for Qt
 
-	Author:
+	Authors:
 	Vyacheslav O. Koscheev <vok1980@gmail.com>
+	Sergey A. Galin <sergey.galin@gmail.com>
 
 	Distrbuted under The BSD License
 
-	Copyright (c) 2015, DoubleGIS, LLC.
+	Copyright (c) 2017, DoubleGIS, LLC.
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -42,8 +43,8 @@
 
 
 /*!
- *  Class for locking WiFi manager.
- *  To lock it call method getLock() and keep returned value until you need this lock.
+ *  Class for disabling automatic dimming of the device screen.
+ *  To lock it call method getLock() and keep returned value while you need the lock.
  */
 class QAndroidScreenLocker: public QLocks::QLockedObject
 {
@@ -51,7 +52,7 @@ class QAndroidScreenLocker: public QLocks::QLockedObject
 	JNI_LINKER_DECL(QAndroidScreenLocker)
 
 public:
-	static QAndroidScreenLocker& instance();
+	static QAndroidScreenLocker & instance();
 
 private:
 	QAndroidScreenLocker();
