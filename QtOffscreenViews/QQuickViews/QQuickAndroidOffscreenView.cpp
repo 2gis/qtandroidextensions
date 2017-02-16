@@ -321,12 +321,12 @@ void QQuickAndroidOffscreenView::requestVisibleRect()
 
 void QQuickAndroidOffscreenView::updateAndroidEnabled()
 {
-	qDebug()<<__PRETTY_FUNCTION__<<isEnabled();
+	// qDebug() << __PRETTY_FUNCTION__ << isEnabled();
 	aview_->setEnabled(isEnabled());
 }
 
 void QQuickAndroidOffscreenView::onViewCreated()
 {
-	qDebug()<<__PRETTY_FUNCTION__;
+	qDebug() << __PRETTY_FUNCTION__;
 	emit viewCreated();
 }
