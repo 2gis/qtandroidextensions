@@ -210,9 +210,10 @@ bool QAndroidJniImagePair::doResize(const QSize & size)
 	// standard. Worked good so far.
 	if (binfo.format == 0 || bstride == 0 || bwidth == 0 || bheight == 0 || bstride < bwidth)
 	{
-		qCritical() << "Invalid AndroidBitmapInfo. Will fall back to standard bitmap properties: "
-					"width:" << bwidth << "height:" << bheight
-					<< "stride:" << bstride << "format:" << binfo.format << "flags:" << binfo.flags;
+		qWarning()
+			<< "Invalid AndroidBitmapInfo. Will fall back to standard bitmap properties: "
+				"width:" << bwidth << "height:" << bheight
+			<< "stride:" << bstride << "format:" << binfo.format << "flags:" << binfo.flags;
 		bwidth = size.width();
 		bheight = size.height();
 		bstride = size.width() * ((bitness_ == 32) ? 4 : 2);
