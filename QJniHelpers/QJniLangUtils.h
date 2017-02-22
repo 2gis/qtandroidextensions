@@ -35,7 +35,6 @@
 */
 
 #pragma once
-#include "QJniHelpers.h"
 
 // This namespace contains wrappers for useful functions from java.lang classes.
 namespace QJniLangUtils {

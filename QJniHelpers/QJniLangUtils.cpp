@@ -36,6 +36,8 @@
 
 #include "QJniLangUtils.h"
 #include <QtCore/qdebug.h>
+#include "QJniHelpers.h"
+
 
 namespace QJniLangUtils {
 
