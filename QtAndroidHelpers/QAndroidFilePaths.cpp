@@ -196,6 +196,22 @@ const QString & QAndroidFilePaths::ExternalCacheDirectory()
 	return path;
 }
 
+const QString & QAndroidFilePaths::CacheDirectory()
+{
+	// Activity.getExternalCacheDir().getPath().
+	QMutexLocker locker(&paths_mutex_);
+	static QString path;
+	if (path.isEmpty())
+	{
+		QAndroidQPAPluginGap::Context activity;
+		QScopedPointer<QJniObject> externalfilesdir(activity.callObject(
+			"getCacheDir",
+			"java/io/File"));
+		path = externalfilesdir->callString("getPath");
+	}
+	return path;
+}
+
 QAndroidFilePaths::StatFs QAndroidFilePaths::GetStatFs(const QString & path)
 {
 	QAndroidFilePaths::StatFs result;
