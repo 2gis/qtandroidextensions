@@ -166,6 +166,29 @@ const QString & QAndroidFilePaths::ExternalStorageDirectory()
 	return path;
 }
 
+bool QAndroidFilePaths::IsExternalStorageEmulated()
+{
+	QMutexLocker locker(&paths_mutex_);
+	static bool s_is_emulated = false;
+	static bool s_read = false;
+	try
+	{
+		if (!s_read)
+		{
+			s_read = true;
+			if (QAndroidQPAPluginGap::apiLevel() >= 11)
+			{
+				s_is_emulated = QJniClass("android/os/Environment").callStaticBoolean("isExternalStorageEmulated");
+			}
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "IsExternalStorageEmulated exception:" << e.what();
+	}
+	return s_is_emulated;
+}
+
 const QString & QAndroidFilePaths::DownloadCacheDirectory()
 {
 	// Environment.getDownloadCacheDirectory().getPath().

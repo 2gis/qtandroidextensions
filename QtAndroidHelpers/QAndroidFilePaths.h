@@ -78,6 +78,11 @@ namespace QAndroidFilePaths
 	const QString & ExternalStorageDirectory();
 
 	/*!
+	 * Environment.isExternalStorageEmulated()
+	 */
+	bool IsExternalStorageEmulated();
+
+	/*!
 	 * Environment.getDownloadCacheDirectory().getPath().
 	 * Typically the path looks like: "/cache".
 	 */
