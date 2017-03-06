@@ -39,7 +39,7 @@
 #include "QNmeaListener.h"
 #include "TJniObjectLinker.h"
 
-static const char c_full_class_name[] = "ru/dublgis/androidgpslocation/NmeaListener";
+static const char c_full_class_name[] = "ru/dublgis/androidlocation/NmeaListener";
 
 Q_DECL_EXPORT void JNICALL Java_NmeaListener_OnNmeaReceivedNative(JNIEnv * env, jobject, jlong param, jlong timestamp, jstring str)
 {
