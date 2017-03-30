@@ -87,6 +87,27 @@ QLocationManagerProvidersListener::~QLocationManagerProvidersListener()
 }
 
 
+QGeoPositionInfoSource::PositioningMethods QLocationManagerProvidersListener::getAvailableMethods()
+{
+	QGeoPositionInfoSource::PositioningMethods res = QGeoPositionInfoSource::NoPositioningMethods;
+
+	if (handler_)
+	{
+		if (handler_->callBool("isGpsProviderAvailable"))
+		{
+			res |= QGeoPositionInfoSource::SatellitePositioningMethods;
+		}
+
+		if (handler_->callBool("isNetworkProviderAvailable"))
+		{
+			res |= QGeoPositionInfoSource::NonSatellitePositioningMethods;
+		}
+	}
+
+	return res;
+}
+
+
 QGeoPositionInfoSource::PositioningMethods QLocationManagerProvidersListener::getActiveMethods()
 {
 	QGeoPositionInfoSource::PositioningMethods res = QGeoPositionInfoSource::NoPositioningMethods;

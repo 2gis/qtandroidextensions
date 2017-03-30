@@ -85,6 +85,18 @@ public class LocationManagerProvidersListener extends BroadcastReceiver
 	}
 
 
+	public boolean isGpsProviderAvailable()
+	{
+		return isProviderAvailable(LocationManager.GPS_PROVIDER);
+	}
+
+
+	public boolean isNetworkProviderAvailable()
+	{
+		return isProviderAvailable(LocationManager.NETWORK_PROVIDER);
+	}
+
+
 	public boolean isGpsProviderEnabled()
 	{
 		return isProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -115,6 +127,25 @@ public class LocationManagerProvidersListener extends BroadcastReceiver
 		}
 
 		return ret;
+	}
+
+
+	public boolean isProviderAvailable(String provider)
+	{
+		try
+		{
+			final LocationManager lm =
+				(LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+
+			return lm.getAllProviders().contains(provider);
+		}
+		catch(Throwable e)
+		{
+			Log.e(TAG, "LocationManager.getAllProviders() failed: ", e);
+			e.printStackTrace();
+		}
+
+		return false;
 	}
 
 
