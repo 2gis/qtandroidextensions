@@ -142,7 +142,6 @@ public class LocationManagerProvidersListener extends BroadcastReceiver
 		catch(Throwable e)
 		{
 			Log.e(TAG, "LocationManager.getAllProviders() failed: ", e);
-			e.printStackTrace();
 		}
 
 		return false;
