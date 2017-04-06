@@ -165,22 +165,35 @@ void preloadJavaClass(const char * class_name)
 	// Also, it is nicer to have a single function to preload classed and single path to call it.
 	// So, let's call it through Java.
 	// qDebug()<<__PRETTY_FUNCTION__<<class_name;
-	QJniEnvPtr jep;
-	if (jep.isClassPreloaded(class_name))
+	if (!class_name || !(*class_name))
 	{
-		// qDebug()<<"Class already pre-loaded:"<<class_name;
+		qWarning() << "preloadJavaClass has been called with empty class name!";
 		return;
 	}
-	// qDebug()<<"Pre-loading:"<<class_name;
+	try
+	{
+		QJniEnvPtr jep;
+		if (jep.isClassPreloaded(class_name))
+		{
+			// qDebug()<<"Class already pre-loaded:"<<class_name;
+			return;
+		}
+		// qDebug()<<"Pre-loading:"<<class_name;
 
-	static const char * const c_class_name = "ru/dublgis/qjnihelpers/ClassLoader";
-	static const char * const c_method_name = "callJNIPreloadClass";
-	#if defined(QPA_QT4GRYM)
-		QJniClass(c_class_name).callStaticVoid(c_method_name, class_name);
-	#elif defined(QPA_QT5)
-		QAndroidJniObject::callStaticMethod<void>(c_class_name, c_method_name, "(Ljava/lang/String;)V",
-			QJniLocalRef(jep, class_name).jObject());
-	#endif
+		static const char * const c_class_name = "ru/dublgis/qjnihelpers/ClassLoader";
+		static const char * const c_method_name = "callJNIPreloadClass";
+		#if defined(QPA_QT4GRYM)
+			QJniClass(c_class_name).callStaticVoid(c_method_name, class_name);
+		#elif defined(QPA_QT5)
+			QAndroidJniObject::callStaticMethod<void>(c_class_name, c_method_name, "(Ljava/lang/String;)V",
+				QJniLocalRef(jep, class_name).jObject());
+		#endif
+	}
+	catch (const std::exception & e)
+	{
+		qWarning() << "Failed to preload class:" << class_name << "Exception:" << e.what();
+		throw;
+	}
 }
 
 void preloadJavaClasses()
