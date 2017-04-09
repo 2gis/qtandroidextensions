@@ -1076,7 +1076,8 @@ abstract class OffscreenView
     //! Called from C++ to change size of the view.
     public void resizeOffscreenView(final int w, final int h)
     {
-        synchronized (texture_mutex_) {
+        //! Try to fix freezes on create view + resize calls
+        //synchronized (texture_mutex_) {
             synchronized (view_variables_mutex_) {
                 Log.i(TAG, "resizeOffscreenView " + w + "x" + h);
                 view_width_ = w;
@@ -1107,7 +1108,7 @@ abstract class OffscreenView
                     }
                 });
             }
-        }
+        //}
     }
 
     /*!
