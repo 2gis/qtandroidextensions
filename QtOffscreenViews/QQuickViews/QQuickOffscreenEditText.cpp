@@ -42,6 +42,11 @@ QQuickAndroidOffscreenEditText::QQuickAndroidOffscreenEditText()
 	connect(androidEditText(), SIGNAL(onTextChanged(QString,int,int,int)), this, SLOT(etTextChanged(QString,int,int,int)));
 	connect(androidEditText(), SIGNAL(onKeyBack(bool)), this, SLOT(etKeyBack(bool)));
 	connect(androidEditText(), SIGNAL(onEnterOrPositiveAction()), this, SLOT(etEnter()));
+    connect(androidEditText(), SIGNAL(onEditorAction(int)), this, SIGNAL(editorAction(int)));
+
+    connect(this, &QQuickItem::widthChanged, [this](){
+        androidEditText()->setWidth(width());
+    });
 }
 
 void QQuickAndroidOffscreenEditText::etTextChanged(QString text, int start, int before, int count)
