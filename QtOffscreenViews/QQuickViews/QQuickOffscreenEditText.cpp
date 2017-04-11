@@ -47,6 +47,10 @@ QQuickAndroidOffscreenEditText::QQuickAndroidOffscreenEditText()
     connect(this, &QQuickItem::widthChanged, [this](){
         androidEditText()->setWidth(width());
     });
+
+    connect(this, &QQuickItem::heightChanged, [this](){
+        androidEditText()->setHeight(height());
+    });
 }
 
 void QQuickAndroidOffscreenEditText::etTextChanged(QString text, int start, int before, int count)
