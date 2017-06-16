@@ -35,6 +35,7 @@
 */
 
 #include <algorithm>
+#include <cassert>
 #include "QAndroidGmsLocationProvider.h"
 #include <QAndroidQPAPluginGap.h>
 #include <QtPositioning/QGeoPositionInfo>
@@ -158,7 +159,33 @@ QGeoPositionInfo QAndroidGmsLocationProvider::lastKnownPosition() const
 
 void QAndroidGmsLocationProvider::onStatusChanged(int status)
 {
-	qDebug() << __FUNCTION__ << ": status = " << status;
+	const char * szStatus = "Unknown";
+
+	switch (status)
+	{
+		case 0:
+			szStatus = "Disconnected";
+			break;
+		case 1:
+			szStatus = "Connected";
+			break;
+		case 2:
+			szStatus = "Error";
+			break;
+		case 3:
+			szStatus = "Suspended";
+			break;
+		case 4:
+			szStatus = "Success";
+			break;
+		case 5:
+			szStatus = "Fail";
+			break;
+		default:
+			assert(!"Unexpected status");
+	}
+
+	qDebug() << __FUNCTION__ << ": status = " << status << " (" << szStatus << ")";
 	emit statusChanged(status);
 }
 
