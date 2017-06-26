@@ -113,7 +113,7 @@ Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationReciev
 
 
 static const JNINativeMethod methods[] = {
-	{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity},
+	{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivityNoThrow},
 	{"googleApiClientStatus", "(JI)V", (void*)Java_GooglePlayServiceLocationProvider_locationStatus},
 	{"googleApiClientLocation", "(JLandroid/location/Location;ZJ)V", (void*)Java_GooglePlayServiceLocationProvider_locationRecieved},
 };
@@ -396,9 +396,9 @@ int QAndroidGmsLocationProvider::getGmsVersion()
 
 		return clazz.callStaticParamInt("getGmsVersion", "Landroid/app/Activity;", QAndroidQPAPluginGap::Context().jObject());
 	}
-	catch (const QJniBaseException & e)
+	catch (const std::exception & e)
 	{
-		qWarning() << "QJniBaseException catched! " << e.what();
+		qWarning() << "JNI exception in QAndroidGmsLocationProvider::getGmsVersion: " << e.what();
 	}
 
 	return 0;
@@ -423,9 +423,9 @@ bool QAndroidGmsLocationProvider::isAvailable(jboolean allowDialog)
 		qDebug() << "....GP positioning availability result:" << result;
 		return result;
 	}
-	catch (const QJniBaseException & e)
+	catch (const std::exception & e)
 	{
-		qWarning() << "QJniBaseException catched! " << e.what();
+		qWarning() << "JNI exception in QAndroidGmsLocationProvider::isAvailable: " << e.what();
 	}
 
 	return false;

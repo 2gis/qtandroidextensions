@@ -78,12 +78,15 @@
 	#error "Unimplemented QPA case"
 #endif
 
+
 namespace QAndroidQPAPluginGap {
+
 
 QAndroidSpecificJniException::QAndroidSpecificJniException(const char * message)
 	: QJniBaseException(message? message: "Android-specific JNI exception.")
 {
 }
+
 
 JavaVM * detectJavaVM()
 {
@@ -95,6 +98,7 @@ JavaVM * detectJavaVM()
 		#error "Unimplemented QPA case"
 	#endif
 }
+
 
 jobject JNICALL getActivity(JNIEnv *, jobject)
 {
@@ -115,7 +119,24 @@ jobject JNICALL getActivity(JNIEnv *, jobject)
 	return QJniEnvPtr().env()->NewLocalRef(activity->jObject());
 }
 
+
+jobject JNICALL getActivityNoThrow(JNIEnv * env, jobject jo)
+{
+	try
+	{
+		return getActivity(env, jo);
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "getActivity exception:" << e.what();
+		return static_cast<jobject>(0);
+	}
+}
+
+
+
 static QScopedPointer<QJniObject> custom_context_;
+
 
 void setCustomContext(jobject context)
 {
@@ -128,6 +149,7 @@ void setCustomContext(jobject context)
 		custom_context_.reset();
 	}
 }
+
 
 jobject JNICALL getCustomContext(JNIEnv *, jobject)
 {
@@ -143,6 +165,7 @@ bool customContextSet()
 	return (custom_context_)? true: false;
 }
 
+
 jobject JNICALL getCurrentContext(JNIEnv * env, jobject)
 {
 	if (jobject ret = getCustomContext())
@@ -153,10 +176,26 @@ jobject JNICALL getCurrentContext(JNIEnv * env, jobject)
 	return getActivity();
 }
 
+
+jobject JNICALL getCurrentContextNoThrow(JNIEnv * env, jobject jo)
+{
+	try
+	{
+		return getCurrentContext(env, jo);
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "getCurrentContext exception:" << e.what();
+		return static_cast<jobject>(0);
+	}
+}
+
+
 Context::Context():
 	QJniObject(getCurrentContext(), true)
 {
 }
+
 
 void preloadJavaClass(const char * class_name)
 {
@@ -196,11 +235,13 @@ void preloadJavaClass(const char * class_name)
 	}
 }
 
+
 void preloadJavaClasses()
 {
 	preloadJavaClass(c_activity_getter_class_name);
 	preloadJavaClass("android/os/Build$VERSION");
 }
+
 
 int apiLevel()
 {
@@ -214,6 +255,7 @@ int apiLevel()
 }
 
 } // namespace QAndroidQPAPluginGap
+
 
 // JNI entry points. Must be "C" because the function names should not be mangled.
 extern "C" {

@@ -212,6 +212,7 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnBeginningOfSpee
 	qWarning() << __FUNCTION__ <<" Zero param!";
 }
 
+
 Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnEndOfSpeech(JNIEnv *, jobject, jlong param)
 {
 	if (param)
@@ -229,6 +230,7 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnEndOfSpeech(JNI
 	}
 	qWarning() << __FUNCTION__ <<" Zero param!";
 }
+
 
 Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnError(JNIEnv *, jobject, jlong param, jint code)
 {
@@ -249,6 +251,7 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnError(JNIEnv *,
 	qWarning() << __FUNCTION__ <<" Zero param!";
 }
 
+
 Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnPartialResults(JNIEnv *, jobject, jlong param, jobject bundle_results)
 {
 	if (param)
@@ -268,6 +271,7 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnPartialResults(
 	}
 	qWarning() << __FUNCTION__ <<" Zero param!";
 }
+
 
 Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnResults(JNIEnv *, jobject, jlong param, jobject bundle_results, jboolean secure)
 {
@@ -290,6 +294,7 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnResults(JNIEnv 
 	qWarning() << __FUNCTION__ <<" Zero param!";
 }
 
+
 Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnReadyForSpeech(JNIEnv *, jobject, jlong param, jobject bundle_params)
 {
 	if (param)
@@ -309,6 +314,7 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnReadyForSpeech(
 	qWarning() << __FUNCTION__ <<" Zero param!";
 }
 
+
 Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnRmsChanged(JNIEnv *, jobject, jlong param, jfloat rmsdB)
 {
 	if (param)
@@ -327,6 +333,7 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnRmsChanged(JNIE
 	}
 	qWarning() << __FUNCTION__ <<" Zero param!";
 }
+
 
 Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeSupportedLanguagesReceived(JNIEnv *, jobject, jlong param, jobject languages)
 {
@@ -400,6 +407,7 @@ QAndroidSpeechRecognizer::QAndroidSpeechRecognizer(QObject * p)
 	}
 }
 
+
 QAndroidSpeechRecognizer::~QAndroidSpeechRecognizer()
 {
 	try
@@ -416,6 +424,7 @@ QAndroidSpeechRecognizer::~QAndroidSpeechRecognizer()
 	}
 }
 
+
 void QAndroidSpeechRecognizer::preloadJavaClasses()
 {
 	static bool s_preloaded = false;
@@ -429,18 +438,28 @@ void QAndroidSpeechRecognizer::preloadJavaClasses()
 	}
 }
 
+
 bool QAndroidSpeechRecognizer::isRecognitionAvailableStatic()
 {
-	preloadJavaClasses();
-	jboolean result = QJniClass(c_speech_recognizer_class_name_)
-		.callStaticParamBoolean("isRecognitionAvailable"
-		, "Landroid/content/Context;"
-		, QAndroidQPAPluginGap::Context().jObject());
-	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
-		qDebug() << "SpeechRecognizer" << __FUNCTION__ << result;
-	#endif
-	return static_cast<bool>(result);
+	try
+	{
+		preloadJavaClasses();
+		jboolean result = QJniClass(c_speech_recognizer_class_name_)
+			.callStaticParamBoolean("isRecognitionAvailable"
+			, "Landroid/content/Context;"
+			, QAndroidQPAPluginGap::Context().jObject());
+		#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
+			qDebug() << "SpeechRecognizer" << __FUNCTION__ << result;
+		#endif
+		return static_cast<bool>(result);
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in QAndroidSpeechRecognizer::isRecognitionAvailableStatic: " << e.what();
+		return false;
+	}
 }
+
 
 bool QAndroidSpeechRecognizer::isRecognitionAvailable() const
 {
@@ -448,6 +467,7 @@ bool QAndroidSpeechRecognizer::isRecognitionAvailable() const
 	// be created in the constructor.
 	return (listener_)? true: false;
 }
+
 
 bool QAndroidSpeechRecognizer::checkRuntimePermissions(bool request_if_necessary) const
 {
@@ -464,6 +484,7 @@ bool QAndroidSpeechRecognizer::checkRuntimePermissions(bool request_if_necessary
 	}
 	return false;
 }
+
 
 void QAndroidSpeechRecognizer::requestSupportedLanguages()
 {
@@ -483,6 +504,7 @@ void QAndroidSpeechRecognizer::requestSupportedLanguages()
 	}
 }
 
+
 void QAndroidSpeechRecognizer::clearExtras()
 {
 	string_extras_.clear();
@@ -491,20 +513,24 @@ void QAndroidSpeechRecognizer::clearExtras()
 	enable_timeout_timer_ = false;
 }
 
+
 void QAndroidSpeechRecognizer::addStringExtra(const QString & key, const QString & value)
 {
 	string_extras_.insert(key, value);
 }
+
 
 void QAndroidSpeechRecognizer::addBoolExtra(const QString & key, bool value)
 {
 	bool_extras_.insert(key, value);
 }
 
+
 void QAndroidSpeechRecognizer::addIntExtra(const QString & key, int value)
 {
 	int_extras_.insert(key, value);
 }
+
 
 bool QAndroidSpeechRecognizer::startListening(const QString & action)
 {
@@ -572,6 +598,7 @@ bool QAndroidSpeechRecognizer::startListening(const QString & action)
 	return false;
 }
 
+
 void QAndroidSpeechRecognizer::stopListening()
 {
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
@@ -593,6 +620,7 @@ void QAndroidSpeechRecognizer::stopListening()
 	}
 }
 
+
 void QAndroidSpeechRecognizer::cancel()
 {
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
@@ -612,6 +640,7 @@ void QAndroidSpeechRecognizer::cancel()
 	}
 }
 
+
 void QAndroidSpeechRecognizer::javaOnBeginningOfSpeech()
 {
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
@@ -620,6 +649,7 @@ void QAndroidSpeechRecognizer::javaOnBeginningOfSpeech()
 	emit beginningOfSpeech();
 }
 
+
 void QAndroidSpeechRecognizer::javaOnEndOfSpeech()
 {
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
@@ -627,6 +657,7 @@ void QAndroidSpeechRecognizer::javaOnEndOfSpeech()
 	#endif
 	emit endOfSpeech();
 }
+
 
 void QAndroidSpeechRecognizer::javaOnError(int code)
 {
@@ -637,6 +668,7 @@ void QAndroidSpeechRecognizer::javaOnError(int code)
 	listeningStopped();
 	emit error(code, message);
 }
+
 
 void QAndroidSpeechRecognizer::javaOnPartialResults(
 	const QVariantList & res
@@ -662,6 +694,7 @@ void QAndroidSpeechRecognizer::javaOnPartialResults(
 	}
 }
 
+
 void QAndroidSpeechRecognizer::javaOnResults(
 	const QVariantList & res
 	, const QVariantList & confidence_scores
@@ -674,6 +707,7 @@ void QAndroidSpeechRecognizer::javaOnResults(
 	listeningStopped();
 	emit results(res, confidence_scores, secure);
 }
+
 
 void QAndroidSpeechRecognizer::javaOnReadyForSpeech()
 {
@@ -691,6 +725,7 @@ void QAndroidSpeechRecognizer::javaOnReadyForSpeech()
 	}
 }
 
+
 void QAndroidSpeechRecognizer::javaOnRmsdBChanged(float rmsdb)
 {
 	// Too many of these!
@@ -701,6 +736,7 @@ void QAndroidSpeechRecognizer::javaOnRmsdBChanged(float rmsdb)
 	emit rmsdBChanged(rmsdB_);
 }
 
+
 void QAndroidSpeechRecognizer::javaSupportedLanguagesReceived(const QStringList & languages)
 {
 	#if defined(ANDROIDSPEECHRECOGNIZER_VERBOSE)
@@ -708,6 +744,7 @@ void QAndroidSpeechRecognizer::javaSupportedLanguagesReceived(const QStringList 
 	#endif
 	emit supportedLanguagesReceived(languages);
 }
+
 
 void QAndroidSpeechRecognizer::onTimeoutTimerTimeout()
 {
@@ -717,11 +754,13 @@ void QAndroidSpeechRecognizer::onTimeoutTimerTimeout()
 	stopListening();
 }
 
+
 void QAndroidSpeechRecognizer::startListeningFreeForm()
 {
 	addStringExtra(ANDROID_RECOGNIZERINTENT_EXTRA_LANGUAGE_MODEL, ANDROID_RECOGNIZERINTENT_LANGUAGE_MODEL_FREE_FORM);
 	startListening(ANDROID_RECOGNIZERINTENT_ACTION_RECOGNIZE_SPEECH);
 }
+
 
 void QAndroidSpeechRecognizer::startListeningWebSearch()
 {
@@ -729,15 +768,18 @@ void QAndroidSpeechRecognizer::startListeningWebSearch()
 	startListening(ANDROID_RECOGNIZERINTENT_ACTION_RECOGNIZE_SPEECH);
 }
 
+
 void QAndroidSpeechRecognizer::startListeningHandsFree()
 {
 	startListening(ANDROID_RECOGNIZERINTENT_ACTION_VOICE_SEARCH_HANDS_FREE);
 }
 
+
 void QAndroidSpeechRecognizer::extraSetPrompt(const QString & prompt)
 {
 	addStringExtra(ANDROID_RECOGNIZERINTENT_EXTRA_PROMPT, prompt);
 }
+
 
 void QAndroidSpeechRecognizer::extraSetLanguage(const QString & ietf_language)
 {
@@ -746,15 +788,18 @@ void QAndroidSpeechRecognizer::extraSetLanguage(const QString & ietf_language)
 	addStringExtra(ANDROID_RECOGNIZERINTENT_EXTRA_LANGUAGE, language);
 }
 
+
 void QAndroidSpeechRecognizer::extraSetMaxResults(int results)
 {
 	addIntExtra(ANDROID_RECOGNIZERINTENT_EXTRA_RESULTS, results);
 }
 
+
 void QAndroidSpeechRecognizer::extraSetPartialResults()
 {
 	addBoolExtra(ANDROID_RECOGNIZERINTENT_EXTRA_PARTIAL_RESULTS, true);
 }
+
 
 void QAndroidSpeechRecognizer::extraSetListeningTimeouts(
 	int min_phrase_length_ms
@@ -780,6 +825,7 @@ void QAndroidSpeechRecognizer::extraSetListeningTimeouts(
 	extraSetWorkaroundTimeout(timer_workaround_ms);
 }
 
+
 void QAndroidSpeechRecognizer::extraSetWorkaroundTimeout(int timer_workaround_ms)
 {
 	if (timer_workaround_ms > 0)
@@ -795,10 +841,12 @@ void QAndroidSpeechRecognizer::extraSetWorkaroundTimeout(int timer_workaround_ms
 	}
 }
 
+
 int QAndroidSpeechRecognizer::permissionRequestCode() const
 {
 	return permission_request_code_;
 }
+
 
 void QAndroidSpeechRecognizer::setPermissionRequestCode(int code)
 {
@@ -809,6 +857,7 @@ void QAndroidSpeechRecognizer::setPermissionRequestCode(int code)
 	}
 }
 
+
 void QAndroidSpeechRecognizer::listeningStarted()
 {
 	if (!listening_)
@@ -817,6 +866,7 @@ void QAndroidSpeechRecognizer::listeningStarted()
 		emit listeningChanged(listening_);
 	}
 }
+
 
 void QAndroidSpeechRecognizer::listeningStopped()
 {
@@ -830,6 +880,7 @@ void QAndroidSpeechRecognizer::listeningStopped()
 		emit listeningChanged(listening_);
 	}
 }
+
 
 QString QAndroidSpeechRecognizer::errorCodeToMessage(int code)
 {
@@ -858,6 +909,7 @@ QString QAndroidSpeechRecognizer::errorCodeToMessage(int code)
 	}
 }
 
+
 bool QAndroidSpeechRecognizer::isVoiceRecognitionActivityAvailable() const
 {
 	try
@@ -874,6 +926,7 @@ bool QAndroidSpeechRecognizer::isVoiceRecognitionActivityAvailable() const
 		return false;
 	}
 }
+
 
 bool QAndroidSpeechRecognizer::startVoiceRecognitionActivity(
 	int request_code
@@ -901,6 +954,7 @@ bool QAndroidSpeechRecognizer::startVoiceRecognitionActivity(
 	}
 }
 
+
 bool QAndroidSpeechRecognizer::isRecognitionAvailableCached() const
 {
 	static bool checked = false;
@@ -914,6 +968,7 @@ bool QAndroidSpeechRecognizer::isRecognitionAvailableCached() const
 	return available;
 }
 
+
 bool QAndroidSpeechRecognizer::isVoiceRecognitionActivityAvailableCached() const
 {
 	static bool checked = false;
@@ -926,6 +981,4 @@ bool QAndroidSpeechRecognizer::isVoiceRecognitionActivityAvailableCached() const
 	}
 	return available;
 }
-
-
 

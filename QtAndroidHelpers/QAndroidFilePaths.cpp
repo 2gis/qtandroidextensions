@@ -44,6 +44,7 @@
 #include "QAndroidStorages.h"
 #include "QAndroidFilePaths.h"
 
+
 static QMutex paths_mutex_(QMutex::Recursive);
 static const char * const c_directorieshelper_class_ = "ru/dublgis/androidhelpers/DirectoriesHelper";
 
@@ -59,6 +60,7 @@ const QLatin1String
 	QAndroidFilePaths::ANDROID_DIRECTORY_DCIM("DCIM"),
 	QAndroidFilePaths::ANDROID_DIRECTORY_DOCUMENTS("Documents");
 
+
 const QString & QAndroidFilePaths::ApplicationFilesDirectory()
 {
 	// Activity.getApplication().getFilesDir().getPath().
@@ -73,6 +75,7 @@ const QString & QAndroidFilePaths::ApplicationFilesDirectory()
 	}
 	return path;
 }
+
 
 const QString & QAndroidFilePaths::ExternalFilesDirectory(const QString & type)
 {
@@ -91,6 +94,7 @@ const QString & QAndroidFilePaths::ExternalFilesDirectory(const QString & type)
 	}
 	return path;
 }
+
 
 const QStringList & QAndroidFilePaths::ExternalFilesDirectories(const QString & type)
 {
@@ -152,6 +156,7 @@ const QStringList & QAndroidFilePaths::ExternalFilesDirectories(const QString & 
 	return dirs;
 }
 
+
 const QString & QAndroidFilePaths::ExternalStorageDirectory()
 {
 	// Environment.getExternalStorageDirectory().getPath().
@@ -165,6 +170,7 @@ const QString & QAndroidFilePaths::ExternalStorageDirectory()
 	}
 	return path;
 }
+
 
 bool QAndroidFilePaths::IsExternalStorageEmulated()
 {
@@ -189,6 +195,7 @@ bool QAndroidFilePaths::IsExternalStorageEmulated()
 	return s_is_emulated;
 }
 
+
 const QString & QAndroidFilePaths::DownloadCacheDirectory()
 {
 	// Environment.getDownloadCacheDirectory().getPath().
@@ -202,6 +209,7 @@ const QString & QAndroidFilePaths::DownloadCacheDirectory()
 	}
 	return path;
 }
+
 
 const QString & QAndroidFilePaths::ExternalCacheDirectory()
 {
@@ -219,6 +227,7 @@ const QString & QAndroidFilePaths::ExternalCacheDirectory()
 	return path;
 }
 
+
 const QString & QAndroidFilePaths::CacheDirectory()
 {
 	// Activity.getExternalCacheDir().getPath().
@@ -234,6 +243,7 @@ const QString & QAndroidFilePaths::CacheDirectory()
 	}
 	return path;
 }
+
 
 QAndroidFilePaths::StatFs QAndroidFilePaths::GetStatFs(const QString & path)
 {
@@ -272,6 +282,7 @@ QAndroidFilePaths::StatFs QAndroidFilePaths::GetStatFs(const QString & path)
 	}
 	return result;
 }
+
 
 void QAndroidFilePaths::preloadJavaClasses()
 {

@@ -71,33 +71,51 @@ final public class SharedPreferencesHelper
 
 	public void WriteString(String key, String value)
 	{
-		Log.i(TAG, "WriteString " + value + " by key " + key);
-		SharedPreferences sharedPref = getPreferences();
-		SharedPreferences.Editor editor = sharedPref.edit();
-		editor.putString(key, value);
-		editor.apply();
+		try {
+			Log.i(TAG, "WriteString " + value + " by key " + key);
+			SharedPreferences sharedPref = getPreferences();
+			SharedPreferences.Editor editor = sharedPref.edit();
+			editor.putString(key, value);
+			editor.apply();
+		} catch (final Throwable e) {
+			Log.e(TAG, "WriteString exception: ", e);
+		}
 	}
 
 	public String ReadString(String key, String valueDefault)
 	{
-		SharedPreferences sharedPref = getPreferences();
-		return sharedPref.getString(key, valueDefault);
+		try {
+			SharedPreferences sharedPref = getPreferences();
+			return sharedPref.getString(key, valueDefault);
+		} catch (final Throwable e) {
+			Log.e(TAG, "ReadString exception: ", e);
+			return valueDefault;
+		}
 	}
 
 
 
 	public void WriteInt(String key, int value)
 	{
-		SharedPreferences sharedPref = getPreferences();
-		SharedPreferences.Editor editor = sharedPref.edit();
-		editor.putInt(key, value);
-		editor.apply();
+		try {
+			SharedPreferences sharedPref = getPreferences();
+			SharedPreferences.Editor editor = sharedPref.edit();
+			editor.putInt(key, value);
+			editor.apply();
+		} catch (final Throwable e) {
+			Log.e(TAG, "WriteInt exception: ", e);
+		}
 	}
 
 	public int ReadInt(String key, int valueDefault)
 	{
-		SharedPreferences sharedPref = getPreferences();
-		return sharedPref.getInt(key, valueDefault);
+		try {
+			SharedPreferences sharedPref = getPreferences();
+			return sharedPref.getInt(key, valueDefault);
+		} catch (final Throwable e) {
+			Log.e(TAG, "ReadInt exception: ",  e);
+			return valueDefault;
+		}
 	}
 
 

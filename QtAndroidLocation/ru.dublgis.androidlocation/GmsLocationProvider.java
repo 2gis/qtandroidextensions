@@ -77,8 +77,7 @@ import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static com.google.android.gms.location.LocationServices.FusedLocationApi;
 
 
-public class GmsLocationProvider
-			  implements ConnectionCallbacks, OnConnectionFailedListener
+public class GmsLocationProvider implements ConnectionCallbacks, OnConnectionFailedListener
 {
 	public static final String TAG = "Grym/GmsLocProvider";
 	
@@ -91,11 +90,25 @@ public class GmsLocationProvider
 
 	private volatile long native_ptr_ = 0;
 
-	private GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
-		.addConnectionCallbacks(this)
-		.addOnConnectionFailedListener(this)
-		.addApi(LocationServices.API)
-		.build();
+	private GoogleApiClient mGoogleApiClientCache = null;
+	private boolean mGoogleApiClientCreateTried = false;
+
+	private synchronized GoogleApiClient googleApiClient() {
+		try {
+			if (!mGoogleApiClientCreateTried) {
+				mGoogleApiClientCreateTried = true;
+				mGoogleApiClientCache = new GoogleApiClient.Builder(getActivity())
+					.addConnectionCallbacks(this)
+					.addOnConnectionFailedListener(this)
+					.addApi(LocationServices.API)
+					.build();
+			}
+			return mGoogleApiClientCache;
+		} catch (final Throwable e) {
+			Log.e(TAG, "Exception in googleApiClient: ", e);
+			return null;
+		}
+	}
 
 	private Location mCurrentLocation;
 	private long mLastRequestId = 0;
@@ -163,7 +176,7 @@ public class GmsLocationProvider
 		Location locationToSend = null;
 
 		try {
-			Location lastLocation = FusedLocationApi.getLastLocation(mGoogleApiClient);
+			Location lastLocation = FusedLocationApi.getLastLocation(googleApiClient());
 
 			synchronized (mRequests) {
 				if (null == mCurrentLocation) {
@@ -213,10 +226,11 @@ public class GmsLocationProvider
 			if (mRequests.containsKey(key)) {
 				final RequestHolder holder = mRequests.get(key);
 
-				if (null != mGoogleApiClient && mGoogleApiClient.isConnected() && null != holder.mCallback) {
+				final GoogleApiClient client = googleApiClient();
+				if (null != client && client.isConnected() && null != holder.mCallback) {
 					try {
 						PendingResult<Status> result =
-								FusedLocationApi.removeLocationUpdates(mGoogleApiClient, holder.mCallback);
+							FusedLocationApi.removeLocationUpdates(client, holder.mCallback);
 
 						result.setResultCallback(new ResultCallback<Status>() {
 							@Override
@@ -258,7 +272,8 @@ public class GmsLocationProvider
 
 	private void processRequest(final RequestHolder holder) {
 		try {
-			if (mGoogleApiClient.isConnected() && null != holder) {
+			final GoogleApiClient client = googleApiClient();
+			if (client != null && client.isConnected() && null != holder) {
 				Log.i(TAG, "requestLocationUpdates " + holder.mRequestId);
 
 				Context ctx = getActivity();
@@ -269,7 +284,7 @@ public class GmsLocationProvider
 				}
 
 				PendingResult<Status> result =
-						FusedLocationApi.requestLocationUpdates(mGoogleApiClient, holder.mRequest, holder.mCallback, mlocationUpdatesLooper);
+					FusedLocationApi.requestLocationUpdates(client, holder.mRequest, holder.mCallback, mlocationUpdatesLooper);
 
 				result.setResultCallback(new ResultCallback<Status>() {
 					@Override
@@ -368,11 +383,12 @@ public class GmsLocationProvider
 
 	public void activate(boolean enable)
 	{
-		if (null != mGoogleApiClient) {
+		final GoogleApiClient client = googleApiClient();
+		if (null != client) {
 			if (enable) {
-				mGoogleApiClient.connect();
+				client.connect();
 			} else {
-				mGoogleApiClient.disconnect();
+				client.disconnect();
 				googleApiClientStatus(native_ptr_, STATUS_DISCONNECTED);
 			}
 		}

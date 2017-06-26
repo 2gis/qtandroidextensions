@@ -43,12 +43,19 @@ namespace QAndroidToast {
 
 void showToast(const QString & text, bool length_long)
 {
-	QJniClass(c_full_class_name_).callStaticParamVoid(
-		"showToast",
-		"Landroid/content/Context;Ljava/lang/String;I",
-		QAndroidQPAPluginGap::Context().jObject(),
-		QJniLocalRef(text).jObject(),
-		jint((length_long)? ANDROID_TOAST_LENGTH_LONG: ANDROID_TOAST_LENGTH_SHORT));
+	try
+	{
+		QJniClass(c_full_class_name_).callStaticParamVoid(
+			"showToast",
+			"Landroid/content/Context;Ljava/lang/String;I",
+			QAndroidQPAPluginGap::Context().jObject(),
+			QJniLocalRef(text).jObject(),
+			jint((length_long)? ANDROID_TOAST_LENGTH_LONG: ANDROID_TOAST_LENGTH_SHORT));
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in showToast: " << e.what();
+	}
 }
 
 void preloadJavaClasses()
@@ -56,7 +63,14 @@ void preloadJavaClasses()
 	static bool s_preloaded = false;
 	if (!s_preloaded)
 	{
-		QAndroidQPAPluginGap::preloadJavaClass(c_full_class_name_);
+		try
+		{
+			QAndroidQPAPluginGap::preloadJavaClass(c_full_class_name_);
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in QAndroidToast::preloadJavaClasses: " << e.what();
+		}
 		s_preloaded = true;
 	}
 }

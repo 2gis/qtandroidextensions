@@ -166,7 +166,7 @@ void QLocationManagerProvidersListener::preloadJavaClasses()
 			qDebug() << "Pre-loading Java classes for QLocationManagerProvidersListener";
 			QJniClass ov(c_full_class_name_);
 			static const JNINativeMethod methods[] = {
-				{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivity},
+				{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivityNoThrow},
 				{"onProvidersChange", "(J)V", (void*)Java_onProvidersChange},
 			};
 

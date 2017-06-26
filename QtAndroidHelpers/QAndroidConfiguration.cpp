@@ -66,7 +66,6 @@ QAndroidConfiguration::QAndroidConfiguration(QObject * parent)
 		screen_size_ = ScreenSizeUndefined;
 		break;
 	default:
-		Q_ASSERT(screen_size_ > ScreenSizeXLarge);
 		screen_size_ = ScreenSizeXLarge;
 	}
 

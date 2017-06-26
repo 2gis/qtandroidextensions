@@ -45,7 +45,7 @@ static const char * const c_full_class_name_ = "ru/dublgis/androidhelpers/WifiLo
 
 static const JNINativeMethod methods[] =
 {
-	{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContext},
+	{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContextNoThrow},
 };
 
 
@@ -77,7 +77,6 @@ void QAndroidWiFiLocker::lock()
 	{
 		jni()->callBool("Lock");
 	}
-	Q_ASSERT(isLocked());
 }
 
 

@@ -45,7 +45,7 @@ static const char * const c_full_class_name_ = "ru/dublgis/androidhelpers/Shared
 
 static const JNINativeMethod methods[] = 
 {
-	{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContext},
+	{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContextNoThrow},
 };
 
 

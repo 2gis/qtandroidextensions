@@ -68,7 +68,7 @@ public class Action
 			Intent viewIntent = new Intent(action);
 			getContext().startActivity(viewIntent);
 		}
-		catch(Exception e)
+		catch (final Throwable e)
 		{
 			Log.e(TAG, "startAction " + action + " failed: " + e);
 		}

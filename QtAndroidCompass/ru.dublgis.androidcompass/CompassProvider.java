@@ -57,8 +57,13 @@ public class CompassProvider implements SensorEventListener
 	CompassProvider(long native_ptr)
 	{
 		mNativePtr = native_ptr;
-		// initialize your android device sensor capabilities
-		mSensorManager = (SensorManager) getContext().getSystemService(Context.SENSOR_SERVICE);
+		try {
+			// initialize your android device sensor capabilities
+			mSensorManager = (SensorManager) getContext().getSystemService(Context.SENSOR_SERVICE);
+		} catch (final Throwable e) {
+			Log.e(TAG, "Exception while getting SensorManager: ", e);
+			return;
+		}
 
 		if (null == mSensorManager)
 		{
@@ -66,7 +71,13 @@ public class CompassProvider implements SensorEventListener
 			return;
 		}
 
-		mOrientation = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
+		try {
+			mOrientation = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
+		} catch (final Throwable e) {
+			Log.e(TAG, "Exception while getting orientation: ", e);
+			return;
+		}
+
 	}
 
 

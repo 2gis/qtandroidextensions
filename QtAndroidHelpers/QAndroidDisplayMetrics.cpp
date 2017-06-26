@@ -80,7 +80,6 @@ static float densityFromTheme(QAndroidDisplayMetrics::Theme theme)
 		}
 	}
 	qWarning() << "Theme code is not listed in the table:" << static_cast<int>(theme);
-	Q_ASSERT(!"Theme code is not listed in the table!");
 	return 1.0f;
 }
 

@@ -45,7 +45,7 @@ static const char * const c_full_class_name_ = "ru/dublgis/androidhelpers/WakeLo
 
 static const JNINativeMethod methods[] =
 {
-	{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContext},
+	{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContextNoThrow},
 };
 
 
@@ -66,7 +66,14 @@ QAndroidPartialWakeLocker::QAndroidPartialWakeLocker()
 	if (isJniReady())
 	{
 		// PowerManager.PARTIAL_WAKE_LOCK
-		jni()->callVoid("setMode", static_cast<jint>(0x00000001));
+		try
+		{
+			jni()->callVoid("setMode", static_cast<jint>(0x00000001));
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in QAndroidPartialWakeLocker => setMode:" << e.what();
+		}
 	}
 }
 
@@ -78,28 +85,48 @@ QAndroidPartialWakeLocker::~QAndroidPartialWakeLocker()
 
 void QAndroidPartialWakeLocker::lock()
 {
-	if (isJniReady())
+	try
 	{
-		jni()->callBool("Lock");
+		if (isJniReady())
+		{
+			jni()->callBool("Lock");
+		}
 	}
-	Q_ASSERT(isLocked());
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in QAndroidPartialWakeLocker => lock:" << e.what();
+	}
 }
 
 
 void QAndroidPartialWakeLocker::unlock()
 {
-	if (isJniReady())
+	try
 	{
-		jni()->callVoid("Unlock");
+		if (isJniReady())
+		{
+			jni()->callVoid("Unlock");
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in QAndroidPartialWakeLocker => unlock:" << e.what();
 	}
 }
 
 
 bool QAndroidPartialWakeLocker::isLocked()
 {
-	if (isJniReady())
+	try
 	{
-		return jni()->callBool("IsLocked");
+		if (isJniReady())
+		{
+			return jni()->callBool("IsLocked");
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in QAndroidPartialWakeLocker => isLocked:" << e.what();
 	}
 	return false;
 }

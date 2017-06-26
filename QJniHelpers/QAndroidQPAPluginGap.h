@@ -62,6 +62,8 @@ namespace QAndroidQPAPluginGap {
 	 */
 	jobject JNICALL getActivity(JNIEnv * env = 0, jobject jo = 0);
 
+	jobject JNICALL getActivityNoThrow(JNIEnv * env = 0, jobject jo = 0);
+
 	void setCustomContext(jobject context);
 
 	/*!
@@ -79,6 +81,8 @@ namespace QAndroidQPAPluginGap {
 	 *  method in Java object and called from there over JNI.*
 	 */
 	jobject JNICALL getCurrentContext(JNIEnv * env = 0, jobject jo = 0);
+
+	jobject JNICALL getCurrentContextNoThrow(JNIEnv * env = 0, jobject jo = 0);
 
 	class Context: public QJniObject
 	{
