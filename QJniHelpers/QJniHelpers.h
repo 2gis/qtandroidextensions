@@ -7,7 +7,7 @@
 
   Distrbuted under The BSD License
 
-  Copyright (c) 2014, DoubleGIS, LLC.
+  Copyright (c) 2017, DoubleGIS, LLC.
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -204,7 +204,7 @@ public:
 	//! Create QJniClass for the jobject.
 	QJniClass(jobject object);
 
-	QJniClass(const QJniClass &other);
+	QJniClass(const QJniClass & other);
 
 	virtual ~QJniClass();
 
@@ -262,6 +262,12 @@ public:
 
 	//! Get JNI reference to the wrapped Java class.
 	jclass jClass() const { return class_; }
+
+	/*!
+	 * Retrieve class name (via JNI). If \a simple is true then only the class name is returned
+	 * (e.g.: "String"), if it's false then full name with class path (e.g.: "java/lang/String").
+	 */
+	QString getClassName(bool simple = false) const;
 
 protected:
 	void initClass(JNIEnv * env, jclass clazz);
