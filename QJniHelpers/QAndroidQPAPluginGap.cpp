@@ -100,29 +100,6 @@ JavaVM * detectJavaVM()
 }
 
 
-#if 0
-
-jobject JNICALL getActivity(JNIEnv *, jobject)
-{
-	QJniClass theclass(c_activity_getter_class_name);
-	if (!theclass)
-	{
-		throw QAndroidSpecificJniException("QAndroid: Activity retriever class could not be accessed.");
-	}
-	QScopedPointer<QJniObject> activity(theclass.callStaticObject(c_activity_getter_method_name, c_activity_getter_result_name));
-	if (!activity)
-	{
-		throw QAndroidSpecificJniException("QAndroid: Failed to get Activity object.");
-	}
-	if (!activity->jObject())
-	{
-		throw QAndroidSpecificJniException("QAndroid: Java instance of the Activity is 0.");
-	}
-	return QJniEnvPtr().env()->NewLocalRef(activity->jObject());
-}
-
-#else
-
 jobject JNICALL getActivity(JNIEnv *, jobject)
 {
 	static QScopedPointer<QJniObject> s_activity;
@@ -149,8 +126,6 @@ jobject JNICALL getActivity(JNIEnv *, jobject)
 
 	return QJniEnvPtr().env()->NewLocalRef(s_activity->jObject());
 }
-
-#endif
 
 
 jobject JNICALL getActivityNoThrow(JNIEnv * env, jobject jo)
