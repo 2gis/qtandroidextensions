@@ -1153,6 +1153,12 @@ void QJniObject::initObject(JNIEnv * env, jobject instance, bool can_have_null_c
 	{
 		throw QJniBaseException("Failed to make additional global reference to an existing object.");
 	}
+	#if 0 // Reference logging
+		qWarning() << QString(QLatin1String("Creating %1: 0x%2 => 0x%3"))
+			.arg(getClassName())
+			.arg(reinterpret_cast<unsigned long>(instance), 0, 16)
+			.arg(reinterpret_cast<unsigned long>(instance_), 0, 16);
+	#endif
 }
 
 
