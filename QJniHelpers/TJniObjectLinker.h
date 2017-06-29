@@ -153,22 +153,31 @@ QByteArray TJniObjectLinker<TNative>::preloadJavaClasses()
 
 	QWriteLocker locker(&mutex_);
 
-	if (!preloaded_)
+	try
 	{
-		preloaded_ = true;
-
-		qDebug() << "Preloading jni for" << javaFullClassName;
-		Q_ASSERT(!QApplication::instance() || QApplication::instance()->thread() == QThread::currentThread());
-
-		QAndroidQPAPluginGap::preloadJavaClasses();
-		QAndroidQPAPluginGap::preloadJavaClass(javaFullClassName);
-
-		QJniClass ov(javaFullClassName);
-
-		if (!ov.registerNativeMethods(methods_list, sizeof_methods_list))
+		if (!preloaded_)
 		{
-			qCritical() << "Failed to register native methods";
+			preloaded_ = true;
+
+			qDebug() << "Preloading jni for" << javaFullClassName;
+			Q_ASSERT(!QApplication::instance() || QApplication::instance()->thread() == QThread::currentThread());
+
+			QAndroidQPAPluginGap::preloadJavaClasses();
+			QAndroidQPAPluginGap::preloadJavaClass(javaFullClassName);
+
+			QJniClass ov(javaFullClassName);
+
+			if (!ov.registerNativeMethods(methods_list, sizeof_methods_list))
+			{
+				qCritical() << "Failed to register native methods";
+			}
 		}
+	}
+	catch (const std::exception & ex)
+	{
+		preloaded_ = false;
+		qCritical() << "Failed to preload jni for" << javaFullClassName << "with error message:" << ex.what();
+		return "";
 	}
 
 	return javaFullClassName;
