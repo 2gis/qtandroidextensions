@@ -1138,7 +1138,7 @@ jobject QJniObject::takeJobjectOver()
 
 void QJniObject::initObject(JNIEnv * env, jobject instance, bool can_have_null_class)
 {
-	VERBOSE(qWarning("QJniObject::init(JNIEnv* env, jobject %p) %p, class %s", instance, this, getClassName().toLatin1().data()));
+	VERBOSE(qWarning("QJniObject::initObject(JNIEnv* env, jobject %p) %p, class %s", instance, this, getClassName().toLatin1().data()));
 	if (!can_have_null_class)
 	{
 		checkedClass();
@@ -1154,7 +1154,7 @@ void QJniObject::initObject(JNIEnv * env, jobject instance, bool can_have_null_c
 		throw QJniBaseException("Failed to make additional global reference to an existing object.");
 	}
 	#if 0 // Reference logging
-		qWarning() << QString(QLatin1String("Creating %1: 0x%2 => 0x%3"))
+		qWarning() << QString(QLatin1String("QJniObject::initObject: creating %1: 0x%2 => 0x%3"))
 			.arg(getClassName())
 			.arg(reinterpret_cast<unsigned long>(instance), 0, 16)
 			.arg(reinterpret_cast<unsigned long>(instance_), 0, 16);
