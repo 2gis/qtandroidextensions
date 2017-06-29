@@ -41,7 +41,7 @@
 #include <QtCore/QReadLocker>
 #include <QtCore/QSet>
 #include <QtCore/QSharedPointer>
-#include <QtWidgets/QApplication>
+#include <QCoreApplication>
 #include <QJniHelpers.h>
 #include <QAndroidQPAPluginGap.h>
 #include <IJniObjectLinker.h>
@@ -160,7 +160,7 @@ QByteArray TJniObjectLinker<TNative>::preloadJavaClasses()
 			preloaded_ = true;
 
 			qDebug() << "Preloading jni for" << javaFullClassName;
-			Q_ASSERT(!QApplication::instance() || QApplication::instance()->thread() == QThread::currentThread());
+			Q_ASSERT(!QCoreApplication::instance() || QCoreApplication::instance()->thread() == QThread::currentThread());
 
 			QAndroidQPAPluginGap::preloadJavaClasses();
 			QAndroidQPAPluginGap::preloadJavaClass(javaFullClassName);
