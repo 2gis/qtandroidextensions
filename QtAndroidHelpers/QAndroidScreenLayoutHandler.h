@@ -37,7 +37,7 @@
 #pragma once
 
 #include <QtCore/QObject>
-#include <QJniHelpers.h>
+#include <IJniObjectLinker.h>
 
 
 /*!
@@ -47,6 +47,8 @@
 class QAndroidScreenLayoutHandler: public QObject
 {
 	Q_OBJECT
+	JNI_LINKER_DECL(QAndroidScreenLayoutHandler)
+
 public:
 	QAndroidScreenLayoutHandler(QObject * parent = 0);
 	virtual ~QAndroidScreenLayoutHandler();
@@ -73,13 +75,9 @@ signals:
 private:
 	void javaGlobalLayoutChanged();
 	void javaScrollChanged();
-	void preloadJavaClasses();
 
 private:
 	Q_DISABLE_COPY(QAndroidScreenLayoutHandler)
 	friend void JNICALL Java_ScreenLayoutHandler_globalLayoutChanged(JNIEnv *, jobject, jlong param);
 	friend void JNICALL Java_ScreenLayoutHandler_scrollChanged(JNIEnv *, jobject, jlong param);
-
-private:
-	QScopedPointer<QJniObject> screen_layout_handler_;
 };

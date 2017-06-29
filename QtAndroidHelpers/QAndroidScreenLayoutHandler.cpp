@@ -36,78 +36,61 @@
 
 #include "QAndroidScreenLayoutHandler.h"
 #include <QAndroidQPAPluginGap.h>
+#include <TJniObjectLinker.h>
 
 
 Q_DECL_EXPORT void JNICALL Java_ScreenLayoutHandler_globalLayoutChanged(JNIEnv *, jobject, jlong param)
 {
-	if (param)
-	{
-		void * vp = reinterpret_cast<void*>(param);
-		QAndroidScreenLayoutHandler * proxy = reinterpret_cast<QAndroidScreenLayoutHandler*>(vp);
-		if (proxy)
-		{
-		  proxy->javaGlobalLayoutChanged();
-		  return;
-		}
-	}
-	qWarning()<<__FUNCTION__<<"Zero param!";
+	JNI_LINKER_OBJECT(QAndroidScreenLayoutHandler, param, obj)
+	obj->javaGlobalLayoutChanged();
 }
 
 
 Q_DECL_EXPORT void JNICALL Java_ScreenLayoutHandler_scrollChanged(JNIEnv *, jobject, jlong param)
 {
-	if (param)
-	{
-		void * vp = reinterpret_cast<void*>(param);
-		QAndroidScreenLayoutHandler * proxy = reinterpret_cast<QAndroidScreenLayoutHandler*>(vp);
-		if (proxy)
-		{
-		  proxy->javaScrollChanged();
-		  return;
-		}
-	}
-	qWarning()<<__FUNCTION__<<"Zero param!";
+	JNI_LINKER_OBJECT(QAndroidScreenLayoutHandler, param, obj)
+	obj->javaScrollChanged();
 }
 
 
 static const char * const c_full_class_name_ = "ru/dublgis/androidhelpers/ScreenLayoutHandler";
 
+static const JNINativeMethod methods[] = {
+	{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivityNoThrow},
+	{"nativeGlobalLayoutChanged", "(J)V", (void*)Java_ScreenLayoutHandler_globalLayoutChanged},
+	{"nativeScrollChanged", "(J)V", (void*)Java_ScreenLayoutHandler_scrollChanged}
+};
+
+
+JNI_LINKER_IMPL(QAndroidScreenLayoutHandler, c_full_class_name_, methods)
+
 
 QAndroidScreenLayoutHandler::QAndroidScreenLayoutHandler(QObject * parent)
 	: QObject(parent)
+	, jniLinker_(new JniObjectLinker(this))
 {
-	preloadJavaClasses();
-
-	// Creating Java object
-	screen_layout_handler_.reset(new QJniObject(c_full_class_name_, "J",
-		jlong(reinterpret_cast<void*>(this))));
 }
 
 
 QAndroidScreenLayoutHandler::~QAndroidScreenLayoutHandler()
 {
-	if (screen_layout_handler_)
-	{
-		screen_layout_handler_->callVoid("cppDestroyed");
-		screen_layout_handler_.reset();
-	}
 }
 
 
 void QAndroidScreenLayoutHandler::subscribeToLayoutEvents()
 {
-	if (screen_layout_handler_)
+	if (isJniReady())
 	{
-		screen_layout_handler_->callVoid("subscribeToLayoutEvents");
+		jni()->callVoid("subscribeToLayoutEvents");
 	}
 }
 
 
 void QAndroidScreenLayoutHandler::unsubscribeFromLayoutEvents()
 {
-	if (screen_layout_handler_)
+	if (isJniReady())
 	{
-		screen_layout_handler_->callVoid("unsubscribeFromLayoutEvents");
+		jni()->callVoid("unsubscribeFromLayoutEvents");
 	}
 }
 
@@ -121,25 +104,4 @@ void QAndroidScreenLayoutHandler::javaGlobalLayoutChanged()
 void QAndroidScreenLayoutHandler::javaScrollChanged()
 {
 	emit scrollChanged();
-}
-
-
-void QAndroidScreenLayoutHandler::preloadJavaClasses()
-{
-	static volatile bool preloaded_ = false;
-
-	if (!preloaded_)
-	{
-		preloaded_ = true;
-		QAndroidQPAPluginGap::preloadJavaClasses();
-		QAndroidQPAPluginGap::preloadJavaClass(c_full_class_name_);
-
-		QJniClass ov(c_full_class_name_);
-		static const JNINativeMethod methods[] = {
-			{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivityNoThrow},
-			{"nativeGlobalLayoutChanged", "(J)V", (void*)Java_ScreenLayoutHandler_globalLayoutChanged},
-			{"nativeScrollChanged", "(J)V", (void*)Java_ScreenLayoutHandler_scrollChanged}
-		};
-		ov.registerNativeMethods(methods, sizeof(methods));
-	}
 }
