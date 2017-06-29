@@ -36,20 +36,20 @@
 
 #pragma once
 #include <QtCore/QObject>
-#include <QJniHelpers.h>
 #include <QtPositioning/QGeoPositionInfoSource>
+#include <IJniObjectLinker.h>
 
 
 class QLocationManagerProvidersListener : public QObject
 {
 	Q_OBJECT
+	JNI_LINKER_DECL(QLocationManagerProvidersListener)
 	
 public:
 	QLocationManagerProvidersListener(QObject * parent = 0);
 	virtual ~QLocationManagerProvidersListener();
 
 public:
-	static void preloadJavaClasses();
 	bool isActiveProvidersEnabled();
 	QGeoPositionInfoSource::PositioningMethods getActiveMethods();
 	QGeoPositionInfoSource::PositioningMethods getAvailableMethods();
@@ -60,8 +60,5 @@ signals:
 private:
 	void onProvidersChange();
 	friend void JNICALL Java_onProvidersChange(JNIEnv * env, jobject, jlong param);
-
-private:
-	QScopedPointer<QJniObject> handler_;
 };
 

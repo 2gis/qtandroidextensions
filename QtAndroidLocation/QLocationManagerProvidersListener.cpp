@@ -36,6 +36,7 @@
 
 #include "QLocationManagerProvidersListener.h"
 #include <QAndroidQPAPluginGap.h>
+#include <TJniObjectLinker.h>
 
 
 
@@ -44,46 +45,29 @@ static const char * const c_full_class_name_ = "ru/dublgis/androidlocation/Locat
 
 Q_DECL_EXPORT void JNICALL Java_onProvidersChange(JNIEnv * env, jobject, jlong param)
 {
-	try
-	{
-		if (param)
-		{
-			void * vp = reinterpret_cast<void*>(param);
-			QLocationManagerProvidersListener * proxy = reinterpret_cast<QLocationManagerProvidersListener*>(vp);
-			proxy->onProvidersChange();
-			return;
-		}
-		else
-		{
-			qWarning() << __FUNCTION__ << "Zero param!";
-		}
-
-	}
-	catch (std::exception & e)
-	{
-		qWarning() << __FUNCTION__ << " exception: " << e.what();
-	}
+	JNI_LINKER_OBJECT(QLocationManagerProvidersListener, param, obj)
+	obj->onProvidersChange();
 }
+
+
+static const JNINativeMethod methods[] = {
+	{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivityNoThrow},
+	{"onProvidersChange", "(J)V", (void*)Java_onProvidersChange},
+};
+
+
+JNI_LINKER_IMPL(QLocationManagerProvidersListener, c_full_class_name_, methods)
 
 
 QLocationManagerProvidersListener::QLocationManagerProvidersListener(QObject * parent /*= 0*/) :
 	QObject(parent)
+	, jniLinker_(new JniObjectLinker(this))
 {
-	preloadJavaClasses();
-
-	// Creating Java object
-	handler_.reset(new QJniObject(c_full_class_name_, "J",
-		jlong(reinterpret_cast<void*>(this))));
 }
 
 
 QLocationManagerProvidersListener::~QLocationManagerProvidersListener()
 {
-	if (handler_)
-	{
-		handler_->callVoid("cppDestroyed");
-		handler_.reset();
-	}
 }
 
 
@@ -91,14 +75,14 @@ QGeoPositionInfoSource::PositioningMethods QLocationManagerProvidersListener::ge
 {
 	QGeoPositionInfoSource::PositioningMethods res = QGeoPositionInfoSource::NoPositioningMethods;
 
-	if (handler_)
+	if (isJniReady())
 	{
-		if (handler_->callBool("isGpsProviderAvailable"))
+		if (jni()->callBool("isGpsProviderAvailable"))
 		{
 			res |= QGeoPositionInfoSource::SatellitePositioningMethods;
 		}
 
-		if (handler_->callBool("isNetworkProviderAvailable"))
+		if (jni()->callBool("isNetworkProviderAvailable"))
 		{
 			res |= QGeoPositionInfoSource::NonSatellitePositioningMethods;
 		}
@@ -112,14 +96,14 @@ QGeoPositionInfoSource::PositioningMethods QLocationManagerProvidersListener::ge
 {
 	QGeoPositionInfoSource::PositioningMethods res = QGeoPositionInfoSource::NoPositioningMethods;
 
-	if (handler_)
+	if (isJniReady())
 	{
-		if (handler_->callBool("isGpsProviderEnabled"))
+		if (jni()->callBool("isGpsProviderEnabled"))
 		{
 			res |= QGeoPositionInfoSource::SatellitePositioningMethods;
 		}
 
-		if (handler_->callBool("isNetworkProviderEnabled"))
+		if (jni()->callBool("isNetworkProviderEnabled"))
 		{
 			res |= QGeoPositionInfoSource::NonSatellitePositioningMethods;
 		}
@@ -133,9 +117,9 @@ bool QLocationManagerProvidersListener::isActiveProvidersEnabled()
 {
 	bool ret = false;
 
-	if (handler_)
+	if (isJniReady())
 	{
-		ret = handler_->callBool("isActiveProvidersEnabled");
+		ret = jni()->callBool("isActiveProvidersEnabled");
 	}
 
 	qDebug() << __FUNCTION__ << ": ret = " << ret;
@@ -147,37 +131,4 @@ void QLocationManagerProvidersListener::onProvidersChange()
 {
 	qDebug() << __FUNCTION__;
 	emit providersChange(isActiveProvidersEnabled());
-}
-
-
-void QLocationManagerProvidersListener::preloadJavaClasses()
-{
-	static volatile bool preloaded_ = false;
-
-	if (!preloaded_)
-	{
-		try
-		{
-			preloaded_ = true;
-
-			QAndroidQPAPluginGap::preloadJavaClasses();
-			QAndroidQPAPluginGap::preloadJavaClass(c_full_class_name_);
-
-			qDebug() << "Pre-loading Java classes for QLocationManagerProvidersListener";
-			QJniClass ov(c_full_class_name_);
-			static const JNINativeMethod methods[] = {
-				{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivityNoThrow},
-				{"onProvidersChange", "(J)V", (void*)Java_onProvidersChange},
-			};
-
-			if (!ov.registerNativeMethods(methods, sizeof(methods)))
-			{
-				qWarning() << "Failed to register native methods";
-			}
-		}
-		catch(std::exception & e)
-		{
-			qWarning() << "Exception while registering native methods: " << e.what();
-		}
-	}
 }
