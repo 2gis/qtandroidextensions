@@ -1608,6 +1608,24 @@ int QJniObject::getIntField(const char * field_name)
 	return result;
 }
 
+jlong QJniObject::getLongField(const char * field_name)
+{
+	VERBOSE(qWarning("int QJniObject::getLongField(const char* field_name) %p \"%s\"",this,field_name));
+	QJniEnvPtr jep;
+	JNIEnv* env = jep.env();
+	jfieldID fid = env->GetFieldID(checkedClass(), field_name, "J");
+	if (!fid)
+	{
+		qWarning("%s: field %s not found.", __FUNCTION__, field_name);
+		throw QJniFieldNotFoundException();
+	}
+	jlong result = env->GetLongField(instance_, fid);
+	if (jep.clearException())
+	{
+		throw QJniJavaCallException(field_name);
+	}
+	return result;
+}
 
 float QJniObject::getFloatField(const char * field_name)
 {
