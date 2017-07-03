@@ -22,4 +22,10 @@
 #pragma once
 #include <QJniHelpers/QJniHelpers.h>
 
-Q_DECL_IMPORT void installQAndroidAssetHandler(QJniObject & context);
+#if defined(QTANDROIDASSETS_STATIC)
+    #define QTANDROIDASSETS_IMPORT
+#else
+    #define QTANDROIDASSETS_IMPORT Q_DECL_IMPORT
+#endif
+
+QTANDROIDASSETS_IMPORT void installQAndroidAssetHandler(QJniObject & context);
