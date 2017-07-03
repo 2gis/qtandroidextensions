@@ -375,6 +375,9 @@ public:
 	//! Get value of int field of the wrapped Java object
 	int getIntField(const char * field_name);
 
+	//! Get value of long field of the wrapped Java object
+	jlong getLongField(const char * field_name);
+
 	//! Get value of float field of the wrapped Java object
 	float getFloatField(const char * field_name);
 
