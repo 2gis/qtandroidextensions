@@ -564,6 +564,14 @@ void QAndroidOffscreenEditText::setCursorColorToTextColor()
 	}
 }
 
+void QAndroidOffscreenEditText::setMaxLength(int length)
+{
+	if (QJniObject * view = offscreenView())
+	{
+		view->callVoid("setMaxLength", jint(length));
+	}
+}
+
 int QAndroidOffscreenEditText::getSystemDrawMode()
 {
 	if (QJniObject * view = offscreenView())
