@@ -859,7 +859,7 @@ class OffscreenEditText extends OffscreenView
         });
     }
 
-    void setMaxLength(int length)
+    void setMaxLength(final int length)
     {
         runViewAction(new Runnable(){
             @Override
