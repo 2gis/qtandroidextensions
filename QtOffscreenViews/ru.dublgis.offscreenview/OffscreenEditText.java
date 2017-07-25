@@ -56,6 +56,7 @@ import android.graphics.Canvas;
 import android.graphics.PorterDuff;
 import android.graphics.Color;
 import android.text.TextUtils;
+import android.text.InputFilter;
 
 import ru.dublgis.androidhelpers.Log;
 
@@ -854,6 +855,23 @@ class OffscreenEditText extends OffscreenView
                     ops |= flag;
                 }
                 met.setImeOptions(ops);
+            }
+        });
+    }
+
+    void setMaxLength(int length)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                if (length > 0)
+                {
+                    ((MyEditText)getView()).setFilters(new InputFilter[]{new InputFilter.LengthFilter(length)});
+                }
+                else
+                {
+                    ((MyEditText)getView()).setFilters(new InputFilter[]{});
+                }
             }
         });
     }

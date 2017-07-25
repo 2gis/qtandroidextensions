@@ -188,6 +188,8 @@ public slots:
 
 	void setCursorColorToTextColor() { androidEditText()->setCursorColorToTextColor(); }
 
+	void setMaxLength(int length) { androidEditText()->setMaxLength(length); }
+
 
 	void setImeOptions(int and_mask, int or_mask) { androidEditText()->setImeOptions(and_mask, or_mask); }
 	void setImeAction(int action) { androidEditText()->setImeAction(action); }

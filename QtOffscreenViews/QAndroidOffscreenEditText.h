@@ -333,6 +333,7 @@ public:
 	//
 	void setAllowFullscreenKeyboard(bool allow);
 	void setCursorColorToTextColor();
+	void setMaxLength(int length);
 
 	//
 	// Drawing mode hack
