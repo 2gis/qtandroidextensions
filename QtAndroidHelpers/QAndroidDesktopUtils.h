@@ -78,7 +78,24 @@ bool openURL(const QString & url);
 bool openFile(const QString & fileName, const QString & mimeType);
 bool installApk(const QString & apk);
 void uninstallApk(const QString & packagename);
-bool callNumber(const QString & number);
+
+// Opens the number as "tel:/" + number and ACTION_VIEW, which typically opens phone dialer with
+// the number entered. Does not require any special permissions. On some devices, it may open
+// an IP telephony app.
+bool callNumber(const QString & number, const QString & action = QString());
+
+// Does the same as callNumber(number).
+bool showPhoneNumber(const QString & number);
+
+// Opens the number with DIAL action, which usually does the same as showPhoneNumber() but may
+// have a different effect if non-standard handler for tel: is used. Does not require any special
+// permissions. In case of an error it falls back to showPhoneNumber().
+bool dialPhoneNumber(const QString & number);
+
+// If the app is running API < 23 OR we have a "android.permission.CALL_PHONE" it opens the number
+// via "CALL" action which causes immediate dialing; otherise, it does dialPhoneNumber().
+bool callPhoneNumber(const QString & number);
+
 QString getTelephonyDeviceId();
 QString getDisplayCountry();
 QString getCountry();

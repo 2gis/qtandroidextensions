@@ -82,7 +82,7 @@ public class DesktopUtils
                 return 1;
             return 0;
         }
-        catch (Exception e)
+        catch (final Throwable e)
         {
             Log.e(TAG, "IsInternetActive exception: "+e);
         }
@@ -105,7 +105,7 @@ public class DesktopUtils
                 return -1;
             return netinfo.getType();
         }
-        catch (Exception e)
+        catch (final Throwable e)
         {
             Log.e(TAG, "GetNetworkType exception: "+e);
         }
@@ -144,7 +144,7 @@ public class DesktopUtils
             ctx.startActivity(chooser);
             return true;
         }
-        catch (Exception e)
+        catch (final Throwable e)
         {
             Log.e(TAG, "sendTo exception: "+e);
             return false;
@@ -167,7 +167,7 @@ public class DesktopUtils
             ctx.startActivity(intent);
             return true;
         }
-        catch (Exception e)
+        catch (final Throwable e)
         {
             Log.e(TAG, "sendSMS exception: "+e);
             return false;
@@ -268,7 +268,7 @@ public class DesktopUtils
             ctx.startActivity(chooserIntent);
             return true;
         }
-        catch (Exception e)
+        catch (final Throwable e)
         {
             Log.e(TAG, "sendEmail exception: "+e);
             return false;
@@ -353,7 +353,7 @@ public class DesktopUtils
 
             return true;
         }
-        catch (Exception exception)
+        catch (final Throwable exception)
         {
             Log.e(TAG, "sendEmail exception: ", exception);
             return false;
@@ -383,7 +383,7 @@ public class DesktopUtils
             ctx.startActivity(i);
             return true;
         }
-        catch (Exception e)
+        catch (final Throwable e)
         {
             Log.e(TAG, "openURL exception: "+e);
             return false;
@@ -403,7 +403,7 @@ public class DesktopUtils
             ctx.startActivity(intent);
             return true;
         }
-        catch (Exception e)
+        catch (final Throwable e)
         {
             Log.e(TAG, "Exception while opening a file: "+e);
             return false;
@@ -423,7 +423,7 @@ public class DesktopUtils
             Log.i(TAG, "Installation intent started successfully.");
             return true;
         }
-        catch (Exception e)
+        catch (final Throwable e)
         {
             Log.e(TAG, "Exception while installing apk: "+e);
             return false;
@@ -442,26 +442,29 @@ public class DesktopUtils
             ctx.startActivity(intent);
             Log.i(TAG, "Uninstallation intent started successfully.");
         }
-        catch (Exception e)
+        catch (final Throwable e)
         {
             Log.e(TAG, "Exception while uninstalling package: "+e);
         }
     }
 
     // 'number' is an RFC-3966 URI without 'tel:'.
+    // If 'action' is null or empty string it defaults to Intent.ACTION_VIEW.
     // See: http://tools.ietf.org/html/rfc3966
-    public static boolean callNumber(final Context ctx, final String number)
+    public static boolean callNumber(final Context ctx, final String number, final String action)
     {
         try
         {
-            Log.i(TAG, "Will call number: "+number);
-            Intent i = new Intent(Intent.ACTION_VIEW);
+            Log.i(TAG, "Will call number: " + number);
+            final String doAction = (action == null || action.isEmpty()) ? Intent.ACTION_VIEW : action;
+            final String doPhone = (number.startsWith("tel:")) ? number: "tel:" + number;
+            final Intent i = new Intent(doAction);
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            i.setData(Uri.parse("tel:"+number));
+            i.setData(Uri.parse(doPhone));
             ctx.startActivity(i);
             return true;
         }
-        catch(Exception e)
+        catch (final Throwable e)
         {
             Log.e(TAG, "callNumber exception: "+e);
             return false;
@@ -479,7 +482,7 @@ public class DesktopUtils
             }
             return tm.getDeviceId();
         }
-        catch (Exception e)
+        catch (final Throwable e)
         {
             Log.e(TAG, "getTelephonyDeviceId exception: "+e);
             return "";
@@ -492,7 +495,7 @@ public class DesktopUtils
         {
             return ctx.getResources().getConfiguration().locale.getDisplayCountry();
         }
-        catch (Exception e)
+        catch (final Throwable e)
         {
             Log.e(TAG, "getDisplayCountry exception: " + e);
             return "";
@@ -505,7 +508,7 @@ public class DesktopUtils
         {
             return ctx.getResources().getConfiguration().locale.getCountry();
         }
-        catch (Exception e)
+        catch (final Throwable e)
         {
             Log.e(TAG, "getCountry exception: " + e);
             return "";
@@ -524,7 +527,7 @@ public class DesktopUtils
                 return androidId;
             }
         }
-        catch (Exception e)
+        catch (final Throwable e)
         {
             Log.e(TAG, "getAndroidId exception: "+e);
         }
@@ -561,7 +564,7 @@ public class DesktopUtils
             }
             return result; 
         }
-        catch (Exception e)
+        catch (final Throwable e)
         {
             Log.e(TAG, "getInstalledAppsList exception: "+e);
         }

@@ -211,13 +211,50 @@ void uninstallApk(const QString & packagename)
 }
 
 
-bool callNumber(const QString & number)
+bool callNumber(const QString & number, const QString & action)
 {
 	QJniClass du(c_full_class_name_);
 	QAndroidQPAPluginGap::Context activity;
-	return du.callStaticParamBoolean("callNumber", "Landroid/content/Context;Ljava/lang/String;",
-		activity.jObject(),
-		QJniLocalRef(number).jObject());
+	return du.callStaticParamBoolean(
+		"callNumber"
+		, "Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;"
+		, activity.jObject()
+		, QJniLocalRef(number).jObject()
+		, QJniLocalRef(action).jObject());
+}
+
+
+bool showPhoneNumber(const QString & number)
+{
+	return callNumber(number, QLatin1String("android.intent.action.VIEW"));
+}
+
+
+bool dialPhoneNumber(const QString & number)
+{
+	if (!callNumber(number, QLatin1String("android.intent.action.DIAL")))
+	{
+		qWarning() << "dialPhoneNumber failed, falling back to showPhoneNumber.";
+		showPhoneNumber(number);
+	}
+}
+
+
+bool callPhoneNumber(const QString & number)
+{
+	if (checkSelfPermission("android.permission.CALL_PHONE"))
+	{
+		if (!callNumber(number, QLatin1String("android.intent.action.CALL")))
+		{
+			qWarning() << "callPhoneNumber failed, falling back to dialPhoneNumber.";
+			dialPhoneNumber(number);
+		}
+	}
+	else
+	{
+		qDebug() << "callPhoneNumber: no permission, falling back to dialPhoneNumber.";
+		return dialPhoneNumber(number);
+	}
 }
 
 
