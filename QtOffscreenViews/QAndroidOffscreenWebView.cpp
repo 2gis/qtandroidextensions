@@ -397,6 +397,14 @@ void QAndroidOffscreenWebView::goForward()
 	}
 }
 
+void QAndroidOffscreenWebView::setWebContentsDebuggingEnabled(bool enabled)
+{
+    if (QJniObject * view = offscreenView())
+    {
+        view->callVoid("setWebContentsDebuggingEnabled",(jboolean)enabled);
+    }
+}
+
 void QAndroidOffscreenWebView::requestCanGoBackOrForward(int steps)
 {
 	QJniObject * view = offscreenView();
