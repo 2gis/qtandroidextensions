@@ -223,7 +223,9 @@ public class DesktopUtils
             i.putExtra(Intent.EXTRA_EMAIL, recipients);
             i.putExtra(Intent.EXTRA_SUBJECT, subject);
             i.putExtra(Intent.EXTRA_TEXT, body);
-            if (attach_file != null && attach_file.length() > 0) {
+
+            Uri workaround_grant_permission_for_uri = null;
+            if (attach_file != null && !attach_file.isEmpty()) {
                 if (!force_content_provider && android.os.Build.VERSION.SDK_INT < 23) {
                     i.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(attach_file)));
                 } else {
@@ -231,16 +233,30 @@ public class DesktopUtils
                     // For more information, please see:
                     // http://stackoverflow.com/questions/32981194/android-6-cannot-share-files-anymore
                     i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    i.putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(
-                            ctx,
-                            authorities,
-                            new File(attach_file)));
+                    workaround_grant_permission_for_uri = FileProvider.getUriForFile(
+                        ctx,
+                        authorities,
+                        new File(attach_file));
+                    i.putExtra(Intent.EXTRA_STREAM, workaround_grant_permission_for_uri);
                 }
             }
 
             for (ResolveInfo resolveInfo : resolveInfos) {
                 String packageName = resolveInfo.activityInfo.packageName;
                 String name = resolveInfo.activityInfo.name;
+
+                // Some mail clients will not read the URI unless this is done.
+                // See here: https://stackoverflow.com/questions/24467696/android-file-provider-permission-denial
+                if (workaround_grant_permission_for_uri != null) {
+                    try {
+                        ctx.grantUriPermission(
+                            packageName
+                            , workaround_grant_permission_for_uri
+                            , Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    } catch (final Throwable e) {
+                        Log.e(TAG, "grantUriPermission error: ", e);
+                    }
+                }
 
                 Intent fakeIntent = (Intent)i.clone();
                 fakeIntent.setComponent(new ComponentName(packageName, name));
@@ -287,9 +303,9 @@ public class DesktopUtils
             intent.putExtra(Intent.EXTRA_SUBJECT, subject);
             intent.putExtra(Intent.EXTRA_TEXT, body);
 
+            boolean grant_permissions_workaround = false;
+            final ArrayList<Uri> uri = new ArrayList<>();
             if (attachment.length > 0) {
-                final ArrayList<Uri> uri = new ArrayList<>();
-
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
                     for (final String fileName: attachment) {
                         uri.add(Uri.fromFile(new File(fileName)));
@@ -299,7 +315,7 @@ public class DesktopUtils
                     // For more information, please see:
                     // http://stackoverflow.com/questions/32981194/android-6-cannot-share-files-anymore
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
+                    grant_permissions_workaround = true;
                     for (final String fileName: attachment) {
                         uri.add(FileProvider.getUriForFile(ctx, authorities, new File(fileName)));
                     }
@@ -327,6 +343,21 @@ public class DesktopUtils
                 for (final ActivityInfo activityInfo : mailtoIntentResolvers.getResolveInfos()) {
                     final String packageName = activityInfo.getPackageName();
                     final String name = activityInfo.getName();
+
+                    // Some mail clients will not read the URI unless this is done.
+                    // See here: https://stackoverflow.com/questions/24467696/android-file-provider-permission-denial
+                    if (grant_permissions_workaround) {
+                        for (int i = 0; i < uri.size(); ++i) {
+                            try {
+                                ctx.grantUriPermission(
+                                   packageName
+                                   , uri.get(i)
+                                   , Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            } catch (final Throwable e) {
+                                Log.e(TAG, "grantUriPermission error: ", e);
+                            }
+                        }
+                    }
 
                     final Intent cloneIntent = (Intent) intent.clone();
                     cloneIntent.setComponent(new ComponentName(packageName, name));
