@@ -235,8 +235,9 @@ bool dialPhoneNumber(const QString & number)
 	if (!callNumber(number, QLatin1String("android.intent.action.DIAL")))
 	{
 		qWarning() << "dialPhoneNumber failed, falling back to showPhoneNumber.";
-		showPhoneNumber(number);
+		return showPhoneNumber(number);
 	}
+	return true;
 }
 
 
@@ -247,8 +248,9 @@ bool callPhoneNumber(const QString & number)
 		if (!callNumber(number, QLatin1String("android.intent.action.CALL")))
 		{
 			qWarning() << "callPhoneNumber failed, falling back to dialPhoneNumber.";
-			dialPhoneNumber(number);
+			return dialPhoneNumber(number);
 		}
+		return true;
 	}
 	else
 	{
