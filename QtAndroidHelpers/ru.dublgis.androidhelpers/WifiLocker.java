@@ -66,7 +66,7 @@ class WifiLocker
 
 		try 
 		{
-			WifiManager wifiManager = (WifiManager)getContext().getSystemService(Context.WIFI_SERVICE);
+			WifiManager wifiManager = (WifiManager)getContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 			
 			if (wifiManager != null)
 			{
@@ -152,7 +152,7 @@ class WifiLocker
 	{
 		try 
 		{
-			WifiManager wifiManager = (WifiManager)getContext().getSystemService(Context.WIFI_SERVICE);
+			WifiManager wifiManager = (WifiManager)getContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 			return null != wifiManager && wifiManager.isWifiEnabled();
 		}
 		catch (Exception e)

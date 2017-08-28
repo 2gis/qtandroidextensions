@@ -84,7 +84,7 @@ public class WifiListener extends BroadcastReceiver
 				return false;
 			}
 
-			mWifiMan = (WifiManager)getContext().getSystemService(Context.WIFI_SERVICE);
+			mWifiMan = (WifiManager)getContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 			
 			if (mWifiMan == null)
 			{
@@ -165,7 +165,7 @@ public class WifiListener extends BroadcastReceiver
 				Log.i(LOG_TAG, "getLastWifiScanResultsTable()");
 			}
 
-			WifiManager wm = (WifiManager)getContext().getSystemService(Context.WIFI_SERVICE);
+			WifiManager wm = (WifiManager)getContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
 			if (wm == null)
 			{
