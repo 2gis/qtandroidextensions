@@ -281,10 +281,18 @@ protected:
 	void initClass(JNIEnv * env, jclass clazz);
 	void clearClass(JNIEnv * env);
 
-	inline jclass checkedClass() { if (!class_) throw QJniClassNotSetException(); return class_; }
+	inline jclass checkedClass()
+	{
+		if (!class_)
+		{
+			throw QJniClassNotSetException(construction_class_name_.constData());
+		}
+		return class_;
+	}
 
 private:
 	jclass class_;
+	QByteArray construction_class_name_;
 };
 
 

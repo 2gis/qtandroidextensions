@@ -488,12 +488,13 @@ QJniClass::QJniClass(const char * full_class_name)
 	{
 		throw QJniBaseException("Empty class name in QJniClass::QJniClass");
 	}
+	construction_class_name_ = full_class_name;
 
 	QJniEnvPtr jep;
 	jclass cls = jep.findClass(full_class_name); // this is a preloaded global ref, we don't need to delete it as a local ref
 	if (jep.clearException())
 	{
-		throw QJniBaseException();
+		throw QJniBaseException("Exception in JniEnvPtr::findClass");
 	}
 	if (cls == 0)
 	{
@@ -521,6 +522,7 @@ QJniClass::QJniClass(jobject object)
 
 QJniClass::QJniClass(const QJniClass & other)
 	: class_(0)
+	, construction_class_name_(other.construction_class_name_)
 {
 	QJniEnvPtr jep;
 	initClass(jep.env(), other.class_);
@@ -544,7 +546,7 @@ void QJniClass::initClass(JNIEnv* env, jclass clazz)
 		class_ = static_cast<jclass>(env->NewGlobalRef(clazz));
 		if (jep.clearException())
 		{
-			throw QJniBaseException();
+			throw QJniBaseException("Exception near JniEnvPtr::NewGlobalRef");
 		}
 	}
 }
@@ -1053,7 +1055,7 @@ QJniObject::QJniObject(const QJniClass & clazz, const char * param_signature, ..
 	jmethodID mid_init = env->GetMethodID(checkedClass(), "<init>", signature.data());
 	if (jep.clearException())
 	{
-		throw QJniBaseException();
+		throw QJniBaseException("Exception near getting method id for <init>");
 	}
 	if (!mid_init)
 	{
@@ -1066,7 +1068,7 @@ QJniObject::QJniObject(const QJniClass & clazz, const char * param_signature, ..
 	va_end(args);
 	if (jep.clearException())
 	{
-		throw QJniBaseException();
+		throw QJniBaseException("Exception in JniEnvPtr::NewObjectV");
 	}
 
 	// it is dangerous to go alone, use this
@@ -1091,7 +1093,7 @@ QJniObject::QJniObject(const char * class_name, const char * param_signature, ..
 	jmethodID mid_init = env->GetMethodID(checkedClass(), "<init>", signature.data());
 	if (jep.clearException())
 	{
-		throw QJniBaseException();
+		throw QJniBaseException("Exception near getting method id for <init>");
 	}
 	if (!mid_init)
 	{
@@ -1104,7 +1106,7 @@ QJniObject::QJniObject(const char * class_name, const char * param_signature, ..
 	va_end(args);
 	if (jep.clearException())
 	{
-		throw QJniBaseException();
+		throw QJniBaseException("Exception in JniEnvPtr::NewObjectV");
 	}
 	if (!obj.jObject())
 	{
@@ -1146,7 +1148,7 @@ void QJniObject::initObject(JNIEnv * env, jobject instance, bool can_have_null_c
 	instance_ = env->NewGlobalRef(instance);
 	if (jep.clearException())
 	{
-		throw QJniBaseException();
+		throw QJniBaseException("Exception near JniEnvPtr::NewGlobalRef");
 	}
 	if (instance && !instance_)
 	{
