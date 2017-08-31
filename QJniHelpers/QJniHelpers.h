@@ -48,7 +48,7 @@
 class QJniBaseException: public std::exception
 {
 public:
-	QJniBaseException(const QByteArray & message = "");
+	QJniBaseException(const QByteArray & message);
 	virtual const char * what() const throw();
 protected:
 	static QByteArray readableIdString(const char * id);
@@ -60,35 +60,35 @@ private:
 class QJniThreadAttachException: public QJniBaseException
 {
 public:
-	QJniThreadAttachException(const char * detail = 0);
+	QJniThreadAttachException(const char * detail);
 };
 
 
 class QJniClassNotFoundException: public QJniBaseException
 {
 public:
-	QJniClassNotFoundException(const char * class_name = 0);
+	QJniClassNotFoundException(const char * class_name);
 };
 
 
 class QJniClassNotSetException: public QJniBaseException
 {
 public:
-	QJniClassNotSetException(const char * class_name = 0);
+	QJniClassNotSetException(const char * class_name);
 };
 
 
 class QJniMethodNotFoundException: public QJniBaseException
 {
 public:
-	QJniMethodNotFoundException(const char * method_name = 0);
+	QJniMethodNotFoundException(const char * method_name);
 };
 
 
 class QJniFieldNotFoundException: public QJniBaseException
 {
 public:
-	QJniFieldNotFoundException(const char * field_name = 0);
+	QJniFieldNotFoundException(const char * field_name);
 };
 
 

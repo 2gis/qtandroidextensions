@@ -161,7 +161,7 @@ static inline bool classObjectMayHaveNullClass(const char * class_name)
 // Exceptions
 /////////////////////////////////////////////////////////////////////////////
 
-QJniBaseException::QJniBaseException(const QByteArray & message /*= ""*/)
+QJniBaseException::QJniBaseException(const QByteArray & message)
 	: message_(message.isEmpty() ? "JNI: Java exception." : message)
 {
 	qWarning() << "QJniHelpers: throwing an exception:" << what();
