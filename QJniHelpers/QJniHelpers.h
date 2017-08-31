@@ -50,44 +50,52 @@ class QJniBaseException: public std::exception
 public:
 	QJniBaseException(const QByteArray & message = "");
 	virtual const char * what() const throw();
+protected:
+	static QByteArray readableIdString(const char * id);
 private:
 	const QByteArray message_;
 };
 
+
 class QJniThreadAttachException: public QJniBaseException
 {
 public:
-	QJniThreadAttachException();
+	QJniThreadAttachException(const char * detail = 0);
 };
+
 
 class QJniClassNotFoundException: public QJniBaseException
 {
 public:
-	QJniClassNotFoundException();
+	QJniClassNotFoundException(const char * class_name = 0);
 };
+
 
 class QJniClassNotSetException: public QJniBaseException
 {
 public:
-	QJniClassNotSetException();
+	QJniClassNotSetException(const char * class_name = 0);
 };
+
 
 class QJniMethodNotFoundException: public QJniBaseException
 {
 public:
-	QJniMethodNotFoundException();
+	QJniMethodNotFoundException(const char * method_name = 0);
 };
+
 
 class QJniFieldNotFoundException: public QJniBaseException
 {
 public:
-	QJniFieldNotFoundException();
+	QJniFieldNotFoundException(const char * field_name = 0);
 };
+
 
 class QJniJavaCallException: public QJniBaseException
 {
 public:
-	QJniJavaCallException(const QByteArray & callDetails);
+	QJniJavaCallException(const char * detail);
 };
 
 
