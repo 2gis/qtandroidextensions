@@ -109,6 +109,7 @@ bool WifiDataList::operator!=(const WifiDataList &rhs) const
 
 void WifiDataList::DbgPrint(const WifiDataList &another)
 {
+	Q_UNUSED(another)
 }
 
 
