@@ -268,6 +268,8 @@ int apiLevel()
 // JNI entry points. Must be "C" because the function names should not be mangled.
 extern "C" {
 
+JNIEXPORT void JNICALL Java_ru_dublgis_qjnihelpers_ClassLoader_nativeJNIPreloadClass(JNIEnv * env, jobject, jstring classname);
+
 /*! This function does the actual pre-loading of a Java class. It can be called either from Java
 	via ClassLoader.callJNIPreloadClass() or from C++ main() thread as QAndroidQPAPluginGap.preloadJavaClass(). */
 JNIEXPORT void JNICALL Java_ru_dublgis_qjnihelpers_ClassLoader_nativeJNIPreloadClass(JNIEnv * env, jobject, jstring classname)
