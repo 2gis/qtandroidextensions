@@ -43,7 +43,7 @@
 static const char * const c_full_class_name_ = "ru/dublgis/androidlocation/LocationManagerProvidersListener";
 
 
-Q_DECL_EXPORT void JNICALL Java_onProvidersChange(JNIEnv * env, jobject, jlong param)
+Q_DECL_EXPORT void JNICALL Java_onProvidersChange(JNIEnv *, jobject, jlong param)
 {
 	JNI_LINKER_OBJECT(QLocationManagerProvidersListener, param, obj)
 	obj->onProvidersChange();

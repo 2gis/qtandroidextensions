@@ -57,7 +57,7 @@ static void setPositionAttributeFloat(QGeoPositionInfo & info, QGeoPositionInfo:
 }
 
 
-static QGeoPositionInfo positionInfoFromJavaLocation(JNIEnv * jniEnv, const jobject & jlocation)
+static QGeoPositionInfo positionInfoFromJavaLocation(JNIEnv *, const jobject & jlocation)
 {
 	QGeoPositionInfo info;
 	QJniObject location(jlocation, false);
@@ -92,7 +92,7 @@ static QGeoPositionInfo positionInfoFromJavaLocation(JNIEnv * jniEnv, const jobj
 
 
 
-Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationStatus(JNIEnv * env, jobject, jlong param, jint state)
+Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationStatus(JNIEnv *, jobject, jlong param, jint state)
 {
 	JNI_LINKER_OBJECT(QAndroidGmsLocationProvider, param, obj)
 	obj->onStatusChanged(state);
