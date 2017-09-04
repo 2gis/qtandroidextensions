@@ -45,12 +45,13 @@
 Q_DECLARE_METATYPE(QGeoPositionInfo)
 
 
-QGeoPositionInfoSourceAndroidGms::QGeoPositionInfoSourceAndroidGms(QObject * parent) :
-	QGeoPositionInfoSource(parent),
-	m_error(NoError),
-	regularProvider_(NULL),
-	updatesRunning_(false),
-	activeProvidersDisabled_(false)
+QGeoPositionInfoSourceAndroidGms::QGeoPositionInfoSourceAndroidGms(QObject * parent)
+	: QGeoPositionInfoSource(parent)
+	, regularProvider_(NULL)
+	, providersListener_(NULL)
+	, updatesRunning_(false)
+	, m_error(NoError)
+	, activeProvidersDisabled_(false)
 {
 	qRegisterMetaType<QGeoPositionInfo>();
 
