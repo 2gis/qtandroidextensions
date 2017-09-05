@@ -43,6 +43,15 @@
 // #define ANDROIDSPEECHRECOGNIZER_VERBOSE
 
 
+Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnBeginningOfSpeech(JNIEnv *, jobject, jlong param);
+Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnEndOfSpeech(JNIEnv *, jobject, jlong param);
+Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnError(JNIEnv *, jobject, jlong param, jint code);
+Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnPartialResults(JNIEnv *, jobject, jlong param, jobject bundle_results);
+Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnReadyForSpeech(JNIEnv *, jobject, jlong param, jobject bundle_params);
+Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnRmsChanged(JNIEnv *, jobject, jlong param, jfloat rmsdB);
+Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeSupportedLanguagesReceived(JNIEnv *, jobject, jlong param, jobject languages);
+
+
 const QString
 	QAndroidSpeechRecognizer::ANDROID_RECOGNIZERINTENT_ACTION_GET_LANGUAGE_DETAILS = QLatin1String("android.speech.action.GET_LANGUAGE_DETAILS"),
 	QAndroidSpeechRecognizer::ANDROID_RECOGNIZERINTENT_ACTION_RECOGNIZE_SPEECH = QLatin1String("android.speech.action.RECOGNIZE_SPEECH"),

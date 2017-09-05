@@ -91,7 +91,7 @@ QJniEnvPtrThreadDetacher::~QJniEnvPtrThreadDetacher()
 		int errsv = g_JavaVm->DetachCurrentThread();
 		if (errsv != JNI_OK)
 		{
-			qWarning("Thread %d detach failed: %d", (int)gettid(), errsv);
+			qWarning("Thread %d detach failed: %d", static_cast<int>(gettid()), errsv);
 		}
 	}
 }
@@ -241,7 +241,7 @@ QJniEnvPtr::QJniEnvPtr(JNIEnv * env)
 	}
 	if (!env_)
 	{
-		int errsv = g_JavaVm->GetEnv((void**)(&env_), JNI_VERSION_1_6);
+		int errsv = g_JavaVm->GetEnv(reinterpret_cast<void**>(&env_), JNI_VERSION_1_6);
 		if (errsv == JNI_EDETACHED)
 		{
 			VERBOSE(qWarning("Current thread %d is not attached, attaching it...", (int)gettid()));
@@ -296,10 +296,10 @@ bool QJniEnvPtr::preloadClass(const char * class_name)
 	QJniLocalRef clazz(env_, env_->FindClass(class_name)); // jclass
 	if (clearException() || clazz.jObject() == 0)
 	{
-		qWarning("...Failed to preload class %s (tid %d)", class_name, (int)gettid());
+		qWarning("...Failed to preload class %s (tid %d)", class_name, static_cast<int>(gettid()));
 		return false;
 	}
-	jclass gclazz = (jclass)env_->NewGlobalRef(clazz);
+	jclass gclazz = static_cast<jclass>(env_->NewGlobalRef(clazz));
 	QMutexLocker locker(&g_PreloadedClassesMutex);
 	g_PreloadedClasses.insert(QLatin1String(class_name), gclazz);
 	VERBOSE(qWarning("...Preloaded class \"%s\" as %p for tid %d", class_name, gclazz, (int)gettid()));
@@ -363,7 +363,7 @@ jclass QJniEnvPtr::findClass(const char * name)
 	}
 
 	// We must store class ref in a global ref
-	jclass ret = (jclass)env_->NewGlobalRef(cls);
+	jclass ret = static_cast<jclass>(env_->NewGlobalRef(cls));
 
 	// Add it to a list of preloaded classes for convenience
 	QMutexLocker locker(&g_PreloadedClassesMutex);
@@ -386,7 +386,7 @@ bool QJniEnvPtr::isCurrentThreadAttached()
 	if (g_JavaVm)
 	{
 		JNIEnv * env = 0;
-		int errsv = g_JavaVm->GetEnv((void**)(&env), JNI_VERSION_1_6);
+		int errsv = g_JavaVm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
 		if (errsv == JNI_OK && env)
 		{
 			return true;
@@ -440,7 +440,7 @@ QString QJniEnvPtr::QStringFromJString(jstring str)
 		return QString();
 	}
 
-	QString ret = QString((const QChar *)str_ptr, length);
+	QString ret = QString(reinterpret_cast<const QChar *>(str_ptr), length);
 	env_->ReleaseStringChars(str, str_ptr);
 	return ret;
 }
@@ -1229,7 +1229,7 @@ int QJniObject::callInt(const char* method_name)
 	{
 		throw QJniMethodNotFoundException(method_name);
 	}
-	int result = (int)env->CallIntMethod(instance_, mid);
+	int result = static_cast<int>(env->CallIntMethod(instance_, mid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(method_name);
@@ -1248,7 +1248,7 @@ long long QJniObject::callLong(const char* method_name)
 	{
 		throw QJniMethodNotFoundException(method_name);
 	}
-	long long result = (long long)env->CallLongMethod(instance_, mid);
+	long long result = static_cast<long long>(env->CallLongMethod(instance_, mid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(method_name);
@@ -1267,7 +1267,7 @@ float QJniObject::callFloat(const char* method_name)
 	{
 		throw QJniMethodNotFoundException(method_name);
 	}
-	float result = (float)env->CallFloatMethod(instance_, mid);
+	float result = static_cast<float>(env->CallFloatMethod(instance_, mid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(method_name);
@@ -1286,7 +1286,7 @@ float QJniObject::callFloat(const char* method_name, int param)
 	{
 		throw QJniMethodNotFoundException(method_name);
 	}
-	float result = (float)env->CallFloatMethod(instance_, mid, jint(param));
+	float result = static_cast<float>(env->CallFloatMethod(instance_, mid, jint(param)));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(method_name);
@@ -1305,7 +1305,7 @@ double QJniObject::callDouble(const char* method_name)
 	{
 		throw QJniMethodNotFoundException(method_name);
 	}
-	double result = (double)env->CallDoubleMethod(instance_, mid);
+	double result = static_cast<double>(env->CallDoubleMethod(instance_, mid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(method_name);
@@ -1576,7 +1576,7 @@ int QJniObject::getIntField(const char * field_name)
 	{
 		throw QJniFieldNotFoundException(field_name);
 	}
-	int result = (int)env->GetIntField(instance_, fid);
+	int result = static_cast<int>(env->GetIntField(instance_, fid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(field_name);
@@ -1613,7 +1613,7 @@ float QJniObject::getFloatField(const char * field_name)
 	{
 		throw QJniFieldNotFoundException(field_name);
 	}
-	float result = (float)env->GetFloatField(instance_, fid);
+	float result = static_cast<float>(env->GetFloatField(instance_, fid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(field_name);
