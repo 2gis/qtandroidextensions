@@ -62,9 +62,9 @@ QAndroidDialog::~QAndroidDialog()
 
 
 static const JNINativeMethod methods[] = {
-	{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivityNoThrow},
-	{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContextNoThrow},
-	{"showMessageCallback", "(JI)V", (void*)Java_DialogHelper_DialogHelper_showMessageCallback},
+	{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getActivityNoThrow)},
+	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
+	{"showMessageCallback", "(JI)V", reinterpret_cast<void*>(Java_DialogHelper_DialogHelper_showMessageCallback)},
 };
 
 

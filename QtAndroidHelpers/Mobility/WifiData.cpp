@@ -78,14 +78,14 @@ void WifiData::StringAsMac(const QString& str, const QString& delim)
 		return;
 	}
 	QStringList bytes = str.split(delim);
-	if (bytes.size() != 6)
+	if (bytes.size() != MacAddrLength)
 	{
 		return;
 	}
-	for (int i = 0; i < 6; ++i)
+	for (int i = 0; i < MacAddrLength; ++i)
 	{
 		bool ok;
-		macAddr[i] = bytes.at(i).toInt(&ok, 16);
+		macAddr[i] = MacAddrSign(bytes.at(i).toInt(&ok, 16));
 		if (!ok)
 		{
 			memset(&macAddr, 0, sizeof macAddr);
@@ -109,6 +109,7 @@ bool WifiDataList::operator!=(const WifiDataList &rhs) const
 
 void WifiDataList::DbgPrint(const WifiDataList &another)
 {
+	Q_UNUSED(another)
 }
 
 

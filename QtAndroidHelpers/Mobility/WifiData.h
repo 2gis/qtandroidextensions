@@ -46,7 +46,9 @@ namespace Mobility {
 
 struct WifiData
 {
-	typedef unsigned char MacAddr[6];
+	enum {MacAddrLength = 6};
+	typedef unsigned char MacAddrSign;
+	typedef MacAddrSign MacAddr[MacAddrLength];
 	MacAddr macAddr;
 
 	// google expects this to be in dBm

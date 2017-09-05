@@ -54,8 +54,8 @@ Q_DECL_EXPORT void JNICALL Java_setAzimuth(JNIEnv * env, jobject, jlong inst, jf
 
 
 static const JNINativeMethod methods[] = {
-	{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContextNoThrow},
-	{"setAzimuth", "(JF)V", (void*)Java_setAzimuth},
+	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
+	{"setAzimuth", "(JF)V", reinterpret_cast<void*>(Java_setAzimuth)},
 };
 
 
