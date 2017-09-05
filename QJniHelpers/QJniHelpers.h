@@ -81,21 +81,21 @@ public:
 class QJniMethodNotFoundException: public QJniBaseException
 {
 public:
-	QJniMethodNotFoundException(const char * class_name, const char * method_name);
+	QJniMethodNotFoundException(const char * class_name, const char * method_name, const char * call_point_info);
 };
 
 
 class QJniFieldNotFoundException: public QJniBaseException
 {
 public:
-	QJniFieldNotFoundException(const char * class_name, const char * field_name);
+	QJniFieldNotFoundException(const char * class_name, const char * field_name, const char * call_point_info);
 };
 
 
 class QJniJavaCallException: public QJniBaseException
 {
 public:
-	QJniJavaCallException(const char * class_name, const char * method_name, const char * call_point_info = 0);
+	QJniJavaCallException(const char * class_name, const char * method_name, const char * call_point_info);
 };
 
 
