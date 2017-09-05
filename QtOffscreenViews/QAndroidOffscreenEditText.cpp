@@ -37,6 +37,7 @@
 #include <QAndroidQPAPluginGap.h>
 #include "QAndroidOffscreenEditText.h"
 
+
 Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnTextChanged(JNIEnv *, jobject, jlong param, jstring str, jint start, jint before, jint count)
 {
 	if (param)

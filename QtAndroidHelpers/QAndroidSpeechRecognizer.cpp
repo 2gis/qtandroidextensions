@@ -47,6 +47,7 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnBeginningOfSpee
 Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnEndOfSpeech(JNIEnv *, jobject, jlong param);
 Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnError(JNIEnv *, jobject, jlong param, jint code);
 Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnPartialResults(JNIEnv *, jobject, jlong param, jobject bundle_results);
+Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnResults(JNIEnv *, jobject, jlong param, jobject bundle_results, jboolean secure);
 Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnReadyForSpeech(JNIEnv *, jobject, jlong param, jobject bundle_params);
 Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnRmsChanged(JNIEnv *, jobject, jlong param, jfloat rmsdB);
 Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeSupportedLanguagesReceived(JNIEnv *, jobject, jlong param, jobject languages);
@@ -261,7 +262,11 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnError(JNIEnv *,
 }
 
 
-Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnPartialResults(JNIEnv *, jobject, jlong param, jobject bundle_results)
+Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnPartialResults(
+	JNIEnv *
+	, jobject
+	, jlong param
+	, jobject bundle_results)
 {
 	if (param)
 	{
@@ -282,7 +287,12 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnPartialResults(
 }
 
 
-Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnResults(JNIEnv *, jobject, jlong param, jobject bundle_results, jboolean secure)
+Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnResults(
+	JNIEnv *
+	, jobject
+	, jlong param
+	, jobject bundle_results
+	, jboolean secure)
 {
 	if (param)
 	{
@@ -304,7 +314,11 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnResults(JNIEnv 
 }
 
 
-Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnReadyForSpeech(JNIEnv *, jobject, jlong param, jobject bundle_params)
+Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnReadyForSpeech(
+	JNIEnv *
+	, jobject
+	, jlong param
+	, jobject bundle_params)
 {
 	if (param)
 	{
@@ -324,7 +338,11 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnReadyForSpeech(
 }
 
 
-Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnRmsChanged(JNIEnv *, jobject, jlong param, jfloat rmsdB)
+Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnRmsChanged(
+	JNIEnv *
+	, jobject
+	, jlong param
+	, jfloat rmsdB)
 {
 	if (param)
 	{
@@ -344,7 +362,11 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnRmsChanged(JNIE
 }
 
 
-Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeSupportedLanguagesReceived(JNIEnv *, jobject, jlong param, jobject languages)
+Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeSupportedLanguagesReceived(
+	JNIEnv *
+	, jobject
+	, jlong param
+	, jobject languages)
 {
 	if (param)
 	{

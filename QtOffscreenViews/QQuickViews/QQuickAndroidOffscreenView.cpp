@@ -13,13 +13,13 @@
   modification, are permitted provided that the following conditions are met:
 
   * Redistributions of source code must retain the above copyright notice,
-    this list of conditions and the following disclaimer.
+	this list of conditions and the following disclaimer.
   * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
   * Neither the name of the DoubleGIS, LLC nor the names of its contributors
-    may be used to endorse or promote products derived from this software
-    without specific prior written permission.
+	may be used to endorse or promote products derived from this software
+	without specific prior written permission.
 
   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -216,7 +216,7 @@ QSGNode * QQuickAndroidOffscreenView::updatePaintNode(QSGNode * node, UpdatePain
 		{
 			updateAndroidViewVisibility();
 			updateAndroidViewPosition();
-			aview_->resize(QSize(width(), height()));
+			aview_->resize(QSize(static_cast<int>(width()), static_cast<int>(height())));
 		}
 	}
 
@@ -257,7 +257,7 @@ QSGNode * QQuickAndroidOffscreenView::updatePaintNode(QSGNode * node, UpdatePain
 			window()->createTextureFromId(
 				n->fbo_->texture(),
 				n->fbo_->size(),
-				QQuickWindow::TextureHasAlphaChannel)); 
+				QQuickWindow::TextureHasAlphaChannel));
 		n->setFiltering(QSGTexture::Nearest);
 		n->setRect(0, 0, width(), height());
 		redraw_texture_needed_ = true;
@@ -277,7 +277,7 @@ QSGNode * QQuickAndroidOffscreenView::updatePaintNode(QSGNode * node, UpdatePain
 
 			if (aview_)
 			{
-				aview_->paintGL(0, 0, width(), height(), true);
+				aview_->paintGL(0, 0, static_cast<int>(width()), static_cast<int>(height()), true);
 			}
 		}
 		n->fbo_->bindDefault();
