@@ -212,7 +212,7 @@ void QAndroidGmsLocationProvider::setPriority(enPriority priority)
 }
 
 
-void QAndroidGmsLocationProvider::setUpdateInterval(int64_t reqiredInterval, int64_t minimumInterval)
+void QAndroidGmsLocationProvider::setUpdateInterval(int reqiredInterval, int minimumInterval)
 {
 	reqiredInterval_ = reqiredInterval;
 	minimumInterval_ = minimumInterval;
@@ -232,9 +232,9 @@ void QAndroidGmsLocationProvider::startUpdates()
 		jlong expirationTime = 0;
 
 		jlong id = jni()->callParamLong("startLocationUpdates", "IJJJIJJ",
-		                                   (jint)priority_,
-		                                   reqiredInterval_,
-		                                   minimumInterval_,
+		                                   jint(priority_),
+		                                   jlong(reqiredInterval_),
+		                                   jlong(minimumInterval_),
 		                                   maxWaitTime,
 		                                   numUpdates,
 		                                   expirationDuration,
@@ -307,7 +307,7 @@ void QAndroidGmsLocationProvider::onApplicationStateChanged(Qt::ApplicationState
 }
 
 
-void QAndroidGmsLocationProvider::onCheckRequest(long requestId)
+void QAndroidGmsLocationProvider::onCheckRequest(jlong requestId)
 {
 	bool stop = false;
 
@@ -318,7 +318,7 @@ void QAndroidGmsLocationProvider::onCheckRequest(long requestId)
 
 	if (stop)
 	{
-		QAndroidGmsLocationProvider::stopUpdates(requestId);		
+		QAndroidGmsLocationProvider::stopUpdates(requestId);
 	}
 }
 
@@ -348,7 +348,7 @@ void QAndroidGmsLocationProvider::requestUpdate(int timeout /*= 0*/)
 
 	if (0 == timeout)
 	{
-		timeout = std::max((jlong)1000, 2 * reqiredInterval_);
+		timeout = std::max(1000, 2 * reqiredInterval_);
 	}
 
 	requestTimer_.setSingleShot(true);
@@ -362,9 +362,9 @@ void QAndroidGmsLocationProvider::requestUpdate(int timeout /*= 0*/)
 		jlong expirationTime = 0;
 
 		jlong id = jni()->callParamLong("startLocationUpdates", "IJJJIJJ",
-		                    (jint)priority_,
-		                    reqiredInterval_,
-		                    minimumInterval_,
+		                    jint(priority_),
+		                    jlong(reqiredInterval_),
+		                    jlong(minimumInterval_),
 		                    maxWaitTime,
 		                    numUpdates,
 		                    expirationDuration,

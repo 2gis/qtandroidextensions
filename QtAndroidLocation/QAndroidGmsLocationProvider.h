@@ -82,17 +82,17 @@ public slots:
 private slots:
 	void onRequestTimeout();
 	void onApplicationStateChanged(Qt::ApplicationState state);
-	void onCheckRequest(long requestId);
+	void onCheckRequest(jlong requestId);
 
 signals:
 	void statusChanged(int);
 	void locationRecieved(QGeoPositionInfo);
-	void checkRequest(long requestId);
+	void checkRequest(jlong requestId);
 
 public:
 	static bool isAvailable(jboolean allowDialog);
 	static int getGmsVersion();
-	void setUpdateInterval(int64_t reqiredInterval, int64_t minimumInterval);
+	void setUpdateInterval(int reqiredInterval, int minimumInterval);
 	void setPriority(enPriority priority);
 	QGeoPositionInfo lastKnownPosition() const;
 
@@ -110,8 +110,8 @@ private:
 	QGeoPositionInfo lastLocation_;
 	mutable QMutex lastLocationSync_;
 
-	jlong reqiredInterval_; 
-	jlong minimumInterval_;
+	int reqiredInterval_;
+	int minimumInterval_;
 	enPriority priority_;
 
 	jlong regularUpdadesId_;
