@@ -48,46 +48,54 @@
 class QJniBaseException: public std::exception
 {
 public:
-	QJniBaseException(const QByteArray & message = "");
+	QJniBaseException(const QByteArray & message);
 	virtual const char * what() const throw();
+protected:
+	static QByteArray readableIdString(const char * id);
 private:
 	const QByteArray message_;
 };
 
+
 class QJniThreadAttachException: public QJniBaseException
 {
 public:
-	QJniThreadAttachException();
+	QJniThreadAttachException(const char * detail);
 };
+
 
 class QJniClassNotFoundException: public QJniBaseException
 {
 public:
-	QJniClassNotFoundException();
+	QJniClassNotFoundException(const char * class_name);
 };
+
 
 class QJniClassNotSetException: public QJniBaseException
 {
 public:
-	QJniClassNotSetException();
+	QJniClassNotSetException(const char * class_name);
 };
+
 
 class QJniMethodNotFoundException: public QJniBaseException
 {
 public:
-	QJniMethodNotFoundException();
+	QJniMethodNotFoundException(const char * method_name);
 };
+
 
 class QJniFieldNotFoundException: public QJniBaseException
 {
 public:
-	QJniFieldNotFoundException();
+	QJniFieldNotFoundException(const char * field_name);
 };
+
 
 class QJniJavaCallException: public QJniBaseException
 {
 public:
-	QJniJavaCallException(const QByteArray & callDetails);
+	QJniJavaCallException(const char * detail);
 };
 
 
@@ -273,10 +281,18 @@ protected:
 	void initClass(JNIEnv * env, jclass clazz);
 	void clearClass(JNIEnv * env);
 
-	inline jclass checkedClass() { if (!class_) throw QJniClassNotSetException(); return class_; }
+	inline jclass checkedClass()
+	{
+		if (!class_)
+		{
+			throw QJniClassNotSetException(construction_class_name_.constData());
+		}
+		return class_;
+	}
 
 private:
 	jclass class_;
+	QByteArray construction_class_name_;
 };
 
 
