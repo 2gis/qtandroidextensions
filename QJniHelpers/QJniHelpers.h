@@ -81,21 +81,21 @@ public:
 class QJniMethodNotFoundException: public QJniBaseException
 {
 public:
-	QJniMethodNotFoundException(const char * method_name);
+	QJniMethodNotFoundException(const char * class_name, const char * method_name);
 };
 
 
 class QJniFieldNotFoundException: public QJniBaseException
 {
 public:
-	QJniFieldNotFoundException(const char * field_name);
+	QJniFieldNotFoundException(const char * class_name, const char * field_name);
 };
 
 
 class QJniJavaCallException: public QJniBaseException
 {
 public:
-	QJniJavaCallException(const char * detail);
+	QJniJavaCallException(const char * class_name, const char * method_name, const char * call_point_info = 0);
 };
 
 
@@ -276,6 +276,10 @@ public:
 	 * (e.g.: "String"), if it's false then full name with class path (e.g.: "java/lang/String").
 	 */
 	QString getClassName(bool simple = false) const;
+
+	const QByteArray & constructionClassName() const { return construction_class_name_; }
+
+	QByteArray debugClassName() const;
 
 protected:
 	void initClass(JNIEnv * env, jclass clazz);
