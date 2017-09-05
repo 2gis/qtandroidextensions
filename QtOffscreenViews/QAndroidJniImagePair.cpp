@@ -346,7 +346,7 @@ void QAndroidJniImagePair::convert32BitImageFromQtToAndroid(QImage & out_image) 
 		AlignedUchar * out_bits = out_image.scanLine(0);
 		quint32 * dest = reinterpret_cast<quint32 *>(out_bits);
 #else
-		quint32 * src = reinterpret_cast<quint32 *>(mImageOnBitmap.scanLine(0));
+		const quint32 * src = reinterpret_cast<const quint32 *>(mImageOnBitmap.scanLine(0));
 		quint32 * dest = reinterpret_cast<quint32 *>(out_image.scanLine(0));
 #endif
 		QSize sz = mImageOnBitmap.size();
