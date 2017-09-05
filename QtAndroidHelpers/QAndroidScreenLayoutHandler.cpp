@@ -56,9 +56,9 @@ Q_DECL_EXPORT void JNICALL Java_ScreenLayoutHandler_scrollChanged(JNIEnv *, jobj
 static const char * const c_full_class_name_ = "ru/dublgis/androidhelpers/ScreenLayoutHandler";
 
 static const JNINativeMethod methods[] = {
-	{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivityNoThrow},
-	{"nativeGlobalLayoutChanged", "(J)V", (void*)Java_ScreenLayoutHandler_globalLayoutChanged},
-	{"nativeScrollChanged", "(J)V", (void*)Java_ScreenLayoutHandler_scrollChanged}
+	{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getActivityNoThrow)},
+	{"nativeGlobalLayoutChanged", "(J)V", reinterpret_cast<void*>(Java_ScreenLayoutHandler_globalLayoutChanged)},
+	{"nativeScrollChanged", "(J)V", reinterpret_cast<void*>(Java_ScreenLayoutHandler_scrollChanged)},
 };
 
 

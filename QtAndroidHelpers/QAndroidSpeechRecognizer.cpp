@@ -382,14 +382,14 @@ QAndroidSpeechRecognizer::QAndroidSpeechRecognizer(QObject * p)
 			listener_->callVoid("setNativePtr", reinterpret_cast<jlong>(this));
 
 			static const JNINativeMethod methods[] = {
-				{"nativeOnBeginningOfSpeech", "(J)V", (void*)Java_QAndroidSpeechRecognizer_nativeOnBeginningOfSpeech},
-				{"nativeOnEndOfSpeech", "(J)V", (void*)Java_QAndroidSpeechRecognizer_nativeOnEndOfSpeech},
-				{"nativeOnError", "(JI)V", (void*)Java_QAndroidSpeechRecognizer_nativeOnError},
-				{"nativeOnPartialResults", "(JLandroid/os/Bundle;)V", (void*)Java_QAndroidSpeechRecognizer_nativeOnPartialResults},
-				{"nativeOnReadyForSpeech", "(JLandroid/os/Bundle;)V", (void*)Java_QAndroidSpeechRecognizer_nativeOnReadyForSpeech},
-				{"nativeOnResults", "(JLandroid/os/Bundle;)V", (void*)Java_QAndroidSpeechRecognizer_nativeOnResults},
-				{"nativeOnRmsChanged", "(JF)V", (void*)Java_QAndroidSpeechRecognizer_nativeOnRmsChanged},
-				{"nativeSupportedLanguagesReceived", "(JLjava/util/ArrayList;)V", (void*)Java_QAndroidSpeechRecognizer_nativeSupportedLanguagesReceived},
+				{"nativeOnBeginningOfSpeech", "(J)V", reinterpret_cast<void*>(Java_QAndroidSpeechRecognizer_nativeOnBeginningOfSpeech)},
+				{"nativeOnEndOfSpeech", "(J)V", reinterpret_cast<void*>(Java_QAndroidSpeechRecognizer_nativeOnEndOfSpeech)},
+				{"nativeOnError", "(JI)V", reinterpret_cast<void*>(Java_QAndroidSpeechRecognizer_nativeOnError)},
+				{"nativeOnPartialResults", "(JLandroid/os/Bundle;)V", reinterpret_cast<void*>(Java_QAndroidSpeechRecognizer_nativeOnPartialResults)},
+				{"nativeOnReadyForSpeech", "(JLandroid/os/Bundle;)V", reinterpret_cast<void*>(Java_QAndroidSpeechRecognizer_nativeOnReadyForSpeech)},
+				{"nativeOnResults", "(JLandroid/os/Bundle;)V", reinterpret_cast<void*>(Java_QAndroidSpeechRecognizer_nativeOnResults)},
+				{"nativeOnRmsChanged", "(JF)V", reinterpret_cast<void*>(Java_QAndroidSpeechRecognizer_nativeOnRmsChanged)},
+				{"nativeSupportedLanguagesReceived", "(JLjava/util/ArrayList;)V", reinterpret_cast<void*>(Java_QAndroidSpeechRecognizer_nativeSupportedLanguagesReceived)},
 			};
 			listener_->registerNativeMethods(methods, sizeof(methods));
 

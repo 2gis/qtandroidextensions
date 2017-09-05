@@ -51,8 +51,8 @@ Q_DECL_EXPORT void JNICALL Java_onProvidersChange(JNIEnv *, jobject, jlong param
 
 
 static const JNINativeMethod methods[] = {
-	{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivityNoThrow},
-	{"onProvidersChange", "(J)V", (void*)Java_onProvidersChange},
+	{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getActivityNoThrow)},
+	{"onProvidersChange", "(J)V", reinterpret_cast<void*>(Java_onProvidersChange)},
 };
 
 

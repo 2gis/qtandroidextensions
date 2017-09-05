@@ -51,9 +51,9 @@ Q_DECL_EXPORT void JNICALL Java_CellListener_cellUpdate(JNIEnv *, jobject, jlong
 
 
 static const JNINativeMethod methods[] = {
-	{"getContext", "()Landroid/content/Context;", (void*)QAndroidQPAPluginGap::getCurrentContextNoThrow},
+	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
 	// private native void cellUpdate(long native_ptr, int cid, int lac, int mcc, int mnc, int rssi);
-	{"cellUpdate", "(JIIIII)V", (void*)Java_CellListener_cellUpdate},
+	{"cellUpdate", "(JIIIII)V", reinterpret_cast<void*>(Java_CellListener_cellUpdate)},
 };
 
 

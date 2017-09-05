@@ -113,9 +113,9 @@ Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationReciev
 
 
 static const JNINativeMethod methods[] = {
-	{"getActivity", "()Landroid/app/Activity;", (void*)QAndroidQPAPluginGap::getActivityNoThrow},
-	{"googleApiClientStatus", "(JI)V", (void*)Java_GooglePlayServiceLocationProvider_locationStatus},
-	{"googleApiClientLocation", "(JLandroid/location/Location;ZJ)V", (void*)Java_GooglePlayServiceLocationProvider_locationRecieved},
+	{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getActivityNoThrow)},
+	{"googleApiClientStatus", "(JI)V", reinterpret_cast<void*>(Java_GooglePlayServiceLocationProvider_locationStatus)},
+	{"googleApiClientLocation", "(JLandroid/location/Location;ZJ)V", reinterpret_cast<void*>(Java_GooglePlayServiceLocationProvider_locationRecieved)},
 };
 
 
