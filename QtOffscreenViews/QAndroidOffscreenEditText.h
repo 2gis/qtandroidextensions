@@ -244,7 +244,7 @@ public:
 
 		ANDROID_IME_FLAG_NO_ENTER_ACTION		= 0x40000000,
 		ANDROID_IME_FLAG_NO_ACCESSORY_ACTION	= 0x20000000,
-		ANDROID_IME_FLAG_FORCE_ASCII			= 0x80000000;
+		ANDROID_IME_FLAG_FORCE_ASCII			= -2147483648; // 0x80000000
 
 	//! Sets the horizontal alignment of the text and the vertical gravity that will be used when there is extra space in the TextView beyond what is required for the text itself.
 	void setGravity(int gravity);

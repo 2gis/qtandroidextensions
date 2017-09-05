@@ -13,13 +13,13 @@
   modification, are permitted provided that the following conditions are met:
 
   * Redistributions of source code must retain the above copyright notice,
-    this list of conditions and the following disclaimer.
+	this list of conditions and the following disclaimer.
   * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
   * Neither the name of the DoubleGIS, LLC nor the names of its contributors
-    may be used to endorse or promote products derived from this software
-    without specific prior written permission.
+	may be used to endorse or promote products derived from this software
+	without specific prior written permission.
 
   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -206,7 +206,7 @@ Q_DECL_EXPORT void JNICALL Java_onContentHeightReceived(JNIEnv *, jobject, jlong
 	}
 }
 
-Q_DECL_EXPORT void JNICALL Java_onCanGoBackReceived(JNIEnv * env, jobject jo, jlong nativeptr, jboolean can)
+Q_DECL_EXPORT void JNICALL Java_onCanGoBackReceived(JNIEnv *, jobject, jlong nativeptr, jboolean can)
 {
 	if (QAndroidOffscreenWebView * wv = AOWW(nativeptr))
 	{
@@ -214,7 +214,7 @@ Q_DECL_EXPORT void JNICALL Java_onCanGoBackReceived(JNIEnv * env, jobject jo, jl
 	}
 }
 
-Q_DECL_EXPORT void JNICALL Java_onCanGoForwardReceived(JNIEnv * env, jobject jo, jlong nativeptr, jboolean can)
+Q_DECL_EXPORT void JNICALL Java_onCanGoForwardReceived(JNIEnv *, jobject, jlong nativeptr, jboolean can)
 {
 	if (QAndroidOffscreenWebView * wv = AOWW(nativeptr))
 	{
@@ -222,7 +222,7 @@ Q_DECL_EXPORT void JNICALL Java_onCanGoForwardReceived(JNIEnv * env, jobject jo,
 	}
 }
 
-Q_DECL_EXPORT void JNICALL Java_onCanGoBackOrForwardReceived(JNIEnv * env, jobject jo, jlong nativeptr, jboolean can, jint steps)
+Q_DECL_EXPORT void JNICALL Java_onCanGoBackOrForwardReceived(JNIEnv *, jobject, jlong nativeptr, jboolean can, jint steps)
 {
 	if (QAndroidOffscreenWebView * wv = AOWW(nativeptr))
 	{
@@ -355,6 +355,13 @@ bool QAndroidOffscreenWebView::loadDataWithBaseURL(const QString & baseUrl, cons
 
 bool QAndroidOffscreenWebView::requestContentHeight()
 {
+	QJniObject * view = offscreenView();
+	if (view)
+	{
+		return view->callBool("requestContentHeight");
+	}
+	qWarning("QAndroidOffscreenWebView: Attempt to requestContentHeight when View is null.");
+	return false;
 }
 
 void QAndroidOffscreenWebView::requestCanGoBack()
@@ -534,7 +541,7 @@ jboolean QAndroidOffscreenWebView::shouldOverrideKeyEvent(JNIEnv *, jobject, job
 	return 0;
 }
 
-jboolean QAndroidOffscreenWebView::shouldOverrideUrlLoading(JNIEnv * env, jobject, jobject url)
+jboolean QAndroidOffscreenWebView::shouldOverrideUrlLoading(JNIEnv *, jobject, jobject url)
 {
 	// Doing OffscreenWebView.loadUrl(url).
 	// This should always be done for Chrome to avoid opening links in external browser.

@@ -178,8 +178,11 @@ bool QAndroidJniImagePair::doResize(const QSize & size)
 
 	if (!newBitmap || newBitmap->jObject() == 0)
 	{
-		qCritical("Could not create %dx%d bitmap! bitmap=%p, jbitmap=%p",
-				  size.width(), size.height(), newBitmap.data(), (newBitmap.data()) ? newBitmap->jObject() : 0);
+		qCritical("Could not create %dx%d bitmap! bitmap=%p, jbitmap=%p"
+			, size.width()
+			, size.height()
+			, reinterpret_cast<void*>(newBitmap.data())
+			, reinterpret_cast<void*>((newBitmap.data()) ? newBitmap->jObject() : 0));
 		dispose();
 		return false;
 	}
@@ -214,14 +217,14 @@ bool QAndroidJniImagePair::doResize(const QSize & size)
 			<< "Invalid AndroidBitmapInfo. Will fall back to standard bitmap properties: "
 				"width:" << bwidth << "height:" << bheight
 			<< "stride:" << bstride << "format:" << binfo.format << "flags:" << binfo.flags;
-		bwidth = size.width();
-		bheight = size.height();
-		bstride = size.width() * ((bitness_ == 32) ? 4 : 2);
-		format = qtImageFormatForBitness(bitness_);
+		bwidth = static_cast<uint32_t>(size.width());
+		bheight = static_cast<uint32_t>(size.height());
+		bstride = static_cast<uint32_t>(size.width() * ((bitness_ == 32) ? 4 : 2));
+		format = qtImageFormatForBitness(static_cast<int>(bitness_));
 	}
 	else
 	{
-		format = AndroidBitmapFormat_to_QImageFormat(binfo.format);
+		format = AndroidBitmapFormat_to_QImageFormat(static_cast<uint32_t>(binfo.format));
 
 		if (format == QImage::Format_Invalid)
 		{
@@ -271,11 +274,11 @@ bool QAndroidJniImagePair::doResize(const QSize & size)
 	//qDebug()<<"Constructing QImage buffer:"<<bwidth<<"x"<<bheight
 	//        <<bstride<<static_cast<int>(format);
 	mImageOnBitmap = QImage(
-						 static_cast<uchar *>(ptr),
-						 bwidth,
-						 bheight,
-						 bstride,
-						 format);
+		 static_cast<uchar *>(ptr),
+		 static_cast<int>(bwidth),
+		 static_cast<int>(bheight),
+		 static_cast<int>(bstride),
+		 format);
 
 	if (mImageOnBitmap.isNull())
 	{
@@ -304,7 +307,14 @@ void QAndroidJniImagePair::convert32BitImageFromQtToAndroid()
 {
 	if (bitness_ == 32)
 	{
+#if defined(__arm__)
+		// Suppress "cast increases required alignment of target type":
+		typedef uchar __attribute__((aligned(4))) AlignedUchar;
+		AlignedUchar * bits = mImageOnBitmap.scanLine(0);
+		quint32 * ptr = reinterpret_cast<quint32 *>(bits);
+#else
 		quint32 * ptr = reinterpret_cast<quint32 *>(mImageOnBitmap.scanLine(0));
+#endif
 		QSize sz = mImageOnBitmap.size();
 		int nquads = sz.width() * sz.height();
 
@@ -322,13 +332,23 @@ void QAndroidJniImagePair::convert32BitImageFromQtToAndroid(QImage & out_image) 
 	if (bitness_ == 32)
 	{
 		if (out_image.size() != mImageOnBitmap.size()
-				|| out_image.format() != mImageOnBitmap.format())
+			|| out_image.format() != mImageOnBitmap.format())
 		{
 			out_image = QImage(mImageOnBitmap.size(), mImageOnBitmap.format());
 		}
 
-		const quint32 * src = reinterpret_cast<const quint32 *>(mImageOnBitmap.scanLine(0));
+#if defined(__arm__)
+		// Suppress "cast increases required alignment of target type":
+		typedef uchar __attribute__((aligned(4))) AlignedUchar;
+		const AlignedUchar * bits = mImageOnBitmap.scanLine(0);
+		const quint32 * src = reinterpret_cast<const quint32 *>(bits);
+
+		AlignedUchar * out_bits = out_image.scanLine(0);
+		quint32 * dest = reinterpret_cast<quint32 *>(out_bits);
+#else
+		quint32 * src = reinterpret_cast<quint32 *>(mImageOnBitmap.scanLine(0));
 		quint32 * dest = reinterpret_cast<quint32 *>(out_image.scanLine(0));
+#endif
 		QSize sz = mImageOnBitmap.size();
 		int nquads = sz.width() * sz.height();
 
