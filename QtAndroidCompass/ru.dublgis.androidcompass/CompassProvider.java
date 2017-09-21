@@ -73,6 +73,10 @@ public class CompassProvider implements SensorEventListener
 
 		try {
 			mOrientation = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
+		} catch (final NullPointerException e) {
+			// Exception on some rooted devices
+			Log.e(TAG, "NPE exception while getting orientation: " + e);
+			return;
 		} catch (final Throwable e) {
 			Log.e(TAG, "Exception while getting orientation: ", e);
 			return;
