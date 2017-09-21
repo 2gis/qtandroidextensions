@@ -74,7 +74,7 @@ public:
 class QJniClassNotSetException: public QJniBaseException
 {
 public:
-	QJniClassNotSetException(const char * class_name);
+	QJniClassNotSetException(const char * class_name, const char * call_point_info);
 };
 
 
@@ -285,11 +285,11 @@ protected:
 	void initClass(JNIEnv * env, jclass clazz);
 	void clearClass(JNIEnv * env);
 
-	inline jclass checkedClass()
+	inline jclass checkedClass(const char * call_point_info)
 	{
 		if (!class_)
 		{
-			throw QJniClassNotSetException(construction_class_name_.constData());
+			throw QJniClassNotSetException(construction_class_name_.constData(), call_point_info);
 		}
 		return class_;
 	}
