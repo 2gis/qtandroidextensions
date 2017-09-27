@@ -155,14 +155,15 @@ public class GmsLocationProvider implements ConnectionCallbacks, OnConnectionFai
 		
 		activate(false);
 
-		if (Build.VERSION.SDK_INT >= 18) {
-			mlocationUpdatesLooper.quitSafely();
-		} else {
+		if (null != mlocationUpdatesLooper)
+		{
 			mlocationUpdatesLooper.quit();
 		}
 
 		try {
-			mlocationUpdatesThread.join(2000);
+			if (mlocationUpdatesThread.isAlive()) {
+				mlocationUpdatesThread.join(300);
+			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
