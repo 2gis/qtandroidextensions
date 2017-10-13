@@ -401,7 +401,7 @@ void QAndroidOffscreenWebView::setWebContentsDebuggingEnabled(bool enabled)
 {
     if (QJniObject * view = offscreenView())
     {
-        view->callVoid("setWebContentsDebuggingEnabled",(jboolean)enabled);
+        view->callVoid("setWebContentsDebuggingEnabled", static_cast<jboolean>(enabled));
     }
 }
 
