@@ -65,6 +65,7 @@ public slots:
 	void goForward() { androidWebView()->goForward(); }
 	void requestCanGoBackOrForward(int steps) { androidWebView()->requestCanGoBackOrForward(steps); }
 	void goBackOrForward(int steps) { androidWebView()->goBackOrForward(steps); }
+	void setWebContentsDebuggingEnabled(bool enabled){androidWebView()->setWebContentsDebuggingEnabled(enabled);}
 
 signals:
 	void pageStarted(const QString & url);

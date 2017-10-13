@@ -27,6 +27,7 @@ Item {
 		height: parent.height - 260
 		Component.onCompleted: {
 			webview.loadUrl("http://www.android.com/intl/en/about/")
+			webview.setWebContentsDebuggingEnabled(true)
 		}
     }
 

@@ -91,6 +91,7 @@ public:
 
 	bool getIgnoreSslErrors() const { return ignore_ssl_errors_; }
 	void setIgnoreSslErrors(bool ignore) { ignore_ssl_errors_ = ignore; }
+	void setWebContentsDebuggingEnabled(bool enabled);
 
 	/*
 	Unimplemented WebView functions:

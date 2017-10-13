@@ -324,6 +324,19 @@ class OffscreenWebView extends OffscreenView
     }
 
     // From C++
+    public void setWebContentsDebuggingEnabled(final boolean value)
+    {
+        runViewAction(new Runnable() {
+            @Override
+            public void run()
+            {
+                Log.i(TAG, "MyWebView.setWebContentsDebuggingEnabled[" + value + "]: ");
+                ((MyWebView)getView()).setWebContentsDebuggingEnabled(value);
+            }
+        });
+    }
+
+    // From C++
     /*!
      * \param additionalHttpHeaders contains additional HTTP headers in this format:
      * header1\n
