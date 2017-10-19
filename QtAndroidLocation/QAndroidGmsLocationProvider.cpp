@@ -41,54 +41,11 @@
 #include <QtPositioning/QGeoPositionInfo>
 #include <QtGui/QGuiApplication>
 #include <TJniObjectLinker.h>
+#include "PositionInfoConvertor.h"
 
 
 static const char * const c_full_class_name_ = "ru/dublgis/androidlocation/GmsLocationProvider";
 
-
-static void setPositionAttributeFloat(QGeoPositionInfo & info, QGeoPositionInfo::Attribute attr,
-                                      QJniObject & location, const char * szCheck, const char * szGet)
-{
-	if (location.callBool(szCheck))
-	{
-		jfloat val = location.callFloat(szGet);
-		info.setAttribute(attr, val);
-	}
-}
-
-
-static QGeoPositionInfo positionInfoFromJavaLocation(JNIEnv *, const jobject & jlocation)
-{
-	QGeoPositionInfo info;
-	QJniObject location(jlocation, false);
-
-	if (!location)
-	{
-		qWarning() << "null location";
-		return QGeoPositionInfo();
-	}
-
-	jdouble latitude = location.callDouble("getLatitude");
-	jdouble longitude = location.callDouble("getLongitude");
-	QGeoCoordinate coordinate(latitude, longitude);
-
-	if (location.callBool("hasAltitude"))
-	{
-		jdouble value = location.callDouble("getAltitude");
-		coordinate.setAltitude(value);
-	}
-
-	info.setCoordinate(coordinate);
-
-	jlong timestamp = location.callLong("getTime");
-	info.setTimestamp(QDateTime::fromMSecsSinceEpoch(timestamp));
-
-	setPositionAttributeFloat(info, QGeoPositionInfo::HorizontalAccuracy,	location, "hasAccuracy", 	"getAccuracy");
-	setPositionAttributeFloat(info, QGeoPositionInfo::GroundSpeed,		 	location, "hasSpeed",		"getSpeed");
-	setPositionAttributeFloat(info, QGeoPositionInfo::Direction,			location, "hasBearing", 	"getBearing");
-
-	return info;
-}
 
 
 
@@ -99,7 +56,7 @@ Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationStatus
 }
 
 
-Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationRecieved(JNIEnv * env, jobject, jlong param, jobject location, jboolean initial, jlong requestId)
+Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationRecieved(JNIEnv *, jobject, jlong param, jobject location, jboolean initial, jlong requestId)
 {
 	if (0x0 == location)
 	{
@@ -107,7 +64,7 @@ Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationReciev
 	}
 
 	JNI_LINKER_OBJECT(QAndroidGmsLocationProvider, param, obj)
-	QGeoPositionInfo posInfo = positionInfoFromJavaLocation(env, location);
+	QGeoPositionInfo posInfo = positionInfoFromJavaLocation(location);
 	obj->onLocationRecieved(posInfo, initial, requestId);
 }
 
