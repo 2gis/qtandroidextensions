@@ -43,33 +43,27 @@
 #include "IJniObjectLinker.h"
 
 
-class QAndroidCompass
+class QAndroidCompass : public QObject
 {
+	Q_OBJECT
 	JNI_LINKER_DECL(QAndroidCompass)
 
 public:
-	class AzimuthListener
-	{
-	public:
-		virtual void azimuthChanged(float azimuth) = 0;
-		virtual ~AzimuthListener() {}
-	};
-
-	QAndroidCompass();
+	QAndroidCompass(QObject * parent);
 	virtual ~QAndroidCompass();
 
 	void start(int32_t delayUs = -1, int32_t latencyUs = -1);
 	void stop();
 
-	void resetAzimuthListener(const QWeakPointer<AzimuthListener> & azimuth_listener);
+	float getAzimuth();
+
+signals:
+	void azimuthUpdated();
 
 private:
-	void setAzimuth(float azimuth);
+	void onUpdate();
 
 private:
-	QWeakPointer<AzimuthListener> azimuth_listener_;
-	QMutex send_mutex_;
-
-	friend void JNICALL Java_setAzimuth(JNIEnv * env, jobject, jlong inst, jfloat azimuth);
+	friend void JNICALL Java_onUpdate(JNIEnv * env, jobject, jlong inst);
 };
 

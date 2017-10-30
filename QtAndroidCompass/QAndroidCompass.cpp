@@ -44,26 +44,27 @@
 
 
 
-Q_DECL_EXPORT void JNICALL Java_setAzimuth(JNIEnv * env, jobject, jlong inst, jfloat azimuth)
+Q_DECL_EXPORT void JNICALL Java_onUpdate(JNIEnv * env, jobject, jlong inst)
 {
 	Q_UNUSED(env);
 
 	JNI_LINKER_OBJECT(QAndroidCompass, inst, proxy)
-	proxy->setAzimuth(azimuth);
+	proxy->onUpdate();
 }
 
 
 static const JNINativeMethod methods[] = {
-	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
-	{"setAzimuth", "(JF)V", reinterpret_cast<void*>(Java_setAzimuth)},
+	{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getActivityNoThrow)},
+	{"onUpdate", "(J)V", reinterpret_cast<void*>(Java_onUpdate)},
 };
 
 
-JNI_LINKER_IMPL(QAndroidCompass, "ru/dublgis/androidcompass/CompassProvider", methods)
+JNI_LINKER_IMPL(QAndroidCompass, "ru/dublgis/androidcompass/OrientationProvider", methods)
 
 
-QAndroidCompass::QAndroidCompass()
-	: jniLinker_(new JniObjectLinker(this))
+QAndroidCompass::QAndroidCompass(QObject * parent)
+	: QObject(parent)
+	, jniLinker_(new JniObjectLinker(this))
 {
 }
 
@@ -92,30 +93,22 @@ void QAndroidCompass::stop()
 }
 
 
-void QAndroidCompass::resetAzimuthListener(const QWeakPointer<AzimuthListener> & azimuth_listener)
+float QAndroidCompass::getAzimuth()
 {
-	QMutexLocker lock(&send_mutex_);
-	azimuth_listener_ = azimuth_listener;
+	float data = 0.f;
+
+	if (isJniReady())
+	{
+		data = jni()->callParamFloat("getAzimuth", "Z", jboolean(true));
+	}
+
+	return data;
 }
 
 
-void QAndroidCompass::setAzimuth(float azimuth)
+void QAndroidCompass::onUpdate()
 {
-	QSharedPointer<AzimuthListener> azimuth_listener;
-
-	{
-		QMutexLocker lock(&send_mutex_);
-		azimuth_listener = azimuth_listener_.lock();
-	}
-
-	if (azimuth_listener)
-	{
-		azimuth_listener->azimuthChanged(azimuth);
-	}
-	else
-	{
-		stop();
-	}
+	emit azimuthUpdated();
 }
 
 
