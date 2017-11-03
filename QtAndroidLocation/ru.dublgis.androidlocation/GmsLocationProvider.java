@@ -252,6 +252,8 @@ public class GmsLocationProvider implements ConnectionCallbacks, OnConnectionFai
 
 	private RequestHolder reinitRequest(final Long key, LocationRequest request, LocationCallback callback)
 	{
+		Log.i(TAG, "Init request with key " + key + ": " + request.toString());
+
 		synchronized (mRequests) {
 			deinitRequest(key);
 			RequestHolder holder = new RequestHolder(key, request, callback);
