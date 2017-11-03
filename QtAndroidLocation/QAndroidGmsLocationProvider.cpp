@@ -183,7 +183,7 @@ void QAndroidGmsLocationProvider::startUpdates()
 
 	if (isJniReady())
 	{
-		jlong maxWaitTime = 0;
+		jlong maxWaitTime = reqiredInterval_ * 1.5;
 		jint numUpdates = 0;
 		jlong expirationDuration = 0;
 		jlong expirationTime = 0;
