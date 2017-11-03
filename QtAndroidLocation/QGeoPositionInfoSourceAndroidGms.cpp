@@ -259,12 +259,10 @@ void QGeoPositionInfoSourceAndroidGms::onStatusChanged(int status)
 		case QAndroidGmsLocationProvider::S_DISCONNECTED:
 		case QAndroidGmsLocationProvider::S_CONNECT_ERROR:
 		case QAndroidGmsLocationProvider::S_CONNECT_SUSPEND:
-		case QAndroidGmsLocationProvider::S_REQUEST_FAIL:
 			setError(QGeoPositionInfoSource::ClosedError);
 			break;
 
 		case QAndroidGmsLocationProvider::S_CONNECTED:
-		case QAndroidGmsLocationProvider::S_REQUEST_SUCCESS:
 			setError(QGeoPositionInfoSource::NoError);
 			break;
 

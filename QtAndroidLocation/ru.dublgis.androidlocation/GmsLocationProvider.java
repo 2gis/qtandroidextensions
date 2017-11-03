@@ -85,8 +85,6 @@ public class GmsLocationProvider implements ConnectionCallbacks, OnConnectionFai
 	public final static int STATUS_CONNECTED			= 1;
 	public final static int STATUS_CONNECTION_ERROR		= 2;
 	public final static int STATUS_CONNECTION_SUSPENDED	= 3;
-	public final static int STATUS_REQUEST_SUCCESS		= 4;
-	public final static int STATUS_REQUEST_FAIL			= 5;
 
 	private volatile long native_ptr_ = 0;
 
@@ -348,13 +346,12 @@ public class GmsLocationProvider implements ConnectionCallbacks, OnConnectionFai
 
 		LocationCallback callback = new LocationCallback() {
 			@Override
-			public void onLocationAvailability(LocationAvailability locationAvailability)
-			{
+			public void onLocationAvailability(LocationAvailability locationAvailability) {
 				boolean available = false;
 				if (null != locationAvailability) {
 					available = locationAvailability.isLocationAvailable();
 				}
-				googleApiClientStatus(native_ptr_, available ? STATUS_REQUEST_SUCCESS : STATUS_REQUEST_FAIL);
+				googleApiClientLocationAvailable(native_ptr_, available);
 			}
 
 			@Override
@@ -480,5 +477,6 @@ public class GmsLocationProvider implements ConnectionCallbacks, OnConnectionFai
 
 	public native Activity getActivity();
 	public native void googleApiClientStatus(long nativeptr, int status);
+	public native void googleApiClientLocationAvailable(long nativeptr, boolean available);
 	public native void googleApiClientLocation(long nativeptr, Location location, boolean initial, long requestId);
 }

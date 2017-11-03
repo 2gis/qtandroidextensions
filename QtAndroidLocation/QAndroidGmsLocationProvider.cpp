@@ -56,6 +56,13 @@ Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationStatus
 }
 
 
+Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationAvailable(JNIEnv *, jobject, jlong param, jboolean available)
+{
+	JNI_LINKER_OBJECT(QAndroidGmsLocationProvider, param, obj)
+	obj->onLocationAvailable(available);
+}
+
+
 Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationRecieved(JNIEnv *, jobject, jlong param, jobject location, jboolean initial, jlong requestId)
 {
 	if (0x0 == location)
@@ -72,6 +79,7 @@ Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationReciev
 static const JNINativeMethod methods[] = {
 	{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getActivityNoThrow)},
 	{"googleApiClientStatus", "(JI)V", reinterpret_cast<void*>(Java_GooglePlayServiceLocationProvider_locationStatus)},
+	{"googleApiClientLocationAvailable", "(JZ)V", reinterpret_cast<void*>(Java_GooglePlayServiceLocationProvider_locationAvailable)},
 	{"googleApiClientLocation", "(JLandroid/location/Location;ZJ)V", reinterpret_cast<void*>(Java_GooglePlayServiceLocationProvider_locationRecieved)},
 };
 
@@ -114,29 +122,29 @@ QGeoPositionInfo QAndroidGmsLocationProvider::lastKnownPosition() const
 }
 
 
-void QAndroidGmsLocationProvider::onStatusChanged(int status)
+void QAndroidGmsLocationProvider::onLocationAvailable(jboolean available)
+{
+	emit locationAvailable(available);
+}
+
+
+void QAndroidGmsLocationProvider::onStatusChanged(jint status)
 {
 	const char * szStatus = "Unknown";
 
 	switch (status)
 	{
-		case 0:
+		case S_DISCONNECTED:
 			szStatus = "Disconnected";
 			break;
-		case 1:
+		case S_CONNECTED:
 			szStatus = "Connected";
 			break;
-		case 2:
+		case S_CONNECT_ERROR:
 			szStatus = "Error";
 			break;
-		case 3:
+		case S_CONNECT_SUSPEND:
 			szStatus = "Suspended";
-			break;
-		case 4:
-			szStatus = "Success";
-			break;
-		case 5:
-			szStatus = "Fail";
 			break;
 		default:
 			assert(!"Unexpected status");
@@ -184,7 +192,7 @@ void QAndroidGmsLocationProvider::startUpdates()
 
 	if (isJniReady())
 	{
-		jlong maxWaitTime = reqiredInterval_ * 1.5;
+		jlong maxWaitTime = reqiredInterval_ * 3 / 2;
 		jint numUpdates = 0;
 		jlong expirationDuration = 0;
 		jlong expirationTime = 0;

@@ -58,8 +58,6 @@ public:
 		S_CONNECTED 		= 1,
 		S_CONNECT_ERROR 	= 2,
 		S_CONNECT_SUSPEND	= 3,
-		S_REQUEST_SUCCESS	= 4,
-		S_REQUEST_FAIL		= 5,
 	};
 
 	enum enPriority
@@ -86,6 +84,7 @@ private slots:
 
 signals:
 	void statusChanged(int);
+	void locationAvailable(bool);
 	void locationRecieved(QGeoPositionInfo);
 	void checkRequest(jlong requestId);
 
@@ -98,13 +97,15 @@ public:
 
 private:
 	void stopUpdates(jlong requestId);
-	void onStatusChanged(int status);
+	void onStatusChanged(jint status);
+	void onLocationAvailable(jboolean available);
 	void onLocationRecieved(const QGeoPositionInfo &location, jboolean initial, jlong requestId);
 
 private:
 	Q_DISABLE_COPY(QAndroidGmsLocationProvider)
 	friend void JNICALL Java_GooglePlayServiceLocationProvider_locationRecieved(JNIEnv * env, jobject, jlong param, jobject location, jboolean initial, jlong requestId);
 	friend void JNICALL Java_GooglePlayServiceLocationProvider_locationStatus(JNIEnv * env, jobject, jlong param, jint state);
+	friend void JNICALL Java_GooglePlayServiceLocationProvider_locationAvailable(JNIEnv *, jobject, jlong param, jboolean available);
 
 private:
 	QGeoPositionInfo lastLocation_;
