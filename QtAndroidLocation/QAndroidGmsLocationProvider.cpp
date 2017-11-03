@@ -171,6 +171,7 @@ void QAndroidGmsLocationProvider::setPriority(enPriority priority)
 
 void QAndroidGmsLocationProvider::setUpdateInterval(int reqiredInterval, int minimumInterval)
 {
+	qInfo() << __FUNCTION__ << ": reqiredInterval" << reqiredInterval << ", minimumInterval" << minimumInterval;
 	reqiredInterval_ = reqiredInterval;
 	minimumInterval_ = minimumInterval;
 }
