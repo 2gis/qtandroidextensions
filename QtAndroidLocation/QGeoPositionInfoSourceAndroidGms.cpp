@@ -202,7 +202,7 @@ QGeoPositionInfoSource::PositioningMethods QGeoPositionInfoSourceAndroidGms::sup
 
 int QGeoPositionInfoSourceAndroidGms::minimumUpdateInterval() const
 {
-	return 1000;
+	return 500;
 }
 
 void QGeoPositionInfoSourceAndroidGms::setError(Error errval)
