@@ -348,7 +348,7 @@ public class GmsLocationProvider implements ConnectionCallbacks, OnConnectionFai
 
 		LocationCallback callback = new LocationCallback() {
 			@Override
-			public void onLocationAvailability (LocationAvailability locationAvailability)
+			public void onLocationAvailability(LocationAvailability locationAvailability)
 			{
 				boolean available = false;
 				if (null != locationAvailability) {
