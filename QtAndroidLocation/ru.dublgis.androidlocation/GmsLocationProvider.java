@@ -317,25 +317,31 @@ public class GmsLocationProvider implements ConnectionCallbacks, OnConnectionFai
 		Log.i(TAG, "startLocationUpdates");
 
 		LocationRequest request = new LocationRequest();
-		request
-			.setPriority(priority)
-			.setInterval(interval)
-			.setFastestInterval(fastestInterval);
 
-		if (maxWaitTime > 0) {
-			request.setMaxWaitTime(maxWaitTime);
+		try {
+			request
+				.setPriority(priority)
+				.setInterval(interval)
+				.setFastestInterval(fastestInterval);
+
+			if (maxWaitTime > 0) {
+				request.setMaxWaitTime(maxWaitTime);
+			}
+
+			if (numUpdates > 0) {
+				request.setNumUpdates(numUpdates);
+			}
+
+			if (expirationDuration > 0) {
+				request.setExpirationDuration(expirationDuration);
+			}
+
+			if (expirationTime > 0) {
+				request.setExpirationTime(expirationTime);
+			}
 		}
-
-		if (numUpdates > 0) {
-			request.setNumUpdates(numUpdates);
-		}
-
-		if (expirationDuration > 0) {
-			request.setExpirationDuration(expirationDuration);
-		}
-
-		if (expirationTime > 0) {
-			request.setExpirationTime(expirationTime);
+		catch (Throwable e) {
+			Log.e(TAG, "Failed to init LocationRequest", e);
 		}
 
 		final Long requestId = ++mLastRequestId;
