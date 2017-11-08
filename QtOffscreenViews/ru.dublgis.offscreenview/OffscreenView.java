@@ -734,7 +734,7 @@ public abstract class OffscreenView
             // with black screen.
             if (!last_visibility_)
             {
-                Log.i(TAG, "doDrawViewOnTexture: skipping paint for invisible view: " + object_name_);
+                // Log.v(TAG, "doDrawViewOnTexture: skipping paint for invisible view: " + object_name_);
                 return false;
             }
 
