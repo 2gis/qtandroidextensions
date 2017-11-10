@@ -85,17 +85,17 @@ public class OrientationProvider implements SensorEventListener {
 	}
 
 
-	public void start(int samplingPeriodUs, int maxReportLatencyUs) {
+	public boolean start(int samplingPeriodUs, int maxReportLatencyUs) {
 		Log.i(TAG, "start");
 
 		if (null == mSensorManager) {
 			Log.e(TAG, "Sensor manager is null");
-			return;
+			return false;
 		}
 
 		if (mRegistered) {
 			Log.w(TAG, "Listeners already registered");
-			return;
+			return false;
 		}
 
 		/* API 9, not 19. That is not a mistake. */
@@ -104,22 +104,26 @@ public class OrientationProvider implements SensorEventListener {
 			maxReportLatencyUs = SensorManager.SENSOR_DELAY_UI;
 		}
 
+		mRegistered = true;
+
 		try {
 			if (android.os.Build.VERSION.SDK_INT >= 19 && maxReportLatencyUs > 0) {
-				mSensorManager.registerListener(this, mAccelerometer, samplingPeriodUs, maxReportLatencyUs);
-				mSensorManager.registerListener(this, mMagnetometer, samplingPeriodUs, maxReportLatencyUs);
+				mRegistered = mRegistered && mSensorManager.registerListener(this, mAccelerometer, samplingPeriodUs, maxReportLatencyUs);
+				mRegistered = mRegistered && mSensorManager.registerListener(this, mMagnetometer, samplingPeriodUs, maxReportLatencyUs);
 			}
 			else {
-				mSensorManager.registerListener(this, mAccelerometer, samplingPeriodUs);
-				mSensorManager.registerListener(this, mMagnetometer, samplingPeriodUs);
+				mRegistered = mRegistered && mSensorManager.registerListener(this, mAccelerometer, samplingPeriodUs);
+				mRegistered = mRegistered && mSensorManager.registerListener(this, mMagnetometer, samplingPeriodUs);
 			}
 
-			mRegistered = true;
 			Log.i(TAG, "Sensor listener registered successfully with samplingPeriodUs = " + samplingPeriodUs);
 		}
 		catch(Throwable e) {
 			Log.e(TAG, "Failed to register listeners", e);
+			mRegistered = false;
 		}
+
+		return mRegistered;
 	}
 
 
@@ -128,11 +132,6 @@ public class OrientationProvider implements SensorEventListener {
 
 		if (null == mSensorManager) {
 			Log.e(TAG, "SensorManager is null");
-			return;
-		}
-
-		if (!mRegistered) {
-			Log.w(TAG, "Listener is not registered");
 			return;
 		}
 

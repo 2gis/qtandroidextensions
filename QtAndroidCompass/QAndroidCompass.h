@@ -54,6 +54,7 @@ public:
 
 	void start(int32_t delayUs = -1, int32_t latencyUs = -1);
 	void stop();
+	bool isStarted() const;
 
 	float getAzimuth();
 
@@ -65,5 +66,8 @@ private:
 
 private:
 	friend void JNICALL Java_onUpdate(JNIEnv * env, jobject, jlong inst);
+
+private:
+	bool started_;
 };
 

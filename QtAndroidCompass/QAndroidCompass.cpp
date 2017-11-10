@@ -65,6 +65,7 @@ JNI_LINKER_IMPL(QAndroidCompass, "ru/dublgis/androidcompass/OrientationProvider"
 QAndroidCompass::QAndroidCompass(QObject * parent)
 	: QObject(parent)
 	, jniLinker_(new JniObjectLinker(this))
+	, started_(false)
 {
 }
 
@@ -77,9 +78,9 @@ QAndroidCompass::~QAndroidCompass()
 
 void QAndroidCompass::start(int32_t delayUs /*= -1*/, int32_t latencyUs /*= -1*/)
 {
-	if (isJniReady())
+	if (!started_ && isJniReady())
 	{
-		jni()->callParamVoid("start", "II", static_cast<jint>(delayUs), static_cast<jint>(latencyUs));
+		started_ = jni()->callParamBoolean("start", "II", static_cast<jint>(delayUs), static_cast<jint>(latencyUs));
 	}
 }
 
@@ -89,7 +90,14 @@ void QAndroidCompass::stop()
 	if (isJniReady())
 	{
 		jni()->callVoid("stop");
+		started_ = false;
 	}
+}
+
+
+bool QAndroidCompass::isStarted() const
+{
+	return started_;
 }
 
 
