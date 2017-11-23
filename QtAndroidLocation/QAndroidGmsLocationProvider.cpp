@@ -94,12 +94,7 @@ QAndroidGmsLocationProvider::QAndroidGmsLocationProvider(QObject * parent)
 	, minimumInterval_(1000)
 	, priority_(PRIORITY_NO_POWER)
 	, regularUpdadesId_(0)
-	, requestUpdadesId_(0)
-	, requestTimer_(this) // should be set due to parent's move to moveToThread operation
 {
-	QObject::connect(&requestTimer_, &QTimer::timeout,
-	                 this, &QAndroidGmsLocationProvider::onRequestTimeout);
-
 	QObject::connect(qApp, &QGuiApplication::applicationStateChanged,
 	                 this, &QAndroidGmsLocationProvider::onApplicationStateChanged);
 
@@ -218,15 +213,22 @@ void QAndroidGmsLocationProvider::startUpdates()
 
 void QAndroidGmsLocationProvider::stopUpdates()
 {
-	jlong id = 0;
+	RequestsColl requests;
 
 	{
 		QMutexLocker lock(&lastLocationSync_);
-		id = regularUpdadesId_;
+
+		requests.push_back(regularUpdadesId_);
+		requests.insert(requests.end(), requestUpdadesIds_.cbegin(), requestUpdadesIds_.cend());
+
 		regularUpdadesId_ = 0;
+		requestUpdadesIds_.clear();
 	}
 
-	stopUpdates(id);
+	for (RequestsColl::const_iterator it = requests.cbegin(); it != requests.cend(); ++it)
+	{
+		stopUpdates(*it);
+	}
 }
 
 
@@ -237,18 +239,6 @@ void QAndroidGmsLocationProvider::stopUpdates(jlong requestId)
 	if (isJniReady())
 	{
 		jni()->callParamVoid("stopLocationUpdates", "J", requestId);
-
-		bool bStopTimer = false;
-
-		{
-			QMutexLocker lock(&lastLocationSync_);
-			bStopTimer = (requestId == requestUpdadesId_);
-		}
-
-		if (bStopTimer)
-		{
-			requestTimer_.stop();
-		}
 	}
 }
 
@@ -289,36 +279,14 @@ void QAndroidGmsLocationProvider::onCheckRequest(jlong requestId)
 }
 
 
-void QAndroidGmsLocationProvider::onRequestTimeout()
-{
-	jlong id = 0;
-
-	{
-		QMutexLocker lock(&lastLocationSync_);
-		id = requestUpdadesId_;
-		requestUpdadesId_ = 0;
-	}
-
-	stopUpdates(id);
-}
-
-
 void QAndroidGmsLocationProvider::requestUpdate(int timeout /*= 0*/)
 {
 	qDebug() << __FUNCTION__;
-
-	if (requestTimer_.isActive() || timeout < 0)
-	{
-		return;
-	}
 
 	if (0 == timeout)
 	{
 		timeout = std::max(1000, 2 * reqiredInterval_);
 	}
-
-	requestTimer_.setSingleShot(true);
-	requestTimer_.start(timeout);
 
 	if (isJniReady())
 	{
@@ -338,7 +306,7 @@ void QAndroidGmsLocationProvider::requestUpdate(int timeout /*= 0*/)
 
 		{
 			QMutexLocker lock(&lastLocationSync_);
-			requestUpdadesId_ = id;
+			requestUpdadesIds_.push_back(id);
 		}
 
 		qDebug() << "request id =" << id;

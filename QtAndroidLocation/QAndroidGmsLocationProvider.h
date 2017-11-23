@@ -78,7 +78,6 @@ public slots:
 	virtual void requestUpdate(int timeout = 0);
 
 private slots:
-	void onRequestTimeout();
 	void onApplicationStateChanged(Qt::ApplicationState state);
 	void onCheckRequest(jlong requestId);
 
@@ -115,10 +114,9 @@ private:
 	int minimumInterval_;
 	enPriority priority_;
 
+	typedef std::list<jlong> RequestsColl;
 	jlong regularUpdadesId_;
-	jlong requestUpdadesId_;
-
-	QTimer requestTimer_;
+	RequestsColl requestUpdadesIds_;
 };
 
 
