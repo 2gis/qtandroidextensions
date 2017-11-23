@@ -70,4 +70,5 @@ private:
 
 private:
 	bool started_;
+	jint update_interval_msec_;
 };

@@ -152,10 +152,10 @@ public class PassiveLocationProvider implements LocationListener
 		return false;
 	}
 
-	public boolean startLocationUpdates() {
+	public boolean startLocationUpdates(final int minTime) {
 		try {
 			if (null != mLocationManager) {
-				mLocationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 0, 0, this, mlocationUpdatesLooper);
+				mLocationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, minTime, 0, this, mlocationUpdatesLooper);
 				return true;
 			}
 		} catch(Throwable e) {

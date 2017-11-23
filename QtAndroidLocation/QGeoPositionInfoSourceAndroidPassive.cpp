@@ -76,6 +76,7 @@ QGeoPositionInfoSourceAndroidPassive::QGeoPositionInfoSourceAndroidPassive(QObje
 	: QGeoPositionInfoSource(parent)
 	, jniLinker_(new JniObjectLinker(this))
 	, started_(false)
+	, update_interval_msec_(5 * 60 * 1000)
 {
 	qRegisterMetaType<QGeoPositionInfo>();
 	setPreferredPositioningMethods(QGeoPositionInfoSource::NonSatellitePositioningMethods);
@@ -91,7 +92,7 @@ void QGeoPositionInfoSourceAndroidPassive::startUpdates()
 {
 	if (!started_ && isJniReady())
 	{
-		if (jni()->callBool("startLocationUpdates"))
+		if (jni()->callParamBoolean("startLocationUpdates", "I", update_interval_msec_))
 		{
 			started_ = true;
 		}
@@ -117,7 +118,7 @@ void QGeoPositionInfoSourceAndroidPassive::requestUpdate(int timeout /*= 0*/)
 
 void QGeoPositionInfoSourceAndroidPassive::setUpdateInterval(int msec)
 {
-	Q_UNUSED(msec);
+	update_interval_msec_ = msec;
 }
 
 
