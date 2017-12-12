@@ -69,6 +69,16 @@ static const JNINativeMethod methods[] = {
 };
 
 
+/*!
+	\class QGeoPositionInfoSourceAndroidPassive
+	\inheaderfile QGeoPositionInfoSourceAndroidPassive.h
+	\inmodule QtAndroidLocation
+	\ingroup QtAndroidLocationGroup
+	\ingroup GeoPositionInfoSources
+	\brief Geo position info source for android passive provider
+*/
+
+
 JNI_LINKER_IMPL(QGeoPositionInfoSourceAndroidPassive, c_full_class_name_, methods)
 
 

@@ -1,0 +1,20 @@
+
+/*!
+	\page QtAndroidLocation.html
+	\title Qt Android Location
+
+	\annotatedlist QtAndroidLocationGroup
+*/
+
+
+/*!
+	\group QtAndroidLocationGroup
+	\brief QtAndroidLocation classes
+*/
+
+
+/*!
+	\group GeoPositionInfoSources
+	\brief Implementations of QGeoPositionInfoSource
+*/
+

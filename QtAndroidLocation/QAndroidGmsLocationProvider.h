@@ -43,9 +43,7 @@
 #include <IJniObjectLinker.h>
 
 
-/*!
- * A class for geting location from Google Play Services
- */
+
 class QAndroidGmsLocationProvider: public QObject
 {
 	Q_OBJECT

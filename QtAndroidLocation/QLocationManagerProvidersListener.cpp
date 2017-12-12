@@ -56,6 +56,15 @@ static const JNINativeMethod methods[] = {
 };
 
 
+/*!
+	\class QLocationManagerProvidersListener
+	\inheaderfile QLocationManagerProvidersListener.h
+	\inmodule QtAndroidLocation
+	\ingroup QtAndroidLocationGroup
+	\brief Network status listener
+*/
+
+
 JNI_LINKER_IMPL(QLocationManagerProvidersListener, c_full_class_name_, methods)
 
 

@@ -43,9 +43,7 @@ class QAndroidGmsLocationProvider;
 class QLocationManagerProvidersListener;
 
 
-/*!
- * A class for geting location from Google Play Services
- */
+
 class QGeoPositionInfoSourceAndroidGms : public QGeoPositionInfoSource
 {
 	Q_OBJECT

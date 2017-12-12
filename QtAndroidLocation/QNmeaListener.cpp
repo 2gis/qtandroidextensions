@@ -64,6 +64,15 @@ static const JNINativeMethod methods[] = {
 };
 
 
+/*!
+	\class QNmeaListener
+	\inheaderfile QNmeaListener.h
+	\inmodule QtAndroidLocation
+	\ingroup QtAndroidLocationGroup
+	\brief Class for receiving  NMEA sentences from the GPS.
+*/
+
+
 JNI_LINKER_IMPL(QNmeaListener, c_full_class_name, methods)
 
 

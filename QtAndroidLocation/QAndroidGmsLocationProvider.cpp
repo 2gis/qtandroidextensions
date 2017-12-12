@@ -84,6 +84,17 @@ static const JNINativeMethod methods[] = {
 };
 
 
+/*!
+	\class QAndroidGmsLocationProvider
+	\inheaderfile QAndroidGmsLocationProvider.h
+	\inmodule QtAndroidLocation
+	\ingroup QtAndroidLocationGroup
+	\brief Data provider for geo position info source for android GMS
+
+	\sa QGeoPositionInfoSourceAndroidGms
+*/
+
+
 JNI_LINKER_IMPL(QAndroidGmsLocationProvider, c_full_class_name_, methods)
 
 

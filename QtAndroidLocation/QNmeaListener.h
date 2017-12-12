@@ -38,9 +38,8 @@
 #include <QtCore/QObject>
 #include "IJniObjectLinker.h"
 
-/*!
- * Class for receiving  NMEA sentences from the GPS.
- */
+
+
 class QNmeaListener : public QObject
 {
 	Q_OBJECT

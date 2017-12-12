@@ -45,6 +45,20 @@
 Q_DECLARE_METATYPE(QGeoPositionInfo)
 
 
+/*!
+	\class QGeoPositionInfoSourceAndroidGms
+	\inherits QGeoPositionInfoSource
+	\inheaderfile QGeoPositionInfoSourceAndroidGms.h
+	\inmodule QtAndroidLocation
+	\ingroup QtAndroidLocationGroup
+	\ingroup GeoPositionInfoSources
+	\brief Geo position info source for android GMS
+
+	GMS position info source. Recieves data from QAndroidGmsLocationProvider
+	\sa QAndroidGmsLocationProvider
+*/
+
+
 QGeoPositionInfoSourceAndroidGms::QGeoPositionInfoSourceAndroidGms(QObject * parent)
 	: QGeoPositionInfoSource(parent)
 	, regularProvider_(NULL)
