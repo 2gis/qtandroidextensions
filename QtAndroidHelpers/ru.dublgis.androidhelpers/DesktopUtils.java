@@ -84,7 +84,7 @@ public class DesktopUtils
         }
         catch (final Throwable e)
         {
-            Log.e(TAG, "IsInternetActive exception: "+e);
+            Log.e(TAG, "IsInternetActive exception: ", e);
         }
         return -1;
     }
@@ -107,7 +107,7 @@ public class DesktopUtils
         }
         catch (final Throwable e)
         {
-            Log.e(TAG, "GetNetworkType exception: "+e);
+            Log.e(TAG, "GetNetworkType exception: ", e);
         }
         return -1;
     }
@@ -146,7 +146,7 @@ public class DesktopUtils
         }
         catch (final Throwable e)
         {
-            Log.e(TAG, "sendTo exception: "+e);
+            Log.e(TAG, "sendTo exception: ", e);
             return false;
         }
     }
@@ -169,7 +169,7 @@ public class DesktopUtils
         }
         catch (final Throwable e)
         {
-            Log.e(TAG, "sendSMS exception: "+e);
+            Log.e(TAG, "sendSMS exception: ", e);
             return false;
         }
     }
@@ -286,7 +286,7 @@ public class DesktopUtils
         }
         catch (final Throwable e)
         {
-            Log.e(TAG, "sendEmail exception: "+e);
+            Log.e(TAG, "sendEmail exception: ", e);
             return false;
         }
     }
@@ -416,7 +416,7 @@ public class DesktopUtils
         }
         catch (final Throwable e)
         {
-            Log.e(TAG, "openURL exception: "+e);
+            Log.e(TAG, "openURL exception: ", e);
             return false;
         }
     }
@@ -436,7 +436,7 @@ public class DesktopUtils
         }
         catch (final Throwable e)
         {
-            Log.e(TAG, "Exception while opening a file: "+e);
+            Log.e(TAG, "Exception while opening a file: ", e);
             return false;
         }
     }
@@ -456,7 +456,7 @@ public class DesktopUtils
         }
         catch (final Throwable e)
         {
-            Log.e(TAG, "Exception while installing apk: "+e);
+            Log.e(TAG, "Exception while installing apk: ", e);
             return false;
         }
     }
@@ -475,9 +475,45 @@ public class DesktopUtils
         }
         catch (final Throwable e)
         {
-            Log.e(TAG, "Exception while uninstalling package: "+e);
+            Log.e(TAG, "Exception while uninstalling package: ", e);
         }
     }
+
+
+    // See: https://stackoverflow.com/questions/5196833/android-device-phone-call-ability
+    public static boolean isVoiceTelephonyAvailable(final Context ctx)
+    {
+        try
+        {
+            if (!ctx.getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEPHONY))
+            {
+                return false;
+            }
+            final TelephonyManager manager = (TelephonyManager)ctx.getSystemService(Context.TELEPHONY_SERVICE);
+            if (manager == null)
+            {
+                return false;
+            }
+            if (manager.getPhoneType() == TelephonyManager.PHONE_TYPE_NONE)
+            {
+                return false;
+            }
+            if (Build.VERSION.SDK_INT >= 22) // Android 5.1+
+            {
+                if (!manager.isVoiceCapable())
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        catch (final Throwable e)
+        {
+            Log.e(TAG, "isVoiceTelephonyAvailable exception (will return 'false'): ", e);
+            return false;
+        }
+    }
+
 
     // 'number' is an RFC-3966 URI without 'tel:'.
     // If 'action' is null or empty string it defaults to Intent.ACTION_VIEW.
@@ -497,7 +533,7 @@ public class DesktopUtils
         }
         catch (final Throwable e)
         {
-            Log.e(TAG, "callNumber exception: "+e);
+            Log.e(TAG, "callNumber exception: ", e);
             return false;
         }
     }
@@ -515,7 +551,7 @@ public class DesktopUtils
         }
         catch (final Throwable e)
         {
-            Log.e(TAG, "getTelephonyDeviceId exception: "+e);
+            Log.e(TAG, "getTelephonyDeviceId exception: ", e);
             return "";
         }
     }
@@ -560,7 +596,7 @@ public class DesktopUtils
         }
         catch (final Throwable e)
         {
-            Log.e(TAG, "getAndroidId exception: "+e);
+            Log.e(TAG, "getAndroidId exception: ", e);
         }
         return "";
     }
@@ -577,7 +613,7 @@ public class DesktopUtils
        }
        catch (final Throwable e)
        {
-           Log.e(TAG, "getBuildSerial exception: "+e);
+           Log.e(TAG, "getBuildSerial exception: ", e);
        }
        return "";
     }
@@ -597,7 +633,7 @@ public class DesktopUtils
         }
         catch (final Throwable e)
         {
-            Log.e(TAG, "getInstalledAppsList exception: "+e);
+            Log.e(TAG, "getInstalledAppsList exception: ", e);
         }
         return "";
     }
