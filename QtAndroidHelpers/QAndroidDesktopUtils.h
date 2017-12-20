@@ -87,6 +87,9 @@ bool callNumber(const QString & number, const QString & action = QString());
 // Does the same as callNumber(number).
 bool showPhoneNumber(const QString & number);
 
+// Check if the device has a telephony capable of making voice calls.
+bool isVoiceTelephonyAvailable();
+
 // Opens the number with DIAL action, which usually does the same as showPhoneNumber() but may
 // have a different effect if non-standard handler for tel: is used. Does not require any special
 // permissions. In case of an error it falls back to showPhoneNumber().

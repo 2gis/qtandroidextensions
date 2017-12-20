@@ -241,13 +241,22 @@ bool dialPhoneNumber(const QString & number)
 }
 
 
+bool isVoiceTelephonyAvailable()
+{
+	return QJniClass(c_full_class_name_).callStaticParamBoolean(
+		"isVoiceTelephonyAvailable"
+		, "Landroid/content/Context;"
+		, QAndroidQPAPluginGap::Context().jObject());
+}
+
+
 bool callPhoneNumber(const QString & number)
 {
 	if (checkSelfPermission("android.permission.CALL_PHONE"))
 	{
 		if (!callNumber(number, QLatin1String("android.intent.action.CALL")))
 		{
-			qWarning() << "callPhoneNumber failed, falling back to dialPhoneNumber.";
+			qWarning() << "callPhoneNumber: failed, falling back to dialPhoneNumber.";
 			return dialPhoneNumber(number);
 		}
 		return true;
