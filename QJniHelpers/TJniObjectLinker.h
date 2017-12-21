@@ -41,7 +41,7 @@
 #include <QtCore/QReadLocker>
 #include <QtCore/QSet>
 #include <QtCore/QSharedPointer>
-#include <QCoreApplication>
+#include <QtCore/QCoreApplication>
 #include <QJniHelpers.h>
 #include <QAndroidQPAPluginGap.h>
 #include <IJniObjectLinker.h>
