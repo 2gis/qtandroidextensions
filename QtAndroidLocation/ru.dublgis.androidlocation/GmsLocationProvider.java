@@ -294,12 +294,15 @@ public class GmsLocationProvider implements ConnectionCallbacks, OnConnectionFai
 					}
 				});
 			}
-		} catch (IllegalStateException e) {
-			Log.e(TAG, "Failed to connect GoogleApiClient, incorrect looper: ", e);
-		} catch (SecurityException e) {
-			Log.e(TAG, "Failed to connect GoogleApiClient, no permissions: ", e);
-		} catch (Exception e) {
-			Log.e(TAG, "Failed to connect GoogleApiClient: ", e);
+		} catch (final IllegalStateException e) {
+			Log.e(TAG, "Failed to connect to GoogleApiClient, incorrect looper: ", e);
+		} catch (final SecurityException e) {
+			// Most likely cause:
+			// "Client must have ACCESS_FINE_LOCATION permission to request PRIORITY_HIGH_ACCURACY locations."
+			// due to some async problem with a minority of users.
+			Log.e(TAG, "Failed to connect to GoogleApiClient, no permissions: " + e);
+		} catch (final Throwable e) {
+			Log.e(TAG, "Failed to connect to GoogleApiClient: ", e);
 		}
 	}
 

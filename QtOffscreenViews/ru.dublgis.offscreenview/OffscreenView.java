@@ -1378,7 +1378,8 @@ public abstract class OffscreenView
             }
             catch (final Throwable e)
             {
-                Log.e(TAG, "Failed to lock canvas for "+object_name_, e);
+                // Happens rarely, mostly on Android 4. Visual effects unknown.
+                Log.e(TAG, "Failed to lock canvas for " + object_name_ + ": " + e);
                 return null;
             }
         }
