@@ -231,25 +231,25 @@ void QOpenGLTextureHolder::blitTexture(const QRect & targetRect, const QRect & s
 		// vertices by the pmv matrix, so we need to do the effect
 		// of the orthographic projection here ourselves.
 		QRectF r;
-		qreal w = targetRect.width();
-		qreal h = targetRect.height();
-		r.setLeft((targetRect.left() / w) * 2.0f - 1.0f);
+		qreal w = static_cast<qreal>(targetRect.width());
+		qreal h = static_cast<qreal>(targetRect.height());
+		r.setLeft((static_cast<qreal>(targetRect.left()) / w) * 2.0f - 1.0f);
 		if (targetRect.right() == (targetRect.width() - 1))
 		{
 			r.setRight(1.0f);
 		}
 		else
 		{
-			r.setRight((targetRect.right() / w) * 2.0f - 1.0f);
+			r.setRight((static_cast<qreal>(targetRect.right()) / w) * 2.0f - 1.0f);
 		}
-		r.setBottom((targetRect.top() / h) * 2.0f - 1.0f);
+		r.setBottom((static_cast<qreal>(targetRect.top()) / h) * 2.0f - 1.0f);
 		if (targetRect.bottom() == (targetRect.height() - 1))
 		{
 			r.setTop(1.0f);
 		}
 		else
 		{
-			r.setTop((targetRect.bottom() / w) * 2.0f - 1.0f);
+			r.setTop((static_cast<qreal>(targetRect.bottom()) / w) * 2.0f - 1.0f);
 		}
 		drawTexture(r, sourceRect, reverse_y);
 		blitProgram->release();
@@ -289,12 +289,14 @@ void QOpenGLTextureHolder::drawTexture(const QRectF & rect, const QRectF & bitma
 		// Using a piece of texture
 		: QRectF(
 			 // (Reverse Y axis)
-			 QPointF(bitmap_rect.x(), texture_size_.height() - bitmap_rect.bottom())
-			 , bitmap_rect.size());
+			 QPointF(
+				bitmap_rect.x()
+				, static_cast<qreal>(texture_size_.height()) - bitmap_rect.bottom())
+			, bitmap_rect.size());
 
 	// Convert in-texture coords to [0..1]
-	qreal width = texture_size_.width();
-	qreal height = texture_size_.height();
+	qreal width = static_cast<qreal>(texture_size_.width());
+	qreal height = static_cast<qreal>(texture_size_.height());
 
 	GLfloat tx1 = src.left() / width;
 	GLfloat tx2 = src.right() / width;
@@ -423,7 +425,7 @@ void QOpenGLTextureHolder::allocateTexture(const QImage & qimage, GLenum texture
 	// Create texture and load bits into its memory
 	glGenTextures(1, &texture_id_);
 	glBindTexture(texture_type, texture_id_);
-	glTexImage2D(texture_type, 0, type, width, height, 0, type, pixel_type, bits);
+	glTexImage2D(texture_type, 0, static_cast<GLint>(type), width, height, 0, type, pixel_type, bits);
 	glTexParameteri(texture_type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(texture_type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glBindTexture(texture_type, 0);

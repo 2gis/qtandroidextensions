@@ -168,14 +168,14 @@ public:
     virtual bool seek(qint64 pos)
     {
         if (m_assetFile)
-            return pos == AAsset_seek(m_assetFile, pos, SEEK_SET);
+            return pos == AAsset_seek(m_assetFile, static_cast<off_t>(pos), SEEK_SET);
         return false;
     }
 
     virtual qint64 read(char *data, qint64 maxlen)
     {
         if (m_assetFile)
-            return AAsset_read(m_assetFile, data, maxlen);
+            return AAsset_read(m_assetFile, data, static_cast<size_t>(maxlen));
         return -1;
     }
 
@@ -288,7 +288,7 @@ void AndroidAssetsFileEngineHandler::prepopulateCache() const
             qint64 size = fileEngine.size();
 
             if (size <= maxPrepopulatedCacheSize) {
-                QByteArray bytes(size, Qt::Uninitialized);
+                QByteArray bytes(static_cast<int>(size), Qt::Uninitialized);
                 qint64 read = fileEngine.read(bytes.data(), size);
                 if (read != size) {
                     qWarning("Failed to read prepopulated cache");
