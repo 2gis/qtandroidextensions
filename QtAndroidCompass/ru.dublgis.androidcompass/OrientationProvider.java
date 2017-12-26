@@ -70,8 +70,12 @@ public class OrientationProvider implements SensorEventListener {
 		try {
 			// initialize your android device sensor capabilities
 			mSensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
-			mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-			mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+			if (mSensorManager != null) {
+				mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+				mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+			} else {
+				Log.w(TAG, "SensorManager is null!");
+			}
 		} catch (final Throwable e) {
 			Log.e(TAG, "Exception while getting sensors: ", e);
 		}
@@ -141,8 +145,8 @@ public class OrientationProvider implements SensorEventListener {
 			mSensorManager.unregisterListener(this);
 			mRegistered = false;
 		}
-		catch(Exception e) {
-			Log.e(TAG, "Failed to stop orientation listener", e);
+		catch(final Throwable e) {
+			Log.e(TAG, "Failed to stop orientation listener: ", e);
 		}
 	}
 
@@ -164,8 +168,11 @@ public class OrientationProvider implements SensorEventListener {
 				} else if (Surface.ROTATION_270 == rotation) {
 					angleShift = 270;
 				}
-			} catch (Throwable e) {
-				Log.e(TAG, "Failed to get rotation", e);
+			} catch (final RuntimeException e) {
+				// Most likely cause: android.os.DeadSystemException
+				Log.e(TAG, "Failed to get rotation due to RuntimeException: " + e);
+			} catch (final Throwable e) {
+				Log.e(TAG, "Failed to get rotation: ", e);
 			}
 		}
 
@@ -210,6 +217,7 @@ public class OrientationProvider implements SensorEventListener {
 		SensorManager.getOrientation(mRotationMatrix, mOrientationAngles);
 		// "mOrientationAngles" now has up-to-date information.
 	}
+
 
 	private native Activity getActivity();
 	private native void onUpdate(long nativeptr);
