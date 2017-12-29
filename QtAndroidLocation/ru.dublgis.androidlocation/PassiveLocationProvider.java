@@ -53,7 +53,7 @@ public class PassiveLocationProvider implements LocationListener
 {
 	private static final String TAG = "PassiveLocationProvider";
 	private volatile long native_ptr_ = 0;
-	static LocationManager mLocationManager = null;
+	private static LocationManager mLocationManager = null;
 
 	private Looper mlocationUpdatesLooper = null;
 	final private Thread mlocationUpdatesThread = new Thread() {

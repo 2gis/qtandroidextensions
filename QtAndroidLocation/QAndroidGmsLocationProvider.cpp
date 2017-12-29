@@ -123,6 +123,11 @@ QAndroidGmsLocationProvider::~QAndroidGmsLocationProvider()
 
 QGeoPositionInfo QAndroidGmsLocationProvider::lastKnownPosition() const
 {
+	if (isJniReady())
+	{
+		jni()->callVoid("lastKnownPosition");
+	}
+
 	QMutexLocker lock(&lastLocationSync_);
 	return lastLocation_;
 }
@@ -217,7 +222,7 @@ void QAndroidGmsLocationProvider::startUpdates()
 			regularUpdadesId_ = id;
 		}
 
-		qDebug() << "updates id =" << id;
+		qDebug() << __FUNCTION__ << ": updates id =" << id;
 	}
 }
 
