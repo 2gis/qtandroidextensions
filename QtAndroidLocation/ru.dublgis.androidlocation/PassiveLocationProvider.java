@@ -38,7 +38,9 @@ package ru.dublgis.androidlocation;
 
 import android.app.PendingIntent;
 import android.content.Context;
+import android.os.Build;
 import android.app.Activity;
+import android.support.v4.content.ContextCompat;
 import android.location.Criteria;
 import android.os.Bundle;
 import android.os.Looper;
@@ -47,6 +49,9 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.util.Log;
 
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+
 
 
 public class PassiveLocationProvider implements LocationListener
@@ -54,6 +59,7 @@ public class PassiveLocationProvider implements LocationListener
 	private static final String TAG = "PassiveLocationProvider";
 	private volatile long native_ptr_ = 0;
 	private static LocationManager mLocationManager = null;
+	private static Context mContext = null;
 
 	private Looper mlocationUpdatesLooper = null;
 	final private Thread mlocationUpdatesThread = new Thread() {
@@ -97,6 +103,7 @@ public class PassiveLocationProvider implements LocationListener
 
 	static public void setContext(Context context) {
 		Log.i(TAG, "setContext");
+		mContext = context;
 		if (null != context) {
 			try {
 				Log.i(TAG, "null != context");
@@ -108,10 +115,27 @@ public class PassiveLocationProvider implements LocationListener
 	}
 
 
+	static public boolean isPermissionGranted(Context ctx) {
+		if (null == ctx) {
+			Log.e(TAG, "Context is null in permition checker");
+			return false;
+		}
+		if (Build.VERSION.SDK_INT >= 23 &&
+				// If your application only has the coarse permission then it will not have access to <...> passive location providers.
+				PERMISSION_GRANTED != ContextCompat.checkSelfPermission(ctx, ACCESS_FINE_LOCATION)) {
+			Log.i(TAG, "Permission is not granted");
+			return false;
+		}
+		else {
+			return true;
+		}
+	}
+
+
 	static public Location lastKnownPosition(boolean fromSatelliteOnly) {
 		Log.i(TAG, "lastKnownPosition");
 		try {
-			if (null != mLocationManager) {
+			if (null != mLocationManager && isPermissionGranted(mContext)) {
 				Log.i(TAG, "lastKnownPosition, mLocationManager not null");
 				return mLocationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
 			}
@@ -140,7 +164,7 @@ public class PassiveLocationProvider implements LocationListener
 
 	static public boolean requestSingleUpdate(PendingIntent intent) {
 		try {
-			if (null != mLocationManager) {
+			if (null != mLocationManager && isPermissionGranted(mContext)) {
 				Criteria criteria = new Criteria();
 				criteria.setPowerRequirement(Criteria.POWER_HIGH);
 				mLocationManager.requestSingleUpdate(criteria, intent);
@@ -154,7 +178,7 @@ public class PassiveLocationProvider implements LocationListener
 
 	public boolean startLocationUpdates(final int minTime) {
 		try {
-			if (null != mLocationManager) {
+			if (null != mLocationManager && isPermissionGranted(mContext)) {
 				mLocationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, minTime, 0, this, mlocationUpdatesLooper);
 				return true;
 			}

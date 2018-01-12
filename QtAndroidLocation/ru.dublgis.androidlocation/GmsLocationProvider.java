@@ -69,7 +69,7 @@ import ru.dublgis.androidhelpers.Log;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
-import static android.content.pm.PackageManager.PERMISSION_DENIED;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 
 public class GmsLocationProvider
@@ -201,17 +201,27 @@ public class GmsLocationProvider
 	}
 
 
+	static public boolean isPermissionGranted(Context ctx) {
+		if (null == ctx) {
+			Log.e(TAG, "Context is null in permition checker");
+			return false;
+		}
+		if (Build.VERSION.SDK_INT >= 23 &&
+				PERMISSION_GRANTED != ContextCompat.checkSelfPermission(ctx, ACCESS_FINE_LOCATION) &&
+				PERMISSION_GRANTED != ContextCompat.checkSelfPermission(ctx, ACCESS_COARSE_LOCATION)) {
+			Log.i(TAG, "Permission is not granted");
+			return false;
+		}
+		else {
+			return true;
+		}
+	}
+
+
 	private void processRequest(final RequestHolder holder) {
 		try {
-			if (mFusedLocationClient != null && null != holder) {
+			if (mFusedLocationClient != null && null != holder && isPermissionGranted(getActivity())) {
 				Log.i(TAG, "requestLocationUpdates " + holder.mRequestId);
-
-				Context ctx = getActivity();
-				if (Build.VERSION.SDK_INT >= 23 &&
-						PERMISSION_DENIED == ContextCompat.checkSelfPermission(ctx, ACCESS_FINE_LOCATION) &&
-						PERMISSION_DENIED == ContextCompat.checkSelfPermission(ctx, ACCESS_COARSE_LOCATION)) {
-					return;
-				}
 
 				mFusedLocationClient
 					.requestLocationUpdates(holder.mRequest, holder.mCallback, mlocationUpdatesLooper)
@@ -239,7 +249,7 @@ public class GmsLocationProvider
 
 
 	public void lastKnownPosition() {
-		if (null != mFusedLocationClient) {
+		if (null != mFusedLocationClient && isPermissionGranted(getActivity())) {
 			try {
 				mFusedLocationClient
 					.getLastLocation()
