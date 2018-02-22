@@ -253,11 +253,8 @@ public abstract class OffscreenView
                 precreation_actions_.add(runnable);
                 return false;
             }
-            else
-            {
-                return runOnUiThread(runnable);
-            }
         }
+        return runOnUiThread(runnable);
     }
 
     final public View getView()
@@ -280,9 +277,7 @@ public abstract class OffscreenView
         }
     }
 
-    /*!
-     * Invokes View creation in Android UI thread.
-     */
+    // Schedule View creation on Android UI thread.
     public boolean createView()
     {
         Log.i(TAG, "OffscreenView.createView(name=\""+object_name_+"\") called");
@@ -529,19 +524,19 @@ public abstract class OffscreenView
             @Override
             public void run()
             {
+                Log.i(TAG, "OffscreenView.intializeGL(name=\""+object_name_+"\", texture="+gl_texture_id_+") RUN");
                 synchronized (texture_mutex_)
                 {
-                    Log.i(TAG, "OffscreenView.intializeGL(name=\""+object_name_+"\", texture="+gl_texture_id_+") RUN");
                     rendering_surface_ = new OffscreenGLTextureRenderingSurface();
-                    if (layout_ != null)
-                    {
-                        layout_.requestLayout();
-                    }
-                    // Make sure the view will be repainted on the rendering surface, even if it did
-                    // finish its updates before the surface is available and its size didn't change
-                    // and/or not triggered update by the resize call.
-                    invalidateOffscreenView();
                 }
+                if (layout_ != null)
+                {
+                    layout_.requestLayout();
+                }
+                // Make sure the view will be repainted on the rendering surface, even if it did
+                // finish its updates before the surface is available and its size didn't change
+                // and/or not triggered update by the resize call.
+                invalidateOffscreenView();
             }
         });
     }
@@ -560,15 +555,12 @@ public abstract class OffscreenView
             @Override
             public void run()
             {
-                synchronized (texture_mutex_)
+                Log.i(TAG, "OffscreenView.intializeBitmap(name=\""+object_name_+"\") RUN");
+                if (layout_ != null)
                 {
-                    Log.i(TAG, "OffscreenView.intializeBitmap(name=\""+object_name_+"\") RUN");
-                    if (layout_ != null)
-                    {
-                        layout_.requestLayout();
-                    }
-                    invalidateOffscreenView();
+                    layout_.requestLayout();
                 }
+                invalidateOffscreenView();
             }
         });
     }
@@ -1073,38 +1065,36 @@ public abstract class OffscreenView
     //! Called from C++ to change size of the view.
     public void resizeOffscreenView(final int w, final int h)
     {
+        Log.i(TAG, "resizeOffscreenView " + w + "x" + h);
         synchronized (texture_mutex_) {
             synchronized (view_variables_mutex_) {
-                Log.i(TAG, "resizeOffscreenView " + w + "x" + h);
                 view_width_ = w;
                 view_height_ = h;
-
                 if (rendering_surface_ != null) {
                     rendering_surface_.setNewSize(w, h);
                 }
-
-                runViewAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        final View v = getView();
-                        if (v != null) {
-                            if (!attaching_mode_) {
-                                if (getApiLevel() >= 11) {
-                                    v.setLeft(0);
-                                    v.setTop(0);
-                                    v.setRight(w);
-                                    v.setBottom(h);
-                                }
-                            } else {
-                                v.forceLayout();
-                                v.requestLayout();
-                            }
-                            invalidateOffscreenView();
-                        }
-                    }
-                });
             }
         }
+        runViewAction(new Runnable() {
+            @Override
+            public void run() {
+                final View v = getView();
+                if (v != null) {
+                    if (!attaching_mode_) {
+                        if (getApiLevel() >= 11) {
+                            v.setLeft(0);
+                            v.setTop(0);
+                            v.setRight(w);
+                            v.setBottom(h);
+                        }
+                    } else {
+                        v.forceLayout();
+                        v.requestLayout();
+                    }
+                    invalidateOffscreenView();
+                }
+            }
+        });
     }
 
     /*!
@@ -1545,9 +1535,7 @@ public abstract class OffscreenView
             public void run()
             {
                 Log.d(TAG, "testFunction runnable!");
-                ViewGroup content = (ViewGroup)getActivity().findViewById(android.R.id.content);
-                View mChildOfContent = content.getChildAt(0);
-                mChildOfContent.requestLayout();
+                // Put some test code here
             }
         });
     }
