@@ -853,7 +853,6 @@ public abstract class OffscreenView
                 rendering_surface_.setBitmaps(bitmap_a, bitmap_b);
             }
         }
-        System.gc();
     }
 
     //! Called from C++
