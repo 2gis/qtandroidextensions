@@ -240,7 +240,7 @@ public abstract class OffscreenView
 
     // 1. If the view exists and we're on UI thread, the runnable is executed immediately and
     //    'true' returned.
-    // 2. If the view exists and we're not on UI thread, it tries to post the the runnable
+    // 2. If the view exists and we're not on UI thread, it tries to post the runnable
     //    for execution on the UI thread and returns true if that succeeds or false otherwise.
     // 3. If the view does not exist the runnable is added into the list of actions to be
     //    performed immediately after the view creation and 'false' is returned.
