@@ -527,7 +527,12 @@ public abstract class OffscreenView
                 Log.i(TAG, "OffscreenView.intializeGL(name=\""+object_name_+"\", texture="+gl_texture_id_+") RUN");
                 synchronized (texture_mutex_)
                 {
-                    rendering_surface_ = new OffscreenGLTextureRenderingSurface();
+                    synchronized (view_variables_mutex_) {
+                        rendering_surface_ = new OffscreenGLTextureRenderingSurface(
+                            view_width_
+                            , view_height_
+                            , gl_texture_id_);
+                    }
                 }
                 if (layout_ != null)
                 {
@@ -1340,19 +1345,14 @@ public abstract class OffscreenView
         Surface surface_ = null;
         boolean has_texture_ = false;
 
-        public OffscreenGLTextureRenderingSurface()
+        public OffscreenGLTextureRenderingSurface(int w, int h, int gl_texture_id)
         {
-            synchronized (texture_mutex_)
-            {
-                synchronized (view_variables_mutex_) {
-                    Log.d(TAG, "OffscreenGLTextureRenderingSurface(obj=\"" + object_name_ + "\", texture=" + gl_texture_id_
-                            + ", w=" + view_width_ + ", h=" + view_height_ + ") tid=" + Thread.currentThread().getId());
-                    surface_texture_ = new SurfaceTexture(gl_texture_id_);
-                    surface_ = new Surface(surface_texture_);
-                    setNewSize(view_width_, view_height_);
-                    Log.d(TAG, "OffscreenGLTextureRenderingSurface created");
-                }
-            }
+            Log.d(TAG, "OffscreenGLTextureRenderingSurface(obj=\"" + object_name_ +
+                "\", texture=" + gl_texture_id
+                + ", w=" + w + ", h=" + h + ") tid=" + Thread.currentThread().getId());
+            surface_texture_ = new SurfaceTexture(gl_texture_id);
+            surface_ = new Surface(surface_texture_);
+            setNewSize(w, h);
         }
 
         @Override
