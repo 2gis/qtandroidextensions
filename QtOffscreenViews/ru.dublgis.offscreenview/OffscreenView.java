@@ -74,6 +74,7 @@ public abstract class OffscreenView
     private int gl_texture_id_ = 0;
     protected OffscreenRenderingSurface rendering_surface_ = null;
 
+    // This should always be the inner lock without any other our mutexes locked inside.
     final protected Object view_variables_mutex_ = new Object();
     protected int fill_a_ = 255, fill_r_ = 255, fill_g_ = 255, fill_b_ = 255;
     private int view_left_ = 0;
@@ -285,19 +286,16 @@ public abstract class OffscreenView
             @Override
             public void run()
             {
-                Log.i(TAG, "OffscreenView.createView: run/syncing...");
+                Log.i(TAG, "OffscreenView.createView: creating the view!");
+                // Call final widget implementation function to handle actual
+                // construction of the view.
+                synchronized (view_existence_mutex_)
+                {
+                    doCreateView();
+                }
                 synchronized (view_variables_mutex_) // Using these variables
                 {
-                    Log.i(TAG, "OffscreenView.createView: creating the view!");
                     final Activity activity = getActivity();
-
-                    // Call final widget implementation function to handle actual
-                    // construction of the view.
-                    synchronized (view_existence_mutex_)
-                    {
-                        doCreateView();
-                    }
-
                     final View view = getView();
 
                     // Set initial view properties
@@ -324,25 +322,20 @@ public abstract class OffscreenView
                     }
                     layout_.addView(view);
                     uiAttachViewToQtScreen();
-
-                    // Process command queue
-                    synchronized (view_existence_mutex_)
-                    {
-                        Log.i(TAG, "createView: processing "+(precreation_actions_.size()+1)+" actions...");
-                        Iterator<Runnable> it = precreation_actions_.iterator();
-                        int i = 0;
-                        while(it.hasNext())
-                        {
-                            // Log.v(TAG, "createView: processing action #"+i);
-                            it.next().run();
-                            i++;
-                        }
-                        precreation_actions_.clear();
-                    }
-
-                    // Notify C++ part that the view construction has been completed.
-                    nativeViewCreated(getNativePtr());
                 }
+
+                // No need to lock view_existence_mutex_ because we are sure that the view
+                // exists and no actions are going to be added to precreation_actions_ anymore.
+                Log.i(TAG, "createView: processing " + (precreation_actions_.size() + 1) + " actions...");
+                Iterator<Runnable> it = precreation_actions_.iterator();
+                while (it.hasNext())
+                {
+                    it.next().run();
+                }
+                precreation_actions_.clear();
+
+                // Notify the C++ that the view construction has been completed.
+                nativeViewCreated(getNativePtr());
             }
         });
         Log.i(TAG, "createView result="+result);
@@ -779,7 +772,9 @@ public abstract class OffscreenView
                         {
                             synchronized (view_variables_mutex_)
                             {
-                                canvas.drawColor(Color.argb(fill_a_, fill_r_, fill_g_, fill_b_), PorterDuff.Mode.SRC);
+                                canvas.drawColor(
+                                    Color.argb(fill_a_, fill_r_, fill_g_, fill_b_)
+                                    , PorterDuff.Mode.SRC);
                             }
                         }
                     }
