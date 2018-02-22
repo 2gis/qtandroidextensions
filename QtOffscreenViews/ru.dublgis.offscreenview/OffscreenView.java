@@ -74,6 +74,7 @@ public abstract class OffscreenView
     private int gl_texture_id_ = 0;
     protected OffscreenRenderingSurface rendering_surface_ = null;
 
+    // This should always be the inner lock without any other our mutexes locked inside.
     final protected Object view_variables_mutex_ = new Object();
     protected int fill_a_ = 255, fill_r_ = 255, fill_g_ = 255, fill_b_ = 255;
     private int view_left_ = 0;
@@ -208,6 +209,9 @@ public abstract class OffscreenView
         native_ptr_ = ptr;
     }
 
+    // This is a convenience wrapper for Activity.runOnUiThread(Runnable).
+    // Returns true if we managed to obtain Activity instance and call Activity.runOnUiThread()
+    // or false otherwise.
     public boolean runOnUiThread(final Runnable runnable)
     {
         try
@@ -234,6 +238,12 @@ public abstract class OffscreenView
         }
     }
 
+    // 1. If the view exists and we're on UI thread, the runnable is executed immediately and
+    //    'true' returned.
+    // 2. If the view exists and we're not on UI thread, it tries to post the runnable
+    //    for execution on the UI thread and returns true if that succeeds or false otherwise.
+    // 3. If the view does not exist the runnable is added into the list of actions to be
+    //    performed immediately after the view creation and 'false' is returned.
     public boolean runViewAction(final Runnable runnable)
     {
         synchronized (view_existence_mutex_)
@@ -244,11 +254,8 @@ public abstract class OffscreenView
                 precreation_actions_.add(runnable);
                 return false;
             }
-            else
-            {
-                return runOnUiThread(runnable);
-            }
         }
+        return runOnUiThread(runnable);
     }
 
     final public View getView()
@@ -271,9 +278,7 @@ public abstract class OffscreenView
         }
     }
 
-    /*!
-     * Invokes View creation in Android UI thread.
-     */
+    // Schedule View creation on Android UI thread.
     public boolean createView()
     {
         Log.i(TAG, "OffscreenView.createView(name=\""+object_name_+"\") called");
@@ -281,19 +286,16 @@ public abstract class OffscreenView
             @Override
             public void run()
             {
-                Log.i(TAG, "OffscreenView.createView: run/syncing...");
+                Log.i(TAG, "OffscreenView.createView: creating the view!");
+                // Call final widget implementation function to handle actual
+                // construction of the view.
+                synchronized (view_existence_mutex_)
+                {
+                    doCreateView();
+                }
                 synchronized (view_variables_mutex_) // Using these variables
                 {
-                    Log.i(TAG, "OffscreenView.createView: creating the view!");
                     final Activity activity = getActivity();
-
-                    // Call final widget implementation function to handle actual
-                    // construction of the view.
-                    synchronized (view_existence_mutex_)
-                    {
-                        doCreateView();
-                    }
-
                     final View view = getView();
 
                     // Set initial view properties
@@ -320,25 +322,20 @@ public abstract class OffscreenView
                     }
                     layout_.addView(view);
                     uiAttachViewToQtScreen();
-
-                    // Process command queue
-                    synchronized (view_existence_mutex_)
-                    {
-                        Log.i(TAG, "createView: processing "+(precreation_actions_.size()+1)+" actions...");
-                        Iterator<Runnable> it = precreation_actions_.iterator();
-                        int i = 0;
-                        while(it.hasNext())
-                        {
-                            // Log.v(TAG, "createView: processing action #"+i);
-                            it.next().run();
-                            i++;
-                        }
-                        precreation_actions_.clear();
-                    }
-
-                    // Notify C++ part that the view construction has been completed.
-                    nativeViewCreated(getNativePtr());
                 }
+
+                // No need to lock view_existence_mutex_ because we are sure that the view
+                // exists and no actions are going to be added to precreation_actions_ anymore.
+                Log.i(TAG, "createView: processing " + (precreation_actions_.size() + 1) + " actions...");
+                Iterator<Runnable> it = precreation_actions_.iterator();
+                while (it.hasNext())
+                {
+                    it.next().run();
+                }
+                precreation_actions_.clear();
+
+                // Notify the C++ that the view construction has been completed.
+                nativeViewCreated(getNativePtr());
             }
         });
         Log.i(TAG, "createView result="+result);
@@ -520,25 +517,24 @@ public abstract class OffscreenView
             @Override
             public void run()
             {
+                Log.i(TAG, "OffscreenView.intializeGL(name=\""+object_name_+"\", texture="+gl_texture_id_+") RUN");
                 synchronized (texture_mutex_)
                 {
-                    Log.i(TAG, "OffscreenView.intializeGL(name=\""+object_name_+"\", texture="+gl_texture_id_+") RUN");
-                    rendering_surface_ = new OffscreenGLTextureRenderingSurface();
-                    if (layout_ != null)
-                    {
-                        runViewAction(new Runnable(){
-                                @Override
-                                public void run()
-                                {
-                                    layout_.requestLayout();
-                                }
-                        });
+                    synchronized (view_variables_mutex_) {
+                        rendering_surface_ = new OffscreenGLTextureRenderingSurface(
+                            view_width_
+                            , view_height_
+                            , gl_texture_id_);
                     }
-                    // Make sure the view will be repainted on the rendering surface, even it did
-                    // finish its updates before the surface is available and its size didn't change
-                    // and/or not triggered update by the resize call.
-                    invalidateOffscreenView();
                 }
+                if (layout_ != null)
+                {
+                    layout_.requestLayout();
+                }
+                // Make sure the view will be repainted on the rendering surface, even if it did
+                // finish its updates before the surface is available and its size didn't change
+                // and/or not triggered update by the resize call.
+                invalidateOffscreenView();
             }
         });
     }
@@ -557,21 +553,12 @@ public abstract class OffscreenView
             @Override
             public void run()
             {
-                synchronized (texture_mutex_)
+                Log.i(TAG, "OffscreenView.intializeBitmap(name=\""+object_name_+"\") RUN");
+                if (layout_ != null)
                 {
-                    Log.i(TAG, "OffscreenView.intializeBitmap(name=\""+object_name_+"\") RUN");
-                    if (layout_ != null)
-                    {
-                        runViewAction(new Runnable(){
-                                @Override
-                                public void run()
-                                {
-                                    layout_.requestLayout();
-                                }
-                        });
-                    }
-                    invalidateOffscreenView();
+                    layout_.requestLayout();
                 }
+                invalidateOffscreenView();
             }
         });
     }
@@ -785,7 +772,9 @@ public abstract class OffscreenView
                         {
                             synchronized (view_variables_mutex_)
                             {
-                                canvas.drawColor(Color.argb(fill_a_, fill_r_, fill_g_, fill_b_), PorterDuff.Mode.SRC);
+                                canvas.drawColor(
+                                    Color.argb(fill_a_, fill_r_, fill_g_, fill_b_)
+                                    , PorterDuff.Mode.SRC);
                             }
                         }
                     }
@@ -864,7 +853,6 @@ public abstract class OffscreenView
                 rendering_surface_.setBitmaps(bitmap_a, bitmap_b);
             }
         }
-        System.gc();
     }
 
     //! Called from C++
@@ -1076,38 +1064,36 @@ public abstract class OffscreenView
     //! Called from C++ to change size of the view.
     public void resizeOffscreenView(final int w, final int h)
     {
+        Log.i(TAG, "resizeOffscreenView " + w + "x" + h);
         synchronized (texture_mutex_) {
             synchronized (view_variables_mutex_) {
-                Log.i(TAG, "resizeOffscreenView " + w + "x" + h);
                 view_width_ = w;
                 view_height_ = h;
-
                 if (rendering_surface_ != null) {
                     rendering_surface_.setNewSize(w, h);
                 }
-
-                runViewAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        final View v = getView();
-                        if (v != null) {
-                            if (!attaching_mode_) {
-                                if (getApiLevel() >= 11) {
-                                    v.setLeft(0);
-                                    v.setTop(0);
-                                    v.setRight(w);
-                                    v.setBottom(h);
-                                }
-                            } else {
-                                v.forceLayout();
-                                v.requestLayout();
-                            }
-                            invalidateOffscreenView();
-                        }
-                    }
-                });
             }
         }
+        runViewAction(new Runnable() {
+            @Override
+            public void run() {
+                final View v = getView();
+                if (v != null) {
+                    if (!attaching_mode_) {
+                        if (getApiLevel() >= 11) {
+                            v.setLeft(0);
+                            v.setTop(0);
+                            v.setRight(w);
+                            v.setBottom(h);
+                        }
+                    } else {
+                        v.forceLayout();
+                        v.requestLayout();
+                    }
+                    invalidateOffscreenView();
+                }
+            }
+        });
     }
 
     /*!
@@ -1354,19 +1340,14 @@ public abstract class OffscreenView
         Surface surface_ = null;
         boolean has_texture_ = false;
 
-        public OffscreenGLTextureRenderingSurface()
+        public OffscreenGLTextureRenderingSurface(int w, int h, int gl_texture_id)
         {
-            synchronized (texture_mutex_)
-            {
-                synchronized (view_variables_mutex_) {
-                    Log.d(TAG, "OffscreenGLTextureRenderingSurface(obj=\"" + object_name_ + "\", texture=" + gl_texture_id_
-                            + ", w=" + view_width_ + ", h=" + view_height_ + ") tid=" + Thread.currentThread().getId());
-                    surface_texture_ = new SurfaceTexture(gl_texture_id_);
-                    surface_ = new Surface(surface_texture_);
-                    setNewSize(view_width_, view_height_);
-                    Log.d(TAG, "OffscreenGLTextureRenderingSurface created");
-                }
-            }
+            Log.d(TAG, "OffscreenGLTextureRenderingSurface(obj=\"" + object_name_ +
+                "\", texture=" + gl_texture_id
+                + ", w=" + w + ", h=" + h + ") tid=" + Thread.currentThread().getId());
+            surface_texture_ = new SurfaceTexture(gl_texture_id);
+            surface_ = new Surface(surface_texture_);
+            setNewSize(w, h);
         }
 
         @Override
@@ -1548,9 +1529,7 @@ public abstract class OffscreenView
             public void run()
             {
                 Log.d(TAG, "testFunction runnable!");
-                ViewGroup content = (ViewGroup)getActivity().findViewById(android.R.id.content);
-                View mChildOfContent = content.getChildAt(0);
-                mChildOfContent.requestLayout();
+                // Put some test code here
             }
         });
     }
