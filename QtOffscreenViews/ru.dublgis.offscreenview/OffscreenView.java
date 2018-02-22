@@ -208,6 +208,9 @@ public abstract class OffscreenView
         native_ptr_ = ptr;
     }
 
+    // This is a convenience wrapper for Activity.runOnUiThread(Runnable).
+    // Returns true if we managed to obtain Activity instance and call Activity.runOnUiThread()
+    // or false otherwise.
     public boolean runOnUiThread(final Runnable runnable)
     {
         try
@@ -234,6 +237,12 @@ public abstract class OffscreenView
         }
     }
 
+    // 1. If the view exists and we're on UI thread, the runnable is executed immediately and
+    //    'true' returned.
+    // 2. If the view exists and we're not on UI thread, it tries to post the the runnable
+    //    for execution on the UI thread and returns true if that succeeds or false otherwise.
+    // 3. If the view does not exist the runnable is added into the list of actions to be
+    //    performed immediately after the view creation and 'false' is returned.
     public boolean runViewAction(final Runnable runnable)
     {
         synchronized (view_existence_mutex_)
@@ -526,15 +535,9 @@ public abstract class OffscreenView
                     rendering_surface_ = new OffscreenGLTextureRenderingSurface();
                     if (layout_ != null)
                     {
-                        runViewAction(new Runnable(){
-                                @Override
-                                public void run()
-                                {
-                                    layout_.requestLayout();
-                                }
-                        });
+                        layout_.requestLayout();
                     }
-                    // Make sure the view will be repainted on the rendering surface, even it did
+                    // Make sure the view will be repainted on the rendering surface, even if it did
                     // finish its updates before the surface is available and its size didn't change
                     // and/or not triggered update by the resize call.
                     invalidateOffscreenView();
@@ -562,13 +565,7 @@ public abstract class OffscreenView
                     Log.i(TAG, "OffscreenView.intializeBitmap(name=\""+object_name_+"\") RUN");
                     if (layout_ != null)
                     {
-                        runViewAction(new Runnable(){
-                                @Override
-                                public void run()
-                                {
-                                    layout_.requestLayout();
-                                }
-                        });
+                        layout_.requestLayout();
                     }
                     invalidateOffscreenView();
                 }
