@@ -90,6 +90,7 @@ TJniObjectLinker<TNative>::TJniObjectLinker(TNative * nativePtr)
 	try
 	{
 		QByteArray javaFullClassName = preloadJavaClasses();
+		qDebug() << "Ready to create jni object" << javaFullClassName;
 		handler_.reset(new QJniObject(javaFullClassName, "J", nativePtr_));
 
 		if (!handler_->jObject())
