@@ -44,7 +44,7 @@ class QLocationManagerProvidersListener : public QObject
 {
 	Q_OBJECT
 	JNI_LINKER_DECL(QLocationManagerProvidersListener)
-	
+
 public:
 	QLocationManagerProvidersListener(QObject * parent = 0);
 	virtual ~QLocationManagerProvidersListener();
