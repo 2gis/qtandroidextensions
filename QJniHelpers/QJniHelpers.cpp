@@ -479,7 +479,7 @@ QString QJniEnvPtr::QStringFromJString(jstring str)
 }
 
 
-bool QJniEnvPtr::clearException(bool describe)
+bool QJniEnvPtr::clearException(bool describe /*= true*/)
 {
 	if (env_->ExceptionCheck())
 	{
