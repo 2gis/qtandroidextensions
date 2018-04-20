@@ -291,7 +291,15 @@ public class DesktopUtils
         }
     }
 
-    public static boolean sendEmail(final Context ctx, final String to, final String subject, final String body, final String[] attachment, final String authorities) {
+
+    public static boolean sendEmail(
+            final Context ctx
+            , final String to
+            , final String subject
+            , final String body
+            , final String[] attachment
+            , final String authorities)
+    {
         try
         {
             final String[] recipients = new String[]{ to };
@@ -427,7 +435,7 @@ public class DesktopUtils
         Log.d(TAG, "Will open file: "+fileName);
         try
         {
-            Intent intent =new Intent(Intent.ACTION_VIEW);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             File file = new File(fileName);
             intent.setDataAndType(Uri.fromFile(file), mimeType);

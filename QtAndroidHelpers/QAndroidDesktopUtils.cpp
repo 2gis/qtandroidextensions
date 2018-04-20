@@ -144,11 +144,17 @@ bool sendEmail(
 {
 	QJniEnvPtr jep;
 
-	QJniLocalRef attachment_array{jep.env()->NewObjectArray(attachment.size(), QJniClass{"java/lang/String"}.jClass(), nullptr)};
+	QJniLocalRef attachment_array(jep.env()->NewObjectArray(
+		attachment.size()
+		, QJniClass("java/lang/String").jClass()
+		, nullptr));
 
 	for (QStringList::size_type i = 0; i < attachment.size(); ++i)
 	{
-		jep.env()->SetObjectArrayElement(static_cast<jobjectArray>(attachment_array.jObject()), i, QJniLocalRef{attachment[i]}.jObject());
+		jep.env()->SetObjectArrayElement(
+			static_cast<jobjectArray>(attachment_array.jObject())
+			, i
+			, QJniLocalRef(attachment[i]).jObject());
 	}
 
 	QJniClass du(c_full_class_name_);
