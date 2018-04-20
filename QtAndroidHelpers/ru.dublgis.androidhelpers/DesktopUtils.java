@@ -328,7 +328,12 @@ public class DesktopUtils
                         uri.add(FileProvider.getUriForFile(ctx, authorities, new File(fileName)));
                     }
                 }
-                intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uri);
+                // Should not put array with only one element into intent because of a bug in GMail.
+                if (uri.size() == 1) {
+                    intent.putExtra(Intent.EXTRA_STREAM, uri.get(0));
+                } else {
+                    intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uri);
+                }
             }
 
             final IntentResolverInfo mailtoIntentResolvers = new IntentResolverInfo(ctx.getPackageManager());
