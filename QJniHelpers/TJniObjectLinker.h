@@ -220,7 +220,7 @@ void nativeClass::preloadJavaClasses()                                          
                                                                                                                                             \
 bool nativeClass::isJniReady() const                                                                                                        \
 {                                                                                                                                           \
-	return jniLinker_ && jniLinker_->handler();                                                                                             \
+	return jniLinker_ && jniLinker_->handler() && jniLinker_->handler()->jObject();                                                         \
 }                                                                                                                                           \
                                                                                                                                             \
 QJniObject * nativeClass::jni() const                                                                                                       \
