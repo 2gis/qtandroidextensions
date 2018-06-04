@@ -9,7 +9,8 @@ HEADERS += \
 	$$PWD/QGeoPositionInfoSourceAndroidGms.h \
 	$$PWD/QGeoPositionInfoSourceAndroidPassive.h \
 	$$PWD/PositionInfoConvertor.h \
-	$$PWD/QNmeaListener.h
+	$$PWD/QNmeaListener.h \
+	$$PWD/QAndroidPassiveGeoPosition.h
 
 SOURCES += \
 	$$PWD/QLocationManagerProvidersListener.cpp \
@@ -17,5 +18,6 @@ SOURCES += \
 	$$PWD/QGeoPositionInfoSourceAndroidGms.cpp \
 	$$PWD/QGeoPositionInfoSourceAndroidPassive.cpp \
 	$$PWD/PositionInfoConvertor.cpp \
-	$$PWD/QNmeaListener.cpp
+	$$PWD/QNmeaListener.cpp \
+	$$PWD/QAndroidPassiveGeoPosition.cpp
 }
