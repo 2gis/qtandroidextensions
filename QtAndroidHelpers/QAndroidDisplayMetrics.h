@@ -108,7 +108,7 @@ public:
 		ANDROID_DENSITY_XXXHIGH  = 640;
 
 	// Enum to control selection on additional intermediate screen densities.
-	// The integer values are just hints for readability.
+	// The bigger the integer value, the more possible themes can be matched.
 	enum IntermediateDensities
 	{
 		IntermediateNone        = 0, // Use only major themes (integer and below 1.0 densities).

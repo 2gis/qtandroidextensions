@@ -84,6 +84,10 @@ static float densityFromTheme(QAndroidDisplayMetrics::Theme theme)
 }
 
 
+// Find a theme that matches logical density.
+// Normally, density_dpi should be EXACT MATCH to one of the known themes.
+// However, if the application doesn't want to use some intermediate densities
+// and the device offers one, it will return the next "more round" theme.
 static QAndroidDisplayMetrics::Theme themeFromLogicalDensity(
 	int density_dpi
 	, QAndroidDisplayMetrics::IntermediateDensities intermediate_densities)
@@ -111,7 +115,7 @@ static QAndroidDisplayMetrics::Theme themeFromLogicalDensity(
 
 
 // Returns ratio of a/b or b/a, the one which is <= 1.0.
-// The bigger the ratio, the closer the numbers are.
+// The bigger the ratio, the closer (relatively) the numbers are.
 // a, b, should be > 1e-6.
 static float matchK(float a, float b)
 {
@@ -121,6 +125,9 @@ static float matchK(float a, float b)
 }
 
 
+// Find a theme that matches hardware density (thus ignoring manufacturer's choice
+// of the theme for the device). The matching is done by choosing the theme that
+// has the closest DPI to the hardware value.
 static QAndroidDisplayMetrics::Theme themeFromHardwareDensity(
 	float density_dpi
 	, QAndroidDisplayMetrics::IntermediateDensities intermediate_densities)
@@ -145,21 +152,22 @@ static QAndroidDisplayMetrics::Theme themeFromHardwareDensity(
 }
 
 
-static float guessRealisticDpi(float xdpi, float ydpi, float logicalDpi)
+// Find out which actual hardware DPI we have. Some Android devices report wrong hardware
+// DPI values so we have to use some heuristics.
+static float guessRealisticHardwareDpi(float xdpi, float ydpi, float logicalDpi)
 {
+	// Let's start with average hardware resoltion.
 	float realisticDpi = (xdpi + ydpi) / 2.0f;
 	if (logicalDpi > 0.0f)
 	{
-		float difference = realisticDpi / logicalDpi;
-		if (difference > 1.0f)
-		{
-			difference = 1.0f / difference;
-		}
-		if (difference < 0.75f)
+		// Max difference between standard adjacent logical DPI values is 1.5 or 0.66.
+		// If hardware DPI differs from logical DPI more than 0.66 times we assume
+		// that the hardware value is set wrong and fall back to the logical value.
+		if (matchK(realisticDpi, logicalDpi) < 0.66f)
 		{
 			qWarning() << "Average hardware DPI is reported as" << realisticDpi
-				<< "but physical DPI is" << logicalDpi
-				<< "(too different). Falling back to logical value.";
+				<< "but logical DPI is" << logicalDpi
+				<< "(too different). Falling back to the logical value.";
 			realisticDpi = logicalDpi;
 		}
 	}
@@ -202,7 +210,8 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(
 	physicalYDpi_ = metrics.getFloatField("ydpi");
 	widthPixels_ = metrics.getIntField("widthPixels");
 	heightPixels_ = metrics.getIntField("heightPixels");
-	realisticPhysicalDpi_ = guessRealisticDpi(
+
+	realisticPhysicalDpi_ = guessRealisticHardwareDpi(
 		physicalXDpi_
 		, physicalYDpi_
 		, static_cast<float>(densityDpi_));
