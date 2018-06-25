@@ -117,7 +117,7 @@ static QAndroidDisplayMetrics::Theme themeFromLogicalDensity(
 // Returns ratio of a/b or b/a, the one which is <= 1.0.
 // The bigger the ratio, the closer (relatively) the numbers are.
 // a, b, should be > 1e-6.
-static float matchK(float a, float b)
+static float proximityRatio(float a, float b)
 {
 	return (a <= 1e-6f || b <= 1e-6f)
 		? 0.0f
@@ -133,7 +133,7 @@ static QAndroidDisplayMetrics::Theme themeFromHardwareDensity(
 	, QAndroidDisplayMetrics::IntermediateDensities intermediate_densities)
 {
 	QAndroidDisplayMetrics::Theme resulting_theme = all_themes[0].theme;
-	float bestK = matchK(density_dpi, static_cast<float>(all_themes[0].starting_ppi));
+	float bestK = proximityRatio(density_dpi, static_cast<float>(all_themes[0].starting_ppi));
 	for (size_t i = 1; i < all_themes_count; ++i)
 	{
 		// Skip unwanted themes
@@ -141,7 +141,7 @@ static QAndroidDisplayMetrics::Theme themeFromHardwareDensity(
 		{
 			continue;
 		}
-		const float k = matchK(density_dpi, static_cast<float>(all_themes[i].starting_ppi));
+		const float k = proximityRatio(density_dpi, static_cast<float>(all_themes[i].starting_ppi));
 		if (k > bestK)
 		{
 			bestK = k;
@@ -163,7 +163,7 @@ static float guessRealisticHardwareDpi(float xdpi, float ydpi, float logicalDpi)
 		// Max difference between standard adjacent logical DPI values is 1.5 or 0.66.
 		// If hardware DPI differs from logical DPI more than 0.66 times we assume
 		// that the hardware value is set wrong and fall back to the logical value.
-		if (matchK(realisticDpi, logicalDpi) < 0.66f)
+		if (proximityRatio(realisticDpi, logicalDpi) < 0.66f)
 		{
 			qWarning() << "Average hardware DPI is reported as" << realisticDpi
 				<< "but logical DPI is" << logicalDpi
