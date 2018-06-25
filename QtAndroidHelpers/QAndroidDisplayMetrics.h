@@ -74,8 +74,8 @@ private:
 	Q_PROPERTY(float density READ density)
 	Q_PROPERTY(int densityDpi READ densityDpi)
 	Q_PROPERTY(float scaledDensity READ scaledDensity)
-	Q_PROPERTY(float densityFromCurrentTheme READ densityFromCurrentTheme)
-	Q_PROPERTY(float scaledDensityFromCurrentTheme READ scaledDensityFromCurrentTheme)
+	Q_PROPERTY(float densityFromSystemTheme READ densityFromSystemTheme)
+	Q_PROPERTY(float scaledDensityFromSystemTheme READ scaledDensityFromSystemTheme)
 	Q_PROPERTY(float densityFromHardwareDpiTheme READ densityFromHardwareDpiTheme)
 	Q_PROPERTY(float scaledDensityFromHardwareDpiTheme READ scaledDensityFromHardwareDpiTheme)
 	Q_PROPERTY(float xdpi READ xdpi)
@@ -126,7 +126,7 @@ public:
 	// This is the number used to scale layout designed for a device with default (medium)
 	// resolution (160 DPI) to match the current device.
 	// Note: some devices have wrong density value based on wrong physical DPI value.
-	// It is safer to use densityFromCurrentTheme() or scaledDensityFromCurrentTheme(),
+	// It is safer to use densityFromSystemTheme() or scaledDensityFromSystemTheme(),
 	// especially when supporting older Androids.
 	float density() const { return density_;  }
 
@@ -161,8 +161,9 @@ public:
 	// Workaround function: get screen density exactly matching theme().
 	// This is more reliable as some older devices have wrong density value, but
 	// logical DPI is always correct.
+	// On all properly configured devices the value should be the same as density().
 	// Old name: densityFromDpi().
-	float densityFromCurrentTheme() const { return densityFromCurrentTheme_; }
+	float densityFromSystemTheme() const { return densityFromSystemTheme_; }
 
 	// Get screen density for the theme based on the hardware parameters rather than
 	// the the manufacturer's choice.
@@ -171,7 +172,7 @@ public:
 	// Workaround function: get screen densityFromDpi() and apply user setting
 	// for UI scaling.
 	// Old name: scaledDensityFromDpi().
-	float scaledDensityFromCurrentTheme() const { return scaledDensityFromCurrentTheme_; }
+	float scaledDensityFromSystemTheme() const { return scaledDensityFromSystemTheme_; }
 
 	// Get scaled screen density for the theme based on the hardware parameters rather than
 	// manufacturer's choice.
@@ -203,8 +204,8 @@ private:
 	float density_;
 	int densityDpi_;
 	float scaledDensity_;
-	float densityFromCurrentTheme_;
-	float scaledDensityFromCurrentTheme_;
+	float densityFromSystemTheme_;
+	float scaledDensityFromSystemTheme_;
 	float densityFromHardwareDpiTheme_;
 	float scaledDensityFromHardwareDpiTheme_;
 	float physicalXDpi_;

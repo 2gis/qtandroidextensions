@@ -182,8 +182,8 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(
 	, density_(1.0f)
 	, densityDpi_(160)
 	, scaledDensity_(1.0f)
-	, densityFromCurrentTheme_(1.0f)
-	, scaledDensityFromCurrentTheme_(1.0f)
+	, densityFromSystemTheme_(1.0f)
+	, scaledDensityFromSystemTheme_(1.0f)
 	, densityFromHardwareDpiTheme_(1.0f)
 	, scaledDensityFromHardwareDpiTheme_(1.0f)
 	, physicalXDpi_(160.0f)
@@ -219,12 +219,12 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(
 	themeFromDensityDpi_ = themeFromLogicalDensity(densityDpi_, allow_intermediate_densities);
 	themeFromHardwareDpi_ = themeFromHardwareDensity(realisticPhysicalDpi_, allow_intermediate_densities);
 
-	densityFromCurrentTheme_ = densityFromTheme(themeFromDensityDpi_);
+	densityFromSystemTheme_ = densityFromTheme(themeFromDensityDpi_);
 	densityFromHardwareDpiTheme_ = densityFromTheme(themeFromHardwareDpi_);
 
 	const float scale = (density_ > 0.0f) ? (scaledDensity_ / density_) : 1.0f;
 
-	scaledDensityFromCurrentTheme_ = densityFromCurrentTheme_ * scale;
+	scaledDensityFromSystemTheme_ = densityFromSystemTheme_ * scale;
 	scaledDensityFromHardwareDpiTheme_ = densityFromHardwareDpiTheme_ * scale;
 
 	qDebug()
@@ -236,8 +236,8 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(
 		<< "/ W =" << widthPixels() << "/ H =" << heightPixels()
 
 		<< "/ SYSTEM THEME:" << static_cast<int>(themeFromDensityDpi_) << themeDirectoryName()
-		<< "/ density =" << densityFromCurrentTheme_
-		<< "/ scaled =" << scaledDensityFromCurrentTheme_
+		<< "/ density =" << densityFromSystemTheme_
+		<< "/ scaled =" << scaledDensityFromSystemTheme_
 
 		<< "/ HARDWARE THEME:" << static_cast<int>(themeFromHardwareDpi_) << themeDirectoryName(themeFromHardwareDpi_)
 		<< "/ density =" << densityFromHardwareDpiTheme_
