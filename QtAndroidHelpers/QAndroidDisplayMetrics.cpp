@@ -182,9 +182,9 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(
 	, density_(1.0f)
 	, densityDpi_(160)
 	, scaledDensity_(1.0f)
-	, logicalDensityFromCurrentTheme_(1.0f)
+	, densityFromCurrentTheme_(1.0f)
 	, scaledDensityFromCurrentTheme_(1.0f)
-	, logicalDensityFromHardwareDpiTheme_(1.0f)
+	, densityFromHardwareDpiTheme_(1.0f)
 	, scaledDensityFromHardwareDpiTheme_(1.0f)
 	, physicalXDpi_(160.0f)
 	, physicalYDpi_(160.0f)
@@ -219,13 +219,13 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(
 	themeFromDensityDpi_ = themeFromLogicalDensity(densityDpi_, allow_intermediate_densities);
 	themeFromHardwareDpi_ = themeFromHardwareDensity(realisticPhysicalDpi_, allow_intermediate_densities);
 
-	logicalDensityFromCurrentTheme_ = densityFromTheme(themeFromDensityDpi_);
-	logicalDensityFromHardwareDpiTheme_ = densityFromTheme(themeFromHardwareDpi_);
+	densityFromCurrentTheme_ = densityFromTheme(themeFromDensityDpi_);
+	densityFromHardwareDpiTheme_ = densityFromTheme(themeFromHardwareDpi_);
 
 	const float scale = (density_ > 0.0f) ? (scaledDensity_ / density_) : 1.0f;
 
-	scaledDensityFromCurrentTheme_ = logicalDensityFromCurrentTheme_ * scale;
-	scaledDensityFromHardwareDpiTheme_ = logicalDensityFromHardwareDpiTheme_ * scale;
+	scaledDensityFromCurrentTheme_ = densityFromCurrentTheme_ * scale;
+	scaledDensityFromHardwareDpiTheme_ = densityFromHardwareDpiTheme_ * scale;
 
 	qDebug()
 		<< "QAndroidDisplayMetrics: DP =" << density()
@@ -236,11 +236,11 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(
 		<< "/ W =" << widthPixels() << "/ H =" << heightPixels()
 
 		<< "/ SYSTEM THEME:" << static_cast<int>(themeFromDensityDpi_) << themeDirectoryName()
-		<< "/ density =" << logicalDensityFromCurrentTheme_
+		<< "/ density =" << densityFromCurrentTheme_
 		<< "/ scaled =" << scaledDensityFromCurrentTheme_
 
 		<< "/ HARDWARE THEME:" << static_cast<int>(themeFromHardwareDpi_) << themeDirectoryName(themeFromHardwareDpi_)
-		<< "/ density =" << logicalDensityFromHardwareDpiTheme_
+		<< "/ density =" << densityFromHardwareDpiTheme_
 		<< "/ scale =" << scaledDensityFromHardwareDpiTheme_;
 }
 

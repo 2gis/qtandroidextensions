@@ -74,9 +74,9 @@ private:
 	Q_PROPERTY(float density READ density)
 	Q_PROPERTY(int densityDpi READ densityDpi)
 	Q_PROPERTY(float scaledDensity READ scaledDensity)
-	Q_PROPERTY(float logicalDensityFromCurrentTheme READ logicalDensityFromCurrentTheme)
+	Q_PROPERTY(float densityFromCurrentTheme READ densityFromCurrentTheme)
 	Q_PROPERTY(float scaledDensityFromCurrentTheme READ scaledDensityFromCurrentTheme)
-	Q_PROPERTY(float logicalDensityFromHardwareDpiTheme READ logicalDensityFromHardwareDpiTheme)
+	Q_PROPERTY(float densityFromHardwareDpiTheme READ densityFromHardwareDpiTheme)
 	Q_PROPERTY(float scaledDensityFromHardwareDpiTheme READ scaledDensityFromHardwareDpiTheme)
 	Q_PROPERTY(float xdpi READ xdpi)
 	Q_PROPERTY(float ydpi READ ydpi)
@@ -126,7 +126,7 @@ public:
 	// This is the number used to scale layout designed for a device with default (medium)
 	// resolution (160 DPI) to match the current device.
 	// Note: some devices have wrong density value based on wrong physical DPI value.
-	// It is safer to use logicalDensityFromCurrentTheme() or scaledDensityFromCurrentTheme(),
+	// It is safer to use densityFromCurrentTheme() or scaledDensityFromCurrentTheme(),
 	// especially when supporting older Androids.
 	float density() const { return density_;  }
 
@@ -162,11 +162,11 @@ public:
 	// This is more reliable as some older devices have wrong density value, but
 	// logical DPI is always correct.
 	// Old name: densityFromDpi().
-	float logicalDensityFromCurrentTheme() const { return logicalDensityFromCurrentTheme_; }
+	float densityFromCurrentTheme() const { return densityFromCurrentTheme_; }
 
 	// Get screen density for the theme based on the hardware parameters rather than
 	// the the manufacturer's choice.
-	float logicalDensityFromHardwareDpiTheme() const { return logicalDensityFromHardwareDpiTheme_; }
+	float densityFromHardwareDpiTheme() const { return densityFromHardwareDpiTheme_; }
 
 	// Workaround function: get screen densityFromDpi() and apply user setting
 	// for UI scaling.
@@ -203,9 +203,9 @@ private:
 	float density_;
 	int densityDpi_;
 	float scaledDensity_;
-	float logicalDensityFromCurrentTheme_;
+	float densityFromCurrentTheme_;
 	float scaledDensityFromCurrentTheme_;
-	float logicalDensityFromHardwareDpiTheme_;
+	float densityFromHardwareDpiTheme_;
 	float scaledDensityFromHardwareDpiTheme_;
 	float physicalXDpi_;
 	float physicalYDpi_;
