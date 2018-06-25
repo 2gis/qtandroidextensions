@@ -74,15 +74,19 @@ private:
 	Q_PROPERTY(float density READ density)
 	Q_PROPERTY(int densityDpi READ densityDpi)
 	Q_PROPERTY(float scaledDensity READ scaledDensity)
-	Q_PROPERTY(float densityFromDpi READ densityFromDpi)
-	Q_PROPERTY(float scaledDensityFromDpi READ scaledDensityFromDpi)
+	Q_PROPERTY(float densityFromSystemTheme READ densityFromSystemTheme)
+	Q_PROPERTY(float scaledDensityFromSystemTheme READ scaledDensityFromSystemTheme)
+	Q_PROPERTY(float densityFromHardwareDpiTheme READ densityFromHardwareDpiTheme)
+	Q_PROPERTY(float scaledDensityFromHardwareDpiTheme READ scaledDensityFromHardwareDpiTheme)
 	Q_PROPERTY(float xdpi READ xdpi)
 	Q_PROPERTY(float ydpi READ ydpi)
 	Q_PROPERTY(float realisticDpi READ realisticDpi)
 	Q_PROPERTY(int widthPixels READ widthPixels)
 	Q_PROPERTY(int heightPixels READ heightPixels)
 	Q_PROPERTY(Theme theme READ theme)
+	Q_PROPERTY(Theme hardwareTheme READ hardwareTheme)
 	Q_PROPERTY(QString themeDirectoryName READ themeDirectoryName)
+	Q_PROPERTY(QString hardwareThemeDirectoryName READ hardwareThemeDirectoryName)
 
 public:
 	// Correctness of the names and constants can be verified here:
@@ -103,85 +107,92 @@ public:
 		ANDROID_DENSITY_560      = 560,
 		ANDROID_DENSITY_XXXHIGH  = 640;
 
+	// Enum to control selection on additional intermediate screen densities.
+	// The bigger the integer value, the more possible themes can be matched.
 	enum IntermediateDensities
 	{
-		// Themes availablity.
-		// The integer values are just hints for readability.
 		IntermediateNone        = 0, // Use only major themes (integer and below 1.0 densities).
 		IntermediateWithStep0_5 = 1, // Use major themes and X.5 themes.
 		IntermediateAll         = 2  // Use all possible themes, including X.33 and X.67 themes.
 	};
 
-	QAndroidDisplayMetrics(QObject * parent = 0, IntermediateDensities intermediate_densities = IntermediateAll);
+	QAndroidDisplayMetrics(
+		QObject * parent = 0
+		, IntermediateDensities allow_intermediate_densities = IntermediateAll);
+
 	static void preloadJavaClasses();
 
-	/*!
-	 * Size multiplier relative to size optimized for the default (medium) DPI (160).
-	 * As for 2014/03 the value seems to be varying from 0.75 to 3.
-	 * Note: some devices have wrong density value based on wrong physical DPI value.
-	 * It is safer to use densityFromDpi() or scaledDensityFromDpi().
-	 */
+	// Basic pixel density for this device as reported by the system.
+	// This is the number used to scale layout designed for a device with default (medium)
+	// resolution (160 DPI) to match the current device.
+	// Note: some devices have wrong density value based on wrong physical DPI value.
+	// It is safer to use densityFromSystemTheme() or scaledDensityFromSystemTheme(),
+	// especially when supporting older Androids.
 	float density() const { return density_;  }
 
-	/*!
-	 * "Logical" resoultion of the screen.
-	 * This function should return value from one of the ANDROID_DENSITY_... constants
-	 * and can be used to select graphical resources.
-	 */
+	// Logical resolution of the screen (the one that matches density()).
+	// It is a value selected by maker of the device from the set of standard resolutions
+	// and should be something close to the hardware resolution.
+	// This function should return value from one of the ANDROID_DENSITY_... constants
+	// and can be used to select set of graphical resources appopriate for the device.
 	int densityDpi() const { return densityDpi_; }
 
-	/*!
-	 * Size multiplier relative to size optimized for the default (medium) DPI (160),
-	 * but also takes into account user's enlarged/reduced font setting.
-	 * See also comments for density().
-	 */
+	// Size multiplier relative to size optimized for the default (medium) DPI (160),
+	// but also takes into account user's enlarged/reduced font setting.
+	// See also comments for density().
 	float scaledDensity() const { return scaledDensity_; }
 
-	Theme theme() const { return theme_; }
+	// Device's default theme, based on densityDpi().
+	Theme theme() const { return themeFromDensityDpi_; }
 
+	// Device's theme based on the hardware parameters rather than the manufacturer's choice.
+	Theme hardwareTheme() const { return themeFromHardwareDpi_; }
+
+	// Standard resource directory name (suffix) used for the theme: "ldpi", "mdpi", and etc.
 	static QString themeDirectoryName(Theme theme);
 
+	// Standard resource directory name  for the current device's theme().
 	QString themeDirectoryName() const { return themeDirectoryName(theme()); }
 
-	/*!
-	 * Same as density(), but the value is looked up from a table by densityDpi().
-	 * This is more reliable because some devices have wrong density value, but
-	 * logical DPI is always correct.
-	 */
-	float densityFromDpi() const { return densityFromDpi_; }
+	// Standard resource directory name for theme based on hardware parameters rather
+	// than manufacturer's choice.
+	QString hardwareThemeDirectoryName() const { return themeDirectoryName(hardwareTheme()); }
 
-	/*!
-	 * Same as density(), but the value is looked up from a table by densityDpi().
-	 * This is more reliable because some devices have wrong density value, but
-	 * logical DPI is always correct.
-	 */
-	float scaledDensityFromDpi() const { return scaledDensityFromDpi_; }
+	// Workaround function: get screen density exactly matching theme().
+	// This is more reliable as some older devices have wrong density value, but
+	// logical DPI is always correct.
+	// On all properly configured devices the value should be the same as density().
+	// Old name: densityFromDpi().
+	float densityFromSystemTheme() const { return densityFromSystemTheme_; }
 
-	/*!
-	 * Exact physical resolution of the screen.
-	 * Maybe set to wrong value on some devices.
-	 */
-	float xdpi() const { return xdpi_; }
+	// Get screen density for the theme based on the hardware parameters rather than
+	// the the manufacturer's choice.
+	float densityFromHardwareDpiTheme() const { return densityFromHardwareDpiTheme_; }
 
-	/*!
-	 * Exact physical resolution of the screen.
-	 * Maybe set to wrong value on some devices.
-	 */
-	float ydpi() const { return ydpi_; }
+	// Workaround function: get screen densityFromDpi() and apply user setting
+	// for UI scaling.
+	// Old name: scaledDensityFromDpi().
+	float scaledDensityFromSystemTheme() const { return scaledDensityFromSystemTheme_; }
 
-	/*!
-	 * Returns the most probable value of physical screen DPI.
-	 * This is either average between xdpi and ydpi, or logical DPI if
-	 * it is too different from the reported physical DPI.
-	 * This value works good for phones and tablets with wrong physical
-	 * DPI setting.
-	 */
-	float realisticDpi() const { return realisticDpi_; }
+	// Get scaled screen density for the theme based on the hardware parameters rather than
+	// manufacturer's choice.
+	float scaledDensityFromHardwareDpiTheme() const { return scaledDensityFromHardwareDpiTheme_; }
 
-	//! Pixel size of the screen
+	// Exact physical resolution of the screen.
+	// Warning: it may be set to a wrong value on some devices (due to manufacturer's
+	// error or bad way of UI tweaking).
+	float xdpi() const { return physicalXDpi_; }
+	float ydpi() const { return physicalYDpi_; }
+
+	// Returns the best possible bet on physical screen resolution.
+	// This is either average between xdpi and ydpi, or logical DPI if
+	// it is too different from the reported physical DPI.
+	// This value works good for phones and tablets with wrong physical
+	// DPI setting.
+	float realisticDpi() const { return realisticPhysicalDpi_; }
+
+	// Pixel size of the screen
 	int widthPixels() const { return widthPixels_; }
-
-	//! Pixel size of the screen
 	int heightPixels() const { return heightPixels_; }
 
 	// Font scale, as configured by user.
@@ -193,14 +204,17 @@ private:
 	float density_;
 	int densityDpi_;
 	float scaledDensity_;
-	float densityFromDpi_;
-	float scaledDensityFromDpi_;
-	float xdpi_;
-	float ydpi_;
-	float realisticDpi_;
+	float densityFromSystemTheme_;
+	float scaledDensityFromSystemTheme_;
+	float densityFromHardwareDpiTheme_;
+	float scaledDensityFromHardwareDpiTheme_;
+	float physicalXDpi_;
+	float physicalYDpi_;
+	float realisticPhysicalDpi_;
 	int widthPixels_;
 	int heightPixels_;
-	Theme theme_;
+	Theme themeFromDensityDpi_;
+	Theme themeFromHardwareDpi_;
 };
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)

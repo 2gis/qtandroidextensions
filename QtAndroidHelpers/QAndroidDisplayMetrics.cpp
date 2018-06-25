@@ -13,13 +13,13 @@
   modification, are permitted provided that the following conditions are met:
 
   * Redistributions of source code must retain the above copyright notice,
-    this list of conditions and the following disclaimer.
+	this list of conditions and the following disclaimer.
   * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
   * Neither the name of the DoubleGIS, LLC nor the names of its contributors
-    may be used to endorse or promote products derived from this software
-    without specific prior written permission.
+	may be used to endorse or promote products derived from this software
+	without specific prior written permission.
 
   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -84,12 +84,18 @@ static float densityFromTheme(QAndroidDisplayMetrics::Theme theme)
 }
 
 
-static QAndroidDisplayMetrics::Theme themeFromDensity(int density_dpi, QAndroidDisplayMetrics::IntermediateDensities intermediate_densities)
+// Find a theme that matches logical density.
+// Normally, density_dpi should be EXACT MATCH to one of the known themes.
+// However, if the application doesn't want to use some intermediate densities
+// and the device offers one, it will return the next "more round" theme.
+static QAndroidDisplayMetrics::Theme themeFromLogicalDensity(
+	int density_dpi
+	, QAndroidDisplayMetrics::IntermediateDensities intermediate_densities)
 {
 	QAndroidDisplayMetrics::Theme resulting_theme = all_themes[0].theme;
-	for (size_t i = 0; i < all_themes_count; ++i)
+	for (size_t i = 1; i < all_themes_count; ++i)
 	{
-		// Don't see unallowed themes
+		// Skip unwanted themes
 		if (all_themes[i].availability > intermediate_densities)
 		{
 			continue;
@@ -108,21 +114,85 @@ static QAndroidDisplayMetrics::Theme themeFromDensity(int density_dpi, QAndroidD
 }
 
 
+// Returns ratio of a/b or b/a, the one which is <= 1.0.
+// The bigger the ratio, the closer (relatively) the numbers are.
+// a, b, should be > 1e-6.
+static float proximityRatio(float a, float b)
+{
+	return (a <= 1e-6f || b <= 1e-6f)
+		? 0.0f
+		: ((a > b) ? b / a : a / b);
+}
+
+
+// Find a theme that matches hardware density (thus ignoring manufacturer's choice
+// of the theme for the device). The matching is done by choosing the theme that
+// has the closest DPI to the hardware value.
+static QAndroidDisplayMetrics::Theme themeFromHardwareDensity(
+	float density_dpi
+	, QAndroidDisplayMetrics::IntermediateDensities intermediate_densities)
+{
+	QAndroidDisplayMetrics::Theme resulting_theme = all_themes[0].theme;
+	float bestK = proximityRatio(density_dpi, static_cast<float>(all_themes[0].starting_ppi));
+	for (size_t i = 1; i < all_themes_count; ++i)
+	{
+		// Skip unwanted themes
+		if (all_themes[i].availability > intermediate_densities)
+		{
+			continue;
+		}
+		const float k = proximityRatio(density_dpi, static_cast<float>(all_themes[i].starting_ppi));
+		if (k > bestK)
+		{
+			bestK = k;
+			resulting_theme = all_themes[i].theme;
+		}
+	}
+	return resulting_theme;
+}
+
+
+// Find out which actual hardware DPI we have. Some Android devices report wrong hardware
+// DPI values so we have to use some heuristics.
+static float guessRealisticHardwareDpi(float xdpi, float ydpi, float logicalDpi)
+{
+	// Let's start with average hardware resoltion.
+	float realisticDpi = (xdpi + ydpi) / 2.0f;
+	if (logicalDpi > 0.0f)
+	{
+		// Max difference between standard adjacent logical DPI values is 1.5 or 0.66.
+		// If hardware DPI differs from logical DPI more than 0.66 times we assume
+		// that the hardware value is set wrong and fall back to the logical value.
+		if (proximityRatio(realisticDpi, logicalDpi) < 0.66f)
+		{
+			qWarning() << "Average hardware DPI is reported as" << realisticDpi
+				<< "but logical DPI is" << logicalDpi
+				<< "(too different). Falling back to the logical value.";
+			realisticDpi = logicalDpi;
+		}
+	}
+	return realisticDpi;
+}
+
+
 QAndroidDisplayMetrics::QAndroidDisplayMetrics(
 		QObject * parent
-		, QAndroidDisplayMetrics::IntermediateDensities intermediate_densities)
+		, QAndroidDisplayMetrics::IntermediateDensities allow_intermediate_densities)
 	: QObject(parent)
 	, density_(1.0f)
 	, densityDpi_(160)
 	, scaledDensity_(1.0f)
-	, densityFromDpi_(1.0f)
-	, scaledDensityFromDpi_(1.0f)
-	, xdpi_(160.0f)
-	, ydpi_(160.0f)
-	, realisticDpi_(160.0f)
+	, densityFromSystemTheme_(1.0f)
+	, scaledDensityFromSystemTheme_(1.0f)
+	, densityFromHardwareDpiTheme_(1.0f)
+	, scaledDensityFromHardwareDpiTheme_(1.0f)
+	, physicalXDpi_(160.0f)
+	, physicalYDpi_(160.0f)
+	, realisticPhysicalDpi_(160.0f)
 	, widthPixels_(240)
 	, heightPixels_(240)
-	, theme_(ThemeMDPI)
+	, themeFromDensityDpi_(ThemeMDPI)
+	, themeFromHardwareDpi_(ThemeMDPI)
 {
 	QJniObject metrics("android/util/DisplayMetrics", "");
 	{
@@ -136,51 +206,44 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(
 	densityDpi_ = metrics.getIntField("densityDpi");
 	heightPixels_ = metrics.getIntField("heightPixels");
 	scaledDensity_ = metrics.getFloatField("scaledDensity");
-	xdpi_ = metrics.getFloatField("xdpi");
-	ydpi_ = metrics.getFloatField("ydpi");
+	physicalXDpi_ = metrics.getFloatField("xdpi");
+	physicalYDpi_ = metrics.getFloatField("ydpi");
 	widthPixels_ = metrics.getIntField("widthPixels");
 	heightPixels_ = metrics.getIntField("heightPixels");
 
-	// Calculating theme
-	theme_ = themeFromDensity(densityDpi_, intermediate_densities);
+	realisticPhysicalDpi_ = guessRealisticHardwareDpi(
+		physicalXDpi_
+		, physicalYDpi_
+		, static_cast<float>(densityDpi_));
 
-	// Calculating scaler from the theme
-	densityFromDpi_ = densityFromTheme(theme_);
+	themeFromDensityDpi_ = themeFromLogicalDensity(densityDpi_, allow_intermediate_densities);
+	themeFromHardwareDpi_ = themeFromHardwareDensity(realisticPhysicalDpi_, allow_intermediate_densities);
 
-	if (density_ > 0.0f)
-	{
-		scaledDensityFromDpi_ = densityFromDpi_ * (scaledDensity_ / density_);
-	}
-	else
-	{
-		scaledDensityFromDpi_ = densityFromDpi_;
-	}
+	densityFromSystemTheme_ = densityFromTheme(themeFromDensityDpi_);
+	densityFromHardwareDpiTheme_ = densityFromTheme(themeFromHardwareDpi_);
 
-	realisticDpi_ = (xdpi_ + ydpi_) / 2.0f;
-	if (densityDpi_ > 0.0f)
-	{
-		float difference = realisticDpi_ / float(densityDpi_);
-		if (difference > 1.0f)
-		{
-			difference = 1.0f / difference;
-		}
-		if (difference < 0.75f)
-		{
-			qWarning() << "Average hardware DPI is reported as" << realisticDpi_ << "but physical DPI is"
-				<< densityDpi_ << "(too different).";
-			realisticDpi_ = float(densityDpi_);
-		}
-	}
+	const float scale = (density_ > 0.0f) ? (scaledDensity_ / density_) : 1.0f;
 
-	qDebug() << "QAndroidDisplayMetrics: density =" << density() << "/ densityDpi =" << densityDpi()
-		<< "/ scaledDensity =" << scaledDensity()
-		<< "/ xdpi =" << xdpi() << "/ ydpi =" << ydpi()
-		<< "/ realisticDpi =" << realisticDpi_
-		<< "/ widthPixels =" << widthPixels() << "/ heightPixels =" << heightPixels()
-		<< "/ Theme =" << int(theme_) << themeDirectoryName()
-		<< "/ densityFromDpi =" << densityFromDpi_
-		<< "/ scaledDensityFromDpi =" << scaledDensityFromDpi_;
+	scaledDensityFromSystemTheme_ = densityFromSystemTheme_ * scale;
+	scaledDensityFromHardwareDpiTheme_ = densityFromHardwareDpiTheme_ * scale;
+
+	qDebug()
+		<< "QAndroidDisplayMetrics: DP =" << density()
+		<< "/ logical DPI =" << densityDpi()
+		<< "/ scaled DP =" << scaledDensity()
+		<< "/ DPI X =" << xdpi() << "/ Y =" << ydpi()
+		<< "/ realistic DPI =" << realisticPhysicalDpi_
+		<< "/ W =" << widthPixels() << "/ H =" << heightPixels()
+
+		<< "/ SYSTEM THEME:" << static_cast<int>(themeFromDensityDpi_) << themeDirectoryName()
+		<< "/ density =" << densityFromSystemTheme_
+		<< "/ scaled =" << scaledDensityFromSystemTheme_
+
+		<< "/ HARDWARE THEME:" << static_cast<int>(themeFromHardwareDpi_) << themeDirectoryName(themeFromHardwareDpi_)
+		<< "/ density =" << densityFromHardwareDpiTheme_
+		<< "/ scale =" << scaledDensityFromHardwareDpiTheme_;
 }
+
 
 void QAndroidDisplayMetrics::preloadJavaClasses()
 {
@@ -189,6 +252,7 @@ void QAndroidDisplayMetrics::preloadJavaClasses()
 	QAndroidQPAPluginGap::preloadJavaClass("android/content/res/Resources");
 	QAndroidQPAPluginGap::preloadJavaClass("android/content/res/Configuration");
 }
+
 
 QString QAndroidDisplayMetrics::themeDirectoryName(Theme theme)
 {
@@ -211,6 +275,7 @@ QString QAndroidDisplayMetrics::themeDirectoryName(Theme theme)
 		return QString::null;
 	};
 }
+
 
 float QAndroidDisplayMetrics::fontScale()
 {
