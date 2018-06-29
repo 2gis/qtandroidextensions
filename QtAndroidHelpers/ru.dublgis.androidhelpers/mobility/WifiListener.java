@@ -85,7 +85,7 @@ public class WifiListener extends BroadcastReceiver
 			}
 
 			mWifiMan = (WifiManager)getContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-			
+
 			if (mWifiMan == null)
 			{
 				return false;

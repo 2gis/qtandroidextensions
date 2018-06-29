@@ -100,8 +100,8 @@ public class GmsLocationProvider
 
 	private class RequestHolder {
 		public long mRequestId;
-		public LocationRequest mRequest = null;
-		public LocationCallback mCallback = null;
+		private LocationRequest mRequest = null;
+		private LocationCallback mCallback = null;
 
 		RequestHolder(long id, LocationRequest request, LocationCallback callback) {
 			mRequestId = id;
@@ -141,7 +141,7 @@ public class GmsLocationProvider
 				mlocationUpdatesThread.join(300);
 			}
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			Log.e(TAG, "Exception in cppDestroyed: ", e);
 		}
 	}
 

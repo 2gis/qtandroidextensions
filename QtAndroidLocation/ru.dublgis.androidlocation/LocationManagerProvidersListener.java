@@ -126,7 +126,9 @@ public class LocationManagerProvidersListener extends BroadcastReceiver
 			final LocationManager lm =
 				(LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 
-			ret = lm.isProviderEnabled(provider);
+			if (lm != null) {
+				ret = lm.isProviderEnabled(provider);
+			}
 		}
 		catch(Throwable e)
 		{
@@ -144,7 +146,9 @@ public class LocationManagerProvidersListener extends BroadcastReceiver
 			final LocationManager lm =
 				(LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 
-			return lm.getAllProviders().contains(provider);
+			if (lm != null) {
+				return lm.getAllProviders().contains(provider);
+			}
 		}
 		catch(Throwable e)
 		{

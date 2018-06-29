@@ -135,7 +135,7 @@ public class PassiveLocationProvider implements LocationListener
 	static public Location lastKnownPosition(boolean fromSatelliteOnly) {
 		Log.i(TAG, "lastKnownPosition");
 		try {
-			if (null != mLocationManager && isPermissionGranted(mContext)) {
+			if (null != mContext && null != mLocationManager && isPermissionGranted(mContext)) {
 				Log.i(TAG, "lastKnownPosition, mLocationManager not null");
 				return mLocationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
 			}
@@ -164,7 +164,7 @@ public class PassiveLocationProvider implements LocationListener
 
 	static public boolean requestSingleUpdate(PendingIntent intent) {
 		try {
-			if (null != mLocationManager && isPermissionGranted(mContext)) {
+			if (null != mContext && null != mLocationManager && isPermissionGranted(mContext)) {
 				Criteria criteria = new Criteria();
 				criteria.setPowerRequirement(Criteria.POWER_HIGH);
 				mLocationManager.requestSingleUpdate(criteria, intent);
@@ -178,7 +178,7 @@ public class PassiveLocationProvider implements LocationListener
 
 	public boolean startLocationUpdates(final int minTime) {
 		try {
-			if (null != mLocationManager && isPermissionGranted(mContext)) {
+			if (null != mContext && null != mLocationManager && isPermissionGranted(mContext)) {
 				mLocationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, minTime, 0, this, mlocationUpdatesLooper);
 				return true;
 			}

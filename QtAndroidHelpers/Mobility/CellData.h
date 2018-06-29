@@ -2,9 +2,9 @@
     Offscreen Android Views library for Qt
 
     Authors:
-    Vyacheslav O. Koscheev <vok1980@gmail.com>
-    Ivan Avdeev marflon@gmail.com
-    Sergey A. Galin sergey.galin@gmail.com
+        Vyacheslav O. Koscheev <vok1980@gmail.com>
+        Ivan Avdeev marflon@gmail.com
+        Sergey A. Galin sergey.galin@gmail.com
 
     Distrbuted under The BSD License
 
@@ -45,39 +45,47 @@ namespace Mobility {
 
 struct CellData
 {
-	CellData();
-	bool compare( const CellData& other, bool compareSignalStrength ) const;
-	bool operator==(const CellData& other) const;
-	bool operator!=(const CellData& other) const;
-	bool isEmpty() const; // used as sign of validity
-	void clear();
+	struct DataOperation
+	{
+		virtual void execute(const QString & key, int32_t value) = 0;
+		virtual void execute(const QString & key, const QString & value) = 0;
+	};
 
-	// fields are described in http://code.google.com/intl/ru/apis/gears/geolocation_network_protocol.html
-	// Unique identifier of the cell. (CID for GSM, BID for CDMA)
-	int cellId;
+	struct Data
+	{
+		Data(int32_t cell_id);
+		void accept(DataOperation & operation) const;
 
-	// Location Area Code (LAC for GSM, NID for CDMA)
-	int locationAreaCode;
+		// required, int.
+		// Cell ID (CID) for GSM
+		// Base Station ID (BID) for CDMA
+		// UTRAN/GERAN Cell Identity (UC-Id) for WCDMA.
+		int32_t cell_id_;
 
-	// Mobile Country Code (MCC for GSM and CDMA)
-	int mobileCountryCode;
+		// optional, int.
+		// Location Area Code (LAC) for GSM and WCDMA.
+		// Network ID (NID) for CDMA сетей. 0 <= LAC <= 65535.
+		int32_t location_area_code_;
 
-	// Mobile Network Code (MNC for GSM, SID for CDMA)
-	int mobileNetworkCode;
+		// optional, int. 0 <= MCC < 1000
+		int32_t mobile_country_code_;
 
-	// Radio signal strength measured in dBm.
-	/* convert GSM asu (TS 27.007 8.5) to these as follows:
-	<rssi>:
-	0 -113 dBm or less
-	1 -111 dBm
-	2...30 -109... -53 dBm
-	31 -51 dBm or greater
-	99 not known or not detectable
-	*/
-	int signalStrength;
+		// optional, int. 0 <= MNC < 1000
+		int32_t mobile_network_code_;
 
-	// Represents the distance from the cell tower. Each unit is roughly 550 meters.
-	int timingAdvance;
+		// optional, int. RSSI в dBm.
+		int32_t signal_strength_;
+
+		// optional, int
+		int32_t timing_advance_;
+
+		// gsm, wcdma, lte, cdma
+		QString radio_type_;
+	};
+
+	typedef QList<Data> DataColl;
+	DataColl data_;
+	static const int32_t java_integer_max_value;
 };
 
 

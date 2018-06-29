@@ -2,9 +2,9 @@
 	Offscreen Android Views library for Qt
 
 	Authors:
-	Vyacheslav O. Koscheev <vok1980@gmail.com>
-	Ivan Avdeev marflon@gmail.com
-	Sergey A. Galin sergey.galin@gmail.com
+		Vyacheslav O. Koscheev <vok1980@gmail.com>
+		Ivan Avdeev marflon@gmail.com
+		Sergey A. Galin sergey.galin@gmail.com
 
 	Distrbuted under The BSD License
 
@@ -41,53 +41,30 @@
 
 namespace Mobility {
 
-CellData::CellData()
+
+const int32_t CellData::java_integer_max_value = std::numeric_limits<int32_t>::max();
+
+
+CellData::Data::Data(int32_t cell_id)
+	: cell_id_(cell_id)
+	, location_area_code_(java_integer_max_value)
+	, mobile_country_code_(java_integer_max_value)
+	, mobile_network_code_(java_integer_max_value)
+	, signal_strength_(java_integer_max_value)
+	, timing_advance_(java_integer_max_value)
 {
-	clear();
 }
 
 
-bool CellData::compare( const CellData& other, bool compareSignalStrength ) const
+void CellData::Data::accept(DataOperation & operation) const
 {
-	if( cellId != other.cellId ||
-		locationAreaCode != other.locationAreaCode ||
-		mobileCountryCode != other.mobileCountryCode ||
-		mobileNetworkCode != other.mobileNetworkCode ||
-		timingAdvance != other.timingAdvance )
-	{
-		return false;
-	}
-	if( compareSignalStrength  &&
-		signalStrength != other.signalStrength )
-	{
-		return false;
-	}
-	return true;
+	operation.execute(QStringLiteral("cell_id"), cell_id_);
+	operation.execute(QStringLiteral("location_area_code"), location_area_code_);
+	operation.execute(QStringLiteral("mobile_country_code"), mobile_country_code_);
+	operation.execute(QStringLiteral("mobile_network_code"), mobile_network_code_);
+	operation.execute(QStringLiteral("signal_strength"), signal_strength_);
+	operation.execute(QStringLiteral("timing_advance"), timing_advance_);
+	operation.execute(QStringLiteral("radio_type"), radio_type_);
 }
 
-
-bool CellData::operator==(const CellData &other) const
-{
-	return compare(other, true);
-}
-
-
-bool CellData::operator!=(const CellData &other) const
-{
-	return !compare(other, true);
-}
-
-
-// used as sign of validity
-bool CellData::isEmpty() const
-{
-	return !(cellId && locationAreaCode && mobileCountryCode && mobileNetworkCode);
-}
-
-
-void CellData::clear()
-{
-	memset(this, 0, sizeof(*this));
-}
-
-}
+} // namespace Mobility
