@@ -750,6 +750,33 @@ jint QJniClass::callStaticParamInt(const char * method_name, const char * param_
 }
 
 
+jlong QJniClass::callStaticParamLong(const char * method_name, const char * param_signature, ...)
+{
+	VERBOSE(qWarning("void QJniClass(%p)::CallStaticParamLong(\"%s\", \"%s\", ...)", reinterpret_cast<void*>(this), method_name, param_signature));
+	va_list args;
+	QJniEnvPtr jep;
+	JNIEnv* env = jep.env();
+
+	QByteArray signature("(");
+	signature += param_signature;
+	signature += ")J";
+	jmethodID mid = env->GetStaticMethodID(checkedClass(__FUNCTION__), method_name, signature.data());
+	if (!mid)
+	{
+		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
+	}
+
+	va_start(args, param_signature);
+	jlong result = env->CallStaticLongMethodV(jClass(), mid, args);
+	va_end(args);
+	if (jep.clearException())
+	{
+		throw QJniJavaCallException(debugClassName().constData(), method_name, __FUNCTION__);
+	}
+	return result;
+}
+
+
 jfloat QJniClass::callStaticParamFloat(const char * method_name, const char * param_signature, ...)
 {
 	VERBOSE(qWarning("void QJniClass(%p)::CallStaticParamFloat(\"%s\", \"%s\", ...)", reinterpret_cast<void*>(this), method_name, param_signature));

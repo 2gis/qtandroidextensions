@@ -224,6 +224,7 @@ public:
 	void callStaticParamVoid(const char * method_name, const char * param_signature, ...);
 	bool callStaticParamBoolean(const char * method_name, const char * param_signature, ...);
 	jint callStaticParamInt(const char * method_name, const char * param_signature, ...);
+	jlong callStaticParamLong(const char * method_name, const char * param_signature, ...);
 	jfloat callStaticParamFloat(const char * method_name, const char * param_signature, ...);
 	QString callStaticParamString(const char * method_name, const char * param_signature, ...);
 	void callStaticVoid(const char * method_name, const QString & string);
