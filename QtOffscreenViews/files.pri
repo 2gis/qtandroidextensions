@@ -1,28 +1,34 @@
 HEADERS += \
-    QOpenGLTextureHolder.h \
-    QAndroidOffscreenView.h \
-    QAndroidOffscreenWebView.h \
-    QAndroidOffscreenEditText.h \
-    QAndroidJniImagePair.h \
-    QApplicationActivityObserver.h \
-    QGraphicsWidgets/QAndroidOffscreenViewGraphicsWidget.h \
-    QGraphicsWidgets/QOffscreenEditTextGraphicsWidget.h \
-    QGraphicsWidgets/QOffscreenWebViewGraphicsWidget.h
+    $$PWD/QOpenGLTextureHolder.h \
+    $$PWD/QAndroidOffscreenView.h \
+    $$PWD/QAndroidOffscreenWebView.h \
+    $$PWD/QAndroidOffscreenEditText.h \
+    $$PWD/QAndroidJniImagePair.h \
+    $$PWD/QApplicationActivityObserver.h \
+    $$PWD/QGraphicsWidgets/QAndroidOffscreenViewGraphicsWidget.h \
+    $$PWD/QGraphicsWidgets/QOffscreenEditTextGraphicsWidget.h \
+    $$PWD/QGraphicsWidgets/QOffscreenWebViewGraphicsWidget.h \
+    $$PWD/QQuickViews/QQuickAndroidOffscreenView.h \
+    $$PWD/QQuickViews/QQuickOffscreenEditText.h \
+    $$PWD/QQuickViews/QQuickOffscreenWebView.h
 
 SOURCES += \
-    QOpenGLTextureHolder.cpp \
-    QAndroidOffscreenView.cpp \
-    QAndroidOffscreenWebView.cpp \
-    QAndroidOffscreenEditText.cpp \
-    QAndroidJniImagePair.cpp \
-    QApplicationActivityObserver.cpp \
-    QGraphicsWidgets/QAndroidOffscreenViewGraphicsWidget.cpp \
-    QGraphicsWidgets/QOffscreenEditTextGraphicsWidget.cpp \
-    QGraphicsWidgets/QOffscreenWebViewGraphicsWidget.cpp
+    $$PWD/QOpenGLTextureHolder.cpp \
+    $$PWD/QAndroidOffscreenView.cpp \
+    $$PWD/QAndroidOffscreenWebView.cpp \
+    $$PWD/QAndroidOffscreenEditText.cpp \
+    $$PWD/QAndroidJniImagePair.cpp \
+    $$PWD/QApplicationActivityObserver.cpp \
+    $$PWD/QGraphicsWidgets/QAndroidOffscreenViewGraphicsWidget.cpp \
+    $$PWD/QGraphicsWidgets/QOffscreenEditTextGraphicsWidget.cpp \
+    $$PWD/QGraphicsWidgets/QOffscreenWebViewGraphicsWidget.cpp \
+    $$PWD/QQuickViews/QQuickAndroidOffscreenView.cpp \
+    $$PWD/QQuickViews/QQuickOffscreenEditText.cpp \
+    $$PWD/QQuickViews/QQuickOffscreenWebView.cpp
 
 
 OTHER_FILES += \
-    ru.dublgis.offscreenview/OffscreenViewFactory.java \
-    ru.dublgis.offscreenview/OffscreenView.java \
-    ru.dublgis.offscreenview/OffscreenWebView.java \
-    ru.dublgis.offscreenview/OffscreenEditText.java
+    $$PWD/ru.dublgis.offscreenview/OffscreenViewFactory.java \
+    $$PWD/ru.dublgis.offscreenview/OffscreenView.java \
+    $$PWD/ru.dublgis.offscreenview/OffscreenWebView.java \
+    $$PWD/ru.dublgis.offscreenview/OffscreenEditText.java
