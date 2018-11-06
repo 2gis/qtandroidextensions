@@ -42,10 +42,14 @@ import android.view.ViewTreeObserver;
 import android.view.Window;
 
 
-public class ScreenLayoutHandler implements ViewTreeObserver.OnGlobalLayoutListener, ViewTreeObserver.OnScrollChangedListener
+public class ScreenLayoutHandler implements 
+    ViewTreeObserver.OnGlobalLayoutListener, 
+    ViewTreeObserver.OnScrollChangedListener,
+    KeyboardHeightObserver
 {
     public static final String TAG = "Grym/ScrnLayoutHandler";
     private volatile long native_ptr_ = 0;
+    private KeyboardHeightProvider mKeyboardHeightProvider;
 
     public ScreenLayoutHandler(long native_ptr)
     {
@@ -74,6 +78,10 @@ public class ScreenLayoutHandler implements ViewTreeObserver.OnGlobalLayoutListe
                     {
                         view.getViewTreeObserver().addOnGlobalLayoutListener(ScreenLayoutHandler.this);
                         view.getViewTreeObserver().addOnScrollChangedListener(ScreenLayoutHandler.this);
+                        if (mKeyboardHeightProvider == null)
+                        {
+                            mKeyboardHeightProvider = new KeyboardHeightProvider(getActivity(), view, ScreenLayoutHandler.this);
+                        }
                     }
                     catch (Exception e)
                     {
@@ -97,6 +105,11 @@ public class ScreenLayoutHandler implements ViewTreeObserver.OnGlobalLayoutListe
                     {
                         view.getViewTreeObserver().removeOnGlobalLayoutListener(ScreenLayoutHandler.this);
                         view.getViewTreeObserver().removeOnScrollChangedListener(ScreenLayoutHandler.this);
+                        if (mKeyboardHeightProvider != null)
+                        {
+                            mKeyboardHeightProvider.stop();
+                            mKeyboardHeightProvider = null;
+                        }
                     }
                     catch (Exception e)
                     {
@@ -117,6 +130,12 @@ public class ScreenLayoutHandler implements ViewTreeObserver.OnGlobalLayoutListe
     public void onScrollChanged()
     {
         nativeScrollChanged(native_ptr_);
+    }
+
+    @Override
+    public void onKeyboardHeightChanged(int height)
+    {
+        nativeKeyboardHeightChanged(native_ptr_, height);
     }
 
     private View getDecorView()
@@ -164,4 +183,5 @@ public class ScreenLayoutHandler implements ViewTreeObserver.OnGlobalLayoutListe
     public native Activity getActivity();
     public native void nativeGlobalLayoutChanged(long nativeptr);
     public native void nativeScrollChanged(long nativeptr);
+    public native void nativeKeyboardHeightChanged(long nativeptr, int height);
 }

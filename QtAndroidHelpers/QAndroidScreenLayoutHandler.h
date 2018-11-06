@@ -71,13 +71,16 @@ signals:
 	void globalLayoutChanged();
 
 	void scrollChanged();
+	void keyboardHeightChanged(int height);
 
 private:
 	void javaGlobalLayoutChanged();
 	void javaScrollChanged();
+	void javaKeyboardHeightChanged(int height);
 
 private:
 	Q_DISABLE_COPY(QAndroidScreenLayoutHandler)
 	friend void JNICALL Java_ScreenLayoutHandler_globalLayoutChanged(JNIEnv *, jobject, jlong param);
 	friend void JNICALL Java_ScreenLayoutHandler_scrollChanged(JNIEnv *, jobject, jlong param);
+	friend void JNICALL Java_ScreenLayoutHandler_keyboardHeightChanged(JNIEnv *, jobject, jlong param, jint height);
 };
