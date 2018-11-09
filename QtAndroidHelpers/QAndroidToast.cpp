@@ -34,8 +34,9 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <QAndroidQPAPluginGap.h>
 #include "QAndroidToast.h"
+#include <QJniHelpers/QAndroidQPAPluginGap.h>
+
 
 static const char * const c_full_class_name_ = "ru/dublgis/androidhelpers/ToastHelper";
 

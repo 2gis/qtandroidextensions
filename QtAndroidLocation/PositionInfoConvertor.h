@@ -37,7 +37,7 @@
 #pragma once
 
 #include <QtPositioning/QGeoPositionInfo>
-#include <QJniHelpers.h>
+#include <QJniHelpers/QJniHelpers.h>
 
 
 QGeoPositionInfo positionInfoFromJavaLocation(const jobject jlocation);

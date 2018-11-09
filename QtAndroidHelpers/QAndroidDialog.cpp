@@ -34,10 +34,12 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <QAndroidQPAPluginGap.h>
-#include <QAndroidScreenOrientation.h>
 #include "QAndroidDialog.h"
-#include <TJniObjectLinker.h>
+
+#include <QJniHelpers/QAndroidQPAPluginGap.h>
+#include <QJniHelpers/TJniObjectLinker.h>
+#include "QAndroidScreenOrientation.h"
+
 
 static const char * const c_full_class_name_ = "ru/dublgis/androidhelpers/DialogHelper";
 bool QAndroidDialog::interactive_ = true;

@@ -40,7 +40,7 @@
 #include <QtCore/QRect>
 #include <QtCore/QScopedPointer>
 #include <QtCore/QMutex>
-#include <QJniHelpers.h>
+#include <QJniHelpers/QJniHelpers.h>
 #include "QAndroidJniImagePair.h"
 #include "QOpenGLTextureHolder.h"
 #include "QApplicationActivityObserver.h"

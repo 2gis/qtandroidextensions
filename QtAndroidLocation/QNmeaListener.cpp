@@ -34,10 +34,11 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <QAndroidQPAPluginGap.h>
-#include <QJniHelpers.h>
+#include <QJniHelpers/QAndroidQPAPluginGap.h>
+#include <QJniHelpers/QJniHelpers.h>
+#include <QJniHelpers/TJniObjectLinker.h>
 #include "QNmeaListener.h"
-#include "TJniObjectLinker.h"
+
 
 static const char c_full_class_name[] = "ru/dublgis/androidlocation/NmeaListener";
 

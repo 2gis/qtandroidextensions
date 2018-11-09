@@ -37,8 +37,8 @@
 #pragma once
 #include <QtCore/QString>
 #include <QtCore/QObject>
-#include <QJniHelpers.h>
-#include <IJniObjectLinker.h>
+#include <QJniHelpers/QJniHelpers.h>
+#include <QJniHelpers/IJniObjectLinker.h>
 
 /*
 

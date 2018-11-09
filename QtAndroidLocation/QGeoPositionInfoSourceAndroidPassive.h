@@ -37,7 +37,7 @@
 #pragma once
 
 #include <QtPositioning/QGeoPositionInfoSource>
-#include <IJniObjectLinker.h>
+#include <QJniHelpers/IJniObjectLinker.h>
 
 
 class QGeoPositionInfoSourceAndroidPassive : public QGeoPositionInfoSource

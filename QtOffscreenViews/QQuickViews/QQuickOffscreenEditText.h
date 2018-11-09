@@ -36,7 +36,7 @@
 
 #pragma once
 #include "QQuickAndroidOffscreenView.h"
-#include <QAndroidOffscreenEditText.h>
+#include "../QAndroidOffscreenEditText.h"
 
 class QQuickAndroidOffscreenEditText: public QQuickAndroidOffscreenView
 {

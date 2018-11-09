@@ -37,7 +37,7 @@
 #include "QGeoPositionInfoSourceAndroidGms.h"
 
 #include <QtPositioning/QGeoPositionInfo>
-#include <QAndroidQPAPluginGap.h>
+#include <QJniHelpers/QAndroidQPAPluginGap.h>
 #include "QAndroidGmsLocationProvider.h"
 #include "QLocationManagerProvidersListener.h"
 

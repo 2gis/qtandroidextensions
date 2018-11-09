@@ -36,7 +36,7 @@
 
 #pragma once
 #include <QtCore/QString>
-#include <QJniHelpers.h>
+#include <QJniHelpers/QJniHelpers.h>
 
 namespace QAndroidToast {
 

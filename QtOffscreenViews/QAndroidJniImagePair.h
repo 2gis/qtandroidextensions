@@ -42,8 +42,8 @@
 #include <QtGui/QImage>
 #include <QtCore/QSize>
 #include <QtCore/QScopedPointer>
-#include <QAndroidQPAPluginGap.h>
-#include <QJniHelpers.h>
+#include <QJniHelpers/QAndroidQPAPluginGap.h>
+#include <QJniHelpers/QJniHelpers.h>
 
 /*!
  * This class holds QImage and Android Bitmap sharing the same pixel buffer.

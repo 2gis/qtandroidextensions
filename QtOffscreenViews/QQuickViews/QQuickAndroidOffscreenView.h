@@ -38,7 +38,7 @@
 #include <QtCore/QSharedPointer>
 #include <QtGui/QFocusEvent>
 #include <QtQuick/QQuickItem>
-#include <QAndroidOffscreenView.h>
+#include "../QAndroidOffscreenView.h"
 
 /*!
  * Base class for any Android offscreen view.

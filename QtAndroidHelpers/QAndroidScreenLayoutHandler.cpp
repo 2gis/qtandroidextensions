@@ -35,8 +35,8 @@
 */
 
 #include "QAndroidScreenLayoutHandler.h"
-#include <QAndroidQPAPluginGap.h>
-#include <TJniObjectLinker.h>
+#include <QJniHelpers/QAndroidQPAPluginGap.h>
+#include <QJniHelpers/TJniObjectLinker.h>
 
 
 Q_DECL_EXPORT void JNICALL Java_ScreenLayoutHandler_globalLayoutChanged(JNIEnv *, jobject, jlong param)

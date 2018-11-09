@@ -36,9 +36,9 @@
 
 #pragma once
 
-#include <QJniHelpers.h>
+#include <QJniHelpers/QJniHelpers.h>
 #include "QLocks/QLockedObject.h"
-#include <IJniObjectLinker.h>
+#include <QJniHelpers/IJniObjectLinker.h>
 
 
 /*!

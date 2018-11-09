@@ -34,8 +34,8 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <QJniHelpers.h>
-#include <QAndroidQPAPluginGap.h>
+#include <QJniHelpers/QJniHelpers.h>
+#include <QJniHelpers/QAndroidQPAPluginGap.h>
 #include "QAndroidDisplayMetrics.h"
 
 

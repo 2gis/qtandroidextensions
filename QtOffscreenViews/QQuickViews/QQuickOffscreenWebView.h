@@ -35,7 +35,7 @@
 */
 
 #pragma once
-#include <QAndroidOffscreenWebView.h>
+#include "../QAndroidOffscreenWebView.h"
 #include "QQuickAndroidOffscreenView.h"
 
 class QQuickAndroidOffscreenWebView: public QQuickAndroidOffscreenView

@@ -40,8 +40,8 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QReadWriteLock>
-#include <QJniHelpers.h>
-#include "IJniObjectLinker.h"
+#include <QJniHelpers/QJniHelpers.h>
+#include <QJniHelpers/IJniObjectLinker.h>
 #include "CellData.h"
 
 

@@ -37,7 +37,7 @@
 #pragma once
 
 
-#include <QJniHelpers.h>
+#include "QJniHelpers.h"
 
 
 class IJniObjectLinker

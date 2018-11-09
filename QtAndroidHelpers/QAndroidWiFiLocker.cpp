@@ -36,8 +36,8 @@
 
 #include "QAndroidWiFiLocker.h"
 
-#include <QAndroidQPAPluginGap.h>
-#include <TJniObjectLinker.h>
+#include <QJniHelpers/QAndroidQPAPluginGap.h>
+#include <QJniHelpers/TJniObjectLinker.h>
 
 
 static const char * const c_full_class_name_ = "ru/dublgis/androidhelpers/WifiLocker";

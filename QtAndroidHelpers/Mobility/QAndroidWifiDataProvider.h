@@ -39,8 +39,8 @@
 #pragma once
 
 #include <QtCore/QObject>
-#include <QJniHelpers.h>
-#include "IJniObjectLinker.h"
+#include <QJniHelpers/QJniHelpers.h>
+#include <QJniHelpers/IJniObjectLinker.h>
 #include "WifiData.h"
 
 

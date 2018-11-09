@@ -37,7 +37,7 @@
 #pragma once
 
 #include <QtCore/QObject>
-#include <IJniObjectLinker.h>
+#include <QJniHelpers/IJniObjectLinker.h>
 
 
 /*!

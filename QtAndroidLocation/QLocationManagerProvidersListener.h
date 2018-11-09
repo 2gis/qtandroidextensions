@@ -37,7 +37,7 @@
 #pragma once
 #include <QtCore/QObject>
 #include <QtPositioning/QGeoPositionInfoSource>
-#include <IJniObjectLinker.h>
+#include <QJniHelpers/IJniObjectLinker.h>
 
 
 class QLocationManagerProvidersListener : public QObject

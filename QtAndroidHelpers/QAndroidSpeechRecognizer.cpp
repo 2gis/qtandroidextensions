@@ -35,7 +35,7 @@
 */
 
 #include <QtCore/QDebug>
-#include <QAndroidQPAPluginGap.h>
+#include <QJniHelpers/QAndroidQPAPluginGap.h>
 #include "QAndroidDesktopUtils.h"
 #include "QAndroidSpeechRecognizer.h"
 

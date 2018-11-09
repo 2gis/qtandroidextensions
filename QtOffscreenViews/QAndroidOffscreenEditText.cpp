@@ -34,7 +34,7 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <QAndroidQPAPluginGap.h>
+#include <QJniHelpers/QAndroidQPAPluginGap.h>
 #include "QAndroidOffscreenEditText.h"
 
 

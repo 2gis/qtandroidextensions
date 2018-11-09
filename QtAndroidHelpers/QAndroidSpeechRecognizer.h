@@ -41,7 +41,7 @@
 #include <QtCore/QTimer>
 #include <QtCore/QVariantList>
 #include <QtCore/QSharedPointer>
-#include <QJniHelpers.h>
+#include <QJniHelpers/QJniHelpers.h>
 
 
 // SpeechRecognizer wrapper.

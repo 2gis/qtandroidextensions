@@ -35,8 +35,8 @@
 */
 
 #include "QAndroidBatteryDataProvider.h"
-#include <QAndroidQPAPluginGap.h>
-#include "TJniObjectLinker.h"
+#include <QJniHelpers/QAndroidQPAPluginGap.h>
+#include <QJniHelpers/TJniObjectLinker.h>
 
 
 namespace Mobility {

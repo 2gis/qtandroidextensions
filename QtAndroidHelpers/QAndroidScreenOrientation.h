@@ -36,7 +36,7 @@
 
 #pragma once
 #include <QtCore/QObject>
-#include <QAndroidQPAPluginGap.h>
+#include <QJniHelpers/QAndroidQPAPluginGap.h>
 
 namespace QAndroidScreenOrientation
 {

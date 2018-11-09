@@ -42,7 +42,7 @@
 #include <QtCore/QTimer>
 #include <QtCore/QMutexLocker>
 #include <QtCore/QCoreApplication>
-#include <QAndroidQPAPluginGap.h>
+#include <QJniHelpers/QAndroidQPAPluginGap.h>
 #include "QAndroidJniImagePair.h"
 #include "QAndroidOffscreenView.h"
 

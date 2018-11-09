@@ -36,11 +36,11 @@
 
 #pragma once
 
-#include <QJniHelpers.h>
 #include <QtCore/QScopedPointer>
 #include <QtCore/QWeakPointer>
 #include <QtCore/QMutex>
-#include "IJniObjectLinker.h"
+#include <QJniHelpers/QJniHelpers.h>
+#include <QJniHelpers/IJniObjectLinker.h>
 
 
 class QAndroidCompass : public QObject

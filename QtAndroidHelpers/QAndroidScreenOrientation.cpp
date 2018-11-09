@@ -34,7 +34,7 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <QJniHelpers.h>
+#include <QJniHelpers/QJniHelpers.h>
 #include "QAndroidDisplayMetrics.h"
 #include "QAndroidScreenOrientation.h"
 

@@ -39,7 +39,7 @@
 
 #include <QtPositioning/QGeoPositionInfo>
 
-#include <TJniObjectLinker.h>
+#include <QJniHelpers/TJniObjectLinker.h>
 #include "PositionInfoConvertor.h"
 
 

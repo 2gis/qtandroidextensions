@@ -34,13 +34,13 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "QAndroidGmsLocationProvider.h"
 #include <algorithm>
 #include <cassert>
-#include "QAndroidGmsLocationProvider.h"
-#include <QAndroidQPAPluginGap.h>
 #include <QtPositioning/QGeoPositionInfo>
 #include <QtGui/QGuiApplication>
-#include <TJniObjectLinker.h>
+#include <QJniHelpers/QAndroidQPAPluginGap.h>
+#include <QJniHelpers/TJniObjectLinker.h>
 #include "PositionInfoConvertor.h"
 
 

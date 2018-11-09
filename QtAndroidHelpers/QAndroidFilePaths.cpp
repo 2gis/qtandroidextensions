@@ -39,8 +39,8 @@
 #include <QtCore/QDir>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
-#include <QJniHelpers.h>
-#include <QAndroidQPAPluginGap.h>
+#include <QJniHelpers/QJniHelpers.h>
+#include <QJniHelpers/QAndroidQPAPluginGap.h>
 #include "QAndroidStorages.h"
 #include "QAndroidFilePaths.h"
 

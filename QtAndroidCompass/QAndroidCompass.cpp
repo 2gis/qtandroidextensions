@@ -37,10 +37,10 @@
 
 #include "QAndroidCompass.h"
 
-#include <QAndroidQPAPluginGap.h>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QMutexLocker>
-#include "TJniObjectLinker.h"
+#include <QJniHelpers/QAndroidQPAPluginGap.h>
+#include <QJniHelpers/TJniObjectLinker.h>
 
 
 

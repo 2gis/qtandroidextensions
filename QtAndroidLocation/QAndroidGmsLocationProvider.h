@@ -38,9 +38,9 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QTimer>
-#include <QJniHelpers.h>
 #include <QtPositioning/QGeoPositionInfo>
-#include <IJniObjectLinker.h>
+#include <QJniHelpers/QJniHelpers.h>
+#include <QJniHelpers/IJniObjectLinker.h>
 
 
 
