@@ -40,7 +40,7 @@
 #include <QGraphicsView>
 #include <QGraphicsItem>
 #include <QGraphicsSceneMoveEvent>
-#include "../QAndroidOffscreenView.h"
+#include "QAndroidOffscreenView.h"
 
 /*!
  * Base class for any QGraphicsWidget-based view at Android View.

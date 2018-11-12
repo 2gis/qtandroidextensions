@@ -45,6 +45,8 @@ if (ANDROID)
     target_include_directories(${MODULE_NAME}
         PUBLIC
             ${PROJECT_SOURCE_DIR}
+        PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
     )
 endif(ANDROID)
 

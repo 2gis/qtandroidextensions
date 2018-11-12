@@ -35,7 +35,7 @@
 */
 
 #pragma once
-#include "../QAndroidOffscreenEditText.h"
+#include "QAndroidOffscreenEditText.h"
 #include "QAndroidOffscreenViewGraphicsWidget.h"
 
 class QOffscreenEditTextGraphicsWidget

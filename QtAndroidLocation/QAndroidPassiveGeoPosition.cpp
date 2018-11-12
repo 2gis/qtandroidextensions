@@ -35,8 +35,8 @@
 */
 
 #include "QAndroidPassiveGeoPosition.h"
-#include "../QJniHelpers/QAndroidQPAPluginGap.h"
-#include "../QtAndroidHelpers/QAndroidDesktopUtils.h"
+#include <QJniHelpers/QAndroidQPAPluginGap.h>
+#include <QtAndroidHelpers/QAndroidDesktopUtils.h>
 
 
 namespace QAndroidPassiveGeoPosition {
