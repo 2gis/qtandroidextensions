@@ -30,12 +30,10 @@ if (ANDROID)
     )
 
     # Это нужно для инклуда приватного хедера qabstractfileengine_p.h
-    foreach(inc_dir ${Qt5Core_INCLUDE_DIRS})
-        target_include_directories(${MODULE_NAME}
-            PRIVATE
-                ${inc_dir}/${Qt5Core_VERSION}
-        )
-    endforeach(inc_dir)
+    target_include_directories(${MODULE_NAME}
+        PRIVATE
+            ${Qt5Core_PRIVATE_INCLUDE_DIRS}
+    )
 
     target_compile_definitions(${MODULE_NAME}
         PUBLIC
