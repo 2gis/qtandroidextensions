@@ -36,7 +36,6 @@ if (ANDROID)
         PUBLIC
             Qt5::Gui
             Qt5::OpenGL
-#            Qt5::PlatformSupport
             Qt5::Qml
             Qt5::Quick
             qtandroidextensions::QtJniHelpers
