@@ -573,7 +573,7 @@ public class DesktopUtils
     {
         try
         {
-            return ctx.getResources().getConfiguration().locale.getDisplayCountry();
+            return getDefaultLocale(ctx).getDisplayCountry();
         }
         catch (final Throwable e)
         {
@@ -586,7 +586,7 @@ public class DesktopUtils
     {
         try
         {
-            return ctx.getResources().getConfiguration().locale.getCountry();
+            return getDefaultLocale(ctx).getCountry();
         }
         catch (final Throwable e)
         {
@@ -651,9 +651,30 @@ public class DesktopUtils
         return "";
     }
 
-    public static String getDefaultLocaleName()
+
+    // Get user's default locale.
+    private static Locale getDefaultLocale(final Context context) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) { // API 24 / Android 7.0
+                return context.getResources().getConfiguration().getLocales().get(0);
+            } else {
+                return context.getResources().getConfiguration().locale;
+            }
+        } catch (final Throwable e) {
+            Log.e(TAG, "getDefaultLocale exception: ", e);
+            return Locale.getDefault();
+        }
+    }
+
+
+    public static String getDefaultLocaleName(final Context context)
     {
-        return Locale.getDefault().toString();
+        try {
+            return getDefaultLocale(context).toString();
+        } catch (final Throwable e) {
+            Log.e(TAG, "getDefaultLocaleName exception: ", e);
+            return "";
+        }
     }
 
 
