@@ -107,6 +107,7 @@ QString getBuildSerial();
 QStringList getInstalledAppsList();
 
 QString getDefaultLocaleName();
+QStringList getUserLocaleNames();
 
 // This function tries to find out some string which uniquely identifies this device.
 // If it's not available on the device it returns an empty string.

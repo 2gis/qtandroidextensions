@@ -387,6 +387,25 @@ QString getDefaultLocaleName()
 }
 
 
+QStringList getUserLocaleNames()
+{
+	QJniClass du(c_full_class_name_);
+	if (du.jClass())
+	{
+		return du.callStaticParamString(
+			"getUserLocaleNames",
+			"Landroid/content/Context;",
+			QAndroidQPAPluginGap::Context().jObject())
+			.split(QLatin1Char('\n'), QString::SkipEmptyParts);
+	}
+	else
+	{
+		qCritical() << "Null class:" << c_full_class_name_;
+		return QStringList() << QLatin1String("C");
+	}
+}
+
+
 bool checkSelfPermission(const QString & permission_name)
 {
 	if (QAndroidQPAPluginGap::apiLevel() < 23)
