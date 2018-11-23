@@ -374,7 +374,10 @@ QString getDefaultLocaleName()
 	QJniClass du(c_full_class_name_);
 	if (du.jClass())
 	{
-		return du.callStaticString("getDefaultLocaleName");
+		return du.callStaticParamString(
+			"getDefaultLocaleName",
+			"Landroid/content/Context;",
+			QAndroidQPAPluginGap::Context().jObject());
 	}
 	else
 	{
