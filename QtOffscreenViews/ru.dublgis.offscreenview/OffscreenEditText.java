@@ -57,6 +57,7 @@ import android.graphics.PorterDuff;
 import android.graphics.Color;
 import android.text.TextUtils;
 import android.text.InputFilter;
+import android.text.Layout;
 
 import ru.dublgis.androidhelpers.Log;
 
@@ -67,6 +68,7 @@ class OffscreenEditText extends OffscreenView
     boolean single_line_ = false;
     boolean need_to_reflow_text_ = false, need_to_reflow_hint_ = false;
     int selection_start_ = 0, selection_end_ = 0;
+    int selection_top_ = 0, selection_bottom_ = 0;
     private Object variables_mutex_ = new Object();
 
     static final int
@@ -77,6 +79,7 @@ class OffscreenEditText extends OffscreenView
 
     class MyEditText extends EditText
     {
+        private boolean vertically_scrolling_ = false;
 
         class MyTextWatcher implements TextWatcher
         {
@@ -250,6 +253,26 @@ class OffscreenEditText extends OffscreenView
                 text_layout_width_ = w;
                 reflowWorkaround();
             }
+
+            updateSelectionInfo();
+        }
+
+        private void updateSelectionInfo() {
+            Layout layout = getLayout();
+            if (layout == null) {
+                return;
+            }
+
+            int start = Math.max(getSelectionStart(), 0);
+            int end = Math.max(getSelectionEnd(), 0);
+            int top = layout.getLineTop(layout.getLineForOffset(start));
+            int bottom = layout.getLineBottom(layout.getLineForOffset(end));
+            if (selection_top_ == top && selection_bottom_ == bottom) {
+                return;
+            }
+            selection_top_ = top;
+            selection_bottom_ = bottom;
+            nativeSetSelectionInfo(getNativePtr(), top, bottom);
         }
 
         protected void reflowWorkaround()
@@ -353,6 +376,16 @@ class OffscreenEditText extends OffscreenView
                 selection_end_ = selEnd;
             }
         }
+
+        @Override
+        public void scrollTo(int x, int y) {
+            super.scrollTo(x, vertically_scrolling_ ? y : 0);
+        }
+
+        public void setVerticallyScrolling(final boolean whether)
+        {
+            vertically_scrolling_ = whether;
+        }
     }
 
     OffscreenEditText()
@@ -378,6 +411,7 @@ class OffscreenEditText extends OffscreenView
     public native void nativeOnTextChanged(long nativePtr, String s, int start, int before, int count);
     public native boolean nativeOnKey(long nativePtr, boolean down, int keyCode);
     public native void nativeOnEditorAction(long nativePtr, int action);
+    public native void nativeSetSelectionInfo(long nativePtr, int top, int bottom);
 
 
 
@@ -767,6 +801,16 @@ class OffscreenEditText extends OffscreenView
             @Override
             public void run(){
                 ((MyEditText)getView()).setHorizontallyScrolling(whether);
+            }
+        });
+    }
+
+    void setVerticallyScrolling(final boolean whether)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setVerticallyScrolling(whether);
             }
         });
     }

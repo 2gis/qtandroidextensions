@@ -279,6 +279,8 @@ public:
 	//! Sets whether the text should be allowed to be wider than the View is.
 	void setHorizontallyScrolling(bool whether);
 
+	void setVerticallyScrolling(bool whether);
+
 	//! Sets the properties of this field to transform input to ALL CAPS display.
 	void setAllCaps(bool allCaps);
 
@@ -325,6 +327,8 @@ public:
 	void setSelection(int start, int stop);
 	int getSelectionStart();
 	int getSelectionEnd();
+	int getSelectionTop() const;
+	int getSelectionBottom() const;
 	void setHorizontalScrollBarEnabled(bool horizontalScrollBarEnabled);
 	void setVerticalScrollBarEnabled (bool verticalScrollBarEnabled);
 
@@ -354,6 +358,8 @@ signals:
 
 	//! Emitted when KEYCODE_DPAD_CENTER or KEYCODE_ENTER has been released.
 	void onEnter();
+
+	void selectionChanged();
 
 public:
 	static const int
@@ -558,12 +564,18 @@ protected:
 	virtual bool javaOnKey(bool down, int androidKey);
 	virtual void javaOnEditorAction(int action);
 
+private slots:
+	void javaSetSelectionInfo(int top, int bottom);
+
 private:
 	friend void JNICALL Java_AndroidOffscreenEditText_nativeOnTextChanged(JNIEnv * env, jobject jo, jlong param, jstring str, jint start, jint before, jint count);
 	friend jboolean JNICALL Java_AndroidOffscreenEditText_nativeOnKey(JNIEnv * env, jobject jo, jlong param, jboolean down, jint keycode);
 	friend void JNICALL Java_AndroidOffscreenEditText_nativeOnEditorAction(JNIEnv *, jobject, jlong param, jint action);
+	friend void JNICALL Java_AndroidOffscreenEditText_nativeSetSelectionInfo(JNIEnv *, jobject, jlong param, jint top, jint bottom);
 
 private:
 	int paint_flags_;
+	int selection_top_ = 0;
+	int selection_bottom_ = 0;
 };
 

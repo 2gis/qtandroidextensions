@@ -95,6 +95,7 @@ QQuickAndroidOffscreenView::QQuickAndroidOffscreenView(QAndroidOffscreenView * a
 	, mouse_tracking_(false)
 	, redraw_texture_needed_(true)
 	, last_set_position_(0, 0) // View always at (0, 0) by default.
+	, auto_position_tracking_(false)
 {
 	setFlag(QQuickItem::ItemHasContents, true);
 	setAcceptedMouseButtons(Qt::LeftButton);
@@ -144,6 +145,10 @@ void QQuickAndroidOffscreenView::focusInEvent(QFocusEvent * event)
 	// qDebug()<<__PRETTY_FUNCTION__;
 	QQuickItem::focusInEvent(event);
 	aview_->setFocused(true);
+	if (auto_position_tracking_)
+	{
+		beginAutoPositionTracking();
+	}
 }
 
 void QQuickAndroidOffscreenView::focusOutEvent(QFocusEvent * event)
@@ -151,6 +156,10 @@ void QQuickAndroidOffscreenView::focusOutEvent(QFocusEvent * event)
 	// qDebug()<<__PRETTY_FUNCTION__;
 	QQuickItem::focusOutEvent(event);
 	aview_->setFocused(false);
+	if (auto_position_tracking_)
+	{	
+		endAutoPositionTracking();
+	}
 }
 
 void QQuickAndroidOffscreenView::mouseMoveEvent(QMouseEvent * event)
@@ -314,6 +323,24 @@ void QQuickAndroidOffscreenView::updateAndroidViewPosition()
 	}
 }
 
+void QQuickAndroidOffscreenView::setAutoPositionTracking(bool enabled)
+{
+	if (auto_position_tracking_ == enabled)
+	{
+		return;
+	}
+	auto_position_tracking_ = enabled;
+
+	if (enabled && hasActiveFocus())
+	{
+		beginAutoPositionTracking();
+	}
+	else
+	{
+		endAutoPositionTracking();
+	}
+}
+
 void QQuickAndroidOffscreenView::requestVisibleRect()
 {
 	aview_->requestVisibleRect();
@@ -329,4 +356,22 @@ void QQuickAndroidOffscreenView::onViewCreated()
 {
 	qDebug() << __PRETTY_FUNCTION__;
 	emit viewCreated();
+}
+
+void QQuickAndroidOffscreenView::beginAutoPositionTracking()
+{
+	if (auto_position_tracking_connection_)
+	{
+		return;
+	}
+	auto_position_tracking_connection_ = connect(window(), SIGNAL(afterAnimating()), this, SLOT(updateAndroidViewPosition()));
+}
+
+void QQuickAndroidOffscreenView::endAutoPositionTracking()
+{
+	if (!auto_position_tracking_connection_)
+	{
+		return;
+	}	
+	disconnect(auto_position_tracking_connection_);
 }

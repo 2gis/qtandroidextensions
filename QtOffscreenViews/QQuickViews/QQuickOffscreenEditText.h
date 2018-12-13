@@ -42,6 +42,8 @@ class QQuickAndroidOffscreenEditText: public QQuickAndroidOffscreenView
 {
 	Q_OBJECT
 	Q_PROPERTY(QString text READ getText WRITE setText NOTIFY onTextChanged)
+	Q_PROPERTY(int selectionTop READ getSelectionTop NOTIFY selectionChanged)
+	Q_PROPERTY(int selectionBottom READ getSelectionBottom NOTIFY selectionChanged)
 public:
 	QQuickAndroidOffscreenEditText();
 
@@ -171,6 +173,9 @@ public slots:
 	//! Sets whether the text should be allowed to be wider than the View is.
 	void setHorizontallyScrolling(bool whether) { androidEditText()->setHorizontallyScrolling(whether); }
 
+	//! Allows to scroll the text vertically.
+	void setVerticallyScrolling(bool whether) { androidEditText()->setVerticallyScrolling(whether); }
+
 	//! Sets the properties of this field to transform input to ALL CAPS display.
 	void setAllCaps(bool allCaps) { androidEditText()->setAllCaps(allCaps); }
 
@@ -179,6 +184,12 @@ public slots:
 	void setSelection(int index) { androidEditText()->setSelection(index); }
 
 	void setSelection(int start, int stop) { androidEditText()->setSelection(start, stop); }
+
+	//! Y coordinate(in pixels) of the selection/cursor upper bound.
+	int getSelectionTop() const { return androidEditText()->getSelectionTop(); }
+
+	//! Y coordinate(in pixels) of the selection/cursor lower bound.
+	int getSelectionBottom() const { return androidEditText()->getSelectionBottom(); }
 
 	void setAllowFullscreenKeyboard(bool allow) { androidEditText()->setAllowFullscreenKeyboard(allow); }
 
@@ -206,6 +217,7 @@ public slots:
 
 signals:
 	void onTextChanged(QString text);
+	void selectionChanged();
 
 	//! Wraps QAndroidOffscreenEditText::onEnterOrPositiveAction().
 	void returnPressed();

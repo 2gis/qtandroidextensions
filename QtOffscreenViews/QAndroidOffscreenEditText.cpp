@@ -34,6 +34,7 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <QtCore/QMetaObject>
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 #include "QAndroidOffscreenEditText.h"
 
@@ -84,7 +85,20 @@ Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnEditorAction(JN
 	qWarning()<<__FUNCTION__<<"Zero param!";
 }
 
-
+Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeSetSelectionInfo(JNIEnv *, jobject, jlong param, jint top, jint bottom)
+{
+	if (param)
+	{
+		void * vp = reinterpret_cast<void*>(param);
+		QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(reinterpret_cast<QAndroidOffscreenView*>(vp));
+		if (edit)
+		{
+			QMetaObject::invokeMethod(edit, "javaSetSelectionInfo", Q_ARG(int, top),  Q_ARG(int, bottom));
+			return;
+		}
+	}
+	qWarning()<<__FUNCTION__<<"Zero param!";
+}
 
 
 QAndroidOffscreenEditText::QAndroidOffscreenEditText(const QString & object_name, const QSize & def_size, QObject * parent)
@@ -98,6 +112,7 @@ QAndroidOffscreenEditText::QAndroidOffscreenEditText(const QString & object_name
 			{"nativeOnTextChanged", "(JLjava/lang/String;III)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnTextChanged)},
 			{"nativeOnKey", "(JZI)Z", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnKey)},
 			{"nativeOnEditorAction", "(JI)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnEditorAction)},
+			{"nativeSetSelectionInfo", "(JII)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeSetSelectionInfo)},
 		};
 		view->registerNativeMethods(methods, sizeof(methods));
 	}
@@ -155,6 +170,13 @@ void QAndroidOffscreenEditText::javaOnEditorAction(int action)
 	default:
 		emit onEnterOrPositiveAction();
 	}
+}
+
+void QAndroidOffscreenEditText::javaSetSelectionInfo(int top, int bottom)
+{
+	selection_top_ = top;
+	selection_bottom_ = bottom;
+	emit selectionChanged();
 }
 
 void QAndroidOffscreenEditText::setText(const QString & text)
@@ -436,6 +458,14 @@ void QAndroidOffscreenEditText::setHorizontallyScrolling(bool whether)
 	}
 }
 
+void QAndroidOffscreenEditText::setVerticallyScrolling(bool whether)
+{
+	if (QJniObject * view = offscreenView())
+	{
+		view->callVoid("setVerticallyScrolling", jboolean(whether));
+	}
+}
+
 void QAndroidOffscreenEditText::setAllCaps(bool allCaps)
 {
 	if (QJniObject * view = offscreenView())
@@ -532,6 +562,16 @@ int QAndroidOffscreenEditText::getSelectionEnd()
 		return view->callInt("getSelectionEnd");
 	}
 	return 0; // No selection end
+}
+
+int QAndroidOffscreenEditText::getSelectionTop() const
+{
+	return selection_top_;
+}
+
+int QAndroidOffscreenEditText::getSelectionBottom() const
+{
+	return selection_bottom_;
 }
 
 void QAndroidOffscreenEditText::setTextColor(const QColor & color)

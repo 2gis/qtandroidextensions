@@ -36,6 +36,7 @@
 
 #pragma once
 #include <QtCore/QSharedPointer>
+#include <QtCore/QMetaObject>
 #include <QtGui/QFocusEvent>
 #include <QtQuick/QQuickItem>
 #include <QtOffscreenViews/QAndroidOffscreenView.h>
@@ -62,6 +63,12 @@ public slots:
 	 * coordinates - only its x/y within the parent.
 	 */
 	void updateAndroidViewPosition();
+
+	/*!
+	 * Update the Android view position automatically.
+	 * The position is checked every frame, which is less efficient than manually calling updateAndroidViewPosition.
+	 */
+	void setAutoPositionTracking(bool enabled);
 
 	void requestVisibleRect();
 
@@ -117,9 +124,14 @@ protected slots:
 	virtual void onViewCreated();
 
 private:
+	void beginAutoPositionTracking();
+	void endAutoPositionTracking();
 	QSharedPointer<QAndroidOffscreenView> aview_;
 	bool is_interactive_;
 	bool mouse_tracking_;
 	bool redraw_texture_needed_;
+
 	QPoint last_set_position_;
+	bool auto_position_tracking_;
+	QMetaObject::Connection auto_position_tracking_connection_;
 };
