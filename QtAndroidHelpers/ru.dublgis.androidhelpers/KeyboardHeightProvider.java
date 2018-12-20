@@ -113,6 +113,11 @@ public class KeyboardHeightProvider
             mPopupView.getWindowVisibleDisplayFrame(rect);
 
             int keyboardHeight = screenSize.y - rect.bottom;
+            // keyboardHeight can be negative, when navigation panel is hided
+            // screenSize doesn't take into account the possibility of hiding panel
+            if (keyboardHeight < 0) {
+                keyboardHeight = 0;
+            }
             mObserver.onKeyboardHeightChanged(keyboardHeight);
         }
         catch (final Throwable e)
