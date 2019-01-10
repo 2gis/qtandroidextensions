@@ -36,13 +36,17 @@
 
 #include "QGeoPositionInfoSourceAndroidGms.h"
 
+#include <QtCore/qtcoreversion.h>
 #include <QtPositioning/QGeoPositionInfo>
+
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 #include "QAndroidGmsLocationProvider.h"
 #include "QLocationManagerProvidersListener.h"
 
 
-Q_DECLARE_METATYPE(QGeoPositionInfo)
+#if QTCORE_VERSION < 0x050C00
+	Q_DECLARE_METATYPE(QGeoPositionInfo)
+#endif
 
 
 /*!

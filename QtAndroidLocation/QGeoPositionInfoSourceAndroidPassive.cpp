@@ -37,13 +37,16 @@
 
 #include "QGeoPositionInfoSourceAndroidPassive.h"
 
+#include <QtCore/qtcoreversion.h>
 #include <QtPositioning/QGeoPositionInfo>
 
 #include <QJniHelpers/TJniObjectLinker.h>
 #include "PositionInfoConvertor.h"
 
 
-Q_DECLARE_METATYPE(QGeoPositionInfo)
+#if QTCORE_VERSION < 0x050C00
+	Q_DECLARE_METATYPE(QGeoPositionInfo)
+#endif
 
 
 static const char * const c_full_class_name_ = "ru/dublgis/androidlocation/PassiveLocationProvider";
