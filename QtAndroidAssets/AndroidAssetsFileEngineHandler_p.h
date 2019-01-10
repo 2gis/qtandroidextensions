@@ -58,7 +58,7 @@
 #elif QTCORE_VERSION == 0x050900
 #   include <QtCore/5.9.0/QtCore/private/qabstractfileengine_p.h>
 #else
-#   error qt version unknown
+#   include <QtCore/private/qabstractfileengine_p.h>
 #endif
 
 #include <QtCore/QCache>
