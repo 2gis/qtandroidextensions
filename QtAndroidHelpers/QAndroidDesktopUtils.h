@@ -13,13 +13,13 @@
   modification, are permitted provided that the following conditions are met:
 
   * Redistributions of source code must retain the above copyright notice,
-    this list of conditions and the following disclaimer.
+	this list of conditions and the following disclaimer.
   * Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
   * Neither the name of the DoubleGIS, LLC nor the names of its contributors
-    may be used to endorse or promote products derived from this software
-    without specific prior written permission.
+	may be used to endorse or promote products derived from this software
+	without specific prior written permission.
 
   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -53,19 +53,33 @@ int getNetworkType();
 
 void showApplicationSettings();
 
-bool sendTo(const QString & chooser_caption, const QString & text, const QString & content_type);
+// Send a text to any application in the system.
+bool sendTo(
+	const QString & chooser_caption,
+	const QString & text,
+	const QString & content_type = QLatin1String("text/plain"));
+
+// Send a text to any application in the system.
+// If some application packages are to be removed from possible recipients, pass list of the
+// package names via filter_packages. Use * at end of package name to ignore by the prefix.
+bool sendTo(
+	const QString & chooser_caption,
+	const QString & text,
+	const QString & content_type,
+	const QStringList & filter_packages);
+
 bool sendSMS(const QString & number, const QString & text);
 
 // WARNING: For this function to work properly with e-mail attachments on Android 6+
 // or when using force_content_provider, please follow instructions in
 // DesktopUtils.java => DesktopUtils.sendEmail().
 bool sendEmail(
-    const QString & to,
-    const QString & subject,
-    const QString & body,
-    const QString & attach_file = QString::null,
-    bool force_content_provider = false,
-    const QString & authorities = QLatin1String("ru.dublgis.sharefileprovider"));
+	const QString & to,
+	const QString & subject,
+	const QString & body,
+	const QString & attach_file = QString::null,
+	bool force_content_provider = false,
+	const QString & authorities = QLatin1String("ru.dublgis.sharefileprovider"));
 
 bool sendEmail(
 	const QString & to,

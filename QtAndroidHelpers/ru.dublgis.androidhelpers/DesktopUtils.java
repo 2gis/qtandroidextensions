@@ -132,25 +132,104 @@ public class DesktopUtils
     }
 
     // Show generic "send to" menu
-    public static boolean sendTo(final Context ctx, final String chooser_caption, final String text, final String content_type)
+    public static boolean sendTo(
+        final Context ctx,
+        final String chooserCaption,
+        final String text,
+        final String contentType)
     {
         try
         {
-            Log.d(TAG, "Will send-to text \""+text+"\" of type: \""+content_type+"\"");
-            Intent sendIntent = new Intent(Intent.ACTION_SEND);
-            sendIntent.setType(content_type);
+            Log.d(TAG, "sendTo " + contentType);
+            final Intent sendIntent = new Intent(Intent.ACTION_SEND);
+            sendIntent.setType(contentType);
             sendIntent.putExtra(Intent.EXTRA_TEXT, text);
-            Intent chooser = Intent.createChooser(sendIntent, chooser_caption);
+            final Intent chooser = Intent.createChooser(sendIntent, chooserCaption);
             chooser.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             ctx.startActivity(chooser);
             return true;
-        }
-        catch (final Throwable e)
-        {
+        } catch (final Throwable e) {
             Log.e(TAG, "sendTo exception: ", e);
             return false;
         }
     }
+
+
+    // Show generic "send to" menu for a plain text and optionally filter out some applications.
+    // filterPackages is a "\n" - separated list of package names of prefixes (ended by "*").
+    public static boolean sendTo(
+        final Context ctx,
+        final String chooserCaption,
+        final String text,
+        final String contentType,
+        final String filterPackages)
+    {
+        try {
+            final String[] packages = (filterPackages == null) ? null : filterPackages.split("\n");
+            Log.d(TAG, "sendTo: sending " + contentType + " with package filtering.");
+            // Create intent with the text
+            final Intent i = new Intent(Intent.ACTION_SEND);
+            i.setType(contentType);
+            i.putExtra(Intent.EXTRA_TEXT, text);
+            // Find what activities can handle the text intent
+            final List<ResolveInfo> resolveInfos = ctx.getPackageManager().queryIntentActivities(i, 0);
+            // Filter the activities
+            Intent chooserIntent = null;
+            final List<Intent> intentList = new ArrayList<Intent>();
+            for (ResolveInfo resolveInfo : resolveInfos) {
+                boolean skip = false;
+                final String pn = resolveInfo.activityInfo.packageName;
+                final String name = resolveInfo.activityInfo.name;
+                if (packages != null) {
+                    for (String filter : packages) {
+                        if (filter == null || filter.isEmpty()) {
+                            continue;
+                        }
+                        if (filter.endsWith("*")) {
+                            if (pn.startsWith(filter.substring(0, filter.length() - 1))) {
+                                skip = true;
+                                break;
+                            }
+                        } else if (pn.equals(filter)) {
+                            skip = true;
+                            break;
+                        }
+                    }
+                }
+                if (skip) {
+                    Log.d(TAG, "sendTo: skipping package: " + pn + ": " + name);
+                    continue;
+                }
+                // Log.d(TAG, "sendTo: adding: " + pn + ": " + name);
+                final Intent targetedIntent = (Intent)i.clone();
+                targetedIntent.setComponent(new ComponentName(pn, name));
+                if (chooserIntent == null) {
+                    chooserIntent = targetedIntent;
+                } else {
+                    intentList.add(targetedIntent);
+                }
+            }
+            if (chooserIntent == null) {
+                // No activities found, fall back to simple sharing
+                chooserIntent = Intent.createChooser(i, chooserCaption);
+                chooserIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            } else if (!intentList.isEmpty()) {
+                // Have more than one activity - build chooser with the list
+                final Intent keepIntent = chooserIntent; // should be moved to extra
+                chooserIntent = new Intent(Intent.ACTION_CHOOSER);
+                chooserIntent.putExtra(Intent.EXTRA_INTENT, keepIntent);
+                final Intent[] extraIntents = intentList.toArray(new Intent[intentList.size()]);
+                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
+            }
+            ctx.startActivity(chooserIntent);
+            return true;
+        } catch (final Throwable e) {
+            Log.e(TAG, "sendTo (2) exception: ", e);
+            return false;
+        }
+    }
+
+
 
     public static boolean sendSMS(final Context ctx, final String number, final String text)
     {
