@@ -89,15 +89,44 @@ void showApplicationSettings()
 }
 
 
-bool sendTo(const QString & chooser_caption, const QString & text, const QString & content_type)
+bool sendTo(
+	const QString & chooser_caption,
+	const QString & text,
+	const QString & content_type)
 {
 	QJniClass du(c_full_class_name_);
 	QAndroidQPAPluginGap::Context activity;
-	return du.callStaticParamBoolean("sendTo", "Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;",
+	return du.callStaticParamBoolean(
+		"sendTo",
+		"Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;",
 		activity.jObject(),
 		QJniLocalRef(chooser_caption).jObject(),
 		QJniLocalRef(text).jObject(),
 		QJniLocalRef(content_type).jObject());
+}
+
+
+bool sendTo(
+	const QString & chooser_caption,
+	const QString & text,
+	const QString & content_type,
+	const QStringList & filter_packages)
+{
+	// Fallback to the faster version if filter_packages is actually empty
+	if (filter_packages.isEmpty())
+	{
+		return sendTo(chooser_caption, text, content_type);
+	}
+	QJniClass du(c_full_class_name_);
+	QAndroidQPAPluginGap::Context activity;
+	return du.callStaticParamBoolean(
+		"sendTo",
+		"Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;",
+		activity.jObject(),
+		QJniLocalRef(chooser_caption).jObject(),
+		QJniLocalRef(text).jObject(),
+		QJniLocalRef(content_type).jObject(),
+		QJniLocalRef(filter_packages.join(QLatin1Char('\n'))).jObject());
 }
 
 
