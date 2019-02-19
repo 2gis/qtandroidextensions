@@ -45,6 +45,8 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager.LayoutParams;
 import android.widget.PopupWindow;
+import android.util.DisplayMetrics;
+import android.view.Display;
 
 
 /*
@@ -106,13 +108,53 @@ public class KeyboardHeightProvider
     {
         try
         {
+            //Getting dsiplay size
+            //https://stackoverflow.com/questions/1016896/get-screen-dimensions-in-pixels/15699681#15699681
             Point screenSize = new Point();
-            mActivity.getWindowManager().getDefaultDisplay().getSize(screenSize);
+            Display d = mActivity.getWindowManager().getDefaultDisplay();
+            d.getSize(screenSize);
+            int heightPixels = screenSize.y;
+
+            try
+            {
+                DisplayMetrics metrics = new DisplayMetrics();
+                d.getMetrics(metrics);
+                heightPixels = metrics.heightPixels;
+            }
+            catch(final Throwable e)
+            {
+                Log.e(TAG, "onGlobalLayout exception (1): " + e);
+            }
+
+            if (android.os.Build.VERSION.SDK_INT >= 14 && android.os.Build.VERSION.SDK_INT < 17) {
+                try
+                {
+                    heightPixels = (Integer) Display.class.getMethod("getRawHeight").invoke(d);
+                }
+                catch(final Throwable e)
+                {
+                    Log.e(TAG, "onGlobalLayout exception (2): " + e);
+                }
+            }
+
+            if (android.os.Build.VERSION.SDK_INT >= 17) {
+                try
+                {
+                    Point realSize = new Point();
+                    Display.class.getMethod("getRealSize", Point.class).invoke(d, realSize);
+                    heightPixels = realSize.y;
+                }
+                catch(final Throwable e)
+                {
+                    Log.e(TAG, "onGlobalLayout exception (3): " + e);
+                }
+            }
 
             Rect rect = new Rect();
             mPopupView.getWindowVisibleDisplayFrame(rect);
 
-            int keyboardHeight = screenSize.y - rect.bottom;
+            int keyboardHeight = heightPixels - rect.bottom;
+
             // keyboardHeight can be negative, when navigation panel is hided
             // screenSize doesn't take into account the possibility of hiding panel
             if (keyboardHeight < 0) {
