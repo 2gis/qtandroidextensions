@@ -118,6 +118,7 @@ public slots:
 
 	//! Sets the padding.
 	void setPadding(int left, int top, int right, int bottom) { androidEditText()->setPadding(left, top, right, bottom); }
+	void setIncludeFontPadding(bool enabled) { androidEditText()->setIncludeFontPadding(enabled); }
 
 	//! Sets flags on the Paint being used to display the text and reflows the text if they are different from the old flags.
 	void setPaintFlags(int flags) { androidEditText()->setPaintFlags(flags); }

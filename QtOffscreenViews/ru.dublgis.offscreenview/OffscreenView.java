@@ -320,7 +320,7 @@ public abstract class OffscreenView
                         layout_.setRight(view_width_);
                         layout_.setBottom(view_height_);
                     }
-                    layout_.addView(view);
+                    layout_.addView(view, new ViewGroup.LayoutParams(view_width_, view_height_));
                     uiAttachViewToQtScreen();
                 }
 
@@ -1079,6 +1079,7 @@ public abstract class OffscreenView
             public void run() {
                 final View v = getView();
                 if (v != null) {
+                    v.setLayoutParams(new ViewGroup.LayoutParams(w, h));
                     if (!attaching_mode_) {
                         if (getApiLevel() >= 11) {
                             v.setLeft(0);

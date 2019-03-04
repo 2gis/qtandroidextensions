@@ -169,6 +169,7 @@ public:
 
 	//! Sets the padding.
 	void setPadding(int left, int top, int right, int bottom);
+	void setIncludeFontPadding(bool enabled);
 
 	// http://developer.android.com/reference/android/graphics/Paint.html
 	static const int

@@ -649,6 +649,16 @@ class OffscreenEditText extends OffscreenView
         });
     }
 
+    void setIncludeFontPadding(final boolean enabled)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setIncludeFontPadding(enabled);
+            }
+        });
+    }
+
     void setPaintFlags(final int flags)
     {
         runViewAction(new Runnable(){
