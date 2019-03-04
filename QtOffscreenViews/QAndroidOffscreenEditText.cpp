@@ -332,6 +332,14 @@ void QAndroidOffscreenEditText::setPadding(int left, int top, int right, int bot
 	}
 }
 
+void QAndroidOffscreenEditText::setIncludeFontPadding(bool enabled)
+{
+	if (QJniObject * view = offscreenView())
+	{
+		view->callVoid("setIncludeFontPadding", jboolean(enabled));
+	}
+}
+
 void QAndroidOffscreenEditText::setPaintFlags(int flags)
 {
 	if (QJniObject * view = offscreenView())
