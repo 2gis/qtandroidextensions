@@ -42,14 +42,15 @@ import android.view.ViewTreeObserver;
 import android.view.Window;
 
 
-public class ScreenLayoutHandler implements 
-    ViewTreeObserver.OnGlobalLayoutListener, 
+public class ScreenLayoutHandler implements
+    ViewTreeObserver.OnGlobalLayoutListener,
     ViewTreeObserver.OnScrollChangedListener,
     KeyboardHeightObserver
 {
     public static final String TAG = "Grym/ScrnLayoutHandler";
     private volatile long native_ptr_ = 0;
     private KeyboardHeightProvider mKeyboardHeightProvider;
+
 
     public ScreenLayoutHandler(long native_ptr)
     {
@@ -58,12 +59,14 @@ public class ScreenLayoutHandler implements
         subscribeToLayoutEvents();
     }
 
+
     //! Called from C++ to notify us that the associated C++ object is being destroyed.
     public void cppDestroyed()
     {
         unsubscribeFromLayoutEvents();
         native_ptr_ = 0;
     }
+
 
     public void subscribeToLayoutEvents()
     {
@@ -91,6 +94,7 @@ public class ScreenLayoutHandler implements
             }
         });
     }
+
 
     public void unsubscribeFromLayoutEvents()
     {
@@ -120,11 +124,13 @@ public class ScreenLayoutHandler implements
         });
     }
 
+
     @Override
     public void onGlobalLayout()
     {
         nativeGlobalLayoutChanged(native_ptr_);
     }
+
 
     @Override
     public void onScrollChanged()
@@ -132,11 +138,13 @@ public class ScreenLayoutHandler implements
         nativeScrollChanged(native_ptr_);
     }
 
+
     @Override
     public void onKeyboardHeightChanged(int height)
     {
         nativeKeyboardHeightChanged(native_ptr_, height);
     }
+
 
     private View getDecorView()
     {
@@ -154,6 +162,7 @@ public class ScreenLayoutHandler implements
 
         return window.getDecorView();
     }
+
 
     final public boolean runOnUiThread(final Runnable runnable)
     {
@@ -179,6 +188,7 @@ public class ScreenLayoutHandler implements
             return false;
         }
     }
+
 
     public native Activity getActivity();
     public native void nativeGlobalLayoutChanged(long nativeptr);

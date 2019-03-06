@@ -1,12 +1,13 @@
 /*
     Offscreen Android Views library for Qt
 
-    Author:
+    Authors:
     Timur N. Artikov <t.artikov@gmail.com>
+    Sergey A. Galin <sergey.galin@gmail.com>
 
     Distrbuted under The BSD License
 
-    Copyright (c) 2018, DoubleGIS, LLC.
+    Copyright (c) 2019, DoubleGIS, LLC.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -38,34 +39,42 @@
 package ru.dublgis.androidhelpers;
 
 import android.app.Activity;
+import android.content.res.Configuration;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.os.Build;
+import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.widget.PopupWindow;
 
 
 /*
-    The keyboard height provider. 
+    The keyboard height provider.
     It uses a PopupWindow to calculate the window height when the floating keyboard is opened and closed.
 */
-public class KeyboardHeightProvider 
+public class KeyboardHeightProvider
     extends PopupWindow
     implements ViewTreeObserver.OnGlobalLayoutListener 
 {
     public static final String TAG = "Grym/KeyboardHeightProvider";
 
-    private KeyboardHeightObserver mObserver;
-    private View mPopupView;
-    private Activity mActivity;
+    private KeyboardHeightObserver mObserver = null;
+    private View mPopupView = null;
+    private Activity mActivity = null;
 
-    public KeyboardHeightProvider(Activity activity, View parentView, KeyboardHeightObserver observer)
+
+    public KeyboardHeightProvider(
+        final Activity activity,
+        final View parentView, 
+        final KeyboardHeightObserver observer)
     {
         super(activity);
-        try
-        {
+        try {
             mActivity = activity;
             mObserver = observer;
 
@@ -81,47 +90,108 @@ public class KeyboardHeightProvider
 
             mPopupView.getViewTreeObserver().addOnGlobalLayoutListener(this);
             showAtLocation(parentView, Gravity.NO_GRAVITY, 0, 0);
-        }
-        catch (final Throwable e)
-        {
+        } catch (final Throwable e) {
             Log.e(TAG, "constructor exception: " + e);
         }
     }
 
-    public void stop()
-    {
-        try
-        {
+
+    public void stop() {
+        try {
             mPopupView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
             dismiss();
-        }
-        catch (final Throwable e)
-        {
+        } catch (final Throwable e) {
             Log.e(TAG, "stop exception: " + e);
         }
     }
 
+
+    private int nominalScreenHeight() {
+        final Point screenSize = new Point();
+        mActivity.getWindowManager().getDefaultDisplay().getSize(screenSize);
+        return screenSize.y;
+    }
+
+
+    private int visibleDisplayFrameHeight() {
+        final Rect rect = new Rect();
+        mPopupView.getWindowVisibleDisplayFrame(rect);
+        return rect.bottom;
+    }
+
+
+    private int getKeyboardSize() {
+        int keyboardHeight = 0;
+        try {
+            final int screenHeight = nominalScreenHeight();
+            keyboardHeight = screenHeight - visibleDisplayFrameHeight();
+            if (keyboardHeight == 0
+                || !SystemNavigationBarInfo.deviceMayHaveFullscreenMode(mActivity) // Fast (cached)
+                || mActivity.getResources().getConfiguration().orientation ==
+                    Configuration.ORIENTATION_LANDSCAPE)
+            {
+                return keyboardHeight;
+            }
+
+            // Below are additional calculations and workarounds for devices that have dynamically
+            // shown and hidden navigation panels.
+            // These panels have non-standard implementation by Samsung, Huawei, ViVo and some
+            // others so the code to support them all is quite weird and may cause problems
+            // in the future. But we really have no choice.
+
+            /*
+            Log.d(TAG"getNavigationBarHeightFromConfiguration=" +
+                SystemNavigationBarInfo.getNavigationBarHeightFromConfiguration(
+                    Configuration.ORIENTATION_PORTRAIT) +
+                ", screenHeight=" + screenHeight +
+                ", getFullscreenMode=" + SystemNavigationBarInfo.getFullscreenMode(mActivity) +
+                ", hasVerticalNavBarSpace=" +
+                SystemNavigationBarInfo.hasVerticalNavBarSpace(mActivity) +
+                ", getActualNavigationBarControlHeight=" +
+                SystemNavigationBarInfo.getActualNavigationBarControlHeight(mActivity) +
+                ", deviceMayHaveFullscreenMode=" +
+                SystemNavigationBarInfo.deviceMayHaveFullscreenMode(mActivity));
+            */
+
+            final int fullscreenMode = SystemNavigationBarInfo.getFullscreenMode(mActivity);
+
+            if (fullscreenMode == SystemNavigationBarInfo.FULLSCREEN_SAMSUNG) {
+                return keyboardHeight;
+            }
+
+            final boolean hasNavBarSpace = SystemNavigationBarInfo.hasVerticalNavBarSpace(mActivity);
+
+            // Correcting for "control is too high above the keyboard" case:
+            if (fullscreenMode == SystemNavigationBarInfo.FULLSCREEN_NONE && !hasNavBarSpace) {
+                return keyboardHeight - SystemNavigationBarInfo.getActualNavigationBarControlHeight(mActivity);
+            }
+
+            // Correcting for "control is partially or fully covered by the keyboard" case
+            if (fullscreenMode != SystemNavigationBarInfo.FULLSCREEN_NONE &&
+                hasNavBarSpace &&
+                SystemNavigationBarInfo.getActualNavigationBarControlHeight(mActivity) == 0)
+            {
+                return keyboardHeight + SystemNavigationBarInfo.getNavigationBarHeightFromConfiguration(
+                    Configuration.ORIENTATION_PORTRAIT);
+            }
+        } catch (final Throwable e) {
+            Log.e(TAG, "updateKeyboardSize exception: " + e);
+        }
+        return keyboardHeight;
+    }
+
+
     @Override
-    public void onGlobalLayout() 
+    public void onGlobalLayout()
     {
-        try
-        {
-            Point screenSize = new Point();
-            mActivity.getWindowManager().getDefaultDisplay().getSize(screenSize);
-
-            Rect rect = new Rect();
-            mPopupView.getWindowVisibleDisplayFrame(rect);
-
-            int keyboardHeight = screenSize.y - rect.bottom;
-            // keyboardHeight can be negative, when navigation panel is hided
-            // screenSize doesn't take into account the possibility of hiding panel
+        try {
+            int keyboardHeight = getKeyboardSize();
             if (keyboardHeight < 0) {
+                Log.e(TAG, "Invalid keyboard height calculated: " + keyboardHeight);
                 keyboardHeight = 0;
             }
             mObserver.onKeyboardHeightChanged(keyboardHeight);
-        }
-        catch (final Throwable e)
-        {
+        } catch (final Throwable e) {
             Log.e(TAG, "onGlobalLayout exception: " + e);
         }
     }

@@ -37,6 +37,7 @@
 
 package ru.dublgis.androidhelpers;
 
+
 public interface KeyboardHeightObserver
 {
     void onKeyboardHeightChanged(int height);
