@@ -154,11 +154,6 @@ public class KeyboardHeightProvider
             */
 
             final int fullscreenMode = SystemNavigationBarInfo.getFullscreenMode(mActivity);
-
-            if (fullscreenMode == SystemNavigationBarInfo.FULLSCREEN_SAMSUNG) {
-                return keyboardHeight;
-            }
-
             final boolean hasNavBarSpace = SystemNavigationBarInfo.hasVerticalNavBarSpace(mActivity);
 
             // Correcting for "control is too high above the keyboard" case:
