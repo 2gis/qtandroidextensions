@@ -170,7 +170,7 @@ public class KeyboardHeightProvider
                     Configuration.ORIENTATION_PORTRAIT);
             }
         } catch (final Throwable e) {
-            Log.e(TAG, "updateKeyboardSize exception: " + e);
+            Log.e(TAG, "getKeyboardSize exception: " + e);
         }
         return keyboardHeight;
     }
