@@ -53,69 +53,37 @@ import android.view.WindowManager;
 
 public class SystemNavigationBarInfo {
     private static final String TAG = "Grym/SystemNavBarInfo";
-    private volatile static boolean mDeviceMayHaveFullscreenModeCache = false;
-    private volatile static boolean mDeviceMayHaveFullscreenModeCacheSet = false;
-
-    public static final int
-        FULLSCREEN_NONE = 0,
-        FULLSCREEN_OTHER = 1,
-        FULLSCREEN_XIAOMI = 2,
-        FULLSCREEN_VIVO = 3,
-        FULLSCREEN_HUAWEI = 4,
-        FULLSCREEN_SAMSUNG = 5;
+    private static volatile boolean mDeviceMayHaveFullscreenModeCache = false;
+    private static volatile boolean mDeviceMayHaveFullscreenModeCacheSet = false;
 
 
     // Check if application is running in full screen mode (i.e. nav bar is hidden).
-    public static int getFullscreenMode(final Context context) {
+    // Uses vendor-specific code so may not work properly on future devices.
+    // Call deviceMayHaveFullscreenMode(Context) first for optimized behaviour.
+    public static boolean isInFullscreenMode(final Context context) {
+        if (Build.VERSION.SDK_INT < 21) {
+            return false;
+        }
         try {
-            if (!deviceMayHaveFullscreenMode(context)) {
-                return FULLSCREEN_NONE;
-            }
             final ContentResolver cr = context.getContentResolver();
-            // On Android 4.2+ we should also look in Settings.Global
-            if (Build.VERSION.SDK_INT >= 17) { // Android 4.2
+            return
                 // Huawei
-                if (Settings.Global.getInt(cr, "navigationbar_is_min", 0) == 1) {
-                    return FULLSCREEN_HUAWEI;
-                }
+                Settings.System.getInt(cr, "navigationbar_is_min", 0) == 1 ||
+                Settings.Global.getInt(cr, "navigationbar_is_min", 0) == 1 ||
                 // Samsung
-                if (Settings.Global.getInt(cr, "navigationbar_hide_bar_enabled", 0) == 1) {
-                    return FULLSCREEN_SAMSUNG;
-                }
+                Settings.System.getInt(cr, "navigationbar_hide_bar_enabled", 0) == 1 ||
+                Settings.Global.getInt(cr, "navigationbar_hide_bar_enabled", 0) == 1 ||
+                // Xiaomi MIUI
+                Settings.Global.getInt(cr, "force_fsg_nav_bar", 0) != 0 ||
+                // ViVo
+                Settings.Secure.getInt(cr, "navigation_gesture_on", 0) != 0 ||
                 // Other
-                if ("immersive.navigation=*".equals(
-                    Settings.Global.getString(cr, "policy_control")))
-                {
-                    return FULLSCREEN_OTHER;
-                }
-            }
-            // Xiaomi MIUI
-            if (Build.VERSION.SDK_INT >= 15) { // Android 4.0.3
-                if (Settings.Global.getInt(cr, "force_fsg_nav_bar", 0) != 0) {
-                    return FULLSCREEN_XIAOMI;
-                }
-            }
-            // Huawei
-            if (Settings.System.getInt(cr, "navigationbar_is_min", 0) == 1) {
-                return FULLSCREEN_HUAWEI;
-            }
-            // Samsung
-            if (Settings.System.getInt(cr, "navigationbar_hide_bar_enabled", 0) == 1) {
-                return FULLSCREEN_SAMSUNG;
-            }
-            // ViVo
-            if (Settings.Secure.getInt(cr, "navigation_gesture_on", 0) != 0) {
-                return FULLSCREEN_VIVO;
-            }
-            // Other
-            if ("immersive.navigation=*".equals(Settings.System.getString(cr, "policy_control")))
-            {
-                return FULLSCREEN_OTHER;
-            }
+                "immersive.navigation=*".equals(Settings.System.getString(cr, "policy_control")) ||
+                "immersive.navigation=*".equals(Settings.Global.getString(cr, "policy_control"));
         } catch (final Throwable e) {
             Log.e(TAG, "getFullscreenMode exception: ", e);
+            return false;
         }
-        return FULLSCREEN_NONE;
     }
 
 
@@ -127,7 +95,7 @@ public class SystemNavigationBarInfo {
     // with hidden nav bar but may (or may not) resize the screen later.
     public static boolean hasVerticalNavBarSpace(final Activity activity) {
         try {
-            if (Build.VERSION.SDK_INT < 17) { // Android 4.2
+            if (Build.VERSION.SDK_INT < 17) { // 4.2
                 return false;
             }
             final Display display = activity.getWindowManager().getDefaultDisplay();
@@ -148,10 +116,10 @@ public class SystemNavigationBarInfo {
     // Obviosly, this function may break in some future version of Android.
     public static int getActualNavigationBarControlHeight(final Activity activity) {
         try {
-            final View viewNavigation = activity.getWindow().getDecorView().findViewById(
+            final View bar = activity.getWindow().getDecorView().findViewById(
                 android.R.id.navigationBarBackground);
-            if (viewNavigation != null) {
-                return viewNavigation.getMeasuredHeight();
+            if (bar != null) {
+                return bar.getMeasuredHeight();
             }
         } catch (final Throwable e) {
             Log.e(TAG, "getActualNavigationBarControlHeight exception: ", e);
@@ -175,7 +143,7 @@ public class SystemNavigationBarInfo {
                 return Resources.getSystem().getDimensionPixelSize(resourceId);
             }
         } catch (final Resources.NotFoundException e) {
-            Log.v(TAG, "getNavigationBarHeightFromConfiguration: key not found.");
+            Log.d(TAG, "getNavigationBarHeightFromConfiguration: key not found.");
         } catch (final Throwable e) {
             Log.e(TAG, "getNavigationBarHeightFromConfiguration exception: ", e);
         }
@@ -184,12 +152,14 @@ public class SystemNavigationBarInfo {
 
 
     // Detecting device that may have full screen mode (collapsible nav panel).
-    // Currently based purely on the aspect ratio of the screen.
+    // This is just a fast heuristic-based check that currently looks solely on the aspect ratio
+    // of the screen and Android version. It will work improperly if someone release
+    // a device with wide screen and collapsible navbar. TODO...
     public static boolean deviceMayHaveFullscreenMode(final Context context) {
         if (mDeviceMayHaveFullscreenModeCacheSet) {
             return mDeviceMayHaveFullscreenModeCache;
         }
-        if (Build.VERSION.SDK_INT < 21) { // Android 5.0
+        if (Build.VERSION.SDK_INT < 21) { // 5.0
             mDeviceMayHaveFullscreenModeCache = false;
             mDeviceMayHaveFullscreenModeCacheSet = true;
             return false;

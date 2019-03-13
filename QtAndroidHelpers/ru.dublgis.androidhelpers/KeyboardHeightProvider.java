@@ -144,7 +144,7 @@ public class KeyboardHeightProvider
                 SystemNavigationBarInfo.getNavigationBarHeightFromConfiguration(
                     Configuration.ORIENTATION_PORTRAIT) +
                 ", screenHeight=" + screenHeight +
-                ", getFullscreenMode=" + SystemNavigationBarInfo.getFullscreenMode(mActivity) +
+                ", isInFullscreenMode=" + SystemNavigationBarInfo.isInFullscreenMode(mActivity) +
                 ", hasVerticalNavBarSpace=" +
                 SystemNavigationBarInfo.hasVerticalNavBarSpace(mActivity) +
                 ", getActualNavigationBarControlHeight=" +
@@ -153,16 +153,16 @@ public class KeyboardHeightProvider
                 SystemNavigationBarInfo.deviceMayHaveFullscreenMode(mActivity));
             */
 
-            final int fullscreenMode = SystemNavigationBarInfo.getFullscreenMode(mActivity);
+            final boolean fullscreen = SystemNavigationBarInfo.isInFullscreenMode(mActivity);
             final boolean hasNavBarSpace = SystemNavigationBarInfo.hasVerticalNavBarSpace(mActivity);
 
             // Correcting for "control is too high above the keyboard" case:
-            if (fullscreenMode == SystemNavigationBarInfo.FULLSCREEN_NONE && !hasNavBarSpace) {
+            if (!fullscreen && !hasNavBarSpace) {
                 return keyboardHeight - SystemNavigationBarInfo.getActualNavigationBarControlHeight(mActivity);
             }
 
             // Correcting for "control is partially or fully covered by the keyboard" case
-            if (fullscreenMode != SystemNavigationBarInfo.FULLSCREEN_NONE &&
+            if (fullscreen &&
                 hasNavBarSpace &&
                 SystemNavigationBarInfo.getActualNavigationBarControlHeight(mActivity) == 0)
             {
