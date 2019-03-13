@@ -113,7 +113,7 @@ public class SystemNavigationBarInfo {
 
     // Get height of the navigation bar by looking up "navigationBarBackground" control.
     // The function may return 0 if the nav bar is hidden.
-    // Obviosly, this function may break in some future version of Android.
+    // This function may break in some future version of Android.
     public static int getActualNavigationBarControlHeight(final Activity activity) {
         try {
             final View bar = activity.getWindow().getDecorView().findViewById(
@@ -130,7 +130,7 @@ public class SystemNavigationBarInfo {
 
     // Get navigation bar height from system configuration.
     // Works on "normal" devices with fixed nav bar as well.
-    // Obviosly, this function may break in some future version of Android.
+    // This function may break in some future version of Android.
     public static int getNavigationBarHeightFromConfiguration(final int orientation) {
         try {
             final int resourceId = Resources.getSystem().getIdentifier(
@@ -164,9 +164,8 @@ public class SystemNavigationBarInfo {
             mDeviceMayHaveFullscreenModeCacheSet = true;
             return false;
         }
-        // TODO: Here is some wonderful magic. Assuming that so far only the devices with
-        // very high aspect ratio screen may have a hiding nav bar. Obviously this check may not
-        // work properly for some current or future devices.
+        // Assuming that so far only the devices with very high aspect ratio screen may have
+        // a hiding nav bar. This check may not work properly for some future devices.
         try {
             final Point sz = new Point();
             ((WindowManager)context.getSystemService(Context.WINDOW_SERVICE))

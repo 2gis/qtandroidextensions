@@ -156,7 +156,7 @@ public class KeyboardHeightProvider
             final boolean fullscreen = SystemNavigationBarInfo.isInFullscreenMode(mActivity);
             final boolean hasNavBarSpace = SystemNavigationBarInfo.hasVerticalNavBarSpace(mActivity);
 
-            // Correcting for "control is too high above the keyboard" case:
+            // Correcting for "control is too high above the keyboard" case
             if (!fullscreen && !hasNavBarSpace) {
                 return keyboardHeight - SystemNavigationBarInfo.getActualNavigationBarControlHeight(mActivity);
             }
