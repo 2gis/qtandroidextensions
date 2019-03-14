@@ -42,6 +42,10 @@
 #include <QtCore/QVector>
 #include "AndroidAssetsFileEngineHandler_p.h"
 
+
+namespace QtAndroidAssets {
+
+
 typedef QVector<QString> FilesList;
 
 struct AndroidAssetDir
@@ -393,3 +397,4 @@ QAbstractFileEngine * AndroidAssetsFileEngineHandler::create(const QString &file
 }
 
 
+} // namespace QtAndroidAssets

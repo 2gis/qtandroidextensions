@@ -29,9 +29,9 @@
 
 
 #if defined(QTANDROIDASSETS_STATIC)
-    #define QTANDROIDASSETS_EXPORT
+	#define QTANDROIDASSETS_EXPORT
 #else
-    #define QTANDROIDASSETS_EXPORT Q_DECL_EXPORT
+	#define QTANDROIDASSETS_EXPORT Q_DECL_EXPORT
 #endif
 
 
@@ -39,12 +39,12 @@ QTANDROIDASSETS_EXPORT void installQAndroidAssetHandler(QJniObject & context);
 
 QTANDROIDASSETS_EXPORT void installQAndroidAssetHandler(QJniObject & context)
 {
-    static QScopedPointer<QObject> manager;
-    if (!manager)
-    {
-        QScopedPointer<QJniObject> assetmanager(context.callObject("getAssets", "android/content/res/AssetManager"));
-        QJniEnvPtr jep;
-        AAssetManager * assetManager = AAssetManager_fromJava(jep.env(), assetmanager->jObject());
-        manager.reset(new AndroidAssetsFileEngineHandler(assetManager));
-    }
+	static QScopedPointer<QObject> manager;
+	if (!manager)
+	{
+		QScopedPointer<QJniObject> assetmanager(context.callObject("getAssets", "android/content/res/AssetManager"));
+		QJniEnvPtr jep;
+		AAssetManager * assetManager = AAssetManager_fromJava(jep.env(), assetmanager->jObject());
+		manager.reset(new QtAndroidAssets::AndroidAssetsFileEngineHandler(assetManager));
+	}
 }

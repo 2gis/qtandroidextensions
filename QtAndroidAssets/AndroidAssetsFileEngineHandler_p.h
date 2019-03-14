@@ -66,6 +66,10 @@
 #include <QtCore/QSharedPointer>
 #include <android/asset_manager.h>
 
+
+namespace QtAndroidAssets {
+
+
 struct AndroidAssetDir;
 
 class AndroidAssetsFileEngineHandler: public QObject, public QAbstractFileEngineHandler
@@ -86,3 +90,5 @@ private:
     mutable bool m_hasTriedPrepopulatingCache;
 };
 
+
+} // namespace QtAndroidAssets
