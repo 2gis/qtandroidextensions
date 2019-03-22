@@ -52,6 +52,8 @@
 
 namespace {
 
+static JavaVM * g_JavaVm = 0;
+
 //! Data type to keep list of JNI references to Java classes ever preloaded or loaded.
 typedef QMap<QString, jclass> PreloadedClasses;
 
@@ -72,12 +74,14 @@ class QJniClassUnloader
 public:
 	~QJniClassUnloader()
 	{
-		QJniEnvPtr().unloadAllClasses();
+		if (g_JavaVm != 0)
+		{
+			QJniEnvPtr().unloadAllClasses();
+		}
 	}
 };
 
 
-static JavaVM * g_JavaVm = 0;
 static QMutex g_PreloadedClassesMutex;
 static PreloadedClasses g_PreloadedClasses;
 static QThreadStorage<QJniEnvPtrThreadDetacher*> g_JavaThreadDetacher;
