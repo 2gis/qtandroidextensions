@@ -289,7 +289,7 @@ void QAndroidGmsLocationProvider::onApplicationStateChanged(Qt::ApplicationState
 }
 
 
-void QAndroidGmsLocationProvider::onCheckRequest(jlong requestId)
+void QAndroidGmsLocationProvider::onCheckRequest(qint64 requestId)
 {
 	bool stop = false;
 
