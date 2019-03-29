@@ -37,6 +37,7 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <QtOpenGL/QGLWidget>
+#include <QtCore/QCoreApplication>
 #include "QOpenGLTextureHolder.h"
 
 static const GLuint c_vertex_coordinates_attr  = 0;
@@ -105,6 +106,13 @@ QGLShaderProgram * QOpenGLTextureHolder::GetBlitProgram(GLenum target)
 		Q_UNUSED(target);
 		return 0; // Not supported by current GL version!
 	#else
+		if (blit_programs_.isEmpty())
+		{
+			qAddPostRoutine([]() {
+				blit_programs_.clear();
+			});
+		}
+
 		QSharedPointer<QGLShaderProgram> & blit_program_ptr = blit_programs_[target];
 		if (!blit_program_ptr.isNull())
 		{
