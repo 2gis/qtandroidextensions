@@ -437,6 +437,15 @@ static inline void clearGlRect(int l, int b, int w, int h, const QColor & fill_c
 
 void QAndroidOffscreenView::paintGL(int l, int b, int w, int h, bool reverse_y)
 {
+	if(tex_.isAllocated() && !view_painted_
+		&& tex_.getTextureSize().height() != last_texture_height_ && last_texture_height_ > 0
+		&& tex_.getTextureSize().width() == last_texture_width_)
+	{
+		glViewport(l, b, last_texture_width_, last_texture_height_);
+		tex_.blitPreviousTexture();
+	}
+	else 
+	{	
 	glViewport(l, b, w, h);
 	if (updateGLTextureInHolder())
 	{
@@ -450,6 +459,7 @@ void QAndroidOffscreenView::paintGL(int l, int b, int w, int h, bool reverse_y)
 		// View is not ready, just fill the area with the fill color.
 		clearGlRect(l, b, w, h, fill_color_);
 	}
+}
 }
 
 bool QAndroidOffscreenView::updateGLTextureInHolder()
@@ -466,8 +476,7 @@ bool QAndroidOffscreenView::updateGLTextureInHolder()
 			{
 				return false;
 			}
-			if (tex_.getTextureSize().width() != last_texture_width_
-				|| tex_.getTextureSize().height() != last_texture_height_)
+			if (tex_.getTextureSize().width() != last_texture_width_)
 			{
 				return false;
 			}
