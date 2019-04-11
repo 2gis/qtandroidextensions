@@ -438,28 +438,37 @@ static inline void clearGlRect(int l, int b, int w, int h, const QColor & fill_c
 void QAndroidOffscreenView::paintGL(int l, int b, int w, int h, bool reverse_y)
 {
 	if(tex_.isAllocated() && !view_painted_
-		&& tex_.getTextureSize().height() != last_texture_height_ && last_texture_height_ > 0
-		&& tex_.getTextureSize().width() == last_texture_width_)
+		&& ((tex_.getTextureSize().height() != last_texture_height_ && last_texture_height_ > 0)
+			|| (tex_.getTextureSize().width() != last_texture_width_ && last_texture_width_ > 0)))
 	{
-		glViewport(l, b, last_texture_width_, last_texture_height_);
-		tex_.blitPreviousTexture();
+		glViewport(l, b,last_texture_width_, last_texture_height_);
+		const QSize size(
+			last_texture_width_, 
+			last_texture_height_
+		);
+		
+		tex_.blitTexture(
+			QRect(QPoint(0, 0), size) // target rect (relatively to viewport)
+			, QRect(QPoint(0, 0), size) // source rect (in texture)
+			, reverse_y);
 	}
 	else 
 	{	
-	glViewport(l, b, w, h);
-	if (updateGLTextureInHolder())
-	{
-		tex_.blitTexture(
-			QRect(QPoint(0, 0), QSize(w, h)) // target rect (relatively to viewport)
-			, QRect(QPoint(0, 0), QSize(w, h)) // source rect (in texture)
-			, reverse_y);
+		glViewport(l, b, w, h);
+		if (updateGLTextureInHolder())
+		{
+			QSize size(w, h);
+			tex_.blitTexture(
+				QRect(QPoint(0, 0), size) // target rect (relatively to viewport)
+				, QRect(QPoint(0, 0), size) // source rect (in texture)
+				, reverse_y);
+		}
+		else
+		{
+			// View is not ready, just fill the area with the fill color.
+			clearGlRect(l, b, w, h, fill_color_);
+		}
 	}
-	else
-	{
-		// View is not ready, just fill the area with the fill color.
-		clearGlRect(l, b, w, h, fill_color_);
-	}
-}
 }
 
 bool QAndroidOffscreenView::updateGLTextureInHolder()

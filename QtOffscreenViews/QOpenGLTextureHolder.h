@@ -74,8 +74,6 @@ public:
 	GLuint getTexture() const { return texture_id_; }
 	GLenum getTextureType() const { return texture_type_; }
 
-	void blitPreviousTexture();
-
 	/*!
 	 * Set texture transformation matrix ('a' is 2D matrix and 'b' is a 2D vector).
 	 * To set the coeffients from a uniform matrix represened as array 'x',
@@ -139,7 +137,6 @@ public:
 	static void initializeGL(bool init_extension);
 
 private:
-	Q_DISABLE_COPY(QOpenGLTextureHolder)
 	//! Helper for blitTexture().
 	void drawTexture(const QRectF & rect, const QRectF & bitmap_rect, bool reverse_y);
 
@@ -154,15 +151,7 @@ protected:
 	GLfloat a11_, a12_, a21_, a22_, b1_, b2_;
 	static QMap<GLenum, QSharedPointer<QGLShaderProgram> > blit_programs_;
 private:
-
-	struct PreviousDrawParams
-	{
-		QRect target_rect_;
-		QRect source_rect_;
-		bool reverse_y_;
-	};
-
-	PreviousDrawParams previous_draw_params_;
+	Q_DISABLE_COPY(QOpenGLTextureHolder)
 };
 
 void QOpenGLTextureHolder::setTransformation(GLfloat a11, GLfloat a12, GLfloat a21, GLfloat a22, GLfloat b1, GLfloat b2)

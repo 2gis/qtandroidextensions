@@ -203,13 +203,6 @@ QGLShaderProgram * QOpenGLTextureHolder::GetBlitProgram(GLenum target)
 	#endif // ES 2.0
 }
 
-void QOpenGLTextureHolder::blitPreviousTexture()
-{
-	blitTexture(previous_draw_params_.target_rect_, 
-			previous_draw_params_.source_rect_, 
-			previous_draw_params_.reverse_y_);
-}
-
 void QOpenGLTextureHolder::blitTexture(const QRect & targetRect, const QRect & sourceRect, bool reverse_y)
 {
 	if (!isAllocated())
@@ -287,7 +280,6 @@ void QOpenGLTextureHolder::blitTexture(const QRect & targetRect, const QRect & s
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		drawTexture(targetRect, sourceRect, reverse_y);
 	#endif
-	previous_draw_params_ = {targetRect, sourceRect, reverse_y};
 }
 
 void QOpenGLTextureHolder::drawTexture(const QRectF & rect, const QRectF & bitmap_rect, bool reverse_y)
