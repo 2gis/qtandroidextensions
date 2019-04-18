@@ -278,7 +278,7 @@ void QOpenGLTextureHolder::blitTexture(const QRect & targetRect, const QRect & s
 			glOrthof(0, targetRect.width(), targetRect.height(), 0, -999999, 999999);
 		#endif
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		drawTexture(targetRect, targetRect.size(), sourceRect, reverse_y);
+		drawTexture(targetRect, sourceRect, reverse_y);
 	#endif
 }
 
@@ -299,12 +299,12 @@ void QOpenGLTextureHolder::drawTexture(const QRectF & rect, const QRectF & bitma
 			 // (Reverse Y axis)
 			 QPointF(
 				bitmap_rect.x()
-				, static_cast<qreal>(texture_size_.height()) - bitmap_rect.bottom())
+				, bitmap_rect.y())
 			, bitmap_rect.size());
 
 	// Convert in-texture coords to [0..1]
-	qreal width = static_cast<qreal>(texture_size_.width());
-	qreal height = static_cast<qreal>(texture_size_.height());
+	qreal width = static_cast<qreal>(bitmap_rect.width());
+	qreal height = static_cast<qreal>(bitmap_rect.height());
 
 	GLfloat tx1 = src.left() / width;
 	GLfloat tx2 = src.right() / width;
