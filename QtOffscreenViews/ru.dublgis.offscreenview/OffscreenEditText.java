@@ -44,6 +44,8 @@ import android.graphics.Typeface;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.InputType;
+import android.text.Layout.Alignment;
+import android.text.StaticLayout;
 import android.text.TextWatcher;
 import android.text.method.PasswordTransformationMethod;
 import android.view.inputmethod.EditorInfo;
@@ -58,6 +60,7 @@ import android.graphics.Color;
 import android.text.TextUtils;
 import android.text.InputFilter;
 import android.text.Layout;
+import android.view.View.MeasureSpec;
 
 import ru.dublgis.androidhelpers.Log;
 
@@ -80,6 +83,7 @@ class OffscreenEditText extends OffscreenView
     class MyEditText extends EditText
     {
         private boolean vertically_scrolling_ = false;
+        private int content_height_ = 0;
 
         class MyTextWatcher implements TextWatcher
         {
@@ -102,6 +106,7 @@ class OffscreenEditText extends OffscreenView
                     text_ = str;
                 }
                 nativeOnTextChanged(getNativePtr(), str, start, before, count);
+                updateContentHeight();
             }
         }
 
@@ -255,6 +260,7 @@ class OffscreenEditText extends OffscreenView
             }
 
             updateSelectionInfo();
+            updateContentHeight();
         }
 
         private void updateSelectionInfo() {
@@ -386,6 +392,39 @@ class OffscreenEditText extends OffscreenView
         {
             vertically_scrolling_ = whether;
         }
+
+        private int getMinimalTextHeight()
+        {
+            return (new StaticLayout(getText(), getPaint(), getWidth() - getTotalPaddingRight() - getTotalPaddingLeft(), Alignment.ALIGN_NORMAL, 1.0f, 0.0f, true)).getHeight();
+        }
+
+        private void updateContentHeight()
+        {
+            int contentHeight;
+            if (single_line_)
+            {
+                contentHeight = getHeight();
+            } 
+            else
+            {
+                int widthMeasureSpec = MeasureSpec.makeMeasureSpec(getWidth(), MeasureSpec.EXACTLY);
+                int heightMeasureSpec = MeasureSpec.makeMeasureSpec(getMinimalTextHeight(), MeasureSpec.UNSPECIFIED);
+                measure(widthMeasureSpec, heightMeasureSpec);
+
+                contentHeight =  getMeasuredHeight();
+            }
+
+            if (content_height_ != contentHeight)
+            {
+                content_height_ = contentHeight;
+                runViewAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        nativeOnContentHeightChanged(getNativePtr(), content_height_);
+                    }
+                });
+            }
+        }
     }
 
     OffscreenEditText()
@@ -412,6 +451,7 @@ class OffscreenEditText extends OffscreenView
     public native boolean nativeOnKey(long nativePtr, boolean down, int keyCode);
     public native void nativeOnEditorAction(long nativePtr, int action);
     public native void nativeSetSelectionInfo(long nativePtr, int top, int bottom);
+    public native void nativeOnContentHeightChanged(long nativePtr, int height);
 
 
 

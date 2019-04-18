@@ -59,6 +59,12 @@ public:
 	void setText(const QString & text);
 	QString getText() const;
 
+
+	/*!
+	 * Return internal height
+	 */
+	int getContentHeight() const { return content_height_; }
+
 	// More constants: http://developer.android.com/reference/android/util/TypedValue.html
 	static const int
 		ANDROID_TYPEDVALUE_COMPLEX_UNIT_DIP	= 0x00000001,
@@ -362,6 +368,9 @@ signals:
 
 	void selectionChanged();
 
+	//! Emitted when content height changed
+	void contentHeightChanged(int height);
+
 public:
 	static const int
 		ANDROID_EDITORINFO_IME_ACTION_DONE			= 0x00000006,
@@ -387,7 +396,6 @@ signals:
 
 	//! Emitted when Enter pressed or editor action required.
 	void onEnterOrPositiveAction();
-
 
 
 /*	void onKeyMultiple(int keyCode, int repeatCount, KeyEvent event)	//	Default implementation of KeyEvent.Callback.onKeyMultiple(): always returns false (doesn't handle the event).
@@ -567,16 +575,19 @@ protected:
 
 private slots:
 	void javaSetSelectionInfo(int top, int bottom);
+	void javaOnContentHeightChanged(int height);
 
 private:
 	friend void JNICALL Java_AndroidOffscreenEditText_nativeOnTextChanged(JNIEnv * env, jobject jo, jlong param, jstring str, jint start, jint before, jint count);
 	friend jboolean JNICALL Java_AndroidOffscreenEditText_nativeOnKey(JNIEnv * env, jobject jo, jlong param, jboolean down, jint keycode);
 	friend void JNICALL Java_AndroidOffscreenEditText_nativeOnEditorAction(JNIEnv *, jobject, jlong param, jint action);
 	friend void JNICALL Java_AndroidOffscreenEditText_nativeSetSelectionInfo(JNIEnv *, jobject, jlong param, jint top, jint bottom);
+	friend void JNICALL Java_AndroidOffscreenEditText_nativeOnContentHeightChanged(JNIEnv *, jobject, jlong param, jint height);
 
 private:
 	int paint_flags_;
 	int selection_top_ = 0;
 	int selection_bottom_ = 0;
+	int content_height_ = 0;
 };
 
