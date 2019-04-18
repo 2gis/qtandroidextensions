@@ -441,7 +441,7 @@ void QAndroidOffscreenView::paintGL(int l, int b, int w, int h, bool reverse_y)
 		&& ((tex_.getTextureSize().height() != last_texture_height_ && last_texture_height_ > 0)
 			|| (tex_.getTextureSize().width() != last_texture_width_ && last_texture_width_ > 0)))
 	{
-		glViewport(l, b,last_texture_width_, last_texture_height_);
+		glViewport(l, b, last_texture_width_, last_texture_height_);
 		const QSize size(
 			last_texture_width_, 
 			last_texture_height_
