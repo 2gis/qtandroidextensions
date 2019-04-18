@@ -44,6 +44,7 @@ class QQuickAndroidOffscreenEditText: public QQuickAndroidOffscreenView
 	Q_PROPERTY(QString text READ getText WRITE setText NOTIFY onTextChanged)
 	Q_PROPERTY(int selectionTop READ getSelectionTop NOTIFY selectionChanged)
 	Q_PROPERTY(int selectionBottom READ getSelectionBottom NOTIFY selectionChanged)
+	Q_PROPERTY(int contentHeight READ getContentHeight NOTIFY contentHeightChanged)
 public:
 	QQuickAndroidOffscreenEditText();
 
@@ -216,9 +217,12 @@ public slots:
 	void setPasswordMode() { androidEditText()->setPasswordMode(); }
 	void setPasswordModeWithDefaultTypeface(bool enable) { androidEditText()->setPasswordModeWithDefaultTypeface(enable); }
 
+	int getContentHeight() { return androidEditText()->getContentHeight(); }
+
 signals:
 	void onTextChanged(QString text);
 	void selectionChanged();
+	void contentHeightChanged(int height);
 
 	//! Wraps QAndroidOffscreenEditText::onEnterOrPositiveAction().
 	void returnPressed();

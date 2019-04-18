@@ -100,6 +100,21 @@ Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeSetSelectionInfo(
 	qWarning()<<__FUNCTION__<<"Zero param!";
 }
 
+Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnContentHeightChanged(JNIEnv *, jobject, jlong param, jint height)
+{
+	if (param)
+	{
+		void * vp = reinterpret_cast<void*>(param);
+		QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(reinterpret_cast<QAndroidOffscreenView*>(vp));
+		if (edit)
+		{
+			QMetaObject::invokeMethod(edit, "javaOnContentHeightChanged", Q_ARG(int, height));
+			return;
+		}
+	}
+	qWarning()<<__FUNCTION__<<"Zero param!";
+}
+
 
 QAndroidOffscreenEditText::QAndroidOffscreenEditText(const QString & object_name, const QSize & def_size, QObject * parent)
 	: QAndroidOffscreenView(QLatin1String("OffscreenEditText"), object_name, def_size, parent)
@@ -113,6 +128,7 @@ QAndroidOffscreenEditText::QAndroidOffscreenEditText(const QString & object_name
 			{"nativeOnKey", "(JZI)Z", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnKey)},
 			{"nativeOnEditorAction", "(JI)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnEditorAction)},
 			{"nativeSetSelectionInfo", "(JII)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeSetSelectionInfo)},
+			{"nativeOnContentHeightChanged", "(JI)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnContentHeightChanged)},
 		};
 		view->registerNativeMethods(methods, sizeof(methods));
 	}
@@ -638,5 +654,12 @@ void QAndroidOffscreenEditText::setSystemDrawMode(int mode)
 	}
 }
 
-
+void QAndroidOffscreenEditText::javaOnContentHeightChanged(int height)
+{
+	if (content_height_ != height)
+	{
+		content_height_ = height;
+		emit contentHeightChanged(height);
+	}
+}
 
