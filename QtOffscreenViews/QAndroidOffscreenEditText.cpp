@@ -498,11 +498,11 @@ void QAndroidOffscreenEditText::setAllCaps(bool allCaps)
 	}
 }
 
-void QAndroidOffscreenEditText::setPasswordMode()
+void QAndroidOffscreenEditText::setPasswordMode(bool enable)
 {
 	if (QJniObject * view = offscreenView())
 	{
-		view->callVoid("setPasswordMode");
+		view->callVoid("setPasswordMode", jboolean(enable));
 	}
 }
 

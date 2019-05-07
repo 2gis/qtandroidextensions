@@ -47,7 +47,9 @@ import android.text.InputType;
 import android.text.Layout.Alignment;
 import android.text.StaticLayout;
 import android.text.TextWatcher;
+import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
+import android.text.method.TransformationMethod;
 import android.view.inputmethod.EditorInfo;
 import android.view.ViewGroup;
 import android.view.KeyEvent;
@@ -970,12 +972,20 @@ class OffscreenEditText extends OffscreenView
         });
     }
 
-    void setPasswordMode()
+    void setPasswordMode(final boolean enable)
     {
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                final MyEditText myedittext = (MyEditText)getView();
+                final int selStart = myedittext.getSelectionStart();
+                final int selEnd = myedittext.getSelectionEnd();
+                final TransformationMethod methodInstance = enable
+                    ? PasswordTransformationMethod.getInstance() 
+                    : null;
+                    
+                myedittext.setTransformationMethod(methodInstance);
+                myedittext.setSelection(selStart, selEnd);
             }
         });
     }
