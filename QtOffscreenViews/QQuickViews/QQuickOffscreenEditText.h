@@ -214,7 +214,7 @@ public slots:
 	void setImeActionDone() { androidEditText()->setImeActionDone(); }
 	void setImeActionPrevious() { androidEditText()->setImeActionPrevious(); }
 
-	void setPasswordMode() { androidEditText()->setPasswordMode(); }
+	void setPasswordMode(bool enable = true) { androidEditText()->setPasswordMode(enable); }
 	void setPasswordModeWithDefaultTypeface(bool enable) { androidEditText()->setPasswordModeWithDefaultTypeface(enable); }
 
 	int getContentHeight() { return androidEditText()->getContentHeight(); }

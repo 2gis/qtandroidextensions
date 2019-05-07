@@ -291,8 +291,8 @@ public:
 	//! Sets the properties of this field to transform input to ALL CAPS display.
 	void setAllCaps(bool allCaps);
 
-	//! Set password mode.
-	void setPasswordMode();
+	//! Set password mode by enable param.
+	void setPasswordMode(bool enable = true);
 
 	// Set/unset password mode with default typeface. This is not normally possible in Android.
 	// A text change watcher is installed to workaround the problem. To remove the watcher
