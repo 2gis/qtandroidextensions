@@ -140,7 +140,7 @@ public class CellListener {
         }
 
         try {
-            if (mListenerThread.isAlive()) {
+            if (null != mListenerThread && mListenerThread.isAlive()) {
                 mListenerThread.join(300);
             }
         } catch (InterruptedException e) {
