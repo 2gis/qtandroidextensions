@@ -55,7 +55,7 @@ namespace {
 static JavaVM * g_JavaVm = 0;
 
 //! Data type to keep list of JNI references to Java classes ever preloaded or loaded.
-typedef QMap<QString, jclass> PreloadedClasses;
+typedef QHash<QString, jclass> PreloadedClasses;
 
 //! QThreadStorage object to detach thread from JNI when it's finished and prevent Java reference leak.
 class QJniEnvPtrThreadDetacher
@@ -329,17 +329,24 @@ JNIEnv * QJniEnvPtr::env() const
 
 bool QJniEnvPtr::preloadClass(const char * class_name)
 {
+	QMutexLocker locker(&g_PreloadedClassesMutex);
+	const QString class_name_qstr = QLatin1String(class_name);
+	if (g_PreloadedClasses.contains(class_name_qstr)) {
+		VERBOSE(qWarning("Class already preloaded: \"%s\" as %p for tid %d",
+			class_name, gclazz, (int)gettid()));
+		return true;
+	}
 	VERBOSE(qWarning("Preloading class \"%s\"", class_name));
 	QJniLocalRef clazz(env_, env_->FindClass(class_name)); // jclass
 	if (clearException() || clazz.jObject() == 0)
 	{
-		qWarning("...Failed to preload class %s (tid %d)", class_name, static_cast<int>(gettid()));
+		qWarning("Failed to preload class %s (tid %d)", class_name, static_cast<int>(gettid()));
 		return false;
 	}
 	jclass gclazz = static_cast<jclass>(env_->NewGlobalRef(clazz));
-	QMutexLocker locker(&g_PreloadedClassesMutex);
-	g_PreloadedClasses.insert(QLatin1String(class_name), gclazz);
-	VERBOSE(qWarning("...Preloaded class \"%s\" as %p for tid %d", class_name, gclazz, (int)gettid()));
+	g_PreloadedClasses.insert(class_name_qstr, gclazz);
+	VERBOSE(qWarning("...Preloaded class \"%s\" as %p for tid %d",
+		class_name, gclazz, (int)gettid()));
 	return true;
 }
 
@@ -349,11 +356,10 @@ int QJniEnvPtr::preloadClasses(const char * const * class_list)
 	int loaded = 0;
 	for(; *class_list != 0; ++class_list)
 	{
-		if (!preloadClass(*class_list))
+		if (preloadClass(*class_list))
 		{
-			break;
+			loaded++;
 		}
-		++loaded;
 	}
 	return loaded;
 }
