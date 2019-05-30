@@ -82,7 +82,7 @@ public:
 };
 
 
-static QMutex g_PreloadedClassesMutex;
+static QMutex g_PreloadedClassesMutex(QMutex::Recursive);
 static PreloadedClasses g_PreloadedClasses;
 static QThreadStorage<QJniEnvPtrThreadDetacher*> g_JavaThreadDetacher;
 static QJniClassUnloader g_class_unloader_;
