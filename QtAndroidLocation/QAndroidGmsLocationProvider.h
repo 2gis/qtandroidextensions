@@ -91,6 +91,7 @@ public:
 	void setUpdateInterval(int reqiredInterval, int minimumInterval);
 	void setPriority(enPriority priority);
 	QGeoPositionInfo lastKnownPosition() const;
+	void showChangeLocationMethodDialog();
 
 private:
 	void stopUpdates(qint64 requestId);

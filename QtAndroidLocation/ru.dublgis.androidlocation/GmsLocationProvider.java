@@ -39,6 +39,7 @@ package ru.dublgis.androidlocation;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.IntentSender.SendIntentException;
 import android.os.Build;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -46,6 +47,7 @@ import android.app.Dialog;
 
 import java.lang.Exception;
 import java.lang.Override;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 import android.location.Location;
@@ -53,6 +55,8 @@ import android.support.v4.content.ContextCompat;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -60,8 +64,13 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 
 import java.util.Map;
 
@@ -80,6 +89,8 @@ public class GmsLocationProvider
 	public final static int STATUS_CONNECTED			= 1;
 	public final static int STATUS_CONNECTION_ERROR		= 2;
 	public final static int STATUS_CONNECTION_SUSPENDED	= 3;
+
+	private static final int REQUEST_CHECK_SETTINGS = 1;
 
 	private volatile long native_ptr_ = 0;
 
@@ -434,6 +445,59 @@ public class GmsLocationProvider
 		} catch (Exception e) {
 			Log.e(TAG, "Exception when posting a runnable:", e);
 			return false;
+		}
+	}
+
+	public void showChangeLocationMethodDialog() {
+		try {
+			Activity a = getActivity();
+			ArrayList<LocationRequest> requests = new ArrayList<>();
+
+			Log.i(TAG, "creating LocationRequest to show change location method dialog");
+			LocationRequest requestHighAccurancyPriority = LocationRequest.create().setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+			LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(requestHighAccurancyPriority);
+			builder.setAlwaysShow(true);
+
+			Task<LocationSettingsResponse> result = LocationServices.getSettingsClient(a).checkLocationSettings(builder.build());
+			result.addOnCompleteListener(new OnCompleteListener<LocationSettingsResponse>() {
+				@Override
+				public void onComplete(@NonNull Task<LocationSettingsResponse> task) {
+					try {
+						LocationSettingsResponse response = task.getResult(ApiException.class);
+					} catch (ApiException exception) {
+						switch (exception.getStatusCode()) {
+							case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+								// Location settings are not satisfied. But could be fixed by showing the
+								// user a dialog.
+								Log.i(TAG, "resolution required, try resolve API exception");
+								try {
+									// Cast to a resolvable exception.
+									ResolvableApiException resolvable = (ResolvableApiException) exception;
+									// Show the dialog by calling startResolutionForResult(),
+									// and check the result in onActivityResult().
+									resolvable.startResolutionForResult(
+											a,
+											REQUEST_CHECK_SETTINGS);
+									Log.i(TAG, "exception has been resolve");
+								} catch (SendIntentException e) {
+									Log.e(TAG, "SendIntenException:", e);
+								} catch (ClassCastException e) {
+									// Ignore, should be an impossible error.
+								} catch(Throwable e){
+									Log.e(TAG, "Failed get locattion settings response", e);
+								}
+								break;
+							case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+								// Location settings are not satisfied. However, we have no way to fix the
+								// settings so we won't show the dialog.
+								Log.i(TAG, "settings change unavailable");
+								break;
+						}
+					}
+				}
+			});
+		} catch (Throwable e) {
+			Log.e(TAG, "Failed to show change location request dialog", e);
 		}
 	}
 
