@@ -369,6 +369,21 @@ int QAndroidGmsLocationProvider::getGmsVersion()
 	return 0;
 }
 
+void QAndroidGmsLocationProvider::showChangeLocationMethodDialog()
+{
+	try
+	{
+		if (isJniReady())
+		{
+			jni()->callVoid("showChangeLocationMethodDialog");
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qWarning() << "JNI exception in QAndroidGmsLocationProvider::showChangeLocationMethodDialog: " << e.what();
+	}
+}
+
 
 bool QAndroidGmsLocationProvider::isAvailable(jboolean allowDialog)
 {
