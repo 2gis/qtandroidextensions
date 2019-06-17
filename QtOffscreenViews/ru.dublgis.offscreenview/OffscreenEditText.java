@@ -472,6 +472,10 @@ class OffscreenEditText extends OffscreenView
                 try
                 {
                     ((MyEditText)getView()).setText(text);
+                    if (text.isEmpty())
+                    {
+                        invalidateOffscreenView(true);
+                    }
                     need_to_reflow_text_ = false;
                 }
                 catch (final Throwable e)

@@ -646,7 +646,7 @@ public abstract class OffscreenView
     private boolean invalidated_ = true;
 
     //! Schedules doDrawViewOnTexture() with filtering out extra calls.
-    protected void invalidateOffscreenView()
+    protected void invalidateOffscreenView(final boolean force)
     {
         // Log.i(TAG, "invalidateOffscreenView "+object_name_+", last := "+last_texture_invalidation_);
         runOnUiThread(new Runnable(){
@@ -675,7 +675,7 @@ public abstract class OffscreenView
                             //Log.i(TAG, "invalidateOffscreenView "+object_name_+" RUNNABLE: inval="+invalidation_+", last="+last_texture_invalidation_+
                              //  ", invalidated="+invalidated_);
                             invalidated_ = false;
-                            boolean drawn = doDrawViewOnTexture();
+                            boolean drawn = doDrawViewOnTexture(force);
                             if (!drawn)
                             {
                                 // Log.i(TAG, "invalidateOffscreenView: "+object_name_+" Failed to draw the View.");
@@ -693,8 +693,18 @@ public abstract class OffscreenView
         });
     }
 
-    //! Performs actual painting of the view. Should be called in Android UI thread.
+    protected void invalidateOffscreenView()
+    {
+        invalidateOffscreenView(false);
+    }
+
     protected boolean doDrawViewOnTexture()
+    {
+        return doDrawViewOnTexture(false);
+    }
+
+    //! Performs actual painting of the view. Should be called in Android UI thread.
+    protected boolean doDrawViewOnTexture(final boolean force)
     {
         boolean result = false;
         synchronized (texture_mutex_)
@@ -719,14 +729,14 @@ public abstract class OffscreenView
 
             // Thou shalt not paint while app is miminized, or GL may freak out and the app will hang
             // with black screen.
-            if (!last_visibility_)
+            if (!last_visibility_ && !force)
             {
                 // Log.v(TAG, "doDrawViewOnTexture: skipping paint for invisible view: " + object_name_);
                 return false;
             }
 
             final View v = getView();
-            if (v != null && v.getVisibility() != View.VISIBLE)
+            if (v != null && v.getVisibility() != View.VISIBLE && !force)
             {
                 // Note: setVisible()'s lambda will schedule one more paint after the view will become visible.
                 Log.i(TAG, "doDrawViewOnTexture: skipping paint because view visibility was not applied yet: " + object_name_);
