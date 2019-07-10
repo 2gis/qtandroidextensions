@@ -34,17 +34,13 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 package ru.dublgis.androidlocation;
-
 import android.app.Activity;
-
 import android.location.*;
-
 import android.content.Context;
-
 import ru.dublgis.androidhelpers.Log;
 
 
-public class NmeaListener implements GpsStatus.NmeaListener
+public class NmeaListener implements OnNmeaMessageListener
 {
 	public static final String TAG = "Grym/NmeaListener";
 
@@ -151,7 +147,7 @@ public class NmeaListener implements GpsStatus.NmeaListener
 	}
 
 	@Override
-	public void onNmeaReceived(long timestamp, String nmea)
+	public void onNmeaMessage(String nmea, long timestamp)
 	{
 		try
 		{
