@@ -1,6 +1,3 @@
-
-android-g++ {
-
 INCLUDEPATH += $$PWD
 
 HEADERS += \
@@ -53,4 +50,3 @@ SOURCES += \
     $$PWD/QAndroidToast.cpp \
     $$PWD/QAndroidDesktopUtils.cpp \
     $$PWD/QAndroidStorages.cpp
-}
