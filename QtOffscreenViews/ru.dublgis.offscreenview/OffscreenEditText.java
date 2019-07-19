@@ -397,34 +397,48 @@ class OffscreenEditText extends OffscreenView
 
         private int getMinimalTextHeight()
         {
-            return (new StaticLayout(getText(), getPaint(), getWidth() - getTotalPaddingRight() - getTotalPaddingLeft(), Alignment.ALIGN_NORMAL, 1.0f, 0.0f, true)).getHeight();
+            try {
+                return (new StaticLayout(
+                    getText(),
+                    getPaint(),
+                    getWidth() - getTotalPaddingRight() - getTotalPaddingLeft(),
+                    Alignment.ALIGN_NORMAL,
+                    1.0f,
+                    0.0f,
+                    true)).getHeight();
+            } catch (final Throwable e) {
+                Log.e(TAG, "getMinimalTextHeight exception: " + e);
+                return 0;
+            }
         }
 
         private void updateContentHeight()
         {
-            int contentHeight;
-            if (single_line_)
-            {
-                contentHeight = getHeight();
-            } 
-            else
-            {
-                int widthMeasureSpec = MeasureSpec.makeMeasureSpec(getWidth(), MeasureSpec.EXACTLY);
-                int heightMeasureSpec = MeasureSpec.makeMeasureSpec(getMinimalTextHeight(), MeasureSpec.UNSPECIFIED);
-                measure(widthMeasureSpec, heightMeasureSpec);
-
-                contentHeight =  getMeasuredHeight();
-            }
-
-            if (content_height_ != contentHeight)
-            {
-                content_height_ = contentHeight;
-                runViewAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        nativeOnContentHeightChanged(getNativePtr(), content_height_);
-                    }
-                });
+            try {
+                int contentHeight;
+                if (single_line_)
+                {
+                    contentHeight = getHeight();
+                }
+                else
+                {
+                    int widthMeasureSpec = MeasureSpec.makeMeasureSpec(getWidth(), MeasureSpec.EXACTLY);
+                    int heightMeasureSpec = MeasureSpec.makeMeasureSpec(getMinimalTextHeight(), MeasureSpec.UNSPECIFIED);
+                    measure(widthMeasureSpec, heightMeasureSpec);
+                    contentHeight =  getMeasuredHeight();
+                }
+                if (content_height_ != contentHeight)
+                {
+                    content_height_ = contentHeight;
+                    runViewAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            nativeOnContentHeightChanged(getNativePtr(), content_height_);
+                        }
+                    });
+                }
+            } catch (final Throwable e) {
+                Log.e(TAG, "updateContentHeight exception: " + e);
             }
         }
     }
