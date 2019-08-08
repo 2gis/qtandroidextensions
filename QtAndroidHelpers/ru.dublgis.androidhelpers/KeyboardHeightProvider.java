@@ -182,7 +182,7 @@ public class KeyboardHeightProvider
         try {
             int keyboardHeight = getKeyboardSize();
             if (keyboardHeight < 0) {
-                Log.e(TAG, "Invalid keyboard height calculated: " + keyboardHeight);
+                Log.w(TAG, "Invalid keyboard height calculated: " + keyboardHeight);
                 keyboardHeight = 0;
             }
             mObserver.onKeyboardHeightChanged(keyboardHeight);
