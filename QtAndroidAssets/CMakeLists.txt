@@ -1,3 +1,5 @@
+set(CMAKE_AUTOMOC OFF)
+
 set(MODULE_NAME QtAndroidAssets)
 
 set(SRC_LIST
@@ -7,11 +9,12 @@ set(SRC_LIST
     QAndroidAssetHandler.h
 )
 
-
 if (ANDROID)
+    qt5_wrap_cpp(QtAndroidAssets_hdr_moc AndroidAssetsFileEngineHandler_p.h)
+
     find_library(ANDROID_LOG_LIB log REQIRED)
     find_library(ANDROID_LIB android REQIRED)
-    add_library(${MODULE_NAME} STATIC ${SRC_LIST})
+    add_library(${MODULE_NAME} STATIC ${SRC_LIST} ${QtAndroidAssets_hdr_moc})
     add_library(${PROJECT_NAME}::${MODULE_NAME} ALIAS ${MODULE_NAME})
 
     target_link_libraries(${MODULE_NAME}

@@ -1,3 +1,5 @@
+set(CMAKE_AUTOMOC OFF)
+
 set(MODULE_NAME QtAndroidHelpers)
 
 set(SRC_LIST
@@ -53,7 +55,22 @@ set(SRC_LIST
 )
 
 if (ANDROID)
-    add_library(${MODULE_NAME} STATIC ${SRC_LIST})
+    qt5_wrap_cpp(
+        QtAndroidHelpers_hdr_moc
+        QAndroidAction.h
+        QAndroidConfiguration.h
+        QAndroidDialog.h
+        QAndroidDisplayMetrics.h
+        QAndroidScreenLayoutHandler.h
+        QAndroidScreenOrientation.h
+        QAndroidSharedPreferences.h
+        QAndroidSpeechRecognizer.h
+        Mobility/QAndroidBatteryDataProvider.h
+        Mobility/QAndroidCellDataProvider.h
+        Mobility/QAndroidWifiDataProvider.h
+        QLocks/QLock_p.h
+    )
+    add_library(${MODULE_NAME} STATIC ${SRC_LIST} ${QtAndroidHelpers_hdr_moc})
     add_library(${PROJECT_NAME}::${MODULE_NAME} ALIAS ${MODULE_NAME})
 
     target_link_libraries(${MODULE_NAME}

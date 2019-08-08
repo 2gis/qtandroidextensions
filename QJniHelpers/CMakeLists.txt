@@ -1,3 +1,5 @@
+set(CMAKE_AUTOMOC OFF)
+
 set(MODULE_NAME QtJniHelpers)
 
 set(SRC_LIST
