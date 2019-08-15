@@ -42,7 +42,7 @@ if (ANDROID)
         QQuickViews/QQuickOffscreenWebView.h
     )
 
-    find_library(ANDROID_JNIGRAPHICS jnigraphics REQIRED)
+    find_library(ANDROID_JNIGRAPHICS jnigraphics)
     add_library(${MODULE_NAME} STATIC ${SRC_LIST} ${QtOffscreenViews_hdr_moc})
     add_library(${PROJECT_NAME}::${MODULE_NAME} ALIAS ${MODULE_NAME})
 

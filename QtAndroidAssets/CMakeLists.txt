@@ -12,8 +12,8 @@ set(SRC_LIST
 if (ANDROID)
     qt5_wrap_cpp(QtAndroidAssets_hdr_moc AndroidAssetsFileEngineHandler_p.h)
 
-    find_library(ANDROID_LOG_LIB log REQIRED)
-    find_library(ANDROID_LIB android REQIRED)
+    find_library(ANDROID_LOG_LIB log)
+    find_library(ANDROID_LIB android)
     add_library(${MODULE_NAME} STATIC ${SRC_LIST} ${QtAndroidAssets_hdr_moc})
     add_library(${PROJECT_NAME}::${MODULE_NAME} ALIAS ${MODULE_NAME})
 
