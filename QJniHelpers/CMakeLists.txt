@@ -22,6 +22,7 @@ if (ANDROID)
     target_link_libraries(${MODULE_NAME}
         PUBLIC
             Qt5::Core
+        PRIVATE
             Qt5::AndroidExtras
     )
 

@@ -19,10 +19,11 @@ if (ANDROID)
 
     target_link_libraries(${MODULE_NAME}
         PUBLIC
+            qtandroidextensions::QtJniHelpers
+        PRIVATE
             Qt5::Core
             Qt5::Network
             Qt5::AndroidExtras
-            qtandroidextensions::QtJniHelpers
             ${ANDROID_LOG_LIB}
             ${ANDROID_LIB}
     )
