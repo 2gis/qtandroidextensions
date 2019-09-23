@@ -48,11 +48,13 @@ if (ANDROID)
 
     target_link_libraries(${MODULE_NAME}
         PUBLIC
+            Qt5::Core
             Qt5::Gui
+            qtandroidextensions::QtJniHelpers
+        PRIVATE
             Qt5::OpenGL
             Qt5::Qml
             Qt5::Quick
-            qtandroidextensions::QtJniHelpers
             ${ANDROID_JNIGRAPHICS}
     )
 
