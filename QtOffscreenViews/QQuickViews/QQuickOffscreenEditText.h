@@ -200,6 +200,7 @@ public slots:
 	void setVerticalScrollBarEnabled (bool verticalScrollBarEnabled) { androidEditText()->setVerticalScrollBarEnabled(verticalScrollBarEnabled); }
 
 	void setCursorColorToTextColor() { androidEditText()->setCursorColorToTextColor(); }
+	void setCursorByDrawableName(const QString & name) { androidEditText()->setCursorByDrawableName(name); }
 
 	void setMaxLength(int length) { androidEditText()->setMaxLength(length); }
 
