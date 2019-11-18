@@ -629,6 +629,14 @@ void QAndroidOffscreenEditText::setCursorColorToTextColor()
 	}
 }
 
+void QAndroidOffscreenEditText::setCursorByDrawableName(const QString & name)
+{
+	if (QJniObject * view = offscreenView())
+	{
+		view->callVoid("setCursorByDrawableName", name);
+	}
+}
+
 void QAndroidOffscreenEditText::setMaxLength(int length)
 {
 	if (QJniObject * view = offscreenView())

@@ -344,6 +344,7 @@ public:
 	//
 	void setAllowFullscreenKeyboard(bool allow);
 	void setCursorColorToTextColor();
+	void setCursorByDrawableName(const QString & name);
 	void setMaxLength(int length);
 
 	//

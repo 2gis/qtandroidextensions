@@ -137,18 +137,38 @@ class OffscreenEditText extends OffscreenView
         // This is equal to setting android:textCursorDrawable="@null".
         void setCursorColorToTextColor()
         {
+            setCursorByDrawableId(0);
+        }
+
+        private void setCursorByDrawableId(int id)
+        {
             try
             {
                 // https://github.com/android/platform_frameworks_base/blob/kitkat-release/core/java/android/widget/TextView.java#L562-564
                 Field f = TextView.class.getDeclaredField("mCursorDrawableRes");
                 f.setAccessible(true);
-                f.set((TextView)this, 0);
+                f.set((TextView)this, id);
             }
             catch (final Throwable e)
             {
-                Log.e(TAG, "Could not change default cursor behaviour, exception: " + e);
+                Log.e(TAG, "Exception in setCursorByDrawableId: " + e);
             }
         }
+
+        void setCursorByDrawableName(String name)
+        {
+            try
+            {
+                Context context = getContext();
+                int id = context.getResources().getIdentifier(name, "drawable", context.getPackageName());
+                setCursorByDrawableId(id);
+            }
+            catch (final Throwable e)
+            {
+                Log.e(TAG, "Exception in setCursorByDrawableName: " + e);
+            }
+        }
+
 
         @Override
         protected void onDraw(Canvas canvas)
@@ -1102,6 +1122,16 @@ class OffscreenEditText extends OffscreenView
             @Override
             public void run(){
                 ((MyEditText)getView()).setCursorColorToTextColor();
+            }
+        });
+    }
+
+    void setCursorByDrawableName(String name)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                ((MyEditText)getView()).setCursorByDrawableName(name);
             }
         });
     }
