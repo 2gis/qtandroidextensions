@@ -40,6 +40,7 @@
 #pragma once
 #include <jni.h>
 #include <QtGui/QImage>
+#include <QtGui/QPainter>
 #include <QtCore/QSize>
 #include <QtCore/QScopedPointer>
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
@@ -86,6 +87,8 @@ public:
 
 	//! Reference to the const QImage.
 	const QImage & qImage() const { return mImageOnBitmap; }
+
+	QPainter * createQPainter() { return new QPainter(&mImageOnBitmap); }
 
 	//! Fills image with uniform color
 	void fill(const QColor & color, bool to_android_color);
