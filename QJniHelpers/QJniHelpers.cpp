@@ -158,6 +158,7 @@ static inline void makeObjectFunctionSignature(
 }
 
 
+// Automatically ignore null class reference for arrays
 static inline bool classObjectMayHaveNullClass(const char * class_name)
 {
 	if (!class_name)
@@ -878,19 +879,23 @@ QJniObject * QJniClass::getStaticObjectField(const char * field_name, const char
 	{
 		throw QJniFieldNotFoundException(debugClassName().constData(), field_name, __FUNCTION__);
 	}
-	jobject jo = env->GetStaticObjectField(jClass(), fid);
+	jobject jret = env->GetStaticObjectField(jClass(), fid);
 	if (jep.clearException())
 	{
-		if (jo)
+		if (jret)
 		{
-			env->DeleteLocalRef(jo);
+			env->DeleteLocalRef(jret);
 		}
 		throw QJniJavaCallException(
 			debugClassName().constData()
 			, QByteArray().append(field_name).append("->").append(objname)
 			, __FUNCTION__);
 	}
-	return new QJniObject(jo, true, objname);
+	if (!jret)
+	{
+		return nullptr;
+	}
+	return new QJniObject(jret, true, objname);
 }
 
 
@@ -981,9 +986,9 @@ QJniObject* QJniClass::callStaticObject(const char * method_name, const char * o
 			, QByteArray().append(method_name).append("->").append(objname).constData()
 			, __FUNCTION__);
 	}
-	if (jret == 0)
+	if (!jret)
 	{
-		return 0; // Not an exception
+		return nullptr;
 	}
 	return new QJniObject(jret, true, objname);
 }
@@ -1019,6 +1024,10 @@ QJniObject * QJniClass::callStaticParamObject(const char * method_name, const ch
 			debugClassName().constData()
 			, QByteArray().append(method_name).append("->").append(objname).constData()
 			, __FUNCTION__);
+	}
+	if (!jret)
+	{
+		return nullptr;
 	}
 	return new QJniObject(jret, true, objname);
 }
@@ -1118,17 +1127,25 @@ QByteArray QJniClass::debugClassName() const
 // QJniObject
 /////////////////////////////////////////////////////////////////////////////
 
-QJniObject::QJniObject(jobject instance, bool take_ownership, const char * known_class_name)
+QJniObject::QJniObject(
+		jobject instance,
+		bool take_ownership,
+		const char * known_class_name,
+		bool known_can_have_null_class)
 	: QJniClass(instance)
 	, instance_(0)
 {
 	QJniEnvPtr jep;
 	// Creates global reference
-	initObject(jep.env(), instance, classObjectMayHaveNullClass(known_class_name));
+	initObject(
+		jep.env(),
+		instance,
+		known_can_have_null_class || classObjectMayHaveNullClass(known_class_name));
 	if (take_ownership)
 	{
 		jep.env()->DeleteLocalRef(instance);
 	}
+
 }
 
 
@@ -1427,19 +1444,23 @@ QJniObject * QJniObject::callObject(const char * method_name, const char * objna
 	{
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
-	jobject object = env->CallObjectMethod(instance_, mid);
+	jobject jret = env->CallObjectMethod(instance_, mid);
 	if (jep.clearException())
 	{
-		if (object)
+		if (jret)
 		{
-			env->DeleteLocalRef(object);
+			env->DeleteLocalRef(jret);
 		}
 		throw QJniJavaCallException(
 			debugClassName().constData()
 			, QByteArray().append(method_name).append("->").append(objname).constData()
 			, __FUNCTION__);
 	}
-	QJniObject * result = new QJniObject(object, true, objname);
+	if (!jret)
+	{
+		return nullptr;
+	}
+	QJniObject * result = new QJniObject(jret, true, objname);
 	return result;
 }
 
@@ -1474,6 +1495,10 @@ QJniObject * QJniObject::callParamObject(const char * method_name, const char * 
 			debugClassName().constData()
 			, QByteArray().append(method_name).append("->").append(objname).constData()
 			, __FUNCTION__);
+	}
+	if (!jret)
+	{
+		return nullptr;
 	}
 	return new QJniObject(jret, true, objname);
 }
@@ -1796,16 +1821,20 @@ QJniObject * QJniObject::getObjectField(const char* field_name, const char * obj
 	{
 		throw QJniFieldNotFoundException(debugClassName().constData(), field_name, __FUNCTION__);
 	}
-	jobject jo = env->GetObjectField(instance_, fid);
+	jobject jret = env->GetObjectField(instance_, fid);
 	if (jep.clearException())
 	{
-		if (jo)
+		if (jret)
 		{
-			env->DeleteLocalRef(jo);
+			env->DeleteLocalRef(jret);
 		}
 		throw QJniJavaCallException(debugClassName().constData(), field_name, __FUNCTION__);
 	}
-	return new QJniObject(jo, true, objname);
+	if (!jret)
+	{
+		return nullptr;
+	}
+	return new QJniObject(jret, true, objname);
 }
 
 

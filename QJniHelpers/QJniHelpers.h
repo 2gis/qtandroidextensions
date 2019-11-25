@@ -317,7 +317,11 @@ public:
 	 * It is used to check if the object must have a non-zero class reference.
 	 * For example, Java arrays don't have a class instance.
 	 */
-	QJniObject(jobject instance, bool take_ownership, const char * known_class_name = 0);
+	QJniObject(
+		jobject instance,
+		bool take_ownership,
+		const char * known_class_name = 0,
+		bool known_can_have_null_class = false);
 
 	/*!
 	 * Create a wrapper for a new instance of class 'clazz'.
