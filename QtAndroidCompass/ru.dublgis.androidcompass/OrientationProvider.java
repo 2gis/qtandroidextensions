@@ -3,6 +3,7 @@
 
   Author:
   Vyacheslav O. Koscheev <vok1980@gmail.com>
+  Eugene A. Samoylov <ghelius@gmail.com>
 
   Distrbuted under The BSD License
 
@@ -55,14 +56,10 @@ public class OrientationProvider implements SensorEventListener {
 	private volatile boolean mRegistered = false;
 
 	private SensorManager mSensorManager;
-	private Sensor mAccelerometer;
-	private Sensor mMagnetometer;
+	private Sensor mOrientation;
 
-	private final float[] mAccelerometerReading = new float[3];
-	private final float[] mMagnetometerReading = new float[3];
-
-	private final float[] mRotationMatrix = new float[9];
-	private final float[] mOrientationAngles = new float[3];
+	private final float[] mOrientationVector = new float[9];
+	private final float[] mRotationVector = new float[9];
 
 	OrientationProvider(long native_ptr) {
 		mNativePtr = native_ptr;
@@ -71,8 +68,7 @@ public class OrientationProvider implements SensorEventListener {
 			// initialize your android device sensor capabilities
 			mSensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
 			if (mSensorManager != null) {
-				mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-				mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+				mOrientation = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
 			} else {
 				Log.w(TAG, "SensorManager is null!");
 			}
@@ -112,12 +108,10 @@ public class OrientationProvider implements SensorEventListener {
 
 		try {
 			if (android.os.Build.VERSION.SDK_INT >= 19 && maxReportLatencyUs > 0) {
-				mRegistered = mRegistered && mSensorManager.registerListener(this, mAccelerometer, samplingPeriodUs, maxReportLatencyUs);
-				mRegistered = mRegistered && mSensorManager.registerListener(this, mMagnetometer, samplingPeriodUs, maxReportLatencyUs);
+				mRegistered = mRegistered && mSensorManager.registerListener(this, mOrientation, samplingPeriodUs, maxReportLatencyUs);
 			}
 			else {
-				mRegistered = mRegistered && mSensorManager.registerListener(this, mAccelerometer, samplingPeriodUs);
-				mRegistered = mRegistered && mSensorManager.registerListener(this, mMagnetometer, samplingPeriodUs);
+				mRegistered = mRegistered && mSensorManager.registerListener(this, mOrientation, samplingPeriodUs);
 			}
 
 			Log.i(TAG, "Sensor listener registered successfully with samplingPeriodUs = " + samplingPeriodUs);
@@ -151,9 +145,11 @@ public class OrientationProvider implements SensorEventListener {
 	}
 
 
-	public float getAzimuth(boolean applyDisplayRotation) {
-		updateOrientationAngles();
-		float angleShift = 0;
+	public int getAzimuth(boolean applyDisplayRotation) {
+
+		int value = (int)Math.toDegrees(SensorManager.getOrientation(mRotationVector, mOrientationVector)[0]);
+
+		int angleShift = 0;
 
 		if (applyDisplayRotation) {
 			try {
@@ -176,7 +172,8 @@ public class OrientationProvider implements SensorEventListener {
 			}
 		}
 
-		return angleShift + (float)Math.toDegrees(mOrientationAngles[0]);
+		return (angleShift + value + 360) % 360;
+
 	}
 
 
@@ -192,32 +189,15 @@ public class OrientationProvider implements SensorEventListener {
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		synchronized(this) {
-			if (event.sensor == mAccelerometer) {
-				System.arraycopy(event.values, 0, mAccelerometerReading,
-						0, mAccelerometerReading.length);
-			} else if (event.sensor == mMagnetometer) {
-				System.arraycopy(event.values, 0, mMagnetometerReading,
-						0, mMagnetometerReading.length);
+			if(event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR)
+			{
+				SensorManager.getRotationMatrixFromVector(mRotationVector, event.values);
+
 			}
 		}
 
 		onUpdate(mNativePtr);
 	}
-
-
-	// Compute the three orientation angles based on the most recent readings from
-	// the device's accelerometer and magnetometer.
-	public void updateOrientationAngles() {
-		synchronized(this) {
-			// Update rotation matrix, which is needed to update orientation angles.
-			SensorManager.getRotationMatrix(mRotationMatrix, null, mAccelerometerReading, mMagnetometerReading);
-			// "mRotationMatrix" now has up-to-date information.
-		}
-
-		SensorManager.getOrientation(mRotationMatrix, mOrientationAngles);
-		// "mOrientationAngles" now has up-to-date information.
-	}
-
 
 	private native Activity getActivity();
 	private native void onUpdate(long nativeptr);
