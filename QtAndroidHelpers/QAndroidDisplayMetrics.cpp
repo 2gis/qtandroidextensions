@@ -198,8 +198,14 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(
 	{
 		QAndroidQPAPluginGap::Context activity;
 		QScopedPointer<QJniObject> windowmanager(activity.callObject("getWindowManager", "android/view/WindowManager"));
-		QScopedPointer<QJniObject> defaultdisplay(windowmanager->callObject("getDefaultDisplay", "android/view/Display"));
-		defaultdisplay->callParamVoid("getMetrics", "Landroid/util/DisplayMetrics;", metrics.jObject());
+		if (windowmanager)
+		{
+			QScopedPointer<QJniObject> defaultdisplay(windowmanager->callObject("getDefaultDisplay", "android/view/Display"));
+			if (defaultdisplay)
+			{
+				defaultdisplay->callParamVoid("getMetrics", "Landroid/util/DisplayMetrics;", metrics.jObject());
+			}
+		}
 	}
 
 	density_ = metrics.getFloatField("density");
@@ -279,9 +285,16 @@ QString QAndroidDisplayMetrics::themeDirectoryName(Theme theme)
 
 float QAndroidDisplayMetrics::fontScale()
 {
+	jfloat font_scale;
 	QAndroidQPAPluginGap::Context activity;
 	QScopedPointer<QJniObject> resources(activity.callObject("getResources", "android/content/res/Resources"));
-	QScopedPointer<QJniObject> configuration(resources->callObject("getConfiguration", "android/content/res/Configuration"));
-	jfloat font_scale = configuration->getFloatField("fontScale");
+	if (resources)
+	{
+		QScopedPointer<QJniObject> configuration(resources->callObject("getConfiguration", "android/content/res/Configuration"));
+		if (configuration)
+		{
+			font_scale = configuration->getFloatField("fontScale");
+		}
+	}
 	return static_cast<float>(font_scale);
 }
