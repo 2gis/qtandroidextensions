@@ -96,7 +96,10 @@ const QString & QAndroidFilePaths::ExternalFilesDirectory(const QString & type)
 			"java/io/File",
 			"Ljava/lang/String;",
 			(type.isEmpty())? jstring(0): QJniLocalRef(type).operator jstring()));
-		path = externalfilesdir->callString("getPath");
+		if (externalfilesdir)
+		{
+			path = externalfilesdir->callString("getPath");
+		}
 	}
 	return path;
 }
