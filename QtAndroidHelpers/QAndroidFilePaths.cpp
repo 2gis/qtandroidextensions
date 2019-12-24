@@ -77,6 +77,14 @@ const QString & QAndroidFilePaths::ApplicationFilesDirectory()
 			{
 				path = filesdir->callString("getPath");
 			}
+			else
+			{
+				qCritical() << "Failed to get application's files directory";
+			}
+		}
+		else
+		{
+			qCritical() << "Failed to get application's context";
 		}
 	}
 	return path;
@@ -99,6 +107,10 @@ const QString & QAndroidFilePaths::ExternalFilesDirectory(const QString & type)
 		if (externalfilesdir)
 		{
 			path = externalfilesdir->callString("getPath");
+		}
+		else
+		{
+			qCritical() << "Failed to get application's external files directory";
 		}
 	}
 	return path;
@@ -235,6 +247,10 @@ const QString & QAndroidFilePaths::ExternalCacheDirectory()
 		{
 			path = externalfilesdir->callString("getPath");
 		}
+		else
+		{
+			qCritical() << "Failed to get application's external cache directory";
+		}
 	}
 	return path;
 }
@@ -254,6 +270,10 @@ const QString & QAndroidFilePaths::CacheDirectory()
 		if (externalfilesdir)
 		{
 			path = externalfilesdir->callString("getPath");
+		}
+		else
+		{
+			qCritical() << "Failed to get application's cache directory";
 		}
 	}
 	return path;

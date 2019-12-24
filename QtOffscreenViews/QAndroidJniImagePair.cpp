@@ -459,6 +459,10 @@ bool QAndroidJniImagePair::loadResource(jint res_id)
 
 			return true;
 		}
+		else
+		{
+			qWarning() << __FUNCTION__ << "Failed to decode bitmap";
+		}
 	}
 	catch(std::exception e)
 	{

@@ -50,5 +50,9 @@ QTANDROIDASSETS_EXPORT void installQAndroidAssetHandler(QJniObject & context)
 			AAssetManager * assetManager = AAssetManager_fromJava(jep.env(), assetmanager->jObject());
 			manager.reset(new QtAndroidAssets::AndroidAssetsFileEngineHandler(assetManager));
 		}
+		else
+		{
+			qCritical() << "Cannot get Android AssetManager";
+		}
 	}
 }
