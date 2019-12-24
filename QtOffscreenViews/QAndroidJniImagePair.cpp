@@ -436,26 +436,33 @@ bool QAndroidJniImagePair::loadResource(jint res_id)
 				jint(res_id),
 				ops.jObject()));
 
-		// Get size of the decoded Bitmap
-		int w = loadedbitmap->callInt("getWidth"), h = loadedbitmap->callInt("getHeight");
-		qDebug() << __FUNCTION__ << "Bitmap size is:" << w << "x" << h;
-
-		// Resize our image pair
-		resize(w, h);
-
-		if (!mBitmap)
+		if (loadedbitmap)
 		{
-			qWarning() << __FUNCTION__ << "Failed to resize bitmap to" << w << "x" << h;
-			return false;
+			// Get size of the decoded Bitmap
+			int w = loadedbitmap->callInt("getWidth"), h = loadedbitmap->callInt("getHeight");
+			qDebug() << __FUNCTION__ << "Bitmap size is:" << w << "x" << h;
+
+			// Resize our image pair
+			resize(w, h);
+
+			if (!mBitmap)
+			{
+				qWarning() << __FUNCTION__ << "Failed to resize bitmap to" << w << "x" << h;
+				return false;
+			}
+
+			// Draw the loaded Bitmap over our Bitmap
+			QJniObject canvas("android/graphics/Canvas", "");
+			canvas.callParamVoid("setBitmap", "Landroid/graphics/Bitmap;", mBitmap->jObject());
+			canvas.callParamVoid("drawBitmap", "Landroid/graphics/Bitmap;FFLandroid/graphics/Paint;",
+								 loadedbitmap->jObject(), jfloat(0), jfloat(0), jobject(0));
+
+			return true;
 		}
-
-		// Draw the loaded Bitmap over our Bitmap
-		QJniObject canvas("android/graphics/Canvas", "");
-		canvas.callParamVoid("setBitmap", "Landroid/graphics/Bitmap;", mBitmap->jObject());
-		canvas.callParamVoid("drawBitmap", "Landroid/graphics/Bitmap;FFLandroid/graphics/Paint;",
-							 loadedbitmap->jObject(), jfloat(0), jfloat(0), jobject(0));
-
-		return true;
+		else
+		{
+			qWarning() << __FUNCTION__ << "Failed to decode bitmap";
+		}
 	}
 	catch(std::exception e)
 	{

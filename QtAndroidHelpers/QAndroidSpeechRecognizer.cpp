@@ -128,7 +128,14 @@ template<class T> T arrayListOfStringToContainer(QJniObject * array_list)
 		for (jint i = 0; i < size; ++i)
 		{
 			QScopedPointer<QJniObject> str_object(array_list->callParamObject("get", "java/lang/Object", "I", i));
-			result << jep.JStringToQString(static_cast<jstring>(str_object->jObject()));
+			if (str_object)
+			{
+				result << jep.JStringToQString(static_cast<jstring>(str_object->jObject()));
+			}
+			else
+			{
+				result << QString();
+			}
 		}
 	}
 	return result;

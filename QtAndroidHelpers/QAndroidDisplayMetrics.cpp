@@ -194,22 +194,35 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(
 	, themeFromDensityDpi_(ThemeMDPI)
 	, themeFromHardwareDpi_(ThemeMDPI)
 {
-	QJniObject metrics("android/util/DisplayMetrics", "");
 	{
+		QJniObject metrics("android/util/DisplayMetrics", "");
 		QAndroidQPAPluginGap::Context activity;
 		QScopedPointer<QJniObject> windowmanager(activity.callObject("getWindowManager", "android/view/WindowManager"));
-		QScopedPointer<QJniObject> defaultdisplay(windowmanager->callObject("getDefaultDisplay", "android/view/Display"));
-		defaultdisplay->callParamVoid("getMetrics", "Landroid/util/DisplayMetrics;", metrics.jObject());
-	}
+		if (windowmanager)
+		{
+			QScopedPointer<QJniObject> defaultdisplay(windowmanager->callObject("getDefaultDisplay", "android/view/Display"));
+			if (defaultdisplay)
+			{
+				defaultdisplay->callParamVoid("getMetrics", "Landroid/util/DisplayMetrics;", metrics.jObject());
 
-	density_ = metrics.getFloatField("density");
-	densityDpi_ = metrics.getIntField("densityDpi");
-	heightPixels_ = metrics.getIntField("heightPixels");
-	scaledDensity_ = metrics.getFloatField("scaledDensity");
-	physicalXDpi_ = metrics.getFloatField("xdpi");
-	physicalYDpi_ = metrics.getFloatField("ydpi");
-	widthPixels_ = metrics.getIntField("widthPixels");
-	heightPixels_ = metrics.getIntField("heightPixels");
+				density_ = metrics.getFloatField("density");
+				densityDpi_ = metrics.getIntField("densityDpi");
+				scaledDensity_ = metrics.getFloatField("scaledDensity");
+				physicalXDpi_ = metrics.getFloatField("xdpi");
+				physicalYDpi_ = metrics.getFloatField("ydpi");
+				widthPixels_ = metrics.getIntField("widthPixels");
+				heightPixels_ = metrics.getIntField("heightPixels");
+			}
+			else
+			{
+				qCritical() << "Cannot get Android Display";
+			}
+		}
+		else
+		{
+			qCritical() << "Cannot get Android WindowManager";
+		}
+	}
 
 	realisticPhysicalDpi_ = guessRealisticHardwareDpi(
 		physicalXDpi_
@@ -279,9 +292,24 @@ QString QAndroidDisplayMetrics::themeDirectoryName(Theme theme)
 
 float QAndroidDisplayMetrics::fontScale()
 {
+	jfloat font_scale = 1.0f;
 	QAndroidQPAPluginGap::Context activity;
 	QScopedPointer<QJniObject> resources(activity.callObject("getResources", "android/content/res/Resources"));
-	QScopedPointer<QJniObject> configuration(resources->callObject("getConfiguration", "android/content/res/Configuration"));
-	jfloat font_scale = configuration->getFloatField("fontScale");
+	if (resources)
+	{
+		QScopedPointer<QJniObject> configuration(resources->callObject("getConfiguration", "android/content/res/Configuration"));
+		if (configuration)
+		{
+			font_scale = configuration->getFloatField("fontScale");
+		}
+		else
+		{
+			qCritical() << "Resources configuration is unavailable, use no font scale";
+		}
+	}
+	else
+	{
+		qCritical() << "Application's resources are unavailable, use no font scale";
+	}
 	return static_cast<float>(font_scale);
 }

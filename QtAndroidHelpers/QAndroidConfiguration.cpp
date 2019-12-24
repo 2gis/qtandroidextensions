@@ -44,10 +44,24 @@ QAndroidConfiguration::QAndroidConfiguration(QObject * parent)
 	, screen_size_(ScreenSizeUndefined)
 {
 	QAndroidQPAPluginGap::Context activity;
+	int screenLayout = ANDROID_SCREENLAYOUT_SIZE_NORMAL;
 	QScopedPointer<QJniObject> resources(activity.callObject("getResources", "android/content/res/Resources"));
-	QScopedPointer<QJniObject> configuration(resources->callObject("getConfiguration", "android/content/res/Configuration"));
-
-	int screenLayout = configuration->getIntField("screenLayout") & ANDROID_SCREENLAYOUT_SIZE_MASK;
+	if (resources)
+	{
+		QScopedPointer<QJniObject> configuration(resources->callObject("getConfiguration", "android/content/res/Configuration"));
+		if (configuration)
+		{
+			screenLayout = configuration->getIntField("screenLayout") & ANDROID_SCREENLAYOUT_SIZE_MASK;
+		}
+		else
+		{
+			qCritical() << "Resources configuration is unavailable, use normal screen layout size";
+		}
+	}
+	else
+	{
+		qCritical() << "Application's resources are unavailable, use normal screen layout size";
+	}
 
 	switch(screenLayout)
 	{
