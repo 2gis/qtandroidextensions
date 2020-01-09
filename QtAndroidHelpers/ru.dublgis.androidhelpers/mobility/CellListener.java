@@ -41,7 +41,6 @@ package ru.dublgis.androidhelpers.mobility;
 import android.content.Context;
 import android.os.Build;
 import android.os.Looper;
-import android.support.v4.app.ActivityCompat;
 import android.telephony.CellInfo;
 import android.telephony.CellInfoCdma;
 import android.telephony.CellInfoGsm;
@@ -54,6 +53,7 @@ import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
 import android.telephony.cdma.CdmaCellLocation;
 import android.telephony.gsm.GsmCellLocation;
+import androidx.core.app.ActivityCompat;
 
 import java.util.List;
 

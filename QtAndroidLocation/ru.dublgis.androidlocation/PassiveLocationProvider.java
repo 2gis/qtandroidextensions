@@ -40,7 +40,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.os.Build;
 import android.app.Activity;
-import android.support.v4.content.ContextCompat;
 import android.location.Criteria;
 import android.os.Bundle;
 import android.os.Looper;
@@ -48,6 +47,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.util.Log;
+import androidx.core.content.ContextCompat;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
