@@ -42,7 +42,7 @@ import android.content.Context;
 import android.content.IntentSender.SendIntentException;
 import android.os.Build;
 import android.os.Looper;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.app.Dialog;
 
 import java.lang.Exception;
@@ -51,7 +51,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 import android.location.Location;
-import android.support.v4.content.ContextCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
