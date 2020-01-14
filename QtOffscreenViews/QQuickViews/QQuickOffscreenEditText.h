@@ -229,6 +229,7 @@ signals:
 	void returnPressed();
 
 	void backPressed();
+	void backReleased();
 
 protected slots:
 	virtual void etTextChanged(QString text, int start, int before, int count);

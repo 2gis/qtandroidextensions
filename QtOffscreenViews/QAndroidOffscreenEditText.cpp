@@ -152,21 +152,21 @@ void QAndroidOffscreenEditText::javaOnTextChanged(const QString & str, int start
 
 bool QAndroidOffscreenEditText::javaOnKey(bool down, int androidKey)
 {
-	if (down)
+	switch(androidKey)
 	{
-		switch(androidKey)
+	case 0x00000004: // KEYCODE_BACK
+		emit onKeyBack(down);
+		return true;
+	case 0x00000017: // KEYCODE_DPAD_CENTER
+	case 0x00000042: // KEYCODE_ENTER
+		if (down)
 		{
-		case 0x00000004: // KEYCODE_BACK
-			emit onKeyBack(down);
-			return true;
-		case 0x00000017: // KEYCODE_DPAD_CENTER
-		case 0x00000042: // KEYCODE_ENTER
 			emit onEnter();
 			emit onEnterOrPositiveAction();
-			break;
-		default:
-			break;
 		}
+		break;
+	default:
+		break;
 	}
 	return false;
 }
