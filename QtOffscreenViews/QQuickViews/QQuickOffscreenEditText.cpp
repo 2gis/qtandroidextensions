@@ -65,6 +65,10 @@ void QQuickAndroidOffscreenEditText::etKeyBack(bool down)
 	{
 		emit backPressed();
 	}
+	else
+	{
+		emit backReleased();
+	}
 }
 
 void QQuickAndroidOffscreenEditText::setEnableNativeSuggestions(bool enable)
