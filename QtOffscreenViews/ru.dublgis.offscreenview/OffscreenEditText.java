@@ -144,10 +144,18 @@ class OffscreenEditText extends OffscreenView
         {
             try
             {
-                // https://github.com/android/platform_frameworks_base/blob/kitkat-release/core/java/android/widget/TextView.java#L562-564
-                Field f = TextView.class.getDeclaredField("mCursorDrawableRes");
-                f.setAccessible(true);
-                f.set((TextView)this, id);
+                // Access to non-SDK interfaces denied on Android >= 10
+                if (getApiLevel() >= 29)
+                {
+                    setTextCursorDrawable(id);
+                }
+                else
+                {
+                    // https://github.com/android/platform_frameworks_base/blob/kitkat-release/core/java/android/widget/TextView.java#L562-564
+                    Field f = TextView.class.getDeclaredField("mCursorDrawableRes");
+                    f.setAccessible(true);
+                    f.set((TextView)this, id);
+                }
             }
             catch (final Throwable e)
             {
