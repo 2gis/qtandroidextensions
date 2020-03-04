@@ -136,5 +136,7 @@ bool shouldShowRequestPermissionRationale(const QString & permission_name);
 // API < 23: does nothing
 void requestPermissions(const QStringList & permission_names, int permission_request_code);
 
+void vibrate(int time_ms);
+
 } // namespace QAndroidDesktopUtils
 
