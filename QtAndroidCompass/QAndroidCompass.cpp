@@ -59,7 +59,47 @@ static const JNINativeMethod methods[] = {
 };
 
 
-JNI_LINKER_IMPL(QAndroidCompass, "ru/dublgis/androidcompass/OrientationProvider", methods)
+namespace {
+	const char * compassJavaClassDetector()
+	{
+		try 
+		{
+			QAndroidQPAPluginGap::Context context;
+			const QScopedPointer<QJniObject> sensorManager(context.callParamObject(
+				"getSystemService",
+				"java/lang/Object",
+				"Ljava/lang/String;",
+				QJniLocalRef(QStringLiteral("sensor")).jObject()));
+
+
+			if (sensorManager)
+			{
+				const jint TYPE_ROTATION_VECTOR = QJniClass("android/hardware/Sensor").getStaticIntField("TYPE_ROTATION_VECTOR");
+
+				const QScopedPointer<QJniObject> sensor(sensorManager->callParamObject(
+					"getDefaultSensor", 
+					"Landroid/hardware/Sensor;",
+					"I",
+					TYPE_ROTATION_VECTOR));
+
+				if (sensor)
+				{
+					qInfo() << "OrientationRotationProvider selected";
+					return "ru/dublgis/androidcompass/OrientationRotationProvider";
+				}
+			}
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception on orientation provider detection: " << e.what();
+		}
+
+		qInfo() << "OrientationProvider selected";
+		return "ru/dublgis/androidcompass/OrientationProvider";
+	}
+}
+
+JNI_LINKER_IMPL(QAndroidCompass, compassJavaClassDetector(), methods)
 
 
 QAndroidCompass::QAndroidCompass(QObject * parent)
