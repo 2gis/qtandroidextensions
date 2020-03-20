@@ -144,7 +144,7 @@ QGeoPositionInfo QGeoPositionInfoSourceAndroidPassive::lastKnownPosition(bool fr
 		if (isJniReady())
 		{
 			QScopedPointer<QJniObject> jlocation(
-				jni()->callStaticParamObject(
+				jni()->callParamObject(
 					"lastKnownPosition",
 					"Landroid/location/Location;",
 					"Z",
