@@ -49,7 +49,7 @@ import android.view.Surface;
 import ru.dublgis.androidhelpers.Log;
 
 
-public class OrientationRotationProvider implements SensorEventListener {
+public class OrientationRotationProvider implements SensorEventListener, OrientationProviderInterface {
 
 	private static final String TAG = "Grym/OrientationRotationProvider";
 	private volatile long mNativePtr = 0;

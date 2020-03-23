@@ -48,7 +48,7 @@ import android.view.Surface;
 import ru.dublgis.androidhelpers.Log;
 
 
-public class OrientationProvider implements SensorEventListener {
+public class OrientationProvider implements SensorEventListener, OrientationProviderInterface {
 
 	private static final String TAG = "Grym/OrientationProvider";
 	private volatile long mNativePtr = 0;
@@ -151,9 +151,9 @@ public class OrientationProvider implements SensorEventListener {
 	}
 
 
-	public float getAzimuth(boolean applyDisplayRotation) {
+	public int getAzimuth(boolean applyDisplayRotation) {
 		updateOrientationAngles();
-		float angleShift = 0;
+		int angleShift = 0;
 
 		if (applyDisplayRotation) {
 			try {
@@ -176,7 +176,7 @@ public class OrientationProvider implements SensorEventListener {
 			}
 		}
 
-		return angleShift + (float)Math.toDegrees(mOrientationAngles[0]);
+		return angleShift + (int)Math.toDegrees(mOrientationAngles[0]);
 	}
 
 

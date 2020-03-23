@@ -147,7 +147,7 @@ float QAndroidCompass::getAzimuth()
 
 	if (isJniReady())
 	{
-		data = jni()->callParamFloat("getAzimuth", "Z", jboolean(true));
+		data = jni()->callParamInt("getAzimuth", "Z", jboolean(true));
 	}
 
 	return data;
