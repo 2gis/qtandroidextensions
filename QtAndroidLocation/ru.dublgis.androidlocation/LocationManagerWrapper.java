@@ -40,6 +40,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.os.Build;
 import android.os.Looper;
+import android.os.Bundle;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -140,6 +141,44 @@ public class LocationManagerWrapper
 			}
 		} catch(Throwable e) {
 			Log.e(TAG, "Failed to remove updates", e);
+		}
+	}
+
+
+	static public void createEarlyLocationRequest(Context ctx) {
+		try {
+			String[] providers = {LocationManager.NETWORK_PROVIDER, LocationManager.GPS_PROVIDER};
+			for (String provider : providers) {
+				Log.d(TAG, "Early location requesting from " + provider);
+				LocationManagerWrapper providerObject = new LocationManagerWrapper(ctx, provider);
+				providerObject
+					.requestSingleUpdate(
+						new LocationListener() {
+							@Override
+							public void onLocationChanged(Location location) {
+								Log.d(TAG, "Early location found from " + provider + " with accuracy " + location.getAccuracy());
+							}
+
+							@Override
+							public void onStatusChanged(String s, int i, Bundle bundle) {
+								Log.v(TAG, "Early location status changed: " + s);
+							}
+
+							@Override
+							public void onProviderEnabled(String s) {
+								Log.v(TAG, "Early location provider enabled: " + s);
+							}
+
+							@Override
+							public void onProviderDisabled(String s) {
+								Log.v(TAG, "Early location provider disabled: " + s);
+							}
+						},
+						null
+				);
+			}
+		} catch (Throwable e) {
+			Log.e(TAG, "Failed to call requestSingleUpdate: " + e);
 		}
 	}
 }
