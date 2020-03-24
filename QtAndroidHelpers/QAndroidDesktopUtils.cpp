@@ -514,6 +514,21 @@ void vibrate(int time_ms)
 }
 
 
+bool isBluetoothEnabled()
+{
+	QJniClass du(c_full_class_name_);
+	if (du.jClass())
+	{
+		return du.callStaticBoolean("isBluetoothEnabled");
+	}
+	else
+	{
+		qCritical() << "Null class:" << c_full_class_name_;
+		return false;
+	}
+}
+
+
 } // namespace QAndroidDesktopUtils
 
 
