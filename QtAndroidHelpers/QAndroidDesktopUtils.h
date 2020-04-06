@@ -138,7 +138,7 @@ void requestPermissions(const QStringList & permission_names, int permission_req
 
 void vibrate(int time_ms);
 
-bool isBluetoothEnabled();
+bool isBluetoothLEAvailable();
 
 } // namespace QAndroidDesktopUtils
 

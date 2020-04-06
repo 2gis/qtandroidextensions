@@ -513,13 +513,15 @@ void vibrate(int time_ms)
 	}
 }
 
-
-bool isBluetoothEnabled()
+bool isBluetoothLEAvailable()
 {
 	QJniClass du(c_full_class_name_);
 	if (du.jClass())
 	{
-		return du.callStaticBoolean("isBluetoothEnabled");
+		return du.callStaticParamBoolean(
+		    "isBluetoothLEAvailable",
+		    "Landroid/content/Context;",
+		    QAndroidQPAPluginGap::Context().jObject());
 	}
 	else
 	{

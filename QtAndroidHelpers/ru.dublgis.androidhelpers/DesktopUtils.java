@@ -63,7 +63,6 @@ import android.telephony.TelephonyManager;
 import android.provider.Settings.Secure;
 import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
-import android.bluetooth.BluetoothAdapter;
 
 
 public class DesktopUtils
@@ -833,17 +832,20 @@ public class DesktopUtils
         return getDefaultLocaleName(context);
     }
 
-
-    // https://stackoverflow.com/questions/7672334/how-to-check-if-bluetooth-is-enabled-programmatically
-    public static boolean isBluetoothEnabled()
+    // https://developer.android.com/guide/topics/connectivity/bluetooth-le.html
+    public static boolean isBluetoothLEAvailable(final Context ctx)
     {
-        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (mBluetoothAdapter == null) {
-            Log.w(TAG, "Device does not support Bluetooth");
-            return false;
+        try
+        {
+            if (ctx.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE))
+            {
+                return true;
+            }
+        } catch (final Throwable e) {
+            Log.e(TAG, "isBluetoothLEAvailable exception (will return 'false'): ", e);
         }
 
-        return mBluetoothAdapter.isEnabled();
+        return false;
     }
 
 
