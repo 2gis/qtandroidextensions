@@ -140,5 +140,8 @@ void vibrate(int time_ms);
 
 bool isBluetoothLEAvailable();
 
+// Compress files or directories into a zip archive
+bool zipFiles(const QStringList & src_pathes, const QString & dst_path);
+
 } // namespace QAndroidDesktopUtils
 

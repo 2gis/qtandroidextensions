@@ -878,6 +878,16 @@ public class DesktopUtils
         }
     }
 
+    // Compress files or directories into a zip archive
+    public static boolean zipFiles(final String[] srcPaths, final String dstPath) {
+        try{
+           Zip.compressFiles(srcPaths, dstPath);
+           return true;
+        } catch (final Throwable e) {
+            Log.e(TAG, "zipFiles exception: ", e);
+        }
+        return false;
+    }
 
 
     private static class ActivityInfo implements Comparable<ActivityInfo> {
