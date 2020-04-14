@@ -530,6 +530,38 @@ bool isBluetoothLEAvailable()
 	}
 }
 
+bool zipFiles(const QStringList & src_paths, const QString & dst_path)
+{
+	QJniClass du(c_full_class_name_);
+	if (du.jClass())
+        {
+            QJniEnvPtr jep;
+
+            QJniLocalRef src_paths_array(jep.env()->NewObjectArray(
+                src_paths.size(),
+                QJniClass("java/lang/String").jClass(),
+                nullptr));
+
+            for (QStringList::size_type i = 0; i < src_paths.size(); ++i)
+            {
+                    jep.env()->SetObjectArrayElement(
+                        static_cast<jobjectArray>(src_paths_array.jObject()),
+                        i,
+                        QJniLocalRef(src_paths[i]).jObject());
+            }
+
+            return du.callStaticParamBoolean(
+                "zipFiles",
+                "[Ljava/lang/String;Ljava/lang/String;",
+                static_cast<jobjectArray>(src_paths_array.jObject()),
+                QJniLocalRef(dst_path).jObject());
+	}
+	else
+	{
+		qCritical() << "Null class:" << c_full_class_name_;
+		return false;
+        }
+}
 
 } // namespace QAndroidDesktopUtils
 
