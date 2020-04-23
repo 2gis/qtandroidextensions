@@ -44,6 +44,7 @@ import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.DialogInterface;
 import android.view.WindowManager;
+import android.os.Build;
 import android.os.Looper;
 import android.os.Handler;
 
@@ -102,7 +103,10 @@ public class DialogHelper
                     if (lockOrientation != -1 && a != null)
                     {
                         orientation = a.getRequestedOrientation();
-                        a.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+                        final int newOrientation = Build.VERSION.SDK_INT >= 18 ? // Android 4.3+
+                            ActivityInfo.SCREEN_ORIENTATION_LOCKED
+                          : ActivityInfo.SCREEN_ORIENTATION_NOSENSOR;
+                        a.setRequestedOrientation(newOrientation);
                     }
                 }
                 catch(Exception e)
