@@ -54,6 +54,7 @@ public class NmeaListener implements OnNmeaMessageListener
 
 	public void StartListening()
 	{
+		Log.i(TAG, "start nmea listening from thread " + Thread.currentThread().getName());
 		if (listening_)
 		{
 			return;
@@ -71,6 +72,7 @@ public class NmeaListener implements OnNmeaMessageListener
 
 						if (location_manager != null)
 						{
+							Log.i(TAG, "try to add listening from thread " + Thread.currentThread().getName());
 							boolean added = location_manager.addNmeaListener(NmeaListener.this);
 							if (added)
 							{
@@ -102,6 +104,7 @@ public class NmeaListener implements OnNmeaMessageListener
 
 	public void StopListening()
 	{
+		Log.i(TAG, "stop nmea listening from thread " + Thread.currentThread().getName());
 		if (!listening_)
 		{
 			return;
@@ -119,6 +122,7 @@ public class NmeaListener implements OnNmeaMessageListener
 
 						if (location_mangaer != null)
 						{
+							Log.i(TAG, "remove nmea listener from thread " + Thread.currentThread().getName());
 							location_mangaer.removeNmeaListener(NmeaListener.this);
 							listening_= false;
 						}
