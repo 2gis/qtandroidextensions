@@ -273,25 +273,30 @@ public class CellListener {
 
 
     public synchronized void requestData() {
-        List<CellInfo> cellInfoList = null;
-        List<NeighboringCellInfo> neighboringCellInfoList = null;
+        try {
+            List<CellInfo> cellInfoList = null;
+            List<NeighboringCellInfo> neighboringCellInfoList = null;
 
-        if (Build.VERSION.SDK_INT >= 17 &&
-            ActivityCompat.checkSelfPermission(getContext(), ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED) {
-                cellInfoList = mManager.getAllCellInfo();
+            if (Build.VERSION.SDK_INT >= 17 &&
+                ActivityCompat.checkSelfPermission(getContext(), ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED) {
+                    cellInfoList = mManager.getAllCellInfo();
+            }
+
+            if (cellInfoList != null && cellInfoList.size() > 0) {
+                reportDataCellInfo(cellInfoList);
+                return;
+            // } else if (ActivityCompat.checkSelfPermission(getContext(), ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED) {
+            //     neighboringCellInfoList = mManager.getNeighboringCellInfo();
+            }
+
+            if (neighboringCellInfoList != null && neighboringCellInfoList.size() > 0) {
+                reportDataNeighboringCellInfo(neighboringCellInfoList);
+            } else {
+                // reportData();
+            }
         }
-
-        if (cellInfoList != null && cellInfoList.size() > 0) {
-            reportDataCellInfo(cellInfoList);
-            return;
-        // } else if (ActivityCompat.checkSelfPermission(getContext(), ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED) {
-        //     neighboringCellInfoList = mManager.getNeighboringCellInfo();
-        }
-
-        if (neighboringCellInfoList != null && neighboringCellInfoList.size() > 0) {
-            reportDataNeighboringCellInfo(neighboringCellInfoList);
-        } else {
-            // reportData();
+        catch (Throwable ex) {
+            Log.e(TAG, "Failed to request data", ex);
         }
     }
 
