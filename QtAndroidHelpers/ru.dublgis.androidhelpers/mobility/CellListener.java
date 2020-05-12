@@ -278,6 +278,7 @@ public class CellListener {
             List<NeighboringCellInfo> neighboringCellInfoList = null;
 
             if (Build.VERSION.SDK_INT >= 17 &&
+                mManager != null &&
                 ActivityCompat.checkSelfPermission(getContext(), ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED) {
                     cellInfoList = mManager.getAllCellInfo();
             }
