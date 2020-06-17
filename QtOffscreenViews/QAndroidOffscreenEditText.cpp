@@ -645,6 +645,14 @@ void QAndroidOffscreenEditText::setMaxLength(int length)
 	}
 }
 
+void QAndroidOffscreenEditText::setRichTextMode(bool enabled)
+{
+	if (QJniObject * view = offscreenView())
+	{
+		view->callVoid("setRichTextMode", jboolean(enabled));
+	}
+}
+
 int QAndroidOffscreenEditText::getSystemDrawMode()
 {
 	if (QJniObject * view = offscreenView())

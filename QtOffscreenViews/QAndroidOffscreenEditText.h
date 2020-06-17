@@ -346,6 +346,7 @@ public:
 	void setCursorColorToTextColor();
 	void setCursorByDrawableName(const QString & name);
 	void setMaxLength(int length);
+	void setRichTextMode(bool enabled);
 
 	//
 	// Drawing mode hack

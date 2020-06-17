@@ -203,6 +203,8 @@ public slots:
 	void setCursorByDrawableName(const QString & name) { androidEditText()->setCursorByDrawableName(name); }
 
 	void setMaxLength(int length) { androidEditText()->setMaxLength(length); }
+	void setRichTextMode(bool enabled) { androidEditText()->setRichTextMode(enabled); }
+
 
 
 	void setImeOptions(int and_mask, int or_mask) { androidEditText()->setImeOptions(and_mask, or_mask); }
