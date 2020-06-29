@@ -63,6 +63,12 @@ import android.text.TextUtils;
 import android.text.InputFilter;
 import android.text.Layout;
 import android.view.View.MeasureSpec;
+import android.content.Context;
+import android.content.ClipboardManager;
+import android.content.ClipData;
+import java.lang.CharSequence;
+import android.os.Build;
+import android.text.Spanned;
 
 import ru.dublgis.androidhelpers.Log;
 
@@ -86,6 +92,7 @@ class OffscreenEditText extends OffscreenView
     {
         private boolean vertically_scrolling_ = false;
         private int content_height_ = 0;
+        private boolean allow_rich_text_ = true;
 
         class MyTextWatcher implements TextWatcher
         {
@@ -130,6 +137,52 @@ class OffscreenEditText extends OffscreenView
             {
                 Log.i(TAG, "MyEditText constructor: using API < 16 method (setBackgroundDrawable)");
                 setBackgroundDrawable(null);
+            }
+        }
+
+        @Override
+        public boolean onTextContextMenuItem(int id)
+        {
+            if (id == android.R.id.paste && !allow_rich_text_)
+            {
+                if (getApiLevel() >= 23) // Android 6.0
+                {
+                    id = android.R.id.pasteAsPlainText;
+                }
+                else
+                {
+                    onInterceptClipDataToPlainText();
+                }
+            }
+            return super.onTextContextMenuItem(id);
+        }
+
+        private void onInterceptClipDataToPlainText()
+        {
+            try
+            {
+                ClipboardManager clipboard = (ClipboardManager) getContext()
+                    .getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = clipboard.getPrimaryClip();
+                if (clip != null)
+                {
+                    for (int i = 0; i < clip.getItemCount(); i++)
+                    {
+                        final CharSequence paste;
+                        // Get an item as text and remove all spans by toString().
+                        final CharSequence text = clip.getItemAt(i).coerceToText(getContext());
+                        paste = (text instanceof Spanned) ? text.toString() : text;
+                        if (paste != null)
+                        {
+                            ClipData clipData = ClipData.newPlainText("rebase_copy", paste);
+                            clipboard.setPrimaryClip(clipData);
+                        }
+                    }
+                }
+            }
+            catch (final Throwable e)
+            {
+                Log.e(TAG, "Exception in onInterceptClipDataToPlainText: " + e);
             }
         }
 
@@ -463,6 +516,11 @@ class OffscreenEditText extends OffscreenView
             } catch (final Throwable e) {
                 Log.e(TAG, "updateContentHeight exception: " + e);
             }
+        }
+
+        public void setRichTextMode(final boolean enabled)
+        {
+            allow_rich_text_ = enabled;
         }
     }
 
@@ -1027,6 +1085,17 @@ class OffscreenEditText extends OffscreenView
                     
                 myedittext.setTransformationMethod(methodInstance);
                 myedittext.setSelection(selStart, selEnd);
+            }
+        });
+    }
+
+    void setRichTextMode(final boolean enabled)
+    {
+        runViewAction(new Runnable(){
+            @Override
+            public void run(){
+                final MyEditText myedittext = (MyEditText)getView();
+                myedittext.setRichTextMode(enabled);
             }
         });
     }
