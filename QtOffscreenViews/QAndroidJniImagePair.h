@@ -87,7 +87,8 @@ public:
 
 	//! Reference to the const QImage.
 	const QImage & qImage() const { return mImageOnBitmap; }
-
+	uchar * bits() { return mImageOnBitmap.bits(); }
+	const uchar * bits() const  { return mImageOnBitmap.bits(); }
 	QPainter * createQPainter() { return new QPainter(&mImageOnBitmap); }
 
 	//! Fills image with uniform color
