@@ -77,6 +77,7 @@ Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationReciev
 
 
 static const JNINativeMethod methods[] = {
+	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
 	{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getActivityNoThrow)},
 	{"googleApiClientStatus", "(JI)V", reinterpret_cast<void*>(Java_GooglePlayServiceLocationProvider_locationStatus)},
 	{"googleApiClientLocationAvailable", "(JZ)V", reinterpret_cast<void*>(Java_GooglePlayServiceLocationProvider_locationAvailable)},
@@ -358,7 +359,7 @@ int QAndroidGmsLocationProvider::getGmsVersion()
 
 		return clazz.callStaticParamInt(
 			"getGmsVersion",
-			"Landroid/app/Activity;",
+			"Landroid/content/Context;",
 			QAndroidQPAPluginGap::Context().jObject());
 	}
 	catch (const std::exception & e)
@@ -401,7 +402,7 @@ bool QAndroidGmsLocationProvider::isAvailable(jboolean allowDialog)
 		}
 		jboolean result = clazz.callStaticParamBoolean(
 			"isAvailable",
-			"Landroid/app/Activity;Z",
+			"Landroid/content/Context;Z",
 			QAndroidQPAPluginGap::Context().jObject(),
 			allowDialog);
 		qDebug() << "....GP positioning availability result:" << result;
