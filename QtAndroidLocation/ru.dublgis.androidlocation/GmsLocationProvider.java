@@ -128,7 +128,7 @@ public class GmsLocationProvider
 	{
 		native_ptr_ = native_ptr;
 		mlocationUpdatesThread.start();
-		mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
+		mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getContext());
 	}
 
 
@@ -231,7 +231,7 @@ public class GmsLocationProvider
 
 	private void processRequest(final RequestHolder holder) {
 		try {
-			if (mFusedLocationClient != null && null != holder && isPermissionGranted(getActivity())) {
+			if (mFusedLocationClient != null && null != holder && isPermissionGranted(getContext())) {
 				Log.i(TAG, "requestLocationUpdates " + holder.mRequestId);
 
 				mFusedLocationClient
@@ -260,7 +260,7 @@ public class GmsLocationProvider
 
 
 	public void lastKnownPosition() {
-		if (null != mFusedLocationClient && isPermissionGranted(getActivity())) {
+		if (null != mFusedLocationClient && isPermissionGranted(getContext())) {
 			try {
 				mFusedLocationClient
 					.getLastLocation()
@@ -377,18 +377,19 @@ public class GmsLocationProvider
 	}
 
 
-	static public boolean isAvailable(final Activity activity, final boolean allowDialog)
+	static public boolean isAvailable(final Context context, final boolean allowDialog)
 	{
 		try {
 			final GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
-			final int errorCode = apiAvailability.isGooglePlayServicesAvailable(activity);
+			final int errorCode = apiAvailability.isGooglePlayServicesAvailable(context);
 
 			switch (errorCode) {
 				case ConnectionResult.SERVICE_MISSING:
 				case ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED:
 				case ConnectionResult.SERVICE_DISABLED:
 
-					if (allowDialog) {
+					if (allowDialog && context instanceof Activity) {
+						final Activity activity = (Activity)context;
 						activity.runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
@@ -411,41 +412,18 @@ public class GmsLocationProvider
 	}
 
 
-	static public int getGmsVersion(Activity activity)
+	static public int getGmsVersion(Context context)
 	{
 		int versionCode = 0;
 
 		try {
-			versionCode = activity.getPackageManager().getPackageInfo(GoogleApiAvailability.GOOGLE_PLAY_SERVICES_PACKAGE, 0).versionCode;
+			versionCode = context.getPackageManager().getPackageInfo(GoogleApiAvailability.GOOGLE_PLAY_SERVICES_PACKAGE, 0).versionCode;
 		}
 		catch(Exception e) {
 			Log.e(TAG, "getGmsVersion(): " + e);
 		}
 
 		return versionCode;
-	}
-
-
-	public boolean runOnUiThread(final Runnable runnable) {
-		try {
-			if (runnable == null) {
-				Log.e(TAG, "runOnUiThread: null runnable!");
-				return false;
-			}
-
-			final Activity activity = getActivity();
-
-			if (activity == null) {
-				Log.e(TAG, "runOnUiThread: cannot schedule task because of the null context!");
-				return false;
-			}
-
-			activity.runOnUiThread(runnable);
-			return true;
-		} catch (Exception e) {
-			Log.e(TAG, "Exception when posting a runnable:", e);
-			return false;
-		}
 	}
 
 	public void showChangeLocationMethodDialog() {
@@ -504,6 +482,7 @@ public class GmsLocationProvider
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	public native Context getContext();
 	public native Activity getActivity();
 	public native void googleApiClientStatus(long nativeptr, int status);
 	public native void googleApiClientLocationAvailable(long nativeptr, boolean available);

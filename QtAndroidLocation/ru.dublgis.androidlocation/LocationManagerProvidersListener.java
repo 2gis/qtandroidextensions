@@ -38,7 +38,6 @@ package ru.dublgis.androidlocation;
 
 import android.location.LocationManager;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -57,7 +56,7 @@ public class LocationManagerProvidersListener extends BroadcastReceiver
 	{
 		native_ptr_ = native_ptr;
 		try {
-			getActivity().registerReceiver(this, new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION));
+			getContext().registerReceiver(this, new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION));
 		} catch (final Throwable e) {
 			Log.e(TAG, "Exception in LocationManagerProvidersListener constructor: ", e);
 		}
@@ -68,7 +67,7 @@ public class LocationManagerProvidersListener extends BroadcastReceiver
 	public void cppDestroyed()
 	{
 		try {
-			getActivity().unregisterReceiver(this);
+			getContext().unregisterReceiver(this);
 		} catch (final Throwable e) {
 			Log.e(TAG, "Exception in cppDestroyed: ", e);
 		}
@@ -124,7 +123,7 @@ public class LocationManagerProvidersListener extends BroadcastReceiver
 		try
 		{
 			final LocationManager lm =
-				(LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+				(LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
 
 			if (lm != null) {
 				ret = lm.isProviderEnabled(provider);
@@ -144,7 +143,7 @@ public class LocationManagerProvidersListener extends BroadcastReceiver
 		try
 		{
 			final LocationManager lm =
-				(LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+				(LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
 
 			if (lm != null) {
 				return lm.getAllProviders().contains(provider);
@@ -159,7 +158,7 @@ public class LocationManagerProvidersListener extends BroadcastReceiver
 	}
 
 
-	public native Activity getActivity();
+	public native Context getContext();
 	public native void onProvidersChange(long nativeptr);
 }
 
