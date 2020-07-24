@@ -15,18 +15,6 @@ set(SRC_LIST
     QApplicationActivityObserver.h
     QOpenGLTextureHolder.cpp
     QOpenGLTextureHolder.h
-#    QGraphicsWidgets/QAndroidOffscreenViewGraphicsWidget.cpp
-#    QGraphicsWidgets/QAndroidOffscreenViewGraphicsWidget.h
-#    QGraphicsWidgets/QOffscreenEditTextGraphicsWidget.cpp
-#    QGraphicsWidgets/QOffscreenEditTextGraphicsWidget.h
-#    QGraphicsWidgets/QOffscreenWebViewGraphicsWidget.cpp
-#    QGraphicsWidgets/QOffscreenWebViewGraphicsWidget.h
-    QQuickViews/QQuickAndroidOffscreenView.cpp
-    QQuickViews/QQuickAndroidOffscreenView.h
-    QQuickViews/QQuickOffscreenEditText.cpp
-    QQuickViews/QQuickOffscreenEditText.h
-    QQuickViews/QQuickOffscreenWebView.cpp
-    QQuickViews/QQuickOffscreenWebView.h
 )
 
 if (ANDROID)
@@ -53,8 +41,6 @@ if (ANDROID)
             qtandroidextensions::QtJniHelpers
         PRIVATE
             Qt5::OpenGL
-            Qt5::Qml
-            Qt5::Quick
             ${ANDROID_JNIGRAPHICS}
     )
 
