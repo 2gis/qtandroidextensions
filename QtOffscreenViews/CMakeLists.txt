@@ -25,9 +25,6 @@ if (ANDROID)
         QAndroidOffscreenView.h
         QAndroidOffscreenWebView.h
         QApplicationActivityObserver.h
-        QQuickViews/QQuickAndroidOffscreenView.h
-        QQuickViews/QQuickOffscreenEditText.h
-        QQuickViews/QQuickOffscreenWebView.h
     )
 
     find_library(ANDROID_JNIGRAPHICS jnigraphics)
