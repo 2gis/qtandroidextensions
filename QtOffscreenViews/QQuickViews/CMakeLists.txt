@@ -25,7 +25,6 @@ if (ANDROID)
         PUBLIC
             qtandroidextensions::QtOffscreenViews
         PRIVATE
-            Qt5::OpenGL
             Qt5::Qml
             Qt5::Quick
     )
