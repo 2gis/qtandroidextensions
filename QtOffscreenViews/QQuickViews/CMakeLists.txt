@@ -13,6 +13,7 @@ set(SRC_LIST
 
 if (ANDROID)
     qt5_wrap_cpp(
+        QtOffscreenViewsQuick_hdr_moc
         QQuickAndroidOffscreenView.h
         QQuickOffscreenEditText.h
         QQuickOffscreenWebView.h
