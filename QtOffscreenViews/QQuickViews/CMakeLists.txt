@@ -13,9 +13,9 @@ set(SRC_LIST
 
 if (ANDROID)
     qt5_wrap_cpp(
-        QQuickViews/QQuickAndroidOffscreenView.h
-        QQuickViews/QQuickOffscreenEditText.h
-        QQuickViews/QQuickOffscreenWebView.h
+        QQuickAndroidOffscreenView.h
+        QQuickOffscreenEditText.h
+        QQuickOffscreenWebView.h
     )
 
     add_library(${MODULE_NAME} STATIC ${SRC_LIST} ${QtOffscreenViewsQuick_hdr_moc})
