@@ -792,7 +792,7 @@ public class DesktopUtils
     private static Locale getDefaultLocale(final Context context) {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) { // API 24 / Android 7.0
-                return context.getResources().getConfiguration().getLocales().get(0);
+                return context.getResources().getConfiguration().getLocales().getDefault().get(0);
             } else {
                 return context.getResources().getConfiguration().locale;
             }
@@ -818,7 +818,7 @@ public class DesktopUtils
     {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) { // API 24 / Android 7.0
             try {
-                final LocaleList list = context.getResources().getConfiguration().getLocales();
+                final LocaleList list = context.getResources().getConfiguration().getLocales().getDefault();
                 if (list.size() > 0) {
                     String result = "";
                     for (int i = 0; i < list.size(); ++i)
