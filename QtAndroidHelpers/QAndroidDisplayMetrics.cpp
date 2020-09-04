@@ -196,8 +196,22 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(
 {
 	{
 		QJniObject metrics("android/util/DisplayMetrics", "");
-		QAndroidQPAPluginGap::Context activity;
-		QScopedPointer<QJniObject> windowmanager(activity.callObject("getWindowManager", "android/view/WindowManager"));
+		QAndroidQPAPluginGap::Context context;
+		QScopedPointer<QJniObject> windowmanager;
+		if (!QAndroidQPAPluginGap::customContextSet())
+		{
+			//  Works only in Activity, gets its local window manager.
+			windowmanager.reset(context.callObject("getWindowManager", "android/view/WindowManager"));
+		}
+		else
+		{
+			// Works in any Context, gets system window manager.
+			windowmanager.reset(context.callParamObject(
+				"getSystemService",
+				"Ljava/lang/Object;",
+				"Ljava/lang/String;",
+				QJniLocalRef(QStringLiteral("window")).jObject()));
+		}
 		if (windowmanager)
 		{
 			QScopedPointer<QJniObject> defaultdisplay(windowmanager->callObject("getDefaultDisplay", "android/view/Display"));
@@ -293,8 +307,8 @@ QString QAndroidDisplayMetrics::themeDirectoryName(Theme theme)
 float QAndroidDisplayMetrics::fontScale()
 {
 	jfloat font_scale = 1.0f;
-	QAndroidQPAPluginGap::Context activity;
-	QScopedPointer<QJniObject> resources(activity.callObject("getResources", "android/content/res/Resources"));
+	QAndroidQPAPluginGap::Context context;
+	QScopedPointer<QJniObject> resources(context.callObject("getResources", "android/content/res/Resources"));
 	if (resources)
 	{
 		QScopedPointer<QJniObject> configuration(resources->callObject("getConfiguration", "android/content/res/Configuration"));
