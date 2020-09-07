@@ -77,6 +77,7 @@ QGeoPositionInfo positionInfoFromJavaLocation(const jobject jlocation)
 	info.setTimestamp(QDateTime::fromMSecsSinceEpoch(timestamp));
 
 	setPositionAttributeFloat(info, QGeoPositionInfo::HorizontalAccuracy,	location, "hasAccuracy",	"getAccuracy");
+	setPositionAttributeFloat(info, QGeoPositionInfo::VerticalAccuracy,		location, "hasVerticalAccuracy", "getVerticalAccuracyMeters");
 	setPositionAttributeFloat(info, QGeoPositionInfo::GroundSpeed,			location, "hasSpeed",		"getSpeed");
 	setPositionAttributeFloat(info, QGeoPositionInfo::Direction,			location, "hasBearing",		"getBearing");
 
