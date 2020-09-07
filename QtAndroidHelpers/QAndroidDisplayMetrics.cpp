@@ -6,7 +6,7 @@
 
   Distrbuted under The BSD License
 
-  Copyright (c) 2014-2016, DoubleGIS, LLC.
+  Copyright (c) 2014-2020, DoubleGIS, LLC.
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -70,7 +70,7 @@ static const ThemeListEntry all_themes[] =
 static const size_t all_themes_count = sizeof(all_themes) / sizeof(all_themes[0]);
 
 
-static float densityFromTheme(QAndroidDisplayMetrics::Theme theme)
+float QAndroidDisplayMetrics::densityFromTheme(QAndroidDisplayMetrics::Theme theme)
 {
 	for (size_t i = 0; i < all_themes_count; ++i)
 	{
@@ -88,9 +88,9 @@ static float densityFromTheme(QAndroidDisplayMetrics::Theme theme)
 // Normally, density_dpi should be EXACT MATCH to one of the known themes.
 // However, if the application doesn't want to use some intermediate densities
 // and the device offers one, it will return the next "more round" theme.
-static QAndroidDisplayMetrics::Theme themeFromLogicalDensity(
-	int density_dpi
-	, QAndroidDisplayMetrics::IntermediateDensities intermediate_densities)
+QAndroidDisplayMetrics::Theme QAndroidDisplayMetrics::themeFromLogicalDensity(
+	int density_dpi,
+	QAndroidDisplayMetrics::IntermediateDensities intermediate_densities)
 {
 	QAndroidDisplayMetrics::Theme resulting_theme = all_themes[0].theme;
 	for (size_t i = 1; i < all_themes_count; ++i)
@@ -128,9 +128,9 @@ static float proximityRatio(float a, float b)
 // Find a theme that matches hardware density (thus ignoring manufacturer's choice
 // of the theme for the device). The matching is done by choosing the theme that
 // has the closest DPI to the hardware value.
-static QAndroidDisplayMetrics::Theme themeFromHardwareDensity(
-	float density_dpi
-	, QAndroidDisplayMetrics::IntermediateDensities intermediate_densities)
+QAndroidDisplayMetrics::Theme QAndroidDisplayMetrics::themeFromHardwareDensity(
+	float density_dpi,
+	QAndroidDisplayMetrics::IntermediateDensities intermediate_densities)
 {
 	QAndroidDisplayMetrics::Theme resulting_theme = all_themes[0].theme;
 	float bestK = proximityRatio(density_dpi, static_cast<float>(all_themes[0].starting_ppi));
@@ -149,6 +149,14 @@ static QAndroidDisplayMetrics::Theme themeFromHardwareDensity(
 		}
 	}
 	return resulting_theme;
+}
+
+
+float QAndroidDisplayMetrics::densityFromDpi(
+	float density_dpi,
+	IntermediateDensities intermediate_densities)
+{
+	return densityFromTheme(themeFromHardwareDensity(density_dpi, intermediate_densities));
 }
 
 

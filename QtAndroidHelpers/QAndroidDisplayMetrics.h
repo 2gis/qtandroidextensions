@@ -6,7 +6,7 @@
 
   Distrbuted under The BSD License
 
-  Copyright (c) 2014-2016, DoubleGIS, LLC.
+  Copyright (c) 2014-2020, DoubleGIS, LLC.
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -115,6 +115,19 @@ public:
 		IntermediateWithStep0_5 = 1, // Use major themes and X.5 themes.
 		IntermediateAll         = 2  // Use all possible themes, including X.33 and X.67 themes.
 	};
+
+
+	static float densityFromTheme(QAndroidDisplayMetrics::Theme theme);
+	static Theme themeFromLogicalDensity(
+		int density_dpi,
+		IntermediateDensities intermediate_densities = IntermediateAll);
+	static Theme themeFromHardwareDensity(
+		float density_dpi,
+		IntermediateDensities intermediate_densities = IntermediateAll);
+	static float densityFromDpi(
+		float density_dpi,
+		IntermediateDensities intermediate_densities = IntermediateAll);
+
 
 	QAndroidDisplayMetrics(
 		QObject * parent = 0
