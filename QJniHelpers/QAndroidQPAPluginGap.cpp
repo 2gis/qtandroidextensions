@@ -33,10 +33,12 @@
   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
   THE POSSIBILITY OF SUCH DAMAGE.
 */
+
+#include "QAndroidQPAPluginGap.h"
+
 #include <QtCore/qconfig.h>
 #include <QtCore/QDebug>
 #include <QtCore/QScopedPointer>
-#include "QAndroidQPAPluginGap.h"
 
 #if QT_VERSION < 0x050000 && defined(QJNIHELPERS_GRYM)
 	#define QPA_QT4GRYM
@@ -49,8 +51,6 @@
 #if defined(QPA_QT5)
 	#include <QtAndroidExtras/QtAndroidExtras>
 #endif
-
-#include "QAndroidQPAPluginGap.h"
 
 #if defined(Q_OS_ANDROID)
 
