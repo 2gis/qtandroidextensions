@@ -36,16 +36,25 @@
 
 
 #include "PositionInfoConvertor.h"
+#include <QJniHelpers/QAndroidQPAPluginGap.h>
 
 
 
-static void setPositionAttributeFloat(QGeoPositionInfo & info, QGeoPositionInfo::Attribute attr,
-                                      QJniObject & location, const char * szCheck, const char * szGet)
+static void setPositionAttributeFloat(
+	QGeoPositionInfo & info,
+	QGeoPositionInfo::Attribute attr,
+	QJniObject & location,
+	const char * szCheck,
+	const char * szGet,
+	const int apiLevel)
 {
-	if (location.callBool(szCheck))
+	if (QAndroidQPAPluginGap::apiLevel() >= apiLevel)
 	{
-		jfloat val = location.callFloat(szGet);
-		info.setAttribute(attr, val);
+		if (location.callBool(szCheck))
+		{
+			jfloat val = location.callFloat(szGet);
+			info.setAttribute(attr, val);
+		}
 	}
 }
 
@@ -76,11 +85,11 @@ QGeoPositionInfo positionInfoFromJavaLocation(const jobject jlocation)
 	jlong timestamp = location.callLong("getTime");
 	info.setTimestamp(QDateTime::fromMSecsSinceEpoch(timestamp));
 
-	setPositionAttributeFloat(info, QGeoPositionInfo::HorizontalAccuracy,	location, "hasAccuracy",	"getAccuracy");
-	setPositionAttributeFloat(info, QGeoPositionInfo::VerticalAccuracy,		location, "hasVerticalAccuracy", "getVerticalAccuracyMeters");
-	setPositionAttributeFloat(info, QGeoPositionInfo::GroundSpeed,			location, "hasSpeed",		"getSpeed");
-	setPositionAttributeFloat(info, QGeoPositionInfo::Direction,			location, "hasBearing",		"getBearing");
-	setPositionAttributeFloat(info, QGeoPositionInfo::DirectionAccuracy,	location, "hasBearingAccuracy", "getBearingAccuracyDegrees");
+	setPositionAttributeFloat(info, QGeoPositionInfo::HorizontalAccuracy, location, "hasAccuracy",         "getAccuracy",                1);
+	setPositionAttributeFloat(info, QGeoPositionInfo::VerticalAccuracy,   location, "hasVerticalAccuracy", "getVerticalAccuracyMeters", 26);
+	setPositionAttributeFloat(info, QGeoPositionInfo::GroundSpeed,        location, "hasSpeed",            "getSpeed",                   1);
+	setPositionAttributeFloat(info, QGeoPositionInfo::Direction,          location, "hasBearing",          "getBearing",                 1);
+	setPositionAttributeFloat(info, QGeoPositionInfo::DirectionAccuracy,  location, "hasBearingAccuracy",  "getBearingAccuracyDegrees", 26);
 
 	return info;
 }
