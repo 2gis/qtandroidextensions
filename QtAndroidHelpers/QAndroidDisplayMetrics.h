@@ -35,9 +35,9 @@
 */
 
 #pragma once
-#include <QtCore/QString>
 #include <QtCore/QObject>
 #include <QtCore/QMap>
+#include <QJniHelpers/QJniHelpers.h>
 
 /*!
  * Access to Android's DisplayMetrics. The metrics are read from system API when the
@@ -129,9 +129,12 @@ public:
 		IntermediateDensities intermediate_densities = IntermediateAll);
 
 
+	// custom_context can be set to use non-standard Context, e.g. in car app it may be
+	// car context to get metrics of the car screen.
 	QAndroidDisplayMetrics(
-		QObject * parent = 0
-		, IntermediateDensities allow_intermediate_densities = IntermediateAll);
+		QObject * parent = 0,
+		IntermediateDensities allow_intermediate_densities = IntermediateAll,
+		QJniObject * custom_context = nullptr);
 
 	static void preloadJavaClasses();
 

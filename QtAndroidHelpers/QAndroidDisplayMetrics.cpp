@@ -34,7 +34,6 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <QJniHelpers/QJniHelpers.h>
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 #include "QAndroidDisplayMetrics.h"
 
@@ -184,8 +183,9 @@ static float guessRealisticHardwareDpi(float xdpi, float ydpi, float logicalDpi)
 
 
 QAndroidDisplayMetrics::QAndroidDisplayMetrics(
-		QObject * parent
-		, QAndroidDisplayMetrics::IntermediateDensities allow_intermediate_densities)
+		QObject * parent,
+		QAndroidDisplayMetrics::IntermediateDensities allow_intermediate_densities,
+		QJniObject * custom_context)
 	: QObject(parent)
 	, density_(1.0f)
 	, densityDpi_(160)
@@ -204,17 +204,28 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(
 {
 	{
 		QJniObject metrics("android/util/DisplayMetrics", "");
-		QAndroidQPAPluginGap::Context context;
 		QScopedPointer<QJniObject> windowmanager;
-		if (!QAndroidQPAPluginGap::customContextSet())
+		if (!QAndroidQPAPluginGap::customContextSet() && !custom_context)
 		{
 			//  Works only in Activity, gets its local window manager.
-			windowmanager.reset(context.callObject("getWindowManager", "android/view/WindowManager"));
+			windowmanager.reset(QAndroidQPAPluginGap::Context()
+				.callObject("getWindowManager", "android/view/WindowManager"));
 		}
 		else
 		{
-			// Works in any Context, gets system window manager.
-			windowmanager.reset(context.callParamObject(
+			// Works in any Context. For Service gets system window manager.
+			QJniObject * context = nullptr;
+			QScopedPointer<QJniObject> default_context;
+			if (custom_context)
+			{
+				context = custom_context;
+			}
+			else
+			{
+				default_context.reset(new QAndroidQPAPluginGap::Context());
+				context = default_context.data();
+			}
+			windowmanager.reset(context->callParamObject(
 				"getSystemService",
 				"Ljava/lang/Object;",
 				"Ljava/lang/String;",
