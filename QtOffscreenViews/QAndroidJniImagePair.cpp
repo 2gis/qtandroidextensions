@@ -51,7 +51,7 @@ static QImage::Format AndroidBitmapFormat_to_QImageFormat(uint32_t abf)
 			return QImage::Format_RGB16;
 
 		case ANDROID_BITMAP_FORMAT_RGBA_8888:
-			return QImage::Format_ARGB32;
+			return QImage::Format_ARGB32_Premultiplied;
 
 		default:
 			qCritical() << "ERROR: Invalid Android bitmap format:" << abf;
