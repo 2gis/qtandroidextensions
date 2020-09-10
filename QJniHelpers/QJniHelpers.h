@@ -216,6 +216,8 @@ public:
 
 	virtual ~QJniClass();
 
+	static bool classAvailable(const char * full_class_name);
+
 	//! Call void static method of the wrapped Java class
 	void callStaticVoid(const char * method_name);
 	jint callStaticInt(const char * method_name);

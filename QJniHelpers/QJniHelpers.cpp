@@ -581,6 +581,18 @@ QJniClass::~QJniClass()
 }
 
 
+bool QJniClass::classAvailable(const char * full_class_name)
+{
+	QJniEnvPtr jep;
+	const jclass cls = jep.findClass(full_class_name);
+	if (jep.clearException())
+	{
+		return false;
+	}
+	return cls != nullptr;
+}
+
+
 void QJniClass::initClass(JNIEnv* env, jclass clazz)
 {
 	QJniEnvPtr jep(env);
