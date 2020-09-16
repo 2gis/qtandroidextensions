@@ -43,6 +43,7 @@
 #include <QtGui/QColor>
 #include "QAndroidJniImagePair.h"
 
+
 static QImage::Format AndroidBitmapFormat_to_QImageFormat(uint32_t abf)
 {
 	switch(abf)
@@ -58,6 +59,7 @@ static QImage::Format AndroidBitmapFormat_to_QImageFormat(uint32_t abf)
 			return QImage::Format_Invalid;
 	}
 }
+
 
 static QImage::Format qtImageFormatForBitness(int bitness)
 {
@@ -77,6 +79,7 @@ static QImage::Format qtImageFormatForBitness(int bitness)
 	}
 }
 
+
 QAndroidJniImagePair::QAndroidJniImagePair(int bitness)
 	: mBitmap()
 	, mImageOnBitmap()
@@ -85,9 +88,11 @@ QAndroidJniImagePair::QAndroidJniImagePair(int bitness)
 	dispose();
 }
 
+
 QAndroidJniImagePair::~QAndroidJniImagePair()
 {
 }
+
 
 void QAndroidJniImagePair::preloadJavaClasses()
 {
@@ -95,6 +100,7 @@ void QAndroidJniImagePair::preloadJavaClasses()
 	QAndroidQPAPluginGap::preloadJavaClass("android/graphics/Bitmap");
 	QAndroidQPAPluginGap::preloadJavaClass("android/graphics/Bitmap$Config");
 }
+
 
 void QAndroidJniImagePair::dispose()
 {
@@ -106,6 +112,7 @@ void QAndroidJniImagePair::dispose()
 	mImageOnBitmap = QImage(1, 1, qtImageFormatForBitness(bitness_));
 	mBitmap.reset();
 }
+
 
 QJniObject * QAndroidJniImagePair::createBitmap(const QSize & size)
 {
@@ -157,6 +164,7 @@ QJniObject * QAndroidJniImagePair::createBitmap(const QSize & size)
 		return 0; // Not throwing an exception
 	}
 }
+
 
 bool QAndroidJniImagePair::doResize(const QSize & size)
 {
@@ -291,6 +299,7 @@ bool QAndroidJniImagePair::doResize(const QSize & size)
 	return true;
 }
 
+
 void QAndroidJniImagePair::fill(const QColor & color, bool to_android_color)
 {
 	QColor fill = color;
@@ -303,21 +312,22 @@ void QAndroidJniImagePair::fill(const QColor & color, bool to_android_color)
 	mImageOnBitmap.fill(fill);
 }
 
-void QAndroidJniImagePair::convert32BitImageFromQtToAndroid()
+
+void QAndroidJniImagePair::convert32BitImage(QImage & image)
 {
-	if (bitness_ == 32)
+	if (image.format() == QImage::Format::Format_ARGB32 ||
+		image.format() == QImage::Format::Format_ARGB32_Premultiplied)
 	{
 #if defined(__arm__)
 		// Suppress "cast increases required alignment of target type":
 		typedef uchar __attribute__((aligned(4))) AlignedUchar;
-		AlignedUchar * bits = mImageOnBitmap.scanLine(0);
+		AlignedUchar * bits = image.scanLine(0);
 		quint32 * ptr = reinterpret_cast<quint32 *>(bits);
 #else
-		quint32 * ptr = reinterpret_cast<quint32 *>(mImageOnBitmap.scanLine(0));
+		quint32 * ptr = reinterpret_cast<quint32 *>(image.scanLine(0));
 #endif
-		QSize sz = mImageOnBitmap.size();
-		int nquads = sz.width() * sz.height();
-
+		const QSize sz = image.size();
+		const int nquads = sz.width() * sz.height();
 		for (int i = 0; i < nquads; ++i, ++ptr)
 		{
 			quint32 c = *ptr;
@@ -326,6 +336,13 @@ void QAndroidJniImagePair::convert32BitImageFromQtToAndroid()
 		}
 	}
 }
+
+
+void QAndroidJniImagePair::convert32BitImageFromQtToAndroid()
+{
+	convert32BitImage(mImageOnBitmap);
+}
+
 
 void QAndroidJniImagePair::convert32BitImageFromQtToAndroid(QImage & out_image) const
 {
@@ -365,12 +382,14 @@ void QAndroidJniImagePair::convert32BitImageFromQtToAndroid(QImage & out_image) 
 	}
 }
 
+
 void QAndroidJniImagePair::convert32BitImageFromAndroidToQt()
 {
 	// The trick is that the conversion is currently reversible, because
 	// it converts ARGB to ABGR by swapping R and B it also does the backward job.
 	convert32BitImageFromQtToAndroid();
 }
+
 
 void QAndroidJniImagePair::convert32BitImageFromAndroidToQt(QImage & out_image) const
 {
@@ -379,10 +398,12 @@ void QAndroidJniImagePair::convert32BitImageFromAndroidToQt(QImage & out_image) 
 	convert32BitImageFromQtToAndroid(out_image);
 }
 
+
 bool QAndroidJniImagePair::isAllocated() const
 {
 	return mBitmap && mBitmap->jObject() != 0 && !mImageOnBitmap.isNull();
 }
+
 
 bool QAndroidJniImagePair::resize(int w, int h)
 {
@@ -394,10 +415,12 @@ bool QAndroidJniImagePair::resize(int w, int h)
 	return doResize(QSize(w, h));
 }
 
+
 bool QAndroidJniImagePair::resize(const QSize & sz)
 {
 	return resize(sz.width(), sz.height());
 }
+
 
 QSize QAndroidJniImagePair::size() const
 {
@@ -408,6 +431,7 @@ QSize QAndroidJniImagePair::size() const
 
 	return mImageOnBitmap.size();
 }
+
 
 bool QAndroidJniImagePair::loadResource(jint res_id)
 {
@@ -471,6 +495,7 @@ bool QAndroidJniImagePair::loadResource(jint res_id)
 
 	return false;
 }
+
 
 bool QAndroidJniImagePair::loadResource(const QString & res_name, const QString & category)
 {

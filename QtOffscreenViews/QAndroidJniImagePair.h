@@ -94,6 +94,8 @@ public:
 	//! Fills image with uniform color
 	void fill(const QColor & color, bool to_android_color);
 
+	static void convert32BitImage(QImage & image);
+
 	//! Swap color planes so Qt image starts to look correct on Android.
 	void convert32BitImageFromQtToAndroid();
 
