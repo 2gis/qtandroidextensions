@@ -38,6 +38,8 @@
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtCore/QObject>
+#include <QJniHelpers/QAndroidQPAPluginGap.h>
+
 
 namespace QAndroidDesktopUtils {
 
@@ -96,7 +98,10 @@ void uninstallApk(const QString & packagename);
 // Opens the number as "tel:/" + number and ACTION_VIEW, which typically opens phone dialer with
 // the number entered. Does not require any special permissions. On some devices, it may open
 // an IP telephony app.
-bool callNumber(const QString & number, const QString & action = QString());
+bool callNumber(
+	const QString & number,
+	const QString & action = {},
+	QJniObject * customContext = nullptr);
 
 // Does the same as callNumber(number).
 bool showPhoneNumber(const QString & number);

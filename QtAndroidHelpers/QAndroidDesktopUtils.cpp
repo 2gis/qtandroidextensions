@@ -34,8 +34,8 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <QJniHelpers/QAndroidQPAPluginGap.h>
 #include "QAndroidDesktopUtils.h"
+
 
 namespace QAndroidDesktopUtils {
 
@@ -246,16 +246,20 @@ void uninstallApk(const QString & packagename)
 }
 
 
-bool callNumber(const QString & number, const QString & action)
+bool callNumber(
+	const QString & number,
+	const QString & action,
+	QJniObject * customContext)
 {
 	QJniClass du(c_full_class_name_);
-	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticParamBoolean(
-		"callNumber"
-		, "Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;"
-		, activity.jObject()
-		, QJniLocalRef(number).jObject()
-		, QJniLocalRef(action).jObject());
+		"callNumber",
+		"Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;",
+		(customContext)
+			? customContext->jObject()
+			: QAndroidQPAPluginGap::Context().jObject(),
+		QJniLocalRef(number).jObject(),
+		QJniLocalRef(action).jObject());
 }
 
 
