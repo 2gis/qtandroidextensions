@@ -46,13 +46,20 @@ static void setPositionAttributeFloat(
 	QJniObject & location,
 	const char * szCheck,
 	const char * szGet,
-	const int apiLevel)
+	const int apiLevel,
+	std::optional<jfloat> invalid_value = std::optional<jfloat>())
 {
 	if (QAndroidQPAPluginGap::apiLevel() >= apiLevel)
 	{
 		if (location.callBool(szCheck))
 		{
 			jfloat val = location.callFloat(szGet);
+
+			if (invalid_value && invalid_value == val)
+			{
+				return;
+			}
+
 			info.setAttribute(attr, val);
 		}
 	}
@@ -86,10 +93,10 @@ QGeoPositionInfo positionInfoFromJavaLocation(const jobject jlocation)
 	info.setTimestamp(QDateTime::fromMSecsSinceEpoch(timestamp));
 
 	setPositionAttributeFloat(info, QGeoPositionInfo::HorizontalAccuracy, location, "hasAccuracy",         "getAccuracy",                1);
-	setPositionAttributeFloat(info, QGeoPositionInfo::VerticalAccuracy,   location, "hasVerticalAccuracy", "getVerticalAccuracyMeters", 26);
+	setPositionAttributeFloat(info, QGeoPositionInfo::VerticalAccuracy,   location, "hasVerticalAccuracy", "getVerticalAccuracyMeters", 26, 0);
 	setPositionAttributeFloat(info, QGeoPositionInfo::GroundSpeed,        location, "hasSpeed",            "getSpeed",                   1);
 	setPositionAttributeFloat(info, QGeoPositionInfo::Direction,          location, "hasBearing",          "getBearing",                 1);
-	setPositionAttributeFloat(info, QGeoPositionInfo::DirectionAccuracy,  location, "hasBearingAccuracy",  "getBearingAccuracyDegrees", 26);
+	setPositionAttributeFloat(info, QGeoPositionInfo::DirectionAccuracy,  location, "hasBearingAccuracy",  "getBearingAccuracyDegrees", 26, 0);
 
 	return info;
 }
