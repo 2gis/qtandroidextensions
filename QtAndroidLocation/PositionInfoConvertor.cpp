@@ -89,7 +89,7 @@ QGeoPositionInfo positionInfoFromJavaLocation(const jobject jlocation)
 	setPositionAttributeFloat(info, QGeoPositionInfo::VerticalAccuracy,   location, "hasVerticalAccuracy", "getVerticalAccuracyMeters", 26);
 	setPositionAttributeFloat(info, QGeoPositionInfo::GroundSpeed,        location, "hasSpeed",            "getSpeed",                   1);
 	setPositionAttributeFloat(info, QGeoPositionInfo::Direction,          location, "hasBearing",          "getBearing",                 1);
-	// setPositionAttributeFloat(info, QGeoPositionInfo::DirectionAccuracy,  location, "hasBearingAccuracy",  "getBearingAccuracyDegrees", 26);
+	setPositionAttributeFloat(info, QGeoPositionInfo::DirectionAccuracy,  location, "hasBearingAccuracy",  "getBearingAccuracyDegrees", 26);
 
 	return info;
 }
