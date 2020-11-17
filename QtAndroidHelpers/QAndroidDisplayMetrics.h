@@ -83,6 +83,8 @@ private:
 	Q_PROPERTY(float realisticDpi READ realisticDpi)
 	Q_PROPERTY(int widthPixels READ widthPixels)
 	Q_PROPERTY(int heightPixels READ heightPixels)
+	Q_PROPERTY(int realWidthPixels READ realWidthPixels)
+	Q_PROPERTY(int realHeightPixels READ realHeightPixels)
 	Q_PROPERTY(Theme theme READ theme)
 	Q_PROPERTY(Theme hardwareTheme READ hardwareTheme)
 	Q_PROPERTY(QString themeDirectoryName READ themeDirectoryName)
@@ -211,6 +213,10 @@ public:
 	int widthPixels() const { return widthPixels_; }
 	int heightPixels() const { return heightPixels_; }
 
+	// Pixel size of the screen without subtracting any window decor or applying any compatibility scale factors
+	int realWidthPixels() const { return realWidthPixels_; }
+	int realHeightPixels() const { return realHeightPixels_; }
+
 	// Font scale, as configured by user.
 	// Please note that this value may changes during run-time, so it is a good
 	// idea to check it on each application activation.
@@ -229,6 +235,8 @@ private:
 	float realisticPhysicalDpi_;
 	int widthPixels_;
 	int heightPixels_;
+	int realWidthPixels_;
+	int realHeightPixels_;
 	Theme themeFromDensityDpi_;
 	Theme themeFromHardwareDpi_;
 };
