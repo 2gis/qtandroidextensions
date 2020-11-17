@@ -199,11 +199,14 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(
 	, realisticPhysicalDpi_(160.0f)
 	, widthPixels_(240)
 	, heightPixels_(240)
+	, realWidthPixels_(widthPixels_)
+	, realHeightPixels_(heightPixels_)
 	, themeFromDensityDpi_(ThemeMDPI)
 	, themeFromHardwareDpi_(ThemeMDPI)
 {
 	{
 		QJniObject metrics("android/util/DisplayMetrics", "");
+		QJniObject point("android/graphics/Point", "");
 		QScopedPointer<QJniObject> windowmanager;
 		if (!QAndroidQPAPluginGap::customContextSet() && !custom_context)
 		{
@@ -245,6 +248,10 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(
 				physicalYDpi_ = metrics.getFloatField("ydpi");
 				widthPixels_ = metrics.getIntField("widthPixels");
 				heightPixels_ = metrics.getIntField("heightPixels");
+
+				defaultdisplay->callParamVoid("getRealSize", "Landroid/graphics/Point;", point.jObject());
+				realWidthPixels_ = point.getIntField("x");
+				realHeightPixels_ = point.getIntField("y");
 			}
 			else
 			{
