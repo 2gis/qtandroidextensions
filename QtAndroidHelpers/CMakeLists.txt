@@ -32,6 +32,8 @@ set(SRC_LIST
     QAndroidStorages_p.h
     QAndroidToast.cpp
     QAndroidToast.h
+    QAndroidVibrator.cpp
+    QAndroidVibrator.h
     QAndroidWiFiLocker.cpp
     QAndroidWiFiLocker.h
     Mobility/CellData.cpp
@@ -65,6 +67,7 @@ if (ANDROID)
         QAndroidScreenOrientation.h
         QAndroidSharedPreferences.h
         QAndroidSpeechRecognizer.h
+        QAndroidVibrator.h
         Mobility/QAndroidBatteryDataProvider.h
         Mobility/QAndroidCellDataProvider.h
         Mobility/QAndroidWifiDataProvider.h

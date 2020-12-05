@@ -500,23 +500,6 @@ void requestPermissions(const QStringList & permission_names, int permission_req
 }
 
 
-void vibrate(int time_ms)
-{
-	QJniClass du(c_full_class_name_);
-	if (du.jClass())
-	{
-		du.callStaticParamVoid(
-			"vibrate",
-			"Landroid/content/Context;I",
-			QAndroidQPAPluginGap::Context().jObject(),
-			static_cast<jint>(time_ms));
-	}
-	else
-	{
-		qCritical() << "Null class:" << c_full_class_name_;
-	}
-}
-
 void QAndroidDesktopUtils::playNotificationSound()
 {
 	QJniClass du(c_full_class_name_);

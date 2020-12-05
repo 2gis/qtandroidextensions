@@ -56,8 +56,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Vibrator;
-import android.os.VibrationEffect;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.provider.Settings.Secure;
@@ -850,35 +848,6 @@ public class DesktopUtils
         return false;
     }
 
-
-    // Make vibrate
-    // https://stackoverflow.com/questions/13950338/how-to-make-an-android-device-vibrate
-    public static void vibrate(final Context context, final int time_ms)
-    {
-        try
-        {
-            final Vibrator vibrator = (Vibrator)context.getSystemService(Context.VIBRATOR_SERVICE);
-            if (null == vibrator)
-            {
-                Log.w(TAG, "Vibrator service not found.");
-                return;
-            }
-            Log.i(TAG, "Vibrate for " + time_ms);
-            if (Build.VERSION.SDK_INT >= 27) {
-                vibrator.vibrate(VibrationEffect.createOneShot(time_ms, VibrationEffect.DEFAULT_AMPLITUDE));
-            } else {
-                vibrator.vibrate(time_ms);
-            }
-        }
-        catch (final LinkageError e)
-        {
-            Log.e(TAG, "Vibrator linkage error: " + e); //+!
-        }
-        catch (final Throwable e)
-        {
-            Log.e(TAG, "Vibrator exception: ", e);
-        }
-    }
 
     public static void playNotificationSound(final Context context)
     {
