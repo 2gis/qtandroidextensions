@@ -78,12 +78,12 @@ QAndroidAccelerometer::~QAndroidAccelerometer()
 }
 
 
-void QAndroidAccelerometer::start(int32_t delayUs /*= -1*/, int32_t latencyUs /*= -1*/)
+void QAndroidAccelerometer::start(int32_t delayMicroSeconds /*= -1*/, int32_t latencyMicroSeconds /*= -1*/)
 {
 	if (!started_ && isJniReady())
 	{
 		started_ = jni()->callParamBoolean(
-			"start", "II", static_cast<jint>(delayUs), static_cast<jint>(latencyUs));
+			"start", "II", static_cast<jint>(delayMicroSeconds), static_cast<jint>(latencyMicroSeconds));
 	}
 }
 

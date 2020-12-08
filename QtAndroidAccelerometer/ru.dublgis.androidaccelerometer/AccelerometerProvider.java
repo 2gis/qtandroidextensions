@@ -49,7 +49,7 @@ import ru.dublgis.androidhelpers.Log;
 
 public class AccelerometerProvider implements SensorEventListener {
 
-	private static final String TAG = "Grym/AccelerometerProvider";
+	private static final String TAG = "Grym/Accelerometer";
 	private volatile long mNativePtr = 0;
 	private volatile boolean mRegistered = false;
 
@@ -77,12 +77,14 @@ public class AccelerometerProvider implements SensorEventListener {
 
 	//! Called from C++ to notify us that the associated C++ object is being destroyed.
 	public void cppDestroyed() {
-		mNativePtr = 0;
-		stop();
+		synchronized (this) {
+			mNativePtr = 0;
+			stop();
+		}
 	}
 
 
-	public boolean start(int samplingPeriodUs, int maxReportLatencyUs) {
+	public boolean start(int samplingPeriodMicroSeconds, int maxReportLatencyMicroSeconds) {
 		Log.i(TAG, "start");
 
 		if (null == mSensorManager) {
@@ -95,23 +97,24 @@ public class AccelerometerProvider implements SensorEventListener {
 			return false;
 		}
 
-		/* API 9, not 19. That is not a mistake. */
-		if ((android.os.Build.VERSION.SDK_INT < 9) || (samplingPeriodUs < 0)) {
-			samplingPeriodUs = SensorManager.SENSOR_DELAY_NORMAL;
-			maxReportLatencyUs = SensorManager.SENSOR_DELAY_UI;
+		// Android < 2.3
+		if ((android.os.Build.VERSION.SDK_INT < 9) || (samplingPeriodMicroSeconds < 0)) {
+			samplingPeriodMicroSeconds = SensorManager.SENSOR_DELAY_NORMAL;
+			maxReportLatencyMicroSeconds = SensorManager.SENSOR_DELAY_UI;
 		}
 
 		mRegistered = true;
 
 		try {
-			if (android.os.Build.VERSION.SDK_INT >= 19 && maxReportLatencyUs > 0) {
-				mRegistered = mRegistered && mSensorManager.registerListener(this, mAccelerometer, samplingPeriodUs, maxReportLatencyUs);
+			// Android >= 4.4
+			if (android.os.Build.VERSION.SDK_INT >= 19 && maxReportLatencyMicroSeconds > 0) {
+				mRegistered = mRegistered && mSensorManager.registerListener(this, mAccelerometer, samplingPeriodMicroSeconds, maxReportLatencyMicroSeconds);
 			}
 			else {
-				mRegistered = mRegistered && mSensorManager.registerListener(this, mAccelerometer, samplingPeriodUs);
+				mRegistered = mRegistered && mSensorManager.registerListener(this, mAccelerometer, samplingPeriodMicroSeconds);
 			}
 
-			Log.i(TAG, "Sensor listener registered successfully with samplingPeriodUs = " + samplingPeriodUs);
+			Log.i(TAG, "Sensor listener registered successfully with samplingPeriodUs = " + samplingPeriodMicroSeconds);
 		}
 		catch(Throwable e) {
 			Log.e(TAG, "Failed to register listeners", e);
@@ -142,32 +145,34 @@ public class AccelerometerProvider implements SensorEventListener {
 	}
 
 
-    public float getAccelerationModule() {
-        return (float)Math.sqrt(
-            mAccelerometerReading[0]*mAccelerometerReading[0] +
-            mAccelerometerReading[1]*mAccelerometerReading[1] +
-            mAccelerometerReading[2]*mAccelerometerReading[2]);
+	public float getAccelerationModule() {
+		return (float)Math.sqrt(
+				mAccelerometerReading[0] * mAccelerometerReading[0] +
+						mAccelerometerReading[1] * mAccelerometerReading[1] +
+						mAccelerometerReading[2] * mAccelerometerReading[2]);
 	}
 
 
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-		// Do something here if sensor accuracy changes.
-		// You must implement this callback in your code.
 	}
 
 
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-        synchronized(this) {
-            if (event.sensor == mAccelerometer) {
-                System.arraycopy(event.values, 0, mAccelerometerReading,
-                0, mAccelerometerReading.length);
-                }
-
-            onUpdate(mNativePtr);
-        }
-    }
+	@Override
+	public void onSensorChanged(SensorEvent event) {
+		synchronized(this) {
+			if (event.sensor == mAccelerometer) {
+				System.arraycopy(event.values, 0, mAccelerometerReading,
+						0, mAccelerometerReading.length);
+			}
+			try {
+				onUpdate(mNativePtr);
+			}
+			catch(final Throwable e) {
+				Log.e(TAG, "Failed onUpdate native: ", e);
+			}
+		}
+	}
 
 
 	private native Activity getActivity();

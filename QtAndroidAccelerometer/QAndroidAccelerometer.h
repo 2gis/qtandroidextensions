@@ -52,7 +52,7 @@ public:
 	QAndroidAccelerometer(QObject * parent);
 	virtual ~QAndroidAccelerometer();
 
-	void start(int32_t delayUs = -1, int32_t latencyUs = -1);
+	void start(int32_t delayMicroSeconds = -1, int32_t latencyMicroSeconds = -1);
 	void stop();
 	bool isStarted() const;
 
