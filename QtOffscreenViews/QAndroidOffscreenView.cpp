@@ -735,7 +735,7 @@ void QAndroidOffscreenView::setFocused(bool focused)
 {
 	if (offscreen_view_)
 	{
-		return offscreen_view_->callVoid("setFocused", jboolean(focused));
+		offscreen_view_->callVoid("setFocused", jboolean(focused));
 	}
 }
 
@@ -743,7 +743,7 @@ void QAndroidOffscreenView::setPosition(int left, int top)
 {
 	if (offscreen_view_)
 	{
-		return offscreen_view_->callParamVoid("setPosition", "II", jint(left), jint(top));
+		offscreen_view_->callParamVoid("setPosition", "II", jint(left), jint(top));
 	}
 }
 

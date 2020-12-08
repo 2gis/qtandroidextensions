@@ -113,6 +113,7 @@ protected:
 	virtual void mousePressEvent(QMouseEvent * event);
 	virtual void mouseReleaseEvent(QMouseEvent * event);
 	virtual void itemChange(ItemChange change, const ItemChangeData & value);
+	void componentComplete() override;
 
 	QSGNode * updatePaintNode(QSGNode * node, UpdatePaintNodeData * nodedata);
 
@@ -130,6 +131,7 @@ private:
 	bool is_interactive_;
 	bool mouse_tracking_;
 	bool redraw_texture_needed_;
+	bool initialized_;
 
 	QPoint last_set_position_;
 	bool auto_position_tracking_;

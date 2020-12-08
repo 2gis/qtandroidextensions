@@ -38,6 +38,7 @@
 #include <QtQuick/QSGTransformNode>
 #include <QtQuick/QSGSimpleTextureNode>
 #include <QtQuick/QQuickWindow>
+#include <QTimer>
 #include "QQuickAndroidOffscreenView.h"
 
 namespace {
@@ -94,6 +95,7 @@ QQuickAndroidOffscreenView::QQuickAndroidOffscreenView(QAndroidOffscreenView * a
 	, is_interactive_(true) // TODO
 	, mouse_tracking_(false)
 	, redraw_texture_needed_(true)
+	, initialized_(false)
 	, last_set_position_(0, 0) // View always at (0, 0) by default.
 	, auto_position_tracking_(false)
 {
@@ -144,7 +146,9 @@ void QQuickAndroidOffscreenView::focusInEvent(QFocusEvent * event)
 {
 	// qDebug()<<__PRETTY_FUNCTION__;
 	QQuickItem::focusInEvent(event);
-	aview_->setFocused(true);
+	if (initialized_) {
+		aview_->setFocused(true);
+	}
 	if (auto_position_tracking_)
 	{
 		beginAutoPositionTracking();
@@ -155,7 +159,9 @@ void QQuickAndroidOffscreenView::focusOutEvent(QFocusEvent * event)
 {
 	// qDebug()<<__PRETTY_FUNCTION__;
 	QQuickItem::focusOutEvent(event);
-	aview_->setFocused(false);
+	if (initialized_) {
+		aview_->setFocused(false);
+	}
 	if (auto_position_tracking_)
 	{	
 		endAutoPositionTracking();
@@ -213,6 +219,19 @@ void QQuickAndroidOffscreenView::itemChange(QQuickItem::ItemChange change, const
 	return QQuickItem::itemChange(change, value);
 }
 
+//------------------------------------------------------------------------------
+void QQuickAndroidOffscreenView::componentComplete()
+{
+	QQuickItem::componentComplete();
+	if (aview_) {
+		QTimer::singleShot(0, this, [this]() {
+			aview_->setFocused(hasActiveFocus());
+		});
+	}
+	initialized_ = true;
+}
+
+//------------------------------------------------------------------------------
 QSGNode * QQuickAndroidOffscreenView::updatePaintNode(QSGNode * node, UpdatePaintNodeData * nodedata)
 {
 	Q_UNUSED(nodedata);
