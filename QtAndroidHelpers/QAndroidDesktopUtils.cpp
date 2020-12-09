@@ -517,6 +517,22 @@ void vibrate(int time_ms)
 	}
 }
 
+void QAndroidDesktopUtils::playNotificationSound()
+{
+	QJniClass du(c_full_class_name_);
+	if (du.jClass())
+	{
+		du.callStaticParamVoid(
+			"playNotificationSound",
+			"Landroid/content/Context;",
+			QAndroidQPAPluginGap::Context().jObject());
+	}
+	else
+	{
+		qCritical() << "Null class:" << c_full_class_name_;
+	}
+}
+
 bool isBluetoothLEAvailable()
 {
 	QJniClass du(c_full_class_name_);

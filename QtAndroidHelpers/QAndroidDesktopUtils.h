@@ -143,6 +143,8 @@ void requestPermissions(const QStringList & permission_names, int permission_req
 
 void vibrate(int time_ms);
 
+void playNotificationSound();
+
 bool isBluetoothLEAvailable();
 
 // Compress files or directories into a zip archive

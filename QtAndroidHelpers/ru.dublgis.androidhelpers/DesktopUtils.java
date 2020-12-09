@@ -63,6 +63,8 @@ import android.telephony.TelephonyManager;
 import android.provider.Settings.Secure;
 import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
+import android.media.RingtoneManager;
+import android.media.Ringtone;
 
 
 public class DesktopUtils
@@ -875,6 +877,17 @@ public class DesktopUtils
         catch (final Throwable e)
         {
             Log.e(TAG, "Vibrator exception: ", e);
+        }
+    }
+
+    public static void playNotificationSound(final Context context)
+    {
+        try {
+            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            Ringtone r = RingtoneManager.getRingtone(context, notification);
+            r.play();
+        } catch (final Throwable e) {
+            Log.e(TAG, "playNotificationSound exception: ", e);
         }
     }
 
