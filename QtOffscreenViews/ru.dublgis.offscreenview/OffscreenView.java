@@ -106,6 +106,7 @@ public abstract class OffscreenView
     volatile private boolean attaching_mode_ = true;             // threads: c++ & ui
     volatile private boolean hide_keyboard_on_focus_loss_ = true;// threads: c++ & ui
     volatile private boolean show_keyboard_on_focus_in_ = false; // threads: c++ & ui
+    volatile private boolean focus_requested_ = false;           // threads: c++ & ui
 
 
     //! Simple one-element absolute layout.
@@ -299,10 +300,6 @@ public abstract class OffscreenView
                     final View view = getView();
 
                     // Set initial view properties
-                    // View becomes focusable only when Qt requests that. It should not
-                    // be focused from Android side.
-                    view.setFocusable(false);
-                    view.setFocusableInTouchMode(false);
                     view.setVisibility((last_visibility_)? View.VISIBLE: View.INVISIBLE);
                     if (getApiLevel() >= 11)
                     {
@@ -311,6 +308,12 @@ public abstract class OffscreenView
                         view.setRight(view_width_);
                         view.setBottom(view_height_);
                     }
+                    // Disabled because there is troubles with initial focus state.
+                    // Initial focus (false/true) must be set in C++
+                    // if (!focus_requested_) {
+                    //     view.setFocusable(false);
+                    //     view.setFocusableInTouchMode(false);
+                    // }
 
                     // Insert the View into layout.
                     // Note: functions of many views will crash if they are not inserted into layout.
@@ -937,16 +940,17 @@ public abstract class OffscreenView
     //! Called from C++
     public void setFocused(final boolean focused)
     {
+        focus_requested_ = focused;
         runViewAction(new Runnable() {
             @Override
             public void run()
             {
-                Log.i(TAG, "setFocused(" + focused + ") " + object_name_ + ", show keyboard on focus: "
+                Log.i(TAG, "setFocused(" + focused + "/" + focus_requested_ + ") " + object_name_ + ", show keyboard on focus: "
                     + show_keyboard_on_focus_in_ + ": run");
                 final View v = getView();
                 if (v != null)
                 {
-                    if (focused)
+                    if (focus_requested_)
                     {
                         v.setFocusable(true);
                         v.setFocusableInTouchMode(true);

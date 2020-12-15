@@ -45,7 +45,8 @@ QAndroidOffscreenViewGraphicsWidget::QAndroidOffscreenViewGraphicsWidget(QAndroi
 	, is_interactive_(interactive)
 {
 	aview_->setAttachingMode(interactive);
-	setAcceptedMouseButtons(Qt::LeftButton);
+    aview_->setFocused(false);
+    setAcceptedMouseButtons(Qt::LeftButton);
 	setFocusPolicy(Qt::StrongFocus);
 	setFlag(QGraphicsItem::ItemSendsScenePositionChanges);
 	connect(aview_.data(), SIGNAL(updated()), this, SLOT(onOffscreenUpdated()));
