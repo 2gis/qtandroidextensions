@@ -5,14 +5,14 @@
 #include <QJniHelpers/QJniHelpers.h>
 #include <QJniHelpers/IJniObjectLinker.h>
 
-class QAndroidScreenInteractiveObserver : public QObject
+class QAndroidPowerManagerHelper : public QObject
 {
 	Q_OBJECT
-	JNI_LINKER_DECL(QAndroidScreenInteractiveObserver)
+        JNI_LINKER_DECL(QAndroidPowerManagerHelper)
 
 public:
-	QAndroidScreenInteractiveObserver(QObject * parent = 0);
-	virtual ~QAndroidScreenInteractiveObserver();
+        QAndroidPowerManagerHelper(QObject * parent = 0);
+        virtual ~QAndroidPowerManagerHelper();
 
 	bool isInteractive();
 

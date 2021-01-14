@@ -1,4 +1,4 @@
-#include "QAndroidScreenInteractiveObserver.h"
+#include "QAndroidPowerManagerHelper.h"
 
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 #include <QJniHelpers/TJniObjectLinker.h>
@@ -8,7 +8,7 @@ Q_DECL_EXPORT void JNICALL Java_Provider_onInteractiveChanged(JNIEnv * env, jobj
 {
         Q_UNUSED(env);
 
-        JNI_LINKER_OBJECT(QAndroidScreenInteractiveObserver, inst, proxy)
+        JNI_LINKER_OBJECT(QAndroidPowerManagerHelper, inst, proxy)
         proxy->onInteractiveChanged();
 }
 
@@ -22,19 +22,19 @@ static const JNINativeMethod methods[] = {
     {"onInteractiveChanged", "(J)V", reinterpret_cast<void *>(Java_Provider_onInteractiveChanged)},
 };
 
-JNI_LINKER_IMPL(QAndroidScreenInteractiveObserver, "ru/dublgis/androidhelpers/ScreenInteractiveObserver", methods)
+JNI_LINKER_IMPL(QAndroidPowerManagerHelper, "ru/dublgis/androidhelpers/PowerManagerHelper", methods)
 
-QAndroidScreenInteractiveObserver::QAndroidScreenInteractiveObserver(QObject * parent)
+QAndroidPowerManagerHelper::QAndroidPowerManagerHelper(QObject * parent)
     : QObject(parent),
       jniLinker_(new JniObjectLinker(this))
 {
 }
 
-QAndroidScreenInteractiveObserver::~QAndroidScreenInteractiveObserver()
+QAndroidPowerManagerHelper::~QAndroidPowerManagerHelper()
 {
 }
 
-bool QAndroidScreenInteractiveObserver::isInteractive()
+bool QAndroidPowerManagerHelper::isInteractive()
 {
     if (isJniReady())
     {
@@ -44,17 +44,13 @@ bool QAndroidScreenInteractiveObserver::isInteractive()
         }
         catch(const std::exception & ex)
         {
-                qCritical() << "JNI exception in ScreenInteractiveObserver: " << ex.what();
-        }
-        catch(...)
-        {
-                qCritical() << "Unknown exception";
+                qCritical() << "JNI exception in QAndroidPowerManagerHelper: " << ex.what();
         }
     }
     return false;
 }
 
-void QAndroidScreenInteractiveObserver::onInteractiveChanged()
+void QAndroidPowerManagerHelper::onInteractiveChanged()
 {
     emit interactiveChanged();
 }
