@@ -14,7 +14,6 @@ public class PowerManagerHelper extends BroadcastReceiver {
 
         public PowerManagerHelper(final long native_ptr)
         {
-                Log.i(TAG, "Constructed");
                 native_ptr_ = native_ptr;
                 try
                 {
