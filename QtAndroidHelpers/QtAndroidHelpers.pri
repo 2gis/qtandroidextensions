@@ -19,6 +19,7 @@ HEADERS += \
     $$PWD/QLocks/QLock_p.h \
     $$PWD/QAndroidAction.h \
     $$PWD/QAndroidVibrator.h \
+    $$PWD/QAndroidPowerManagerHelper.h \
     $$PWD/QAndroidConfiguration.h \
     $$PWD/QAndroidDialog.h \
     $$PWD/QAndroidDisplayMetrics.h \
@@ -46,6 +47,7 @@ SOURCES += \
     $$PWD/QLocks/QLockHandler.cpp \
     $$PWD/QAndroidAction.cpp \
     $$PWD/QAndroidVibrator.cpp \
+    $$PWD/QAndroidPowerManagerHelper.cpp \
     $$PWD/QAndroidConfiguration.cpp \
     $$PWD/QAndroidDialog.cpp \
     $$PWD/QAndroidDisplayMetrics.cpp \
