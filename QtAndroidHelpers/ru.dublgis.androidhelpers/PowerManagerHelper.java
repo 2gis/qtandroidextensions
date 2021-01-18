@@ -76,6 +76,5 @@ public class PowerManagerHelper extends BroadcastReceiver {
         public native Context getContext();
         private native Activity getActivity();
         private native void onInteractiveChanged(long nativeptr);
-
 }
 
