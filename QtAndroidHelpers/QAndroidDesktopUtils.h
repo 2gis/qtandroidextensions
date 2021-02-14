@@ -141,6 +141,9 @@ bool shouldShowRequestPermissionRationale(const QString & permission_name);
 // API < 23: does nothing
 void requestPermissions(const QStringList & permission_names, int permission_request_code);
 
+// text to help user understand how to find background permission label on settings screen
+QString getBackgroundLocationPermissionLabel();
+
 void playNotificationSound();
 
 bool isBluetoothLEAvailable();
