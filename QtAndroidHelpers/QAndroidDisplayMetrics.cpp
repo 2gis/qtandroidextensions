@@ -203,6 +203,7 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(
 	, realHeightPixels_(heightPixels_)
 	, themeFromDensityDpi_(ThemeMDPI)
 	, themeFromHardwareDpi_(ThemeMDPI)
+	, refreshRate_(0.0f)
 {
 	{
 		QJniObject metrics("android/util/DisplayMetrics", "");
@@ -252,6 +253,8 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(
 				defaultdisplay->callParamVoid("getRealSize", "Landroid/graphics/Point;", point.jObject());
 				realWidthPixels_ = point.getIntField("x");
 				realHeightPixels_ = point.getIntField("y");
+
+				refreshRate_ = defaultdisplay->callFloat("getRefreshRate");
 			}
 			else
 			{

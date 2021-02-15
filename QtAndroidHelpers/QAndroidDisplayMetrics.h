@@ -222,6 +222,8 @@ public:
 	// idea to check it on each application activation.
 	static float fontScale();
 
+	float refreshRate() const { return refreshRate_; }
+
 private:
 	float density_;
 	int densityDpi_;
@@ -239,6 +241,7 @@ private:
 	int realHeightPixels_;
 	Theme themeFromDensityDpi_;
 	Theme themeFromHardwareDpi_;
+	float refreshRate_;
 };
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
