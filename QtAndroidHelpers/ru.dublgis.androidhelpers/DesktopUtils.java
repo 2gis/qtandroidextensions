@@ -876,7 +876,7 @@ public class DesktopUtils
             try {
                 return String.valueOf(context.getPackageManager().getBackgroundPermissionOptionLabel());
             } catch (final Throwable e) {
-                Log.e(TAG, "cant get PackageManager", e);
+                Log.e(TAG, "Can't get PackageManager", e);
                 return new String();
             }
         } else {
