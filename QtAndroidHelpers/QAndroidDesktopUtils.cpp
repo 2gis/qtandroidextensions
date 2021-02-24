@@ -499,6 +499,22 @@ void requestPermissions(const QStringList & permission_names, int permission_req
 	}
 }
 
+QString getBackgroundLocationPermissionLabel()
+{
+	QJniClass du(c_full_class_name_);
+	if (du.jClass())
+	{
+		return du.callStaticParamString(
+			"getBackgroundLocationPermissionLabel",
+			"Landroid/content/Context;",
+			QAndroidQPAPluginGap::Context().jObject());
+	}
+	else
+	{
+		qCritical() << "Null class:" << c_full_class_name_;
+	}
+}
+
 
 void QAndroidDesktopUtils::playNotificationSound()
 {

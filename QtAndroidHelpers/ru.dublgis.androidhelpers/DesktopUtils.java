@@ -871,6 +871,19 @@ public class DesktopUtils
         return false;
     }
 
+    public static String getBackgroundLocationPermissionLabel(final Context context) {
+        if(Build.VERSION.SDK_INT >= 30) { // 11+ Android
+            try {
+                return String.valueOf(context.getPackageManager().getBackgroundPermissionOptionLabel());
+            } catch (final Throwable e) {
+                Log.e(TAG, "Can't get PackageManager", e);
+                return new String();
+            }
+        } else {
+            return new String();
+        }
+    }
+
 
     private static class ActivityInfo implements Comparable<ActivityInfo> {
         private @NonNull String mPackageName = "";
