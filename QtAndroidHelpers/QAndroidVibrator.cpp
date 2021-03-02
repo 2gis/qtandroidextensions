@@ -63,7 +63,7 @@ void QAndroidVibrator::vibrate(Timings_t::value_type duration)
 	vibrate({50, duration});
 }
 
-// void QAndroidVibrator::vibrate(VibratePattern pattern)
+
 void QAndroidVibrator::vibrate(Timings_t timings)
 {
 	const Timings_t::size_type size = timings.size();
