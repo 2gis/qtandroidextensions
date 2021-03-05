@@ -5,7 +5,6 @@ import android.os.Build;
 import android.os.PowerManager;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 
 public class PowerManagerHelper extends BroadcastReceiver {
@@ -20,7 +19,7 @@ public class PowerManagerHelper extends BroadcastReceiver {
                         IntentFilter filter = new IntentFilter();
                         filter.addAction(Intent.ACTION_SCREEN_ON);
                         filter.addAction(Intent.ACTION_SCREEN_OFF);
-                        getActivity().registerReceiver(this, filter);
+                        getContext().registerReceiver(this, filter);
                 }
                 catch (final Throwable e)
                 {
@@ -74,7 +73,6 @@ public class PowerManagerHelper extends BroadcastReceiver {
         }
 
         public native Context getContext();
-        private native Activity getActivity();
         private native void onInteractiveChanged(long nativeptr);
 }
 
