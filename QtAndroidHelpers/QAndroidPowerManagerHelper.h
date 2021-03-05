@@ -8,11 +8,11 @@
 class QAndroidPowerManagerHelper : public QObject
 {
 	Q_OBJECT
-        JNI_LINKER_DECL(QAndroidPowerManagerHelper)
+	JNI_LINKER_DECL(QAndroidPowerManagerHelper)
 
 public:
-        QAndroidPowerManagerHelper(QObject * parent = 0);
-        virtual ~QAndroidPowerManagerHelper();
+	QAndroidPowerManagerHelper(QObject * parent = 0);
+	virtual ~QAndroidPowerManagerHelper();
 
 	bool isInteractive();
 

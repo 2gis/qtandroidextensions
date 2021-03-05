@@ -6,10 +6,10 @@
 
 Q_DECL_EXPORT void JNICALL Java_Provider_onInteractiveChanged(JNIEnv * env, jobject, jlong inst)
 {
-        Q_UNUSED(env);
+    Q_UNUSED(env);
 
-        JNI_LINKER_OBJECT(QAndroidPowerManagerHelper, inst, proxy)
-        proxy->onInteractiveChanged();
+    JNI_LINKER_OBJECT(QAndroidPowerManagerHelper, inst, proxy)
+    proxy->onInteractiveChanged();
 }
 
 
@@ -21,8 +21,8 @@ static const JNINativeMethod methods[] = {
 JNI_LINKER_IMPL(QAndroidPowerManagerHelper, "ru/dublgis/androidhelpers/PowerManagerHelper", methods)
 
 QAndroidPowerManagerHelper::QAndroidPowerManagerHelper(QObject * parent)
-    : QObject(parent),
-      jniLinker_(new JniObjectLinker(this))
+    : QObject(parent)
+    , jniLinker_(new JniObjectLinker(this))
 {
 }
 
@@ -40,7 +40,7 @@ bool QAndroidPowerManagerHelper::isInteractive()
         }
         catch(const std::exception & ex)
         {
-                qCritical() << "JNI exception in QAndroidPowerManagerHelper: " << ex.what();
+            qCritical() << "JNI exception in QAndroidPowerManagerHelper: " << ex.what();
         }
     }
     return false;
