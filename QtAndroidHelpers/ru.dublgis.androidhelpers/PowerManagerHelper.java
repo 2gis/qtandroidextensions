@@ -60,7 +60,7 @@ public class PowerManagerHelper extends BroadcastReceiver {
         }
         catch (final Throwable e)
         {
-            Log.e(TAG, "QAndroidPowerManagerHelper exception: ", e);
+            Log.e(TAG, "registerReceiver failed: ", e);
         }
     }
 
@@ -89,7 +89,7 @@ public class PowerManagerHelper extends BroadcastReceiver {
         }
         catch (final Throwable e)
         {
-            Log.e(TAG, "PowerManagerHelper exception: ", e);
+            Log.e(TAG, "Get PowerManager failed: ", e);
         }
         return false;
     }
@@ -105,7 +105,7 @@ public class PowerManagerHelper extends BroadcastReceiver {
         }
         catch (final Throwable e)
         {
-            Log.e(TAG, "PowerManagerHelper exception: ", e);
+            Log.e(TAG, "onInteractiveChanged failed: ", e);
         }
     }
 
