@@ -229,6 +229,7 @@ void QAndroidGmsLocationProvider::startUpdates()
 			expirationDuration,
 			expirationTime);
 
+		if (id > 0)
 		{
 			QMutexLocker lock(&lastLocationSync_);
 			regularUpdadesId_ = id;
@@ -333,6 +334,7 @@ void QAndroidGmsLocationProvider::requestUpdate(int timeout /*= 0*/)
 			expirationDuration,
 			expirationTime);
 
+		if (id > 0)
 		{
 			QMutexLocker lock(&lastLocationSync_);
 			requestUpdadesIds_.push_back(id);

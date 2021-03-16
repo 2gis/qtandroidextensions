@@ -229,7 +229,7 @@ public class GmsLocationProvider
 	}
 
 
-	private void processRequest(final RequestHolder holder) {
+	private boolean processRequest(final RequestHolder holder) {
 		try {
 			if (mFusedLocationClient != null && null != holder && isPermissionGranted(getContext())) {
 				Log.i(TAG, "requestLocationUpdates " + holder.mRequestId);
@@ -248,7 +248,8 @@ public class GmsLocationProvider
 								Log.i(TAG, "Request failed #" + holder.mRequestId, e);
 							}
 						});
-				};
+				return true;
+			}
 		} catch (IllegalStateException e) {
 			Log.e(TAG, "Failed to processRequest, incorrect looper: ", e);
 		} catch (SecurityException e) {
@@ -256,6 +257,7 @@ public class GmsLocationProvider
 		} catch (Throwable e) {
 			Log.e(TAG, "Failed to processRequest: ", e);
 		}
+		return false;
 	}
 
 
@@ -352,10 +354,12 @@ public class GmsLocationProvider
 		};
 
 		final RequestHolder holder = reinitRequest(requestId, request, callback);
-		processRequest(holder);
-
+		
 		Log.i(TAG, "Request Id = " + holder.mRequestId);
-		return holder.mRequestId;
+		if (processRequest(holder)) {
+			return holder.mRequestId;
+		}
+		return 0;
 	}
 
 
