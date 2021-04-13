@@ -232,7 +232,7 @@ public class GmsLocationProvider
 	private boolean processRequest(final RequestHolder holder) {
 		try {
 			if (mFusedLocationClient != null && null != holder && isPermissionGranted(getContext())) {
-				Log.i(TAG, "requestLocationUpdates " + holder.mRequestId);
+				Log.i(TAG, "processRequest #" + holder.mRequestId);
 
 				mFusedLocationClient
 					.requestLocationUpdates(holder.mRequest, holder.mCallback, mlocationUpdatesLooper)
@@ -355,7 +355,7 @@ public class GmsLocationProvider
 
 		final RequestHolder holder = reinitRequest(requestId, request, callback);
 		
-		Log.i(TAG, "Request Id = " + holder.mRequestId);
+		Log.i(TAG, "Request #" + holder.mRequestId);
 		if (processRequest(holder)) {
 			return holder.mRequestId;
 		}
