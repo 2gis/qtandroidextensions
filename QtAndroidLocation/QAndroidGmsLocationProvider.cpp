@@ -303,6 +303,8 @@ void QAndroidGmsLocationProvider::onCheckRequest(qint64 requestId)
 	if (stop)
 	{
 		QAndroidGmsLocationProvider::stopUpdates(requestId);
+		QMutexLocker lock(&lastLocationSync_);
+		requestUpdadesIds_.remove(requestId);
 	}
 }
 
