@@ -169,7 +169,7 @@ public class GmsLocationProvider
 								.addOnFailureListener(new OnFailureListener() {
 									@Override
 									public void onFailure(@NonNull Exception e) {
-										Log.w(TAG, "Failed to remove request #" + key, e);
+										Log.w(TAG, "Failed to remove request #" + key + ", reason: " + e.getMessage());
 									}
 								})
 								.addOnSuccessListener(new OnSuccessListener<Void>() {
