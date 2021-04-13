@@ -345,6 +345,10 @@ public class GmsLocationProvider
 
 				synchronized (mRequests) {
 					mCurrentLocation = location;
+					if (1 == numUpdates) {
+						Log.i(TAG, "Remove request #" + requestId);
+						mRequests.remove(requestId);
+					}
 				}
 
 				if (null != location) {
