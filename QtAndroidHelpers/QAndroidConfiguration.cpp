@@ -57,6 +57,27 @@ QAndroidConfiguration::QAndroidConfiguration(QObject * parent)
 		{
 			qCritical() << "Resources configuration is unavailable, use normal screen layout size";
 		}
+
+		try
+		{
+			jint statusBarId = resources->callParamInt(
+				"getIdentifier",
+				"Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;",
+				QJniLocalRef("status_bar_height").jObject(),
+				QJniLocalRef("dimen").jObject(),
+				QJniLocalRef("android").jObject());
+			if (statusBarId > 0)
+			{
+				status_bar_height_ = resources->callParamInt(
+					"getDimensionPixelSize",
+					"I",
+					statusBarId);
+			}
+		}
+		catch(const std::exception & e)
+		{
+			qWarning() << __FUNCTION__ << "QAndroidConfiguration exception:" << e.what();
+		}
 	}
 	else
 	{

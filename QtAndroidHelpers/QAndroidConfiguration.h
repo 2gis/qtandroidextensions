@@ -95,8 +95,11 @@ public:
 	 */
 	bool isTablet() const { return screen_size_ >= ScreenSizeLarge; }
 
+	int defaultStatusBarHeight() const { return status_bar_height_; }
+
 private:
 	ScreenSize screen_size_;
+	int status_bar_height_ {0};
 };
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
