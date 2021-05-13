@@ -168,6 +168,7 @@ jobject JNICALL getCustomContext(JNIEnv *, jobject)
 	return 0;
 }
 
+
 bool customContextSet()
 {
 	return (custom_context_)? true: false;
@@ -199,10 +200,19 @@ jobject JNICALL getCurrentContextNoThrow(JNIEnv * env, jobject jo)
 }
 
 
+
 Context::Context():
-	QJniObject(getCurrentContext(), true)
+	QJniObject(getCurrentContextNoThrow(), true)
 {
 }
+
+
+
+Activity::Activity():
+	QJniObject(getActivityNoThrow(), true)
+{
+}
+
 
 
 void preloadJavaClass(const char * class_name)

@@ -84,6 +84,14 @@ namespace QAndroidQPAPluginGap {
 
 	jobject JNICALL getCurrentContextNoThrow(JNIEnv * env = 0, jobject jo = 0);
 
+	class Activity: public QJniObject
+	{
+	public:
+		Activity();
+	private:
+		Q_DISABLE_COPY(Activity)
+	};
+
 	class Context: public QJniObject
 	{
 	public:
