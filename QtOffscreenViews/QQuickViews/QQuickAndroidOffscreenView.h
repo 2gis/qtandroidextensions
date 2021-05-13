@@ -106,16 +106,15 @@ protected:
 	QAndroidOffscreenView * androidView() { return aview_.data(); }
 	const QAndroidOffscreenView * androidView() const { return aview_.data(); }
 
-	virtual void geometryChanged(const QRectF & new_geometry, const QRectF & old_geometry);
-	virtual void focusInEvent(QFocusEvent * event);
-	virtual void focusOutEvent(QFocusEvent * event);
-	virtual void mouseMoveEvent(QMouseEvent * event);
-	virtual void mousePressEvent(QMouseEvent * event);
-	virtual void mouseReleaseEvent(QMouseEvent * event);
-	virtual void itemChange(ItemChange change, const ItemChangeData & value);
+	void geometryChanged(const QRectF & new_geometry, const QRectF & old_geometry) override;
+	void focusInEvent(QFocusEvent * event) override;
+	void focusOutEvent(QFocusEvent * event) override;
+	void mouseMoveEvent(QMouseEvent * event) override;
+	void mousePressEvent(QMouseEvent * event) override;
+	void mouseReleaseEvent(QMouseEvent * event) override;
+	void itemChange(ItemChange change, const ItemChangeData & value) override;
 	void componentComplete() override;
-
-	QSGNode * updatePaintNode(QSGNode * node, UpdatePaintNodeData * nodedata);
+	QSGNode * updatePaintNode(QSGNode * node, UpdatePaintNodeData * nodedata) override;
 
 protected slots:
 	virtual void updateAndroidViewVisibility();
