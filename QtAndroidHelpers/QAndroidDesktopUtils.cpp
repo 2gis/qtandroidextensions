@@ -516,7 +516,7 @@ QString getBackgroundLocationPermissionLabel()
 }
 
 
-void QAndroidDesktopUtils::playNotificationSound()
+void playNotificationSound()
 {
 	QJniClass du(c_full_class_name_);
 	if (du.jClass())
