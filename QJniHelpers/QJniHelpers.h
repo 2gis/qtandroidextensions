@@ -408,6 +408,8 @@ public:
 	//! Get value of float field of the wrapped Java object
 	float getFloatField(const char * field_name);
 
+	double getDoubleField(const char * field_name);
+
 	jboolean getBooleanField(const char * field_name);
 
 	void setIntField(const char * field_name, jint value);

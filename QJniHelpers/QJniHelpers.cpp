@@ -1764,6 +1764,24 @@ float QJniObject::getFloatField(const char * field_name)
 	return result;
 }
 
+double QJniObject::getDoubleField(const char * field_name)
+{
+	VERBOSE(qWarning("int QJniObject::getDoubleField(const char* field_name) %p \"%s\"", reinterpret_cast<void*>(this), field_name));
+	QJniEnvPtr jep;
+	JNIEnv* env = jep.env();
+	jfieldID fid = env->GetFieldID(checkedClass(__FUNCTION__), field_name, "D");
+	if (!fid)
+	{
+		throw QJniFieldNotFoundException(debugClassName().constData(), field_name, __FUNCTION__);
+	}
+	double result = static_cast<double>(env->GetDoubleField(instance_, fid));
+	if (jep.clearException())
+	{
+		throw QJniJavaCallException(debugClassName().constData(), field_name, __FUNCTION__);
+	}
+	return result;
+}
+
 
 jboolean QJniObject::getBooleanField(const char * field_name)
 {
