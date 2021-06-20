@@ -514,6 +514,7 @@ QString getBackgroundLocationPermissionLabel()
 		qCritical() << "Null class:" << c_full_class_name_;
 		return QString();
 	}
+	return QString();
 }
 
 
