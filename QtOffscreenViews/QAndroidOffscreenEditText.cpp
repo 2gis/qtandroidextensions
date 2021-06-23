@@ -252,6 +252,22 @@ void QAndroidOffscreenEditText::setCursorVisible(bool visible)
 	}
 }
 
+void QAndroidOffscreenEditText::setAutofillType(int type)
+{
+	if (QJniObject * view = offscreenView())
+	{
+		view->callVoid("setAutofillType", type);
+	}
+}
+
+void QAndroidOffscreenEditText::setHintType(const QString & type)
+{
+	if (QJniObject * view = offscreenView())
+	{
+		view->callVoid("setHintType", type);
+	}
+}
+
 void QAndroidOffscreenEditText::setInputType(int type)
 {
 	if (QJniObject * view = offscreenView())

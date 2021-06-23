@@ -70,6 +70,8 @@ import java.lang.CharSequence;
 import android.os.Build;
 import android.text.Spanned;
 
+import android.view.View;
+
 import ru.dublgis.androidhelpers.Log;
 
 
@@ -665,6 +667,34 @@ class OffscreenEditText extends OffscreenView
                 ((MyEditText)getView()).setCursorVisible(visible);
             }
         });
+    }
+
+    void setAutofillType(int type)
+    {
+        // Android 8+
+        if (getApiLevel() >= 26)
+        {
+            runViewAction(new Runnable(){
+                @Override
+                public void run(){
+                    ((MyEditText)getView()).setImportantForAutofill(type);
+                }
+            });
+        }
+    }
+
+    void setHintType(String type)
+    {
+        // Android 8+
+        if (getApiLevel() >= 26)
+        {
+            runViewAction(new Runnable(){
+                @Override
+                public void run(){
+                    ((MyEditText)getView()).setAutofillHints(type);
+                }
+            });
+        }
     }
 
     void setInputType(final int type)

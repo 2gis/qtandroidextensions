@@ -42,6 +42,7 @@ class QAndroidOffscreenEditText
 {
 	Q_OBJECT
 	Q_ENUMS(AndroidInputType)
+	Q_ENUMS(AndroidAutofillType)
 public:
 	QAndroidOffscreenEditText(const QString & object_name, const QSize & def_size, QObject * parent = 0);
 	virtual ~QAndroidOffscreenEditText();
@@ -139,6 +140,23 @@ public:
 		ANDROID_INPUTTYPE_TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS	= 0x000000d0,
 		ANDROID_INPUTTYPE_TYPE_TEXT_VARIATION_WEB_PASSWORD		= 0x000000e0
 	};
+
+	// https://developer.android.com/reference/android/view/View#IMPORTANT_FOR_AUTOFILL_AUTO
+	enum AndroidAutofillType
+	{
+		ANDROID_IMPORTANT_FOR_AUTOFILL_AUTO							= 0x00000000,
+		ANDROID_IMPORTANT_FOR_AUTOFILL_NO							= 0x00000002,
+		ANDROID_IMPORTANT_FOR_AUTOFILL_YES							= 0x00000001,
+		ANDROID_IMPORTANT_FOR_AUTOFILL_YES_EXCLUDE_DESCENDANTS		= 0x00000004,
+		ANDROID_IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS		= 0x00000008
+
+	};
+
+	//! Sets the mode for determining whether this view is considered important for autofill. (IMPORTANT_FOR_AUTOFILL_...)
+	void setAutofillType(int type);
+
+	//! Set the type of autofill hint (AUTOFILL_HINT...)
+	void setHintType(const QString & type);
 
 	//! Set the type of the content with a constant as defined for inputType (ANDROID_INPUTTYPE_...)
 	void setInputType(int type);

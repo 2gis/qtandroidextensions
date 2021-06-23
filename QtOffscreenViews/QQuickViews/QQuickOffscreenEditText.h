@@ -82,6 +82,12 @@ public slots:
 	//! Set whether the cursor is visible.
 	void setCursorVisible(bool visible) { androidEditText()->setCursorVisible(visible); }
 
+	//! Sets the mode for determining whether this view is considered important for autofill. (IMPORTANT_FOR_AUTOFILL_...)
+	void setAutofillType(int type) { androidEditText()->setAutofillType(type); }
+
+	//! Set the type of autofill hint (AUTOFILL_HINT...)
+	void setHintType(const QString & type) { androidEditText()->setHintType(type); }
+
 	//! Set the type of the content with a constant as defined for inputType (ANDROID_INPUTTYPE_...)
 	void setInputType(int type) { androidEditText()->setInputType(type); }
 
