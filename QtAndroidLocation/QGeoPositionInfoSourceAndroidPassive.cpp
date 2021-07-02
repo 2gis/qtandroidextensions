@@ -67,7 +67,7 @@ Q_DECL_EXPORT void JNICALL Java_GeoPositionInfoSourceAndroidPassive_onLocation(J
 
 
 static const JNINativeMethod methods[] = {
-	{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getActivityNoThrow)},
+	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
 	{"onLocationRecieved", "(JLandroid/location/Location;)V", reinterpret_cast<void*>(Java_GeoPositionInfoSourceAndroidPassive_onLocation)},
 };
 

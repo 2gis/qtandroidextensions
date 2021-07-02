@@ -39,8 +39,6 @@ package ru.dublgis.androidlocation;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.os.Build;
-import android.app.Activity;
-import android.location.Criteria;
 import android.os.Bundle;
 import android.os.Looper;
 import android.location.Location;
@@ -74,7 +72,7 @@ public class PassiveLocationProvider implements LocationListener
 	{
 		Log.i(TAG, "PassiveLocationProvider");
 		native_ptr_ = native_ptr;
-		mProvider = new LocationManagerWrapper(getActivity(), LocationManager.PASSIVE_PROVIDER);
+		mProvider = new LocationManagerWrapper(getContext(), LocationManager.PASSIVE_PROVIDER);
 		mlocationUpdatesThread.start();
 	}
 
@@ -134,6 +132,6 @@ public class PassiveLocationProvider implements LocationListener
 	}
 
 
-	public native Activity getActivity();
+	public native Context getContext();
 	public native void onLocationRecieved(long nativeptr, Location location);
 }
