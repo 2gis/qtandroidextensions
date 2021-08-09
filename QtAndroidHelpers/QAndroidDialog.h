@@ -130,6 +130,7 @@ public:
 		bool lock_rotation = false);
 
 	Q_INVOKABLE int resultButton() const { return result_button_; }
+	Q_INVOKABLE bool isVisible() const { return is_visible_; }
 
 signals:
 	//! Dialog has been closed by click on the positive button.
@@ -160,6 +161,7 @@ private:
 	bool delete_self_on_close_;
 	int result_button_;
 	static bool interactive_;
+	bool is_visible_;
 
 	friend Q_DECL_EXPORT void JNICALL Java_DialogHelper_DialogHelper_showMessageCallback(JNIEnv *, jobject, jlong param, jint button);
 };

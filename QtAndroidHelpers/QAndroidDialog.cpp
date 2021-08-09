@@ -55,6 +55,7 @@ QAndroidDialog::QAndroidDialog(QObject * parent /*= 0*/)
 	, jniLinker_(new JniObjectLinker(this))
 	, delete_self_on_close_(false)
 	, result_button_(0)
+	, is_visible_(false)
 {
 }
 
@@ -114,17 +115,27 @@ void QAndroidDialog::showMessage(
 		// Currently, we check it via customContextSet(), but this might not always be the right way.
 		bool in_activity = !QAndroidQPAPluginGap::customContextSet();
 		int orientation = (lock_rotation && in_activity)? QAndroidScreenOrientation::getCurrentFixedOrientation(): -1;
-		jni()->callParamVoid("showMessage",
-			"Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZIZ",
-			QJniLocalRef(title).jObject(),
-			QJniLocalRef(explanation).jObject(),
-			QJniLocalRef(positive_button_text).jObject(),
-			QJniLocalRef(negative_button_text).jObject(),
-			QJniLocalRef(neutral_button_text).jObject(),
-			jboolean(pause),
-			jint(orientation),
-			jboolean(in_activity)
-		);
+
+		try
+		{
+			jni()->callParamVoid("showMessage",
+				"Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZIZ",
+				QJniLocalRef(title).jObject(),
+				QJniLocalRef(explanation).jObject(),
+				QJniLocalRef(positive_button_text).jObject(),
+				QJniLocalRef(negative_button_text).jObject(),
+				QJniLocalRef(neutral_button_text).jObject(),
+				jboolean(pause),
+				jint(orientation),
+				jboolean(in_activity)
+			);
+
+			is_visible_ = true;
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in QAndroidDialog => showMessage:" << e.what();
+		}
 	}
 	else
 	{
@@ -158,6 +169,7 @@ void QAndroidDialog::showMessageCallback(int button)
 	qDebug() << __FUNCTION__ << button;
 
 	result_button_ = button;
+	is_visible_ = false;
 
 	switch(button)
 	{
