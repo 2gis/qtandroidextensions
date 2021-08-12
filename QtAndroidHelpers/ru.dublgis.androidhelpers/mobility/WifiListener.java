@@ -55,20 +55,20 @@ public class WifiListener extends BroadcastReceiver
 {
 	final static String LOG_TAG = "Grym/WifiListener";
 	final private static boolean verbose = false;
-	private volatile long native_ptr_ = 0;
+	private long mNativePtr = 0;
 	private WifiManager mWifiMan = null;
 
 
 	public WifiListener(long native_ptr)
 	{
-		native_ptr_ = native_ptr;
+		mNativePtr = native_ptr;
 	}
 
 
 	//! Called from C++ to notify us that the associated C++ object is being destroyed.
-	public void cppDestroyed()
+	public synchronized void cppDestroyed()
 	{
-		native_ptr_ = 0;
+		mNativePtr = 0;
 	}
 
 
@@ -144,7 +144,7 @@ public class WifiListener extends BroadcastReceiver
 			Log.d(LOG_TAG, "WifiListener onReceive");
 		}
 
-		scanUpdate(native_ptr_);
+		scanUpdate(mNativePtr);
 	}
 
 

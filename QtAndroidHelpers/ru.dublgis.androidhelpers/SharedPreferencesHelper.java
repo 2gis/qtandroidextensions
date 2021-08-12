@@ -44,20 +44,17 @@ import android.content.Context;
 final public class SharedPreferencesHelper
 {
 	static final private String TAG = "Grym/ShrdPrefHelper";
-	private volatile long native_ptr_ = 0;
 
 
 	SharedPreferencesHelper(long native_ptr)
 	{
 		Log.i(TAG, "constructor");
-		native_ptr_ = native_ptr;
 	}
 
 
 	//! Called from C++ to notify us that the associated C++ object is being destroyed.
 	public void cppDestroyed()
 	{
-		native_ptr_ = 0;
 	}
 
 

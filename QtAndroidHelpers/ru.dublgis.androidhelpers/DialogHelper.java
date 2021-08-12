@@ -51,21 +51,21 @@ import android.os.Handler;
 public class DialogHelper
 {
     public static final String TAG = "Grym/DialogHelper";
-    private volatile long native_ptr_ = 0;
+    private Long mNativePtr = 0l;
     private Semaphore semaphore_ = new Semaphore(1);
 
     public DialogHelper(long native_ptr)
     {
         Log.i(TAG, "DialogHelper constructor");
-        native_ptr_ = native_ptr;
+        mNativePtr = native_ptr;
     }
 
     //! Called from C++ to notify us that the associated C++ object is being destroyed.
     public void cppDestroyed()
     {
-        synchronized(this)
+        synchronized(mNativePtr)
         {
-            native_ptr_ = 0;
+            mNativePtr = 0l;
         }
     }
 
@@ -135,9 +135,9 @@ public class DialogHelper
                         {
                             Log.e(TAG, "showMessage: exception (2): "+e);
                         }
-                        synchronized(this)
+                        synchronized(mNativePtr)
                         {
-                            showMessageCallback(native_ptr_, whichButton);
+                            showMessageCallback(mNativePtr, whichButton);
                         }
                         if (loop && !ui_thread)
                         {
@@ -161,9 +161,9 @@ public class DialogHelper
                         {
                             Log.e(TAG, "showMessage: exception (2): "+e);
                         }
-                        synchronized(this)
+                        synchronized(mNativePtr)
                         {
-                            showMessageCallback(native_ptr_, 0);
+                            showMessageCallback(mNativePtr, 0);
                         }
                         if (loop && !ui_thread)
                         {

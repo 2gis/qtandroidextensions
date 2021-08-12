@@ -42,20 +42,17 @@ import android.os.VibrationEffect;
 
 public class Vibrate {
 	public static final String TAG = "Grym/Vibrator";
-	private volatile long native_ptr_ = 0;
 
 
 	public Vibrate(final long native_ptr)
 	{
 		Log.i(TAG, "Constructed");
-		native_ptr_ = native_ptr;
 	}
 
 
 	//! Called from C++ to notify us that the associated C++ object is being destroyed.
 	public void cppDestroyed()
 	{
-		native_ptr_ = 0;
 	}
 
 

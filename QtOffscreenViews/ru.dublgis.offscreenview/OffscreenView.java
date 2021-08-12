@@ -68,7 +68,7 @@ public abstract class OffscreenView
 {
     public static final String TAG = "Grym/OffscreenView";
 
-    private volatile long native_ptr_ = 0;
+    private volatile long mNativePtr = 0;
 
     final private Object texture_mutex_ = new Object();
     private int gl_texture_id_ = 0;
@@ -207,7 +207,7 @@ public abstract class OffscreenView
 
     public void SetNativePtr(long ptr)
     {
-        native_ptr_ = ptr;
+        mNativePtr = ptr;
     }
 
     // This is a convenience wrapper for Activity.runOnUiThread(Runnable).
@@ -1149,13 +1149,13 @@ public abstract class OffscreenView
 
     public final long getNativePtr()
     {
-        return native_ptr_;
+        return mNativePtr;
     }
 
     //! Called from C++ to notify us that the associated C++ object is being destroyed.
     public void cppDestroyed()
     {
-        native_ptr_ = 0;
+        mNativePtr = 0;
 
         runOnUiThread(new Runnable(){
             @Override

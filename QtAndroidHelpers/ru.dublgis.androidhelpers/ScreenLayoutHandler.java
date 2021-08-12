@@ -48,14 +48,14 @@ public class ScreenLayoutHandler implements
     KeyboardHeightObserver
 {
     public static final String TAG = "Grym/ScrnLayoutHandler";
-    private volatile long native_ptr_ = 0;
+    private long mNativePtr = 0;
     private KeyboardHeightProvider mKeyboardHeightProvider;
 
 
     public ScreenLayoutHandler(long native_ptr)
     {
         Log.i(TAG, "ScreenLayoutHandler constructor");
-        native_ptr_ = native_ptr;
+        mNativePtr = native_ptr;
         subscribeToLayoutEvents();
     }
 
@@ -64,7 +64,9 @@ public class ScreenLayoutHandler implements
     public void cppDestroyed()
     {
         unsubscribeFromLayoutEvents();
-        native_ptr_ = 0;
+        synchronized(this) {
+            mNativePtr = 0;
+        }
     }
 
 
@@ -128,21 +130,27 @@ public class ScreenLayoutHandler implements
     @Override
     public void onGlobalLayout()
     {
-        nativeGlobalLayoutChanged(native_ptr_);
+        synchronized(this) {
+            nativeGlobalLayoutChanged(mNativePtr);
+        }
     }
 
 
     @Override
     public void onScrollChanged()
     {
-        nativeScrollChanged(native_ptr_);
+        synchronized(this) {
+            nativeScrollChanged(mNativePtr);
+        }
     }
 
 
     @Override
     public void onKeyboardHeightChanged(int height)
     {
-        nativeKeyboardHeightChanged(native_ptr_, height);
+        synchronized(this) {
+            nativeKeyboardHeightChanged(mNativePtr, height);
+        }
     }
 
 

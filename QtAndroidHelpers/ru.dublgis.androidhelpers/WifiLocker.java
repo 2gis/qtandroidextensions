@@ -43,20 +43,17 @@ import android.net.wifi.WifiManager;
 class WifiLocker
 {
 	public static final String TAG = "Grym/WifiLocker";
-	private volatile long native_ptr_ = 0;
 	private WifiManager.WifiLock mLock = null;
 
 
 	public WifiLocker(long native_ptr)
 	{
 		Log.i(TAG, "WifiLocker constructor");
-		native_ptr_ = native_ptr;
 	}
 
 	//! Called from C++ to notify us that the associated C++ object is being destroyed.
 	public void cppDestroyed()
 	{
-		native_ptr_ = 0;
 	}
 
 

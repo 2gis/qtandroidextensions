@@ -92,7 +92,7 @@ public class GmsLocationProvider
 
 	private static final int REQUEST_CHECK_SETTINGS = 1;
 
-	private volatile long native_ptr_ = 0;
+	private Long mNativePtr = 0l;
 
 	private FusedLocationProviderClient mFusedLocationClient = null;
 	private boolean mGoogleApiClientCreateTried = false;
@@ -126,7 +126,7 @@ public class GmsLocationProvider
 
 	public GmsLocationProvider(long native_ptr)
 	{
-		native_ptr_ = native_ptr;
+		mNativePtr = native_ptr;
 		mlocationUpdatesThread.start();
 		mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getContext());
 	}
@@ -137,8 +137,10 @@ public class GmsLocationProvider
 	{
 		Log.i(TAG, "cppDestroyed");
 
-		googleApiClientStatus(native_ptr_, STATUS_DISCONNECTED);
-		native_ptr_ = 0;
+		synchronized(mNativePtr) {
+			googleApiClientStatus(mNativePtr, STATUS_DISCONNECTED);
+			mNativePtr = 0l;
+		}
 		
 		activate(false);
 
@@ -269,7 +271,9 @@ public class GmsLocationProvider
 						.addOnSuccessListener(new OnSuccessListener<Location>() {
 							@Override
 							public void onSuccess(Location location) {
-								googleApiClientLocation(native_ptr_, location, true, 0);
+								synchronized(mNativePtr) {
+									googleApiClientLocation(mNativePtr, location, true, 0);
+								}
 							}
 						})
 						.addOnFailureListener(new OnFailureListener() {
@@ -335,7 +339,9 @@ public class GmsLocationProvider
 				if (null != locationAvailability) {
 					available = locationAvailability.isLocationAvailable();
 				}
-				googleApiClientLocationAvailable(native_ptr_, available);
+				synchronized(mNativePtr) {
+					googleApiClientLocationAvailable(mNativePtr, available);
+				}
 			}
 
 			@Override
@@ -352,7 +358,9 @@ public class GmsLocationProvider
 				}
 
 				if (null != location) {
-					googleApiClientLocation(native_ptr_, location, false, requestId);
+					synchronized(mNativePtr) {
+						googleApiClientLocation(mNativePtr, location, false, requestId);
+					}
 				}
 			}
 		};

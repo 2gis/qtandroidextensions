@@ -55,7 +55,7 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 public class PassiveLocationProvider implements LocationListener
 {
 	private static final String TAG = "PassiveLocationProvider";
-	private volatile long native_ptr_ = 0;
+	private long mNativePtr = 0;
 	LocationManagerWrapper mProvider;
 
 	private Looper mlocationUpdatesLooper = null;
@@ -71,17 +71,17 @@ public class PassiveLocationProvider implements LocationListener
 	public PassiveLocationProvider(long native_ptr)
 	{
 		Log.i(TAG, "PassiveLocationProvider");
-		native_ptr_ = native_ptr;
+		mNativePtr = native_ptr;
 		mProvider = new LocationManagerWrapper(getContext(), LocationManager.PASSIVE_PROVIDER);
 		mlocationUpdatesThread.start();
 	}
 
 
 	//! Called from C++ to notify us that the associated C++ object is being destroyed.
-	public void cppDestroyed()
+	public synchronized void cppDestroyed()
 	{
 		Log.i(TAG, "cppDestroyed");
-		native_ptr_ = 0;
+		mNativePtr = 0;
 
 		if (null != mlocationUpdatesLooper)
 		{
@@ -103,8 +103,8 @@ public class PassiveLocationProvider implements LocationListener
 	}
 
 
-	public void onLocationChanged(Location location) {
-		onLocationRecieved(native_ptr_, location);
+	public synchronized void onLocationChanged(Location location) {
+		onLocationRecieved(mNativePtr, location);
 	}
 
 

@@ -50,7 +50,7 @@ import ru.dublgis.androidhelpers.Log;
 public class AccelerometerProvider implements SensorEventListener {
 
 	private static final String TAG = "Grym/Accelerometer";
-	private volatile long mNativePtr = 0;
+	private long mNativePtr = 0;
 	private volatile boolean mRegistered = false;
 
 	private SensorManager mSensorManager;

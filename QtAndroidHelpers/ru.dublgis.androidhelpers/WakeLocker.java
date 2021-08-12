@@ -44,7 +44,6 @@ import android.os.PowerManager;
 class WakeLocker
 {
 	public static final String TAG = "Grym/WakeLocker";
-	private volatile long native_ptr_ = 0;
 	private PowerManager.WakeLock mLock = null;
 	private int mMode = PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE;
 
@@ -52,7 +51,6 @@ class WakeLocker
 	public WakeLocker(final long native_ptr)
 	{
 		Log.i(TAG, "WakeLocker constructor");
-		native_ptr_ = native_ptr;
 	}
 
 
@@ -67,7 +65,6 @@ class WakeLocker
 	//! Called from C++ to notify us that the associated C++ object is being destroyed.
 	public void cppDestroyed()
 	{
-		native_ptr_ = 0;
 	}
 
 

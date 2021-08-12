@@ -66,7 +66,7 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 public class CellListener {
     private final static String TAG = "Grym/CellListener";
-    private volatile long native_ptr_ = 0;
+    private Long mNativePtr = 0l;
     private final static boolean verbose = false;
 
     private TelephonyManager mManager = null;
@@ -77,13 +77,15 @@ public class CellListener {
 
 
     public CellListener(long native_ptr) {
-        native_ptr_ = native_ptr;
+        mNativePtr = native_ptr;
     }
 
 
     //! Called from C++ to notify us that the associated C++ object is being destroyed.
     public void cppDestroyed() {
-        native_ptr_ = 0;
+        synchronized(mNativePtr) {
+            mNativePtr = 0l;
+        }
     }
 
 
@@ -144,31 +146,32 @@ public class CellListener {
                 mListenerThread.join(300);
             }
         } catch (InterruptedException e) {
-            Log.e(TAG, "Exception in cppDestroyed: ", e);
+            Log.e(TAG, "Exception in stop: ", e);
         }
     }
 
 
     private void reportDataCellInfo(List<CellInfo> cellInfoList) {
-        for (CellInfo cellInfo : cellInfoList) {
-            if (Build.VERSION.SDK_INT >= 17) {
-                 if (cellInfo instanceof CellInfoCdma) {
-                     CellInfoCdma cellInfoCdma = (CellInfoCdma) cellInfo;
-                     cellUpdate(
-                             native_ptr_,
-                             "cdma",
-                             cellInfoCdma.getCellIdentity().getBasestationId(), // Base Station Id 0..65535, Integer.MAX_VALUE if unknown
-                             cellInfoCdma.getCellIdentity().getNetworkId(), // Network Id 0..65535, Integer.MAX_VALUE if unknown
-                             Integer.MAX_VALUE,
-                             cellInfoCdma.getCellIdentity().getSystemId(), // System Id 0..32767, Integer.MAX_VALUE if unknown
-                             cellInfoCdma.getCellSignalStrength().getCdmaDbm(), // Get the CDMA RSSI value in dBm
-                             Integer.MAX_VALUE
-                     );
-                 }
-                if (cellInfo instanceof CellInfoGsm) {
-                    CellInfoGsm cellInfoGsm = (CellInfoGsm) cellInfo;
-                    cellUpdate(
-                            native_ptr_,
+        synchronized(mNativePtr) {
+            for (CellInfo cellInfo : cellInfoList) {
+                if (Build.VERSION.SDK_INT >= 17) {
+                    if (cellInfo instanceof CellInfoCdma) {
+                        CellInfoCdma cellInfoCdma = (CellInfoCdma) cellInfo;
+                        cellUpdate(
+                            mNativePtr,
+                            "cdma",
+                            cellInfoCdma.getCellIdentity().getBasestationId(), // Base Station Id 0..65535, Integer.MAX_VALUE if unknown
+                            cellInfoCdma.getCellIdentity().getNetworkId(), // Network Id 0..65535, Integer.MAX_VALUE if unknown
+                            Integer.MAX_VALUE,
+                            cellInfoCdma.getCellIdentity().getSystemId(), // System Id 0..32767, Integer.MAX_VALUE if unknown
+                            cellInfoCdma.getCellSignalStrength().getCdmaDbm(), // Get the CDMA RSSI value in dBm
+                            Integer.MAX_VALUE
+                        );
+                    }
+                    if (cellInfo instanceof CellInfoGsm) {
+                        CellInfoGsm cellInfoGsm = (CellInfoGsm) cellInfo;
+                        cellUpdate(
+                            mNativePtr,
                             "gsm",
                             cellInfoGsm.getCellIdentity().getCid(), // CID Either 16-bit GSM Cell Identity described in TS 27.007, 0..65535, Integer.MAX_VALUE if unknown
                             cellInfoGsm.getCellIdentity().getLac(), // 16-bit Location Area Code, 0..65535, Integer.MAX_VALUE if unknown
@@ -176,12 +179,12 @@ public class CellListener {
                             cellInfoGsm.getCellIdentity().getMnc(), // 2 or 3-digit Mobile Network Code, 0..999, Integer.MAX_VALUE if unknown
                             cellInfoGsm.getCellSignalStrength().getDbm(), // Get the signal strength as dBm
                             android.os.Build.VERSION.SDK_INT >= 26 ? cellInfoGsm.getCellSignalStrength().getTimingAdvance() : Integer.MAX_VALUE // Get the GSM timing advance between 0..219 symbols (normally 0..63). Integer.MAX_VALUE is reported when there is no RR connection.
-                    );
-                }
-                if (cellInfo instanceof CellInfoLte) {
-                    CellInfoLte cellInfoLte = (CellInfoLte) cellInfo;
-                    cellUpdate(
-                            native_ptr_,
+                        );
+                    }
+                    if (cellInfo instanceof CellInfoLte) {
+                        CellInfoLte cellInfoLte = (CellInfoLte) cellInfo;
+                        cellUpdate(
+                            mNativePtr,
                             "lte",
                             cellInfoLte.getCellIdentity().getCi(), // 28-bit Cell Identity, Integer.MAX_VALUE if unknown
                             cellInfoLte.getCellIdentity().getTac(), // 16-bit Tracking Area Code, Integer.MAX_VALUE if unknown
@@ -189,14 +192,14 @@ public class CellListener {
                             cellInfoLte.getCellIdentity().getMnc(), // 2 or 3-digit Mobile Network Code, 0..999, Integer.MAX_VALUE if unknown
                             cellInfoLte.getCellSignalStrength().getDbm(), // Get signal strength as dBm
                             cellInfoLte.getCellSignalStrength().getTimingAdvance() // Get the timing advance value for LTE, as a value between 0..63. Integer.MAX_VALUE is reported when there is no active RRC connection. Refer to 3GPP 36.213 Sec 4.2.3
-                    );
+                        );
+                    }
                 }
-            }
-            if (Build.VERSION.SDK_INT >= 18) {
-                if (cellInfo instanceof CellInfoWcdma) {
-                    CellInfoWcdma cellInfoWcdma = (CellInfoWcdma) cellInfo;
-                    cellUpdate(
-                            native_ptr_,
+                if (Build.VERSION.SDK_INT >= 18) {
+                    if (cellInfo instanceof CellInfoWcdma) {
+                        CellInfoWcdma cellInfoWcdma = (CellInfoWcdma) cellInfo;
+                        cellUpdate(
+                            mNativePtr,
                             "wcdma",
                             cellInfoWcdma.getCellIdentity().getCid(), // CID 28-bit UMTS Cell Identity described in TS 25.331, 0..268435455, Integer.MAX_VALUE if unknown
                             cellInfoWcdma.getCellIdentity().getLac(), // 16-bit Location Area Code, 0..65535, Integer.MAX_VALUE if unknown
@@ -204,7 +207,8 @@ public class CellListener {
                             cellInfoWcdma.getCellIdentity().getMnc(), // 2 or 3-digit Mobile Network Code, 0..999, Integer.MAX_VALUE if unknown
                             cellInfoWcdma.getCellSignalStrength().getDbm(), // Get the signal strength as dBm
                             Integer.MAX_VALUE
-                    );
+                        );
+                    }
                 }
             }
         }
@@ -212,9 +216,10 @@ public class CellListener {
 
 
     private void reportDataNeighboringCellInfo(List<NeighboringCellInfo> neighboringCellInfoList) {
-        for (NeighboringCellInfo cellInfo : neighboringCellInfoList) {
-            cellUpdate(
-                    native_ptr_,
+        synchronized(mNativePtr) {
+            for (NeighboringCellInfo cellInfo : neighboringCellInfoList) {
+                cellUpdate(
+                    mNativePtr,
                     "unknown",
                     cellInfo.getCid (), // cell id in GSM, 0xffff max legal value UNKNOWN_CID if in UMTS or CDMA or unknown
                     cellInfo.getLac(), // LAC in GSM, 0xffff max legal value UNKNOWN_CID if in UMTS or CMDA or unknown
@@ -222,7 +227,8 @@ public class CellListener {
                     Integer.MAX_VALUE,
                     getGsmDbm(cellInfo.getRssi()), // received signal strength or UNKNOWN_RSSI if unknown For GSM, it is in "asu" ranging from 0 to 31 (dBm = -113 + 2*asu) 0 means "-113 dBm or less" and 31 means "-51 dBm or greater" For UMTS, it is the Level index of CPICH RSCP defined in TS 25.125
                     Integer.MAX_VALUE
-            );
+                );
+            }
         }
     }
 
@@ -246,10 +252,11 @@ public class CellListener {
 
         CellLocation loc = mManager.getCellLocation();
 
-        if (gsm && loc instanceof GsmCellLocation) {
-            GsmCellLocation locGsm = (GsmCellLocation) loc;
-            cellUpdate(
-                    native_ptr_,
+        synchronized(mNativePtr) {
+            if (gsm && loc instanceof GsmCellLocation) {
+                GsmCellLocation locGsm = (GsmCellLocation) loc;
+                cellUpdate(
+                    mNativePtr,
                     "gsm",
                     locGsm.getCid(), // gsm cell id, -1 if unknown, 0xffff max legal value
                     locGsm.getLac(), // gsm location area code, -1 if unknown, 0xffff max legal value
@@ -257,10 +264,10 @@ public class CellListener {
                     Integer.MAX_VALUE,
                     dbm,
                     Integer.MAX_VALUE);
-        } else if (loc instanceof CdmaCellLocation) {
-            CdmaCellLocation locCdma = (CdmaCellLocation) loc;
-            cellUpdate(
-                    native_ptr_,
+            } else if (loc instanceof CdmaCellLocation) {
+                CdmaCellLocation locCdma = (CdmaCellLocation) loc;
+                cellUpdate(
+                    mNativePtr,
                     "cdma",
                     locCdma.getBaseStationId(), // cdma base station identification number, -1 if unknown
                     locCdma.getNetworkId(),     // cdma network identification number, -1 if unknown
@@ -268,6 +275,7 @@ public class CellListener {
                     Integer.MAX_VALUE,
                     dbm,
                     Integer.MAX_VALUE);
+            }
         }
     }
 
@@ -337,7 +345,9 @@ public class CellListener {
                 mSignalStrengthLast = signalStrength;
             }
 
-            onSignalChanged(native_ptr_);
+            synchronized(mNativePtr) {
+                onSignalChanged(mNativePtr);
+            }
         }
     }
 

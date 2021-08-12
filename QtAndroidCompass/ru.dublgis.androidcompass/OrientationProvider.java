@@ -51,7 +51,7 @@ import ru.dublgis.androidhelpers.Log;
 public class OrientationProvider implements SensorEventListener, OrientationProviderInterface {
 
 	private static final String TAG = "Grym/OrientationProvider";
-	private volatile long mNativePtr = 0;
+	private long mNativePtr = 0;
 	private volatile boolean mRegistered = false;
 
 	private SensorManager mSensorManager;
@@ -84,8 +84,10 @@ public class OrientationProvider implements SensorEventListener, OrientationProv
 
 	//! Called from C++ to notify us that the associated C++ object is being destroyed.
 	public void cppDestroyed() {
-		mNativePtr = 0;
-		stop();
+		synchronized(this) {
+			mNativePtr = 0;
+			stop();
+		}
 	}
 
 
@@ -199,9 +201,9 @@ public class OrientationProvider implements SensorEventListener, OrientationProv
 				System.arraycopy(event.values, 0, mMagnetometerReading,
 						0, mMagnetometerReading.length);
 			}
-		}
 
-		onUpdate(mNativePtr);
+			onUpdate(mNativePtr);
+		}
 	}
 
 

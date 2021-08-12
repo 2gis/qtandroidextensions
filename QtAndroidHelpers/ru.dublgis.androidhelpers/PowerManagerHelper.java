@@ -46,11 +46,11 @@ import android.content.BroadcastReceiver;
 
 public class PowerManagerHelper extends BroadcastReceiver {
     public static final String TAG = "Grym/PowerManagerManager";
-    private volatile long native_ptr_ = 0;
+    private long mNativePtr = 0;
 
     public PowerManagerHelper(final long native_ptr)
     {
-        native_ptr_ = native_ptr;
+        mNativePtr = native_ptr;
         try
         {
             IntentFilter filter = new IntentFilter();
@@ -67,7 +67,9 @@ public class PowerManagerHelper extends BroadcastReceiver {
     //! Called from C++ to notify us that the associated C++ object is being destroyed.
     public void cppDestroyed()
     {
-        native_ptr_ = 0;
+        synchronized(this) {
+            mNativePtr = 0;
+        }
     }
 
     public boolean isInteractive()
@@ -98,9 +100,11 @@ public class PowerManagerHelper extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         try
         {
-            if (native_ptr_ != 0 && (intent.getAction().equals(Intent.ACTION_SCREEN_OFF) || intent.getAction().equals(Intent.ACTION_SCREEN_ON)))
-            {
-                onInteractiveChanged(native_ptr_);
+            synchronized(this) {
+                if (mNativePtr != 0 && (intent.getAction().equals(Intent.ACTION_SCREEN_OFF) || intent.getAction().equals(Intent.ACTION_SCREEN_ON)))
+                {
+                    onInteractiveChanged(mNativePtr);
+                }
             }
         }
         catch (final Throwable e)

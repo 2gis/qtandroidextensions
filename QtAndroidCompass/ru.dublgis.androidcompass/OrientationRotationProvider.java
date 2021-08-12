@@ -52,7 +52,7 @@ import ru.dublgis.androidhelpers.Log;
 public class OrientationRotationProvider implements SensorEventListener, OrientationProviderInterface {
 
 	private static final String TAG = "Grym/OrientationRotationProvider";
-	private volatile long mNativePtr = 0;
+	private long mNativePtr = 0;
 	private volatile boolean mRegistered = false;
 
 	private SensorManager mSensorManager;
@@ -80,8 +80,10 @@ public class OrientationRotationProvider implements SensorEventListener, Orienta
 
 	//! Called from C++ to notify us that the associated C++ object is being destroyed.
 	public void cppDestroyed() {
-		mNativePtr = 0;
-		stop();
+		synchronized(this) {
+			mNativePtr = 0;
+			stop();
+		}
 	}
 
 
@@ -194,9 +196,8 @@ public class OrientationRotationProvider implements SensorEventListener, Orienta
 				SensorManager.getRotationMatrixFromVector(mRotationVector, event.values);
 
 			}
+			onUpdate(mNativePtr);
 		}
-
-		onUpdate(mNativePtr);
 	}
 
 	private native Activity getActivity();

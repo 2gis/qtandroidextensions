@@ -49,12 +49,12 @@ import ru.dublgis.androidhelpers.Log;
 public class LocationManagerProvidersListener extends BroadcastReceiver
 {
 	static final String TAG = "Grym/LocMngProvListener";
-	private volatile long native_ptr_ = 0;
+	private long mNativePtr = 0;
 
 
 	public LocationManagerProvidersListener(long native_ptr)
 	{
-		native_ptr_ = native_ptr;
+		mNativePtr = native_ptr;
 		try {
 			getContext().registerReceiver(this, new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION));
 		} catch (final Throwable e) {
@@ -64,21 +64,21 @@ public class LocationManagerProvidersListener extends BroadcastReceiver
 
 
 	//! Called from C++ to notify us that the associated C++ object is being destroyed.
-	public void cppDestroyed()
+	public synchronized void cppDestroyed()
 	{
 		try {
 			getContext().unregisterReceiver(this);
 		} catch (final Throwable e) {
 			Log.e(TAG, "Exception in cppDestroyed: ", e);
 		}
-		native_ptr_ = 0;
+		mNativePtr = 0;
 	}
 
 
-	public void onReceive( Context context, Intent intent )
+	public synchronized void onReceive( Context context, Intent intent )
 	{
 		try {
-			onProvidersChange(native_ptr_);
+			onProvidersChange(mNativePtr);
 		}
 		catch (final Throwable ex) {
 			Log.e(TAG, "Failed to call onProvidersChange ", ex);

@@ -49,18 +49,20 @@ public class BatteryListener extends BroadcastReceiver
 {
     final private static String LOG_TAG = "Grym/BatteryListener";
     final private static boolean verbose_ = false;
-    private volatile long native_ptr_ = 0;
+    private long mNativePtr = 0;
     private boolean started_ = false;
 
     public BatteryListener(long native_ptr)
     {
-        native_ptr_ = native_ptr;
+        mNativePtr = native_ptr;
     }
 
     //! Called from C++ to notify us that the associated C++ object is being destroyed.
-    public void cppDestroyed()
+    public synchronized void cppDestroyed()
     {
-        native_ptr_ = 0;
+        synchronized(this) {
+            mNativePtr = 0;
+        }
     }
 
     // start listening for battery info and report them
@@ -125,7 +127,7 @@ public class BatteryListener extends BroadcastReceiver
                 final int batteryPct = (100 * level) / scale; // Round down is OK IMHO
                 // Log.d(LOG_TAG, "BatteryListener.onReceive: level=" + level + ", scale=" + scale + ", status=" + status
                 //      + ", isCharging=" + isCharging + ", batteryPct=" + batteryPct);
-                batteryInfoUpdate(native_ptr_, isCharging, batteryPct);
+                batteryInfoUpdate(mNativePtr, isCharging, batteryPct);
             }
         } catch (final Throwable e) {
             Log.e(LOG_TAG, "BatteryListener onReceive exception: " , e);

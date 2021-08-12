@@ -44,12 +44,12 @@ public class NmeaListener implements OnNmeaMessageListener
 {
 	public static final String TAG = "Grym/NmeaListener";
 
-	private volatile long native_ptr_ = 0;
+	private long mNativePtr = 0;
 	private boolean listening_= false;
 
 	NmeaListener(long native_ptr)
 	{
-		native_ptr_ = native_ptr;
+		mNativePtr = native_ptr;
 	}
 
 	public void StartListening()
@@ -145,17 +145,17 @@ public class NmeaListener implements OnNmeaMessageListener
 	}
 
 	//! Called from C++ to notify us that the associated C++ object is being destroyed.
-	public void cppDestroyed()
+	public synchronized void cppDestroyed()
 	{
-		native_ptr_= 0;
+		mNativePtr = 0;
 	}
 
 	@Override
-	public void onNmeaMessage(String nmea, long timestamp)
+	public synchronized void onNmeaMessage(String nmea, long timestamp)
 	{
 		try
 		{
-			OnNmeaReceivedNative(native_ptr_, timestamp, nmea);
+			OnNmeaReceivedNative(mNativePtr, timestamp, nmea);
 		}
 		catch (Exception e)
 		{
