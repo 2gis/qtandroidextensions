@@ -78,22 +78,30 @@ public class CellListener {
 
     public CellListener(long native_ptr) {
         native_ptr_ = native_ptr;
+
+        if (mManager == null) {
+            mManager = (TelephonyManager) getContext().getSystemService(Context.TELEPHONY_SERVICE);
+        }
     }
 
 
     //! Called from C++ to notify us that the associated C++ object is being destroyed.
     public void cppDestroyed() {
         native_ptr_ = 0;
+        mManager = null;
     }
 
 
     public synchronized boolean start() {
         Log.d(TAG, "start");
-        try {
-            if (mManager == null) {
-                mManager = (TelephonyManager) getContext().getSystemService(Context.TELEPHONY_SERVICE);
-            }
 
+        if (null != mListenerThread)
+        {
+            Log.d(TAG, "Already started");
+            return true;
+        }
+
+        try {
             Runnable listenRunnable = new Runnable() {
                 @Override
                 public void run() {
@@ -146,6 +154,9 @@ public class CellListener {
         } catch (InterruptedException e) {
             Log.e(TAG, "Exception in cppDestroyed: ", e);
         }
+
+        mListenerThread = null;
+        mListenerLooper = null;
     }
 
 
