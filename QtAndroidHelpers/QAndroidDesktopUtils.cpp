@@ -439,6 +439,22 @@ QStringList getUserLocaleNames()
 }
 
 
+QString getTimezoneId()
+{
+	QJniClass du(c_full_class_name_);
+	if (du.jClass())
+	{
+		return du.callStaticString("getTimezoneId");
+	}
+	else
+	{
+		qCritical() << "Null class:" << c_full_class_name_;
+	}
+
+	return "";
+}
+
+
 bool checkSelfPermission(const QString & permission_name)
 {
 	if (QAndroidQPAPluginGap::apiLevel() < 23)

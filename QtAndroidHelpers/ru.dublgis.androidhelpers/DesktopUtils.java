@@ -45,6 +45,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.TimeZone;
+import java.time.ZoneId;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -831,6 +833,20 @@ public class DesktopUtils
         }
         return getDefaultLocaleName(context);
     }
+
+
+    public static String getTimezoneId()
+    {
+        try {
+            final TimeZone timezone = TimeZone.getDefault();
+            final ZoneId zoneid = timezone.toZoneId();
+            return zoneid.toString();
+        } catch (final Throwable e) {
+            Log.e(TAG, "getTimezoneId exception: ", e);
+        }
+        return "";
+    }
+
 
     // https://developer.android.com/guide/topics/connectivity/bluetooth-le.html
     public static boolean isBluetoothLEAvailable(final Context ctx)
