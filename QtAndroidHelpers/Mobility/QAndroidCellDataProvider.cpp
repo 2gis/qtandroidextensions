@@ -167,6 +167,23 @@ void QAndroidCellDataProvider::cellUpdate(jstring type, jint cid, jint lac, jint
 }
 
 
+QStringList QAndroidCellDataProvider::getSimCountryIso()
+{
+	try 
+	{
+		if (isJniReady())
+		{
+			return { jni()->callString("getSimCountryIso") };
+		}
+	}
+	catch (const std::exception & ex)
+	{
+		qCritical() << "JNI exception in QAndroidCellDataProvider:" << ex.what();
+	}
+	return {};
+}
+
+
 QStringList QAndroidCellDataProvider::getNetworkCountryIso()
 {
 	try 

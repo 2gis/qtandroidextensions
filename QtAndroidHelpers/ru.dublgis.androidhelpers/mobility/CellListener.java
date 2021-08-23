@@ -317,6 +317,21 @@ public class CellListener {
     }
 
 
+    public String getSimCountryIso() {
+        if (null == mManager) {
+            return "";
+        }
+
+        try {
+            return mManager.getSimCountryIso();
+        } catch (Throwable ex) {
+            Log.e(TAG, "Failed to get network country iso", ex);
+        }
+
+        return "";
+    }
+
+
     public String getNetworkCountryIso() {
         if (null == mManager) {
             return "";
