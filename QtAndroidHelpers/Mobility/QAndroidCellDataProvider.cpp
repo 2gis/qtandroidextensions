@@ -39,6 +39,7 @@
 #include "QAndroidCellDataProvider.h"
 
 #include <QtCore/QtDebug>
+
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 #include <QJniHelpers/TJniObjectLinker.h>
 
@@ -163,6 +164,41 @@ void QAndroidCellDataProvider::cellUpdate(jstring type, jint cid, jint lac, jint
 		current_data_->data_.back().signal_strength_ = rssi;
 		current_data_->data_.back().timing_advance_ = ta;
 	}
+}
+
+
+QStringList QAndroidCellDataProvider::getSimCountryIso()
+{
+	try 
+	{
+		if (isJniReady())
+		{
+			return { jni()->callString("getSimCountryIso") };
+		}
+	}
+	catch (const std::exception & ex)
+	{
+		qCritical() << "JNI exception in QAndroidCellDataProvider:" << ex.what();
+	}
+	return {};
+}
+
+
+QStringList QAndroidCellDataProvider::getNetworkCountryIso()
+{
+	try 
+	{
+		if (isJniReady())
+		{
+			QString code = jni()->callString("getNetworkCountryIso");
+			return code.split('\n');
+		}
+	}
+	catch (const std::exception & ex)
+	{
+		qCritical() << "JNI exception in QAndroidCellDataProvider:" << ex.what();
+	}
+	return {};
 }
 
 

@@ -58,6 +58,8 @@ public:
 
 public:
 	CellDataPtr getLastData();
+	QStringList getNetworkCountryIso();
+	QStringList getSimCountryIso();
 
 private:
 	friend void JNICALL Java_CellListener_cellUpdate(JNIEnv *, jobject, jlong native_ptr, jstring type, jint cid, jint lac, jint mcc, jint mnc, jint rssi, jint ta);

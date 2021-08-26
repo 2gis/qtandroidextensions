@@ -78,6 +78,14 @@ public class CellListener {
 
     public CellListener(long native_ptr) {
         mNativePtr = native_ptr;
+
+        try {
+            if (mManager == null) {
+                mManager = (TelephonyManager) getContext().getSystemService(Context.TELEPHONY_SERVICE);
+            }
+        } catch (Throwable e) {
+            Log.e(TAG, "Exception while creating cell listener: ", e);
+        }
     }
 
 
@@ -86,16 +94,20 @@ public class CellListener {
         synchronized(mNativePtr) {
             mNativePtr = 0l;
         }
+        mManager = null;
     }
 
 
     public synchronized boolean start() {
         Log.d(TAG, "start");
-        try {
-            if (mManager == null) {
-                mManager = (TelephonyManager) getContext().getSystemService(Context.TELEPHONY_SERVICE);
-            }
 
+        if (null != mListenerThread)
+        {
+            Log.d(TAG, "Already started");
+            return true;
+        }
+
+        try {
             Runnable listenRunnable = new Runnable() {
                 @Override
                 public void run() {
@@ -148,6 +160,9 @@ public class CellListener {
         } catch (InterruptedException e) {
             Log.e(TAG, "Exception in stop: ", e);
         }
+
+        mListenerThread = null;
+        mListenerLooper = null;
     }
 
 
@@ -307,6 +322,53 @@ public class CellListener {
         catch (Throwable ex) {
             Log.e(TAG, "Failed to request data", ex);
         }
+    }
+
+
+    public String getSimCountryIso() {
+        if (null == mManager) {
+            return "";
+        }
+
+        try {
+            return mManager.getSimCountryIso();
+        } catch (Throwable ex) {
+            Log.e(TAG, "Failed to get network country iso", ex);
+        }
+
+        return "";
+    }
+
+
+    public String getNetworkCountryIso() {
+        if (null == mManager) {
+            return "";
+        }
+
+        String ret = "";
+
+        try {
+            if (Build.VERSION.SDK_INT >= 30) {
+                int count = mManager.getActiveModemCount();
+                String sep = "";
+
+                for (int slot = 0; slot < count; ++slot) {
+                    try {
+                        String code = mManager.getNetworkCountryIso(slot);
+                        ret = ret + sep + code;
+                        sep = "\n";
+                    } catch(IllegalArgumentException ex) {
+                        Log.e(TAG, "Slot index is invalid", ex);
+                    }
+                }
+            } else {
+                ret = mManager.getNetworkCountryIso();
+            }
+        } catch (Throwable ex) {
+            Log.e(TAG, "Failed to get network country iso", ex);
+        }
+
+        return ret;
     }
 
 
