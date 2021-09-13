@@ -39,7 +39,7 @@
 
 namespace QAndroidDesktopUtils {
 
-static const char * const c_full_class_name_ = "ru/dublgis/androidhelpers/DesktopUtils";
+static const char * const c_desktoputils_class_name_ = "ru/dublgis/androidhelpers/DesktopUtils";
 
 
 void preloadJavaClasses()
@@ -47,7 +47,7 @@ void preloadJavaClasses()
 	static bool s_preloaded = false;
 	if (!s_preloaded)
 	{
-		QAndroidQPAPluginGap::preloadJavaClass(c_full_class_name_);
+		QAndroidQPAPluginGap::preloadJavaClass(c_desktoputils_class_name_);
 		s_preloaded = true;
 	}
 
@@ -56,7 +56,7 @@ void preloadJavaClasses()
 
 bool isInternetActive()
 {
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	QAndroidQPAPluginGap::Context activity;
 	jint result = du.callStaticParamInt("isInternetActive", "Landroid/content/Context;", activity.jObject());
 	if (result == 0)
@@ -76,14 +76,14 @@ bool isInternetActive()
 
 int getNetworkType()
 {
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	QAndroidQPAPluginGap::Context activity;
 	return static_cast<int>(du.callStaticParamInt("getNetworkType", "Landroid/content/Context;", activity.jObject()));
 }
 
 void showApplicationSettings()
 {
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	QAndroidQPAPluginGap::Context activity;
 	du.callStaticParamVoid("showApplicationSettings", "Landroid/content/Context;", activity.jObject());
 }
@@ -94,7 +94,7 @@ bool sendTo(
 	const QString & text,
 	const QString & content_type)
 {
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticParamBoolean(
 		"sendTo",
@@ -117,7 +117,7 @@ bool sendTo(
 	{
 		return sendTo(chooser_caption, text, content_type);
 	}
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticParamBoolean(
 		"sendTo",
@@ -132,7 +132,7 @@ bool sendTo(
 
 bool sendSMS(const QString & number, const QString & text)
 {
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticParamBoolean("sendSMS", "Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;",
 		activity.jObject(),
@@ -149,7 +149,7 @@ bool sendEmail(
 	bool force_content_provider,
 	const QString & authorities)
 {
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticParamBoolean(
 		"sendEmail",
@@ -186,7 +186,7 @@ bool sendEmail(
 			, QJniLocalRef(attachment[i]).jObject());
 	}
 
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticParamBoolean(
 		"sendEmail",
@@ -207,7 +207,7 @@ bool sendEmail(
 
 bool openURL(const QString & url)
 {
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticParamBoolean("openURL", "Landroid/content/Context;Ljava/lang/String;",
 		activity.jObject(),
@@ -217,7 +217,7 @@ bool openURL(const QString & url)
 
 bool openFile(const QString & fileName, const QString & mimeType)
 {
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticParamBoolean("openFile", "Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;",
 		activity.jObject(),
@@ -228,7 +228,7 @@ bool openFile(const QString & fileName, const QString & mimeType)
 
 bool installApk(const QString & apk)
 {
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticParamBoolean("installApk", "Landroid/content/Context;Ljava/lang/String;",
 		activity.jObject(),
@@ -238,7 +238,7 @@ bool installApk(const QString & apk)
 
 void uninstallApk(const QString & packagename)
 {
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	QAndroidQPAPluginGap::Context activity;
 	du.callStaticParamVoid("uninstallApk", "Landroid/content/Context;Ljava/lang/String;",
 		activity.jObject(),
@@ -251,7 +251,7 @@ bool callNumber(
 	const QString & action,
 	QJniObject * customContext)
 {
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	return du.callStaticParamBoolean(
 		"callNumber",
 		"Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;",
@@ -282,7 +282,7 @@ bool dialPhoneNumber(const QString & number)
 
 bool isVoiceTelephonyAvailable()
 {
-	return QJniClass(c_full_class_name_).callStaticParamBoolean(
+	return QJniClass(c_desktoputils_class_name_).callStaticParamBoolean(
 		"isVoiceTelephonyAvailable"
 		, "Landroid/content/Context;"
 		, QAndroidQPAPluginGap::Context().jObject());
@@ -310,7 +310,7 @@ bool callPhoneNumber(const QString & number)
 
 QString getTelephonyDeviceId()
 {
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticParamString("getTelephonyDeviceId", "Landroid/content/Context;", activity.jObject());
 }
@@ -318,7 +318,7 @@ QString getTelephonyDeviceId()
 
 QString getDisplayCountry()
 {
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticParamString("getDisplayCountry", "Landroid/content/Context;", activity.jObject());
 }
@@ -326,7 +326,7 @@ QString getDisplayCountry()
 
 QString getCountry()
 {
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticParamString("getCountry", "Landroid/content/Context;", activity.jObject());
 }
@@ -334,7 +334,7 @@ QString getCountry()
 
 QString getAndroidId()
 {
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticParamString("getAndroidId", "Landroid/content/Context;", activity.jObject());
 }
@@ -342,7 +342,7 @@ QString getAndroidId()
 
 QString getBuildSerial()
 {
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	QAndroidQPAPluginGap::Context activity;
 	return du.callStaticString("getBuildSerial");
 }
@@ -350,7 +350,7 @@ QString getBuildSerial()
 
 QStringList getInstalledAppsList()
 {
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	QAndroidQPAPluginGap::Context activity;
 	QString list = du.callStaticParamString("getInstalledAppsList", "Landroid/content/Context;", activity.jObject());
 	return list.split(QChar('\n'), QString::SkipEmptyParts);
@@ -404,7 +404,7 @@ QString getUniqueDeviceId()
 
 QString getDefaultLocaleName()
 {
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	if (du.jClass())
 	{
 		return du.callStaticParamString(
@@ -414,7 +414,7 @@ QString getDefaultLocaleName()
 	}
 	else
 	{
-		qCritical() << "Null class:" << c_full_class_name_;
+		qCritical() << "Null class:" << c_desktoputils_class_name_;
 		return QLatin1String("C");
 	}
 }
@@ -422,7 +422,7 @@ QString getDefaultLocaleName()
 
 QStringList getUserLocaleNames()
 {
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	if (du.jClass())
 	{
 		return du.callStaticParamString(
@@ -433,7 +433,7 @@ QStringList getUserLocaleNames()
 	}
 	else
 	{
-		qCritical() << "Null class:" << c_full_class_name_;
+		qCritical() << "Null class:" << c_desktoputils_class_name_;
 		return QStringList() << QLatin1String("C");
 	}
 }
@@ -441,14 +441,14 @@ QStringList getUserLocaleNames()
 
 QString getTimezoneId()
 {
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	if (du.jClass())
 	{
 		return du.callStaticString("getTimezoneId");
 	}
 	else
 	{
-		qCritical() << "Null class:" << c_full_class_name_;
+		qCritical() << "Null class:" << c_desktoputils_class_name_;
 	}
 
 	return "";
@@ -517,7 +517,7 @@ void requestPermissions(const QStringList & permission_names, int permission_req
 
 QString getBackgroundLocationPermissionLabel()
 {
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	if (du.jClass())
 	{
 		return du.callStaticParamString(
@@ -527,7 +527,7 @@ QString getBackgroundLocationPermissionLabel()
 	}
 	else
 	{
-		qCritical() << "Null class:" << c_full_class_name_;
+		qCritical() << "Null class:" << c_desktoputils_class_name_;
 		return QString();
 	}
 	return QString();
@@ -536,7 +536,7 @@ QString getBackgroundLocationPermissionLabel()
 
 void playNotificationSound()
 {
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	if (du.jClass())
 	{
 		du.callStaticParamVoid(
@@ -546,13 +546,13 @@ void playNotificationSound()
 	}
 	else
 	{
-		qCritical() << "Null class:" << c_full_class_name_;
+		qCritical() << "Null class:" << c_desktoputils_class_name_;
 	}
 }
 
 bool isBluetoothLEAvailable()
 {
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	if (du.jClass())
 	{
 		return du.callStaticParamBoolean(
@@ -562,14 +562,14 @@ bool isBluetoothLEAvailable()
 	}
 	else
 	{
-		qCritical() << "Null class:" << c_full_class_name_;
+		qCritical() << "Null class:" << c_desktoputils_class_name_;
 		return false;
 	}
 }
 
 bool zipFiles(const QStringList & src_paths, const QString & dst_path)
 {
-	QJniClass du(c_full_class_name_);
+	QJniClass du(c_desktoputils_class_name_);
 	if (du.jClass())
 	{
 		QJniEnvPtr jep;
@@ -595,7 +595,7 @@ bool zipFiles(const QStringList & src_paths, const QString & dst_path)
 	}
 	else
 	{
-		qCritical() << "Null class:" << c_full_class_name_;
+		qCritical() << "Null class:" << c_desktoputils_class_name_;
 		return false;
 	}
 }
