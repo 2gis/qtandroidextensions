@@ -35,11 +35,12 @@
 */
 
 #include "QAndroidDesktopUtils.h"
-
+#include "QLocale"
 
 namespace QAndroidDesktopUtils {
 
 static const char * const c_desktoputils_class_name_ = "ru/dublgis/androidhelpers/DesktopUtils";
+static const char * const c_dateformat_class_name = "android/text/format/DateFormat";
 
 
 void preloadJavaClasses()
@@ -48,6 +49,7 @@ void preloadJavaClasses()
 	if (!s_preloaded)
 	{
 		QAndroidQPAPluginGap::preloadJavaClass(c_desktoputils_class_name_);
+		QAndroidQPAPluginGap::preloadJavaClass(c_dateformat_class_name);
 		s_preloaded = true;
 	}
 
@@ -598,6 +600,19 @@ bool zipFiles(const QStringList & src_paths, const QString & dst_path)
 		qCritical() << "Null class:" << c_desktoputils_class_name_;
 		return false;
 	}
+}
+
+bool is24HourFormat()
+{
+	try {
+		return QJniClass(c_dateformat_class_name).callStaticParamBoolean(
+					"is24HourFormat",
+					"Landroid/content/Context;",
+					QAndroidQPAPluginGap::Context().jObject());
+	} catch (const std::exception &e) {
+		qCritical() << "JNI exception in is24HourFormat: " << e.what();
+	}
+	return QLocale().timeFormat(QLocale::ShortFormat).contains('A', Qt::CaseInsensitive);
 }
 
 } // namespace QAndroidDesktopUtils

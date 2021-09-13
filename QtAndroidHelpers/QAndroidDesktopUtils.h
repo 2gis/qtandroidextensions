@@ -153,5 +153,7 @@ bool isBluetoothLEAvailable();
 // Compress files or directories into a zip archive
 bool zipFiles(const QStringList & src_pathes, const QString & dst_path);
 
+bool is24HourFormat();
+
 } // namespace QAndroidDesktopUtils
 
