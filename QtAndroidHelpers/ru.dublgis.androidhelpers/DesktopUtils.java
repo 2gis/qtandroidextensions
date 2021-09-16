@@ -837,12 +837,14 @@ public class DesktopUtils
 
     public static String getTimezoneId()
     {
-        try {
-            final TimeZone timezone = TimeZone.getDefault();
-            final ZoneId zoneid = timezone.toZoneId();
-            return zoneid.toString();
-        } catch (final Throwable e) {
-            Log.e(TAG, "getTimezoneId exception: ", e);
+        if (Build.VERSION.SDK_INT >= 26) {
+            try {
+                final TimeZone timezone = TimeZone.getDefault();
+                final ZoneId zoneid = timezone.toZoneId();
+                return zoneid.toString();
+            } catch (final Throwable e) {
+                Log.e(TAG, "getTimezoneId exception: ", e);
+            }
         }
         return "";
     }
