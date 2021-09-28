@@ -80,6 +80,7 @@ private:
 	CellDataPtr last_data_;
 	CellDataPtr current_data_;
 	QReadWriteLock lock_data_;
+	bool started_;
 };
 
 }

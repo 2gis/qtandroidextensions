@@ -74,12 +74,14 @@ JNI_LINKER_IMPL(QAndroidCellDataProvider, "ru/dublgis/androidhelpers/mobility/Ce
 QAndroidCellDataProvider::QAndroidCellDataProvider(QObject * parent /*= 0*/)
 	: QObject(parent)
 	, jniLinker_(new JniObjectLinker(this))
+	, started_(false)
 {
 }
 
 
 QAndroidCellDataProvider::~QAndroidCellDataProvider()
 {
+	stop();
 }
 
 
@@ -87,9 +89,9 @@ void QAndroidCellDataProvider::start()
 {
 	try
 	{
-		if (isJniReady())
+		if (!started_ && isJniReady())
 		{
-			jni()->callBool("start");
+			started_ = jni()->callBool("start");
 		}
 	}
 	catch (const std::exception & ex)
@@ -103,9 +105,10 @@ void QAndroidCellDataProvider::stop()
 {
 	try
 	{
-		if (isJniReady())
+		if (started_ && isJniReady())
 		{
 			jni()->callVoid("stop");
+			started_ = false;
 		}
 	}
 	catch (const std::exception & ex)
