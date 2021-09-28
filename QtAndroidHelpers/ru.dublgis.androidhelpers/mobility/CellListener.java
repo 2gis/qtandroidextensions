@@ -144,21 +144,18 @@ public class CellListener {
             if (mManager != null) {
                 mManager.listen(mListener, PhoneStateListener.LISTEN_NONE);
             }
-        }
-        catch (SecurityException ex) {
-            Log.e(TAG, "Failed to stop listener", ex);
-        }
-
-        if (null != mListenerLooper) {
-            mListenerLooper.quit();
-        }
-
-        try {
+            if (null != mListenerLooper) {
+                mListenerLooper.quit();
+            }
             if (null != mListenerThread && mListenerThread.isAlive()) {
                 mListenerThread.join(300);
             }
-        } catch (InterruptedException e) {
-            Log.e(TAG, "Exception in stop: ", e);
+        } catch (SecurityException ex) {
+            Log.e(TAG, "Failed to stop listener", ex);
+        } catch (InterruptedException ex) {
+            Log.e(TAG, "Exception in stop: " + ex);
+        } catch (Throwable ex) {
+            Log.e(TAG, "Unexpected exception in stop: ", ex);
         }
 
         mListenerThread = null;
