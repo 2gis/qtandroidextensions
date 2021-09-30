@@ -169,18 +169,22 @@ void QAndroidCellDataProvider::cellUpdate(jstring type, jint cid, jint lac, jint
 
 QStringList QAndroidCellDataProvider::getSimCountryIso()
 {
-	try 
+	QString list;
+
+	try
 	{
-		if (isJniReady())
-		{
-			return { jni()->callString("getSimCountryIso") };
-		}
+		QByteArray javaFullClassName;
+		QAndroidCellDataProvider::getJavaClassName(javaFullClassName);
+
+		QJniClass du(javaFullClassName);
+		QAndroidQPAPluginGap::Context activity;
+		list = du.callStaticParamString("getSimCountryIso", "Landroid/content/Context;", activity.jObject());
 	}
 	catch (const std::exception & ex)
 	{
 		qCritical() << "JNI exception in QAndroidCellDataProvider:" << ex.what();
 	}
-	return {};
+	return { list };
 }
 
 

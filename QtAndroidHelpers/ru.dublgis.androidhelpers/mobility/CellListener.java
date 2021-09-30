@@ -325,13 +325,12 @@ public class CellListener {
     }
 
 
-    public String getSimCountryIso() {
-        if (null == mManager) {
-            return "";
-        }
-
+    public static String getSimCountryIso(final Context ctx) {
         try {
-            return mManager.getSimCountryIso();
+            final TelephonyManager manager = (TelephonyManager) ctx.getSystemService(Context.TELEPHONY_SERVICE);
+            if (null != manager) {
+                return manager.getSimCountryIso();
+            }
         } catch (Throwable ex) {
             Log.e(TAG, "Failed to get network country iso", ex);
         }
