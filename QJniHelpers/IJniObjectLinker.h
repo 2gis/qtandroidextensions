@@ -57,7 +57,8 @@ public:                                                                         
 private:                                                                                                                                 \
 	bool isJniReady() const;                                                                                                             \
 	QJniObject * jni() const;                                                                                                            \
-	static void getNativeMethods(QByteArray & javaFullClassName, const JNINativeMethod ** methods_list, size_t & sizeof_methods_list);   \
+	static void getNativeMethods(const JNINativeMethod ** methods_list, size_t & sizeof_methods_list);                                   \
+	static void getJavaClassName(QByteArray & javaFullClassName);                                                                        \
 	friend class TJniObjectLinker<nativeClass>;                                                                                          \
 	typedef TJniObjectLinker<nativeClass> JniObjectLinker;                                                                               \
 	QScopedPointer<IJniObjectLinker> jniLinker_;                                                                                         \

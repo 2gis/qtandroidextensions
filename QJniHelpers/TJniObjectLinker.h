@@ -151,7 +151,8 @@ QByteArray TJniObjectLinker<TNative>::preloadJavaClasses()
 	QByteArray javaFullClassName;
 	const JNINativeMethod * methods_list = NULL;
 	size_t sizeof_methods_list = 0;
-	TNative::getNativeMethods(javaFullClassName, &methods_list, sizeof_methods_list);
+	TNative::getNativeMethods(&methods_list, sizeof_methods_list);
+	TNative::getJavaClassName(javaFullClassName);
 
 	QWriteLocker locker(&mutex_);
 
@@ -228,11 +229,14 @@ QJniObject * nativeClass::jni() const                                           
 	return jniLinker_->handler();                                                                                                           \
 }                                                                                                                                           \
                                                                                                                                             \
-void nativeClass::getNativeMethods(QByteArray & javaFullClassName, const JNINativeMethod ** methods_list, size_t & sizeof_methods_list)     \
+void nativeClass::getNativeMethods(const JNINativeMethod ** methods_list, size_t & sizeof_methods_list)                                     \
 {                                                                                                                                           \
-	javaFullClassName = java_class_name;                                                                                                    \
 	*methods_list = methods;                                                                                                                \
 	sizeof_methods_list = sizeof(methods);                                                                                                  \
 }                                                                                                                                           \
-
+                                                                                                                                            \
+void nativeClass::getJavaClassName(QByteArray & javaFullClassName)                                                                          \
+{                                                                                                                                           \
+	javaFullClassName = java_class_name;                                                                                                    \
+}                                                                                                                                           \
 
