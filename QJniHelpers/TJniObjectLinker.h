@@ -200,43 +200,45 @@ QSharedPointer<QReadLocker> TJniObjectLinker<TNative>::getLocker()
 }
 
 
-#define JNI_LINKER_OBJECT(nativeClass, param, object)                                                                                       \
-	QSharedPointer<QReadLocker> locker = nativeClass::JniObjectLinker::getLocker();                                                         \
-	nativeClass * object = nativeClass::JniObjectLinker::getClient(param);                                                                  \
-	if (NULL == object)                                                                                                                     \
-	{                                                                                                                                       \
-		qWarning() << "Failed to get native object for " #nativeClass;                                                                      \
-		return;                                                                                                                             \
-	}                                                                                                                                       \
+#define JNI_LINKER_OBJECT(nativeClass, param, object)                                           \
+	QSharedPointer<QReadLocker> locker = nativeClass::JniObjectLinker::getLocker();             \
+	nativeClass * object = nativeClass::JniObjectLinker::getClient(param);                      \
+	if (NULL == object)                                                                         \
+	{                                                                                           \
+		qWarning() << "Failed to get native object for " #nativeClass;                          \
+		return;                                                                                 \
+	}                                                                                           \
 
 
 
-#define JNI_LINKER_IMPL(nativeClass, java_class_name, methods)                                                                              \
-                                                                                                                                            \
-void nativeClass::preloadJavaClasses()                                                                                                      \
-{                                                                                                                                           \
-	JniObjectLinker::preloadJavaClasses();                                                                                                  \
-}                                                                                                                                           \
-                                                                                                                                            \
-bool nativeClass::isJniReady() const                                                                                                        \
-{                                                                                                                                           \
-	return jniLinker_ && jniLinker_->handler() && jniLinker_->handler()->jObject();                                                         \
-}                                                                                                                                           \
-                                                                                                                                            \
-QJniObject * nativeClass::jni() const                                                                                                       \
-{                                                                                                                                           \
-	Q_ASSERT(isJniReady());                                                                                                                 \
-	return jniLinker_->handler();                                                                                                           \
-}                                                                                                                                           \
-                                                                                                                                            \
-void nativeClass::getNativeMethods(const JNINativeMethod ** methods_list, size_t & sizeof_methods_list)                                     \
-{                                                                                                                                           \
-	*methods_list = methods;                                                                                                                \
-	sizeof_methods_list = sizeof(methods);                                                                                                  \
-}                                                                                                                                           \
-                                                                                                                                            \
-void nativeClass::getJavaClassName(QByteArray & javaFullClassName)                                                                          \
-{                                                                                                                                           \
-	javaFullClassName = java_class_name;                                                                                                    \
-}                                                                                                                                           \
+#define JNI_LINKER_IMPL(nativeClass, java_class_name, methods)                                  \
+                                                                                                \
+void nativeClass::preloadJavaClasses()                                                          \
+{                                                                                               \
+	JniObjectLinker::preloadJavaClasses();                                                      \
+}                                                                                               \
+                                                                                                \
+bool nativeClass::isJniReady() const                                                            \
+{                                                                                               \
+	return jniLinker_ && jniLinker_->handler() && jniLinker_->handler()->jObject();             \
+}                                                                                               \
+                                                                                                \
+QJniObject * nativeClass::jni() const                                                           \
+{                                                                                               \
+	Q_ASSERT(isJniReady());                                                                     \
+	return jniLinker_->handler();                                                               \
+}                                                                                               \
+                                                                                                \
+void nativeClass::getNativeMethods(                                                             \
+	const JNINativeMethod ** methods_list,                                                      \
+	size_t & sizeof_methods_list)                                                               \
+{                                                                                               \
+	*methods_list = methods;                                                                    \
+	sizeof_methods_list = sizeof(methods);                                                      \
+}                                                                                               \
+                                                                                                \
+void nativeClass::getJavaClassName(QByteArray & outJavaFullClassName)                           \
+{                                                                                               \
+	outJavaFullClassName = java_class_name;                                                     \
+}                                                                                               \
 
