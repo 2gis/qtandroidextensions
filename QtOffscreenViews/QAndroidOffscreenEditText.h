@@ -365,7 +365,7 @@ public:
 	void setCursorByDrawableName(const QString & name);
 	void setMaxLength(int length);
 	void setRichTextMode(bool enabled);
-    void setInputMask(const QString & inputMask);
+	void setInputMask(const QString & inputMask);
 
 	//
 	// Drawing mode hack

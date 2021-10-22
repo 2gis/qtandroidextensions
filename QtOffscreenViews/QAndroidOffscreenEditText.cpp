@@ -698,8 +698,8 @@ void QAndroidOffscreenEditText::javaOnContentHeightChanged(int height)
 
 void QAndroidOffscreenEditText::setInputMask(const QString & inputMask)
 {
-    if (QJniObject * view = offscreenView())
-    {
-        view->callVoid("setInputMask", inputMask);
-    }
+	if (QJniObject * view = offscreenView())
+	{
+		view->callVoid("setInputMask", inputMask);
+	}
 }
