@@ -73,6 +73,8 @@ import android.text.Spanned;
 import android.view.View;
 
 import ru.dublgis.androidhelpers.Log;
+import ru.dublgis.offscreenview.inputmask.QtInputMaskFormatter;
+import ru.dublgis.offscreenview.inputmask.InputMaskTextWatcher;
 
 
 class OffscreenEditText extends OffscreenView
@@ -83,6 +85,7 @@ class OffscreenEditText extends OffscreenView
     int selection_start_ = 0, selection_end_ = 0;
     int selection_top_ = 0, selection_bottom_ = 0;
     private Object variables_mutex_ = new Object();
+    private InputMaskTextWatcher inputMaskTextWatcher = null;
 
     static final int
         SYSTEM_DRAW_NEVER = 0,
@@ -1269,7 +1272,18 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable() {
             @Override
             public void run() {
-                // TODO: implement
+                try {
+                    final EditText editText = ((EditText)getView());
+                    if (inputMaskTextWatcher != null) {
+                        editText.removeTextChangedListener(inputMaskTextWatcher);
+                    }
+                    if (!mask.isEmpty()) {
+                        inputMaskTextWatcher = new InputMaskTextWatcher(editText, new QtInputMaskFormatter(mask));
+                        editText.addTextChangedListener(inputMaskTextWatcher);
+                    }
+                } catch (final Throwable e) {
+                    Log.w(TAG, "setInputMask: '" + mask + "' exeption: " + e);
+                }
             }
         });
     }
