@@ -228,6 +228,8 @@ public slots:
 
 	int getContentHeight() { return androidEditText()->getContentHeight(); }
 
+    void setInputMask(const QString & inputMask) { androidEditText()->setInputMask(inputMask); }
+
 signals:
 	void onTextChanged(QString text);
 	void selectionChanged();

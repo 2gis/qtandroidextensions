@@ -1263,4 +1263,14 @@ class OffscreenEditText extends OffscreenView
     {
         system_draw_ = mode;
     }
+
+    void setInputMask(String mask) 
+    {
+        runViewAction(new Runnable() {
+            @Override
+            public void run() {
+                // TODO: implement
+            }
+        });
+    }
 }
