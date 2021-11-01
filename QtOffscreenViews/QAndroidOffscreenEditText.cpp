@@ -115,6 +115,20 @@ Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnContentHeightCh
 	qWarning()<<__FUNCTION__<<"Zero param!";
 }
 
+Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnAcceptableInputChanged(JNIEnv *, jobject, jlong param, jboolean acceptableInput)
+{
+	if (param)
+	{
+		void * vp = reinterpret_cast<void*>(param);
+		QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(reinterpret_cast<QAndroidOffscreenView*>(vp));
+		if (edit)
+		{
+			QMetaObject::invokeMethod(edit, "javaOnAcceptableInputChanged", Q_ARG(bool, acceptableInput ? true : false));
+			return;
+		}
+	}
+	qWarning()<<__FUNCTION__<<"Zero param!";
+}
 
 QAndroidOffscreenEditText::QAndroidOffscreenEditText(const QString & object_name, const QSize & def_size, QObject * parent)
 	: QAndroidOffscreenView(QLatin1String("OffscreenEditText"), object_name, def_size, parent)
@@ -129,6 +143,7 @@ QAndroidOffscreenEditText::QAndroidOffscreenEditText(const QString & object_name
 			{"nativeOnEditorAction", "(JI)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnEditorAction)},
 			{"nativeSetSelectionInfo", "(JII)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeSetSelectionInfo)},
 			{"nativeOnContentHeightChanged", "(JI)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnContentHeightChanged)},
+			{"nativeOnAcceptableInputChanged", "(JZ)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnAcceptableInputChanged)},
 		};
 		view->registerNativeMethods(methods, sizeof(methods));
 	}
@@ -701,5 +716,20 @@ void QAndroidOffscreenEditText::setInputMask(const QString & inputMask)
 	if (QJniObject * view = offscreenView())
 	{
 		view->callVoid("setInputMask", inputMask);
+	}
+}
+
+bool QAndroidOffscreenEditText::acceptableInput() const
+{
+	return acceptableInput_;
+}
+
+void QAndroidOffscreenEditText::javaOnAcceptableInputChanged(bool acceptableInput)
+{
+
+	if (acceptableInput_ != acceptableInput) 
+	{
+		acceptableInput_ = acceptableInput;
+		emit acceptableInputChanged(acceptableInput_);
 	}
 }

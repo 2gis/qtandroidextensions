@@ -73,8 +73,8 @@ import android.text.Spanned;
 import android.view.View;
 
 import ru.dublgis.androidhelpers.Log;
-import ru.dublgis.offscreenview.inputmask.QtInputMaskFormatter;
-import ru.dublgis.offscreenview.inputmask.InputMaskTextWatcher;
+import ru.dublgis.offscreenview.inputmask.InputMaskFormatter;
+import ru.dublgis.offscreenview.inputmask.InputMaskFormatter.ValidationState;
 
 
 class OffscreenEditText extends OffscreenView
@@ -554,6 +554,7 @@ class OffscreenEditText extends OffscreenView
     public native void nativeOnEditorAction(long nativePtr, int action);
     public native void nativeSetSelectionInfo(long nativePtr, int top, int bottom);
     public native void nativeOnContentHeightChanged(long nativePtr, int height);
+    public native void nativeOnAcceptableInputChanged(long nativePtr, boolean acceptableInput);
 
 
 
@@ -1267,21 +1268,73 @@ class OffscreenEditText extends OffscreenView
         system_draw_ = mode;
     }
 
+    class InputMaskTextWatcher implements TextWatcher 
+    {
+        
+        protected InputMaskFormatter formatter;
+        protected EditText editText;
+        protected String currentText;
+
+        public InputMaskTextWatcher(EditText editText, InputMaskFormatter formatter)
+        {
+            this.editText = editText;
+            this.formatter = formatter;
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) 
+        {
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int count, int after) 
+        {
+            final String text = s.toString();
+
+            if (!text.equals(currentText)) 
+            {
+                try 
+                {
+                    currentText = formatter.format(text);
+                    boolean acceptableInput = formatter.acceptableInput(currentText);
+
+                    editText.setText(currentText);
+                    editText.setSelection(currentText.length());
+                    nativeOnAcceptableInputChanged(getNativePtr(), acceptableInput);
+                } 
+                catch (final Throwable e) 
+                {
+                    Log.w("InputMaskTextWatcher format text: '" + text + "' exception: ", e);
+                }
+            }
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable) 
+        {
+        }
+    }
+
     void setInputMask(String mask) 
     {
         runViewAction(new Runnable() {
             @Override
             public void run() {
-                try {
+                try 
+                {
                     final EditText editText = ((EditText)getView());
-                    if (inputMaskTextWatcher != null) {
+                    if (inputMaskTextWatcher != null) 
+                    {
                         editText.removeTextChangedListener(inputMaskTextWatcher);
                     }
-                    if (!mask.isEmpty()) {
-                        inputMaskTextWatcher = new InputMaskTextWatcher(editText, new QtInputMaskFormatter(mask));
+                    if (!mask.isEmpty()) 
+                    {
+                        inputMaskTextWatcher = new InputMaskTextWatcher(editText, new InputMaskFormatter(mask));
                         editText.addTextChangedListener(inputMaskTextWatcher);
                     }
-                } catch (final Throwable e) {
+                } 
+                catch (final Throwable e) 
+                {
                     Log.w(TAG, "setInputMask: '" + mask + "' exeption: " + e);
                 }
             }

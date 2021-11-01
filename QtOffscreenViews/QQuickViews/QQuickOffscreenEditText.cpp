@@ -44,6 +44,7 @@ QQuickAndroidOffscreenEditText::QQuickAndroidOffscreenEditText()
 	connect(androidEditText(), SIGNAL(onKeyBack(bool)), this, SLOT(etKeyBack(bool)));
 	connect(androidEditText(), SIGNAL(onEnterOrPositiveAction()), this, SLOT(etEnter()));
 	connect(androidEditText(), SIGNAL(contentHeightChanged(int)), this, SIGNAL(contentHeightChanged(int)));
+	connect(androidEditText(), SIGNAL(acceptableInputChanged(bool)), this, SIGNAL(acceptableInputChanged(bool)));
 }
 
 void QQuickAndroidOffscreenEditText::etTextChanged(QString text, int start, int before, int count)
@@ -90,5 +91,4 @@ void QQuickAndroidOffscreenEditText::setEnableNativeSuggestions(bool enable)
 			QAndroidOffscreenEditText::ANDROID_INPUTTYPE_TYPE_TEXT_FLAG_NO_SUGGESTIONS);
 	}
 }
-
 

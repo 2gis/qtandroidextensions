@@ -45,6 +45,7 @@ class QQuickAndroidOffscreenEditText: public QQuickAndroidOffscreenView
 	Q_PROPERTY(int selectionTop READ getSelectionTop NOTIFY selectionChanged)
 	Q_PROPERTY(int selectionBottom READ getSelectionBottom NOTIFY selectionChanged)
 	Q_PROPERTY(int contentHeight READ getContentHeight NOTIFY contentHeightChanged)
+	Q_PROPERTY(bool acceptableInput READ getAcceptableInput NOTIFY acceptableInputChanged FINAL)
 public:
 	QQuickAndroidOffscreenEditText();
 
@@ -230,10 +231,13 @@ public slots:
 
 	void setInputMask(const QString & inputMask) { androidEditText()->setInputMask(inputMask); }
 
+	bool getAcceptableInput() { return androidEditText()->acceptableInput(); }
+
 signals:
 	void onTextChanged(QString text);
 	void selectionChanged();
 	void contentHeightChanged(int height);
+	void acceptableInputChanged(bool acceptableInput);
 
 	//! Wraps QAndroidOffscreenEditText::onEnterOrPositiveAction().
 	void returnPressed();

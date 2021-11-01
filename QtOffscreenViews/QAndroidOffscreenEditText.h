@@ -365,7 +365,12 @@ public:
 	void setCursorByDrawableName(const QString & name);
 	void setMaxLength(int length);
 	void setRichTextMode(bool enabled);
+
+	//! mask for input validation
 	void setInputMask(const QString & inputMask);
+
+	//! return true if inputMask is set and text is acceptable as a final result or not
+	bool acceptableInput() const;
 
 	//
 	// Drawing mode hack
@@ -391,6 +396,9 @@ signals:
 
 	//! Emitted when content height changed
 	void contentHeightChanged(int height);
+
+	//! Emitted when inputMask is set and text is acceptable as a final result or not
+	void acceptableInputChanged(bool acceptableInput);
 
 public:
 	static const int
@@ -597,6 +605,7 @@ protected:
 private slots:
 	void javaSetSelectionInfo(int top, int bottom);
 	void javaOnContentHeightChanged(int height);
+	void javaOnAcceptableInputChanged(bool acceptableInput);
 
 private:
 	friend void JNICALL Java_AndroidOffscreenEditText_nativeOnTextChanged(JNIEnv * env, jobject jo, jlong param, jstring str, jint start, jint before, jint count);
@@ -604,11 +613,13 @@ private:
 	friend void JNICALL Java_AndroidOffscreenEditText_nativeOnEditorAction(JNIEnv *, jobject, jlong param, jint action);
 	friend void JNICALL Java_AndroidOffscreenEditText_nativeSetSelectionInfo(JNIEnv *, jobject, jlong param, jint top, jint bottom);
 	friend void JNICALL Java_AndroidOffscreenEditText_nativeOnContentHeightChanged(JNIEnv *, jobject, jlong param, jint height);
+	friend void JNICALL Java_AndroidOffscreenEditText_nativeOnAcceptableInputChanged(JNIEnv *, jobject, jlong param, jboolean acceptableInput);
 
 private:
 	int paint_flags_;
 	int selection_top_ = 0;
 	int selection_bottom_ = 0;
 	int content_height_ = 0;
+	bool acceptableInput_ = true;
 };
 
