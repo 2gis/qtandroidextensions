@@ -74,7 +74,6 @@ import android.view.View;
 
 import ru.dublgis.androidhelpers.Log;
 import ru.dublgis.offscreenview.inputmask.InputMaskFormatter;
-import ru.dublgis.offscreenview.inputmask.InputMaskFormatter.ValidationState;
 
 
 class OffscreenEditText extends OffscreenView
@@ -1271,14 +1270,19 @@ class OffscreenEditText extends OffscreenView
     class InputMaskTextWatcher implements TextWatcher 
     {
         
-        protected InputMaskFormatter formatter;
-        protected EditText editText;
-        protected String currentText;
+        protected InputMaskFormatter formatter_;
+        protected EditText editText_;
+        protected String currentText_;
+        private boolean acceptableInput_;
 
-        public InputMaskTextWatcher(EditText editText, InputMaskFormatter formatter)
+        public InputMaskTextWatcher(EditText editText, String mask)
         {
-            this.editText = editText;
-            this.formatter = formatter;
+            this.editText_ = editText;
+            this.acceptableInput_ = false;
+            this.formatter_ = new InputMaskFormatter(mask);
+            this.currentText_ = formatter_.format(editText_.getText().toString());
+
+            setAcceptableInput(formatter_.acceptableInput());
         }
 
         @Override
@@ -1291,16 +1295,15 @@ class OffscreenEditText extends OffscreenView
         {
             final String text = s.toString();
 
-            if (!text.equals(currentText)) 
+            if (!text.equals(currentText_)) 
             {
                 try 
                 {
-                    currentText = formatter.format(text);
-                    boolean acceptableInput = formatter.acceptableInput(currentText);
+                    currentText_ = formatter_.format(text);
 
-                    editText.setText(currentText);
-                    editText.setSelection(currentText.length());
-                    nativeOnAcceptableInputChanged(getNativePtr(), acceptableInput);
+                    editText_.setText(currentText_);
+                    editText_.setSelection(currentText_.length());
+                    setAcceptableInput(formatter_.acceptableInput());
                 } 
                 catch (final Throwable e) 
                 {
@@ -1313,6 +1316,15 @@ class OffscreenEditText extends OffscreenView
         public void afterTextChanged(Editable editable) 
         {
         }
+        
+        private void setAcceptableInput(boolean acceptableInput) 
+        {
+            if (acceptableInput_ != acceptableInput) 
+            {
+                acceptableInput_ = acceptableInput;
+                nativeOnAcceptableInputChanged(getNativePtr(), acceptableInput_);
+            }
+        }
     }
 
     void setInputMask(String mask) 
@@ -1322,15 +1334,19 @@ class OffscreenEditText extends OffscreenView
             public void run() {
                 try 
                 {
-                    final EditText editText = ((EditText)getView());
+                    final EditText editText = ((EditText) getView());
                     if (inputMaskTextWatcher != null) 
                     {
                         editText.removeTextChangedListener(inputMaskTextWatcher);
                     }
                     if (!mask.isEmpty()) 
                     {
-                        inputMaskTextWatcher = new InputMaskTextWatcher(editText, new InputMaskFormatter(mask));
+                        inputMaskTextWatcher = new InputMaskTextWatcher(editText, mask);
                         editText.addTextChangedListener(inputMaskTextWatcher);
+                    }
+                    else
+                    {
+                        nativeOnAcceptableInputChanged(getNativePtr(), true);
                     }
                 } 
                 catch (final Throwable e) 

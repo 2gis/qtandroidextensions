@@ -14,9 +14,13 @@ public class InputMaskFormatter {
 
     protected String mask_;
     protected HashMap<String, MaskPattern> patternsMap_;
-    protected HashMap<String, MaskPattern> maskPatterns_;
+    
+    private ValidationState state_ = ValidationState.Invalid;
+    private HashMap<String, MaskPattern> maskPatterns_;
+    private String lastText_;
 
-    public enum ValidationState {
+    enum ValidationState 
+    {
         Invalid,
         Intermediate,
         Acceptable
@@ -26,7 +30,7 @@ public class InputMaskFormatter {
     {
         private Pattern pattern_;
 
-        public MaskPattern(final String regex) 
+        public MaskPattern(String regex) 
         {
             try 
             {
@@ -56,13 +60,13 @@ public class InputMaskFormatter {
         }
     }
 
-    public InputMaskFormatter(final String mask) 
+    public InputMaskFormatter(String mask) 
     {
         initPatterns();
         setMask(mask);
     }
 
-    public void setMask(final String mask) 
+    public void setMask(String mask) 
     {
         if (mask_ != mask) 
         {
@@ -89,7 +93,7 @@ public class InputMaskFormatter {
         patternsMap_.put("h", new MaskPattern("\\p{XDigit}?"));
     }
 
-    private void parseMask(final String mask) 
+    private void parseMask(String mask) 
     {
         this.maskPatterns_ = new HashMap<>();
         for (int i = 0; i < mask.length(); i++)
@@ -103,126 +107,108 @@ public class InputMaskFormatter {
         }
     }
 
-    public String format(final String text) 
+    public String format(String text) 
     {
-        if (text == null || "".equals(text))
+        if (text == null)
         {
+            state_ = ValidationState.Invalid;
             return "";
         }
 
         int offset = 0;
-        StringBuilder result = new StringBuilder();
-
-        for (int i = 0; i < mask_.length(); i++) 
+        StringBuilder result;
+        if (lastText_ != null && text.startsWith(lastText_)) 
         {
-            final String patternKey = String.valueOf(mask_.charAt(i));
-            final MaskPattern pattern = maskPatterns_.get(patternKey); 
-            if (pattern != null)
+            offset = lastText_.length();
+            result = new StringBuilder(lastText_);
+        }
+        else
+        {
+            result = new StringBuilder();
+        }
+
+        // Формируем строку по маске
+        if (!text.isEmpty()) 
+        {
+            for (int i = offset; i < mask_.length(); i++) 
             {
-                final int nextIndex = indexOfFirstValidChar(pattern, text, offset);
-                if (nextIndex >= 0 && nextIndex < text.length()) 
+                final String patternKey = String.valueOf(mask_.charAt(i));
+                final MaskPattern pattern = maskPatterns_.get(patternKey); 
+                if (pattern != null)
                 {
-                    offset = nextIndex + 1;
-
-                    final char nextChar = text.charAt(nextIndex);
-                    result.append(pattern.transform(nextChar));
-
-                    if (offset >= text.length())
+                    final int nextIndex = indexOfFirstValidChar(pattern, text, offset);
+                    if (nextIndex >= 0 && nextIndex < text.length()) 
                     {
-                        return result.toString();
-                    }
-                } 
-                else 
-                {
-                    return result.toString();
-                } 
-            } 
-            else
-            {
-                result.append(mask_.charAt(i));
-            }
-        }
+                        offset = nextIndex + 1;
 
-        return result.toString();
-    }
+                        final char nextChar = text.charAt(nextIndex);
+                        result.append(pattern.transform(nextChar));
 
-    public boolean acceptableInput(final String text) 
-    {
-        final ValidationState validationState = validate(text);
-        return validationState == ValidationState.Acceptable;
-    }
-
-    public ValidationState validate(final String text) 
-    {
-        ValidationState state = ValidationState.Invalid;
-
-        if (text == null || text.isEmpty() || mask_ == null || mask_.isEmpty()) 
-        {
-            return state;
-        }
-
-        if (text.length() > mask_.length()) 
-        {
-            return state;
-        }
-
-        for (int i = 0; i < mask_.length(); i++) 
-        {
-            final char ch = i < text.length() ? text.charAt(i)
-                                              : '\0';
-
-            //NOTE: convertation empty char '\0' to string not match with patterns with '?'
-            final String s = i < text.length() ? String.valueOf(ch) 
-                                               : "";
-
-            final String key = String.valueOf(mask_.charAt(i));
-                
-            if (s.equals(key))
-            {
-                state = ValidationState.Intermediate;
-                continue;
-            }
-
-            final MaskPattern p = maskPatterns_.get(key);
-            if (p != null)
-            {
-                if (p.isValid(s)) 
-                {
-                    state = (i == mask_.length() - 1) ? ValidationState.Acceptable
-                                                      : ValidationState.Intermediate;
-                    continue;
-                } 
-                else 
-                {
-                    if (i >= text.length()) 
+                        // Дошли до конца строки, больше нет символов
+                        if (offset >= text.length())
+                        {   
+                            offset = i;
+                            break;
+                        }
+                    } 
+                    else 
                     {
-                        state = ValidationState.Intermediate;
+                        // Больше нет валидных символов
+                        offset = i;
                         break;
                     }
-                }
-            }
-            else 
-            {
-                if (i >= text.length()) 
+                } 
+                else
                 {
-                    state = ValidationState.Intermediate;
-                    break;
+                    result.append(mask_.charAt(i));
                 }
-
-                state = ValidationState.Invalid;
-                break;
             }
         }
 
-        return state;
+        lastText_ = result.toString();
+
+        if (lastText_.length() == mask_.length()) 
+        {
+            state_ = ValidationState.Acceptable;
+        } 
+        else
+        {
+            // Проверяем заверщенность строки
+            for (int j = offset; j < mask_.length(); j++) 
+            {
+                final String key = String.valueOf(mask_.charAt(j));
+                final MaskPattern p = maskPatterns_.get(key);
+                if (p != null && p.isValid("")) 
+                {
+                    state_ = ValidationState.Acceptable;
+                } 
+                else
+                {
+                    state_ = ValidationState.Intermediate;
+                    break;
+                }
+            }
+        }
+
+        return lastText_;
     }
 
+    public ValidationState state()
+    {
+        return state_;
+    }
+
+    public boolean acceptableInput()
+    {
+        return state_ == ValidationState.Acceptable;
+    }
+    
     public String mask()
     {
         return mask_;
     }
 
-    private int indexOfFirstValidChar(final MaskPattern pattern, final String text, int offset) 
+    private int indexOfFirstValidChar(MaskPattern pattern, String text, int offset) 
     {
         for (int i = offset; i < text.length(); i++) 
         {
