@@ -715,7 +715,14 @@ void QAndroidOffscreenEditText::setInputMask(const QString & inputMask)
 {
 	if (QJniObject * view = offscreenView())
 	{
-		view->callVoid("setInputMask", inputMask);
+		try 
+		{
+			view->callVoid("setInputMask", inputMask);
+		}
+		catch (const std::exception & e)
+		{
+			qWarning() << "Exception in JNI call to setInputMask: " << e.what();
+		}
 	}
 }
 
