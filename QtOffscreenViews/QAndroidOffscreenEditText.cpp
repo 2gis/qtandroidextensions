@@ -115,7 +115,7 @@ Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnContentHeightCh
 	qWarning()<<__FUNCTION__<<"Zero param!";
 }
 
-Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnAcceptableInputChanged(JNIEnv *, jobject, jlong param, jboolean acceptableInput)
+Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnHasAcceptableInputChanged(JNIEnv *, jobject, jlong param, jboolean hasAcceptableInput)
 {
 	if (param)
 	{
@@ -123,7 +123,7 @@ Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnAcceptableInput
 		QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(reinterpret_cast<QAndroidOffscreenView*>(vp));
 		if (edit)
 		{
-			QMetaObject::invokeMethod(edit, "javaOnAcceptableInputChanged", Q_ARG(bool, acceptableInput ? true : false));
+			QMetaObject::invokeMethod(edit, "javaOnHasAcceptableInputChanged", Q_ARG(bool, hasAcceptableInput ? true : false));
 			return;
 		}
 	}
@@ -143,7 +143,7 @@ QAndroidOffscreenEditText::QAndroidOffscreenEditText(const QString & object_name
 			{"nativeOnEditorAction", "(JI)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnEditorAction)},
 			{"nativeSetSelectionInfo", "(JII)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeSetSelectionInfo)},
 			{"nativeOnContentHeightChanged", "(JI)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnContentHeightChanged)},
-			{"nativeOnAcceptableInputChanged", "(JZ)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnAcceptableInputChanged)},
+			{"nativeOnHasAcceptableInputChanged", "(JZ)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnHasAcceptableInputChanged)},
 		};
 		view->registerNativeMethods(methods, sizeof(methods));
 	}
@@ -719,17 +719,17 @@ void QAndroidOffscreenEditText::setInputMask(const QString & inputMask)
 	}
 }
 
-bool QAndroidOffscreenEditText::acceptableInput() const
+bool QAndroidOffscreenEditText::hasAcceptableInput() const
 {
-	return acceptableInput_;
+	return hasAcceptableInput_;
 }
 
-void QAndroidOffscreenEditText::javaOnAcceptableInputChanged(bool acceptableInput)
+void QAndroidOffscreenEditText::javaOnHasAcceptableInputChanged(bool hasAcceptableInput)
 {
 
-	if (acceptableInput_ != acceptableInput) 
+	if (hasAcceptableInput_ != hasAcceptableInput) 
 	{
-		acceptableInput_ = acceptableInput;
-		emit acceptableInputChanged(acceptableInput_);
+		hasAcceptableInput_ = hasAcceptableInput;
+		emit hasAcceptableInputChanged(hasAcceptableInput_);
 	}
 }

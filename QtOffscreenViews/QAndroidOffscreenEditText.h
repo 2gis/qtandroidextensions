@@ -369,8 +369,8 @@ public:
 	//! mask for input validation
 	void setInputMask(const QString & inputMask);
 
-	//! return true if inputMask is set and text is acceptable as a final result or not
-	bool acceptableInput() const;
+	//! return true if inputMask is set and text is acceptable as a final result else return false
+	bool hasAcceptableInput() const;
 
 	//
 	// Drawing mode hack
@@ -398,7 +398,7 @@ signals:
 	void contentHeightChanged(int height);
 
 	//! Emitted when inputMask is set and text is acceptable as a final result or not
-	void acceptableInputChanged(bool acceptableInput);
+	void hasAcceptableInputChanged(bool hasAcceptableInput);
 
 public:
 	static const int
@@ -605,7 +605,7 @@ protected:
 private slots:
 	void javaSetSelectionInfo(int top, int bottom);
 	void javaOnContentHeightChanged(int height);
-	void javaOnAcceptableInputChanged(bool acceptableInput);
+	void javaOnHasAcceptableInputChanged(bool hasAcceptableInput);
 
 private:
 	friend void JNICALL Java_AndroidOffscreenEditText_nativeOnTextChanged(JNIEnv * env, jobject jo, jlong param, jstring str, jint start, jint before, jint count);
@@ -613,13 +613,13 @@ private:
 	friend void JNICALL Java_AndroidOffscreenEditText_nativeOnEditorAction(JNIEnv *, jobject, jlong param, jint action);
 	friend void JNICALL Java_AndroidOffscreenEditText_nativeSetSelectionInfo(JNIEnv *, jobject, jlong param, jint top, jint bottom);
 	friend void JNICALL Java_AndroidOffscreenEditText_nativeOnContentHeightChanged(JNIEnv *, jobject, jlong param, jint height);
-	friend void JNICALL Java_AndroidOffscreenEditText_nativeOnAcceptableInputChanged(JNIEnv *, jobject, jlong param, jboolean acceptableInput);
+	friend void JNICALL Java_AndroidOffscreenEditText_nativeOnHasAcceptableInputChanged(JNIEnv *, jobject, jlong param, jboolean hasAcceptableInput);
 
 private:
 	int paint_flags_;
 	int selection_top_ = 0;
 	int selection_bottom_ = 0;
 	int content_height_ = 0;
-	bool acceptableInput_ = true;
+	bool hasAcceptableInput_ = true;
 };
 

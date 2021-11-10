@@ -234,7 +234,8 @@ public class InputMaskFormatter {
         return state_;
     }
 
-    public boolean acceptableInput()
+    //! return true if inputMask is set and text is acceptable as a final result else return false
+    public boolean hasAcceptableInput()
     {
         return state_ == ValidationState.Acceptable;
     }

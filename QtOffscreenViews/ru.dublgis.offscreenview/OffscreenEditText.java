@@ -553,7 +553,7 @@ class OffscreenEditText extends OffscreenView
     public native void nativeOnEditorAction(long nativePtr, int action);
     public native void nativeSetSelectionInfo(long nativePtr, int top, int bottom);
     public native void nativeOnContentHeightChanged(long nativePtr, int height);
-    public native void nativeOnAcceptableInputChanged(long nativePtr, boolean acceptableInput);
+    public native void nativeOnHasAcceptableInputChanged(long nativePtr, boolean hasAcceptableInput);
 
 
 
@@ -1273,16 +1273,16 @@ class OffscreenEditText extends OffscreenView
         protected InputMaskFormatter formatter_;
         protected EditText editText_;
         protected String currentText_;
-        private boolean acceptableInput_;
+        private boolean hasAcceptableInput_;
 
         public InputMaskTextWatcher(EditText editText, String mask)
         {
             this.editText_ = editText;
-            this.acceptableInput_ = false;
+            this.hasAcceptableInput_ = false;
             this.formatter_ = new InputMaskFormatter(mask);
             this.currentText_ = formatter_.format(editText_.getText().toString());
 
-            setAcceptableInput(formatter_.acceptableInput());
+            setHasAcceptableInput(formatter_.hasAcceptableInput());
         }
 
         @Override
@@ -1303,7 +1303,7 @@ class OffscreenEditText extends OffscreenView
 
                     editText_.setText(currentText_);
                     editText_.setSelection(currentText_.length());
-                    setAcceptableInput(formatter_.acceptableInput());
+                    setHasAcceptableInput(formatter_.hasAcceptableInput());
                 } 
                 catch (final Throwable e) 
                 {
@@ -1317,12 +1317,12 @@ class OffscreenEditText extends OffscreenView
         {
         }
         
-        private void setAcceptableInput(boolean acceptableInput) 
+        private void setHasAcceptableInput(boolean hasAcceptableInput) 
         {
-            if (acceptableInput_ != acceptableInput) 
+            if (hasAcceptableInput_ != hasAcceptableInput) 
             {
-                acceptableInput_ = acceptableInput;
-                nativeOnAcceptableInputChanged(getNativePtr(), acceptableInput_);
+                hasAcceptableInput_ = hasAcceptableInput;
+                nativeOnHasAcceptableInputChanged(getNativePtr(), hasAcceptableInput_);
             }
         }
     }
@@ -1346,7 +1346,7 @@ class OffscreenEditText extends OffscreenView
                     }
                     else
                     {
-                        nativeOnAcceptableInputChanged(getNativePtr(), true);
+                        nativeOnHasAcceptableInputChanged(getNativePtr(), true);
                     }
                 } 
                 catch (final Throwable e) 
