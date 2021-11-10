@@ -47,6 +47,8 @@ import java.util.regex.Matcher;
  * Note: Escape sequences (><{}\\[]) not supported
  */
 public class InputMaskFormatter {
+    
+    private static final String TAG = "Grym/InputMaskFmt";
 
     protected String mask_;
     protected HashMap<String, MaskPattern> patternsMap_;
@@ -74,7 +76,7 @@ public class InputMaskFormatter {
             } 
             catch (final Throwable e) 
             {
-                Log.w("MaskPattern: '" + regex + "' exception: ", e);
+                Log.w(TAG, "MaskPattern(): '" + regex + "' exception: " + e);
             }
         }
 
@@ -209,7 +211,7 @@ public class InputMaskFormatter {
         } 
         else
         {
-            // Проверяем заверщенность строки
+            // Проверяем завершенность строки
             for (int j = offset; j < mask_.length(); j++) 
             {
                 final String key = String.valueOf(mask_.charAt(j));
