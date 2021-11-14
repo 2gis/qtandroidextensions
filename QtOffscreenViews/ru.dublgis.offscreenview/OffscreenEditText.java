@@ -1278,7 +1278,7 @@ class OffscreenEditText extends OffscreenView
         public InputMaskTextWatcher(EditText editText, String mask)
         {
             this.editText_ = editText;
-            this.hasAcceptableInput_ = false;
+            this.hasAcceptableInput_ = true;
             this.formatter_ = new InputMaskFormatter(mask);
             this.currentText_ = formatter_.format(editText_.getText().toString());
 
