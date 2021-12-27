@@ -5,6 +5,8 @@ set(MODULE_NAME QtAndroidHelpers)
 set(SRC_LIST
     QAndroidAction.cpp
     QAndroidAction.h
+    QAndroidContacts.cpp
+    QAndroidContacts.h
     QAndroidConfiguration.cpp
     QAndroidConfiguration.h
     QAndroidDesktopUtils.cpp
@@ -62,6 +64,7 @@ if (ANDROID)
     qt5_wrap_cpp(
         QtAndroidHelpers_hdr_moc
         QAndroidAction.h
+        QAndroidContacts.h
         QAndroidConfiguration.h
         QAndroidDialog.h
         QAndroidDisplayMetrics.h
