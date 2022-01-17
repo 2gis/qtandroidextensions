@@ -190,6 +190,26 @@ QStringList QAndroidCellDataProvider::getSimCountryIso()
 	return { list };
 }
 
+QStringList QAndroidCellDataProvider::getSimOperatorName()
+{
+	QString list;
+
+	try
+	{
+		QByteArray javaFullClassName;
+		QAndroidCellDataProvider::getJavaClassName(javaFullClassName);
+
+		QJniClass du(javaFullClassName);
+		QAndroidQPAPluginGap::Context activity;
+		list = du.callStaticParamString("getSimOperatorName", "Landroid/content/Context;", activity.jObject());
+	}
+	catch (const std::exception & ex)
+	{
+		qCritical() << "JNI exception in QAndroidCellDataProvider:" << ex.what();
+	}
+	return { list };
+}
+
 
 QStringList QAndroidCellDataProvider::getNetworkCountryIso()
 {

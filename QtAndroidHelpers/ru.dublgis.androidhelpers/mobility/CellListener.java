@@ -335,6 +335,18 @@ public class CellListener {
         return "";
     }
 
+    public static String getSimOperatorName(final Context ctx) {
+        try {
+            final TelephonyManager manager = (TelephonyManager) ctx.getSystemService(Context.TELEPHONY_SERVICE);
+            if (null != manager) {
+                return manager.getSimOperatorName();
+            }
+        } catch (Throwable ex) {
+            Log.e(TAG, "Failed to get sim operator name", ex);
+        }
+
+        return "";
+    }
 
     public String getNetworkCountryIso() {
         if (null == mManager) {
