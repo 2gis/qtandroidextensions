@@ -338,6 +338,9 @@ public class CellListener {
     public static String getSimOperatorName(final Context ctx) {
         try {
             final TelephonyManager manager = (TelephonyManager) ctx.getSystemService(Context.TELEPHONY_SERVICE);
+            if (manager.getSimState() != TelephonyManager.SIM_STATE_READY) {
+                return "";
+            }
             if (null != manager) {
                 return manager.getSimOperatorName();
             }
