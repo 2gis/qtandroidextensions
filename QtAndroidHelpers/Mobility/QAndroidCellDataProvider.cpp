@@ -197,7 +197,7 @@ QStringList QAndroidCellDataProvider::getSimOperatorName()
 	try
 	{
 		QByteArray javaFullClassName;
-		QAndroidCellDataProvider::getJavaClassName(javaFullClassName);
+		getJavaClassName(javaFullClassName);
 
 		QJniClass du(javaFullClassName);
 		QAndroidQPAPluginGap::Context activity;
