@@ -6,7 +6,7 @@
 
   Distrbuted under The BSD License
 
-  Copyright (c) 2015, DoubleGIS, LLC.
+  Copyright (c) 2022, DoubleGIS, LLC.
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -55,7 +55,6 @@ Q_DECLARE_METATYPE(AndroidContacts)
 class QAndroidContacts : public QObject
 {
 	Q_OBJECT
-  
 	JNI_LINKER_DECL(QAndroidContacts)
 
 public:
