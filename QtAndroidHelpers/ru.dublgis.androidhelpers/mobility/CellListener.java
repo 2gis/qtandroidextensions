@@ -5,6 +5,7 @@
         Vyacheslav O. Koscheev <vok1980@gmail.com>
         Ivan Avdeev marflon@gmail.com
         Sergey A. Galin sergey.galin@gmail.com
+        Andreev Dmitry g.andreev.d@gmail.com
 
     Distrbuted under The BSD License
 
@@ -75,6 +76,10 @@ public class CellListener {
     private Thread mListenerThread = null;
     private Looper mListenerLooper = null;
 
+    public static class SimInfo {
+        public String mSimCountryIso = "";
+        public String mSimOperatorName = "";
+    }
 
     public CellListener(long native_ptr) {
         mNativePtr = native_ptr;
@@ -346,6 +351,24 @@ public class CellListener {
         }
 
         return "";
+    }
+
+    public static CellListener.SimInfo getSimInfo(final Context ctx) {
+        try {
+            final TelephonyManager manager = (TelephonyManager) ctx.getSystemService(Context.TELEPHONY_SERVICE);
+            if (null != manager) {
+                SimInfo simInfo = new SimInfo();
+                simInfo.mSimCountryIso = manager.getSimCountryIso();
+                if(manager.getSimState() == TelephonyManager.SIM_STATE_READY) {
+                    simInfo.mSimOperatorName = manager.getSimOperatorName();
+                }
+                return simInfo;
+            }
+        } catch (Throwable ex) {
+            Log.e(TAG, "Failed to get sim operator name", ex);
+        }
+
+        return null;
     }
 
     public String getNetworkCountryIso() {

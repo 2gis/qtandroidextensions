@@ -178,7 +178,7 @@ QStringList QAndroidCellDataProvider::getSimCountryIso()
 	try
 	{
 		QByteArray javaFullClassName;
-		QAndroidCellDataProvider::getJavaClassName(javaFullClassName);
+		getJavaClassName(javaFullClassName);
 
 		QJniClass du(javaFullClassName);
 		QAndroidQPAPluginGap::Context activity;
@@ -211,6 +211,36 @@ QStringList QAndroidCellDataProvider::getSimOperatorName()
 	return { list };
 }
 
+QList<Mobility::QAndroidCellDataProvider::SimInfo> Mobility::QAndroidCellDataProvider::getSimInfo()
+{
+	SimInfo list;
+
+	try
+	{
+		QByteArray javaFullClassName;
+		getJavaClassName(javaFullClassName);
+
+		QJniClass du(javaFullClassName);
+		QAndroidQPAPluginGap::Context activity;
+
+		javaFullClassName.append("$SimInfo");
+		QJniObject * simInfo = du.callStaticParamObject("getSimInfo", javaFullClassName, "Landroid/content/Context;", activity.jObject());
+
+		if(simInfo != nullptr)
+		{
+			list.simCountryIso_ = simInfo->getStringField("mSimCountryIso");
+			list.simOperatorName_ = simInfo->getStringField("mSimOperatorName");
+
+			delete simInfo;
+		}
+	}
+	catch (const std::exception & ex)
+	{
+		qCritical() << "JNI exception in QAndroidCellDataProvider:" << ex.what();
+	}
+
+	return { list };
+}
 
 QStringList QAndroidCellDataProvider::getNetworkCountryIso()
 {
