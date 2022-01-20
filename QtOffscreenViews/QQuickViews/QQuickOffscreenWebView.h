@@ -54,7 +54,7 @@ protected:
 
 public slots:
 	void loadUrl(QString url) { androidWebView()->loadUrl(url); }
-	void loadData(const QString & text, const QString & mime, const QString & encoding = QString::null) { androidWebView()->loadData(text, mime, encoding); }
+	void loadData(const QString & text, const QString & mime, const QString & encoding = QString()) { androidWebView()->loadData(text, mime, encoding); }
 	void loadData(const QString & text) { androidWebView()->loadData(text); }
 	void loadDataWithBaseURL(const QString & baseUrl, const QString & data, const QString & mimeType, const QString & encoding, const QString & historyUrl) { androidWebView()->loadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl); }
 	void requestContentHeight() { androidWebView()->requestContentHeight(); }

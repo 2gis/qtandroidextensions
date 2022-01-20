@@ -395,7 +395,7 @@ QString getUniqueDeviceId()
 				}
 				else
 				{
-					device_id = QString::null;
+					device_id = QString();
 				}
 			}
 		}

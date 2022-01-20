@@ -111,7 +111,7 @@ QString QAndroidWifiDataProvider::getSignalsData()
 		return jni()->callString("getLastWifiScanResultsTable");
 	}
 
-	return QString::null;
+	return QString();
 }
 
 

@@ -79,7 +79,7 @@ bool sendEmail(
 	const QString & to,
 	const QString & subject,
 	const QString & body,
-	const QString & attach_file = QString::null,
+	const QString & attach_file = QString(),
 	bool force_content_provider = false,
 	const QString & authorities = QLatin1String("ru.dublgis.sharefileprovider"));
 

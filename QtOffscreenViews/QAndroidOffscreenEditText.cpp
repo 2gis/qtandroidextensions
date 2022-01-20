@@ -224,7 +224,7 @@ QString QAndroidOffscreenEditText::getText() const
 	{
 		return view->callString("getText");
 	}
-	return QString::null;
+	return QString();
 }
 
 void QAndroidOffscreenEditText::setTextSize(float size, int unit)

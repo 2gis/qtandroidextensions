@@ -151,7 +151,7 @@ void QAndroidDialog::showMessage(
     bool pause,
     bool lock_rotation)
 {
-	showMessage(title, explanation, positive_button_text, negative_button_text, QString::null, pause, lock_rotation);
+	showMessage(title, explanation, positive_button_text, negative_button_text, QString(), pause, lock_rotation);
 }
 
 void QAndroidDialog::showMessage(
@@ -161,7 +161,7 @@ void QAndroidDialog::showMessage(
     bool pause,
     bool lock_rotation)
 {
-	showMessage(title, explanation, positive_button_text, QString::null, QString::null, pause, lock_rotation);
+	showMessage(title, explanation, positive_button_text, QString(), QString(), pause, lock_rotation);
 }
 
 void QAndroidDialog::showMessageCallback(int button)

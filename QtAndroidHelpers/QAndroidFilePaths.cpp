@@ -132,7 +132,7 @@ const QStringList & QAndroidFilePaths::ExternalFilesDirectories(const QString & 
 			else
 			{
 				// Using hack code to find external storage directories
-				QString std_card_path = ExternalFilesDirectory(QString::null);
+				QString std_card_path = ExternalFilesDirectory(QString());
 				dirs.push_back(std_card_path);
 				QString package_name = QAndroidQPAPluginGap::Context().callString("getPackageName");
 				const QStringList & storages = QAndroidStorages::externalStorages();

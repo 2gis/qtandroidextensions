@@ -63,13 +63,13 @@ namespace QAndroidFilePaths
 	 * \param type - empty or null string, or one of ANDROID_DIRECTORY_... constants.
 	 * For type == null, the path typically looks like: "/storage/emulated/0/Android/data/package.name/files".
 	 */
-	const QString & ExternalFilesDirectory(const QString & type = QString::null);
+	const QString & ExternalFilesDirectory(const QString & type = QString());
 
 	/*!
 	 * Context.getExternalFilesDirs()
 	 * \param type - empty or null string, or one of ANDROID_DIRECTORY_... constants.
 	 */
-	const QStringList & ExternalFilesDirectories(const QString & type = QString::null);
+	const QStringList & ExternalFilesDirectories(const QString & type = QString());
 
 	/*!
 	 * Environment.getExternalStorageDirectory(type).getPath().

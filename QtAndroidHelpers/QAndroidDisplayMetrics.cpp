@@ -328,7 +328,7 @@ QString QAndroidDisplayMetrics::themeDirectoryName(Theme theme)
 	case ThemeXXXDPI: return QLatin1String("xxxdpi");
 	default:
 		qWarning() << "Unknown theme value:" << theme;
-		return QString::null;
+		return QString();
 	};
 }
 

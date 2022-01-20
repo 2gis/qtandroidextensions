@@ -67,12 +67,12 @@ public:
 	/*!
 	 * Load document from a string.
 	 */
-	bool loadData(const QString & text, const QString & mime = QLatin1String("text/html"), const QString & encoding = QString::null);
+	bool loadData(const QString & text, const QString & mime = QLatin1String("text/html"), const QString & encoding = QString());
 
 	/*!
 	 * Start loading specified URL.
 	 */
-	bool loadDataWithBaseURL(const QString & baseUrl, const QString & data, const QString & mimeType= QLatin1String("text/html"), const QString & encoding = QString::null, const QString & historyUrl = QString::null);
+	bool loadDataWithBaseURL(const QString & baseUrl, const QString & data, const QString & mimeType= QLatin1String("text/html"), const QString & encoding = QString(), const QString & historyUrl = QString());
 
 	//! Will emit contentHeightReceived(int) after done.
 	bool requestContentHeight();
