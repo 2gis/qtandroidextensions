@@ -2,7 +2,7 @@
 	Offscreen Android Views library for Qt
 
 	Author:
-	Vyacheslav O. Koscheev <vok1980@gmail.com>
+	Aleksey I. Gribanov <a.gribanov@2gis.ru>
 
 	Distrbuted under The BSD License
 
@@ -59,38 +59,27 @@ import ru.dublgis.androidhelpers.Log;
 
 class Contact
 {
-	public String fullName;
-	public List<String> phones;
-	public List<String> emails;
-
-	public Contact() {
-		this.phones = new ArrayList<String>();
-		this.emails = new ArrayList<String>();
-	}
+	public String mFullName;
+	public List<String> mPhones = new ArrayList<String>();
+	public List<String> mEmails = new ArrayList<String>();
 };
 
 class ContactsHash
 {
-	private static final String TAG = "#gai Grym/Contacts";
-	private HashMap<String, Contact> contacts;
-
-	public ContactsHash()
-	{
-		this.contacts = new HashMap<String, Contact>();
-	}
+	private HashMap<String, Contact> mContacts = new HashMap<String, Contact>();
 
 	public ArrayList<Contact> getContactList()
 	{
-		return new ArrayList<Contact>(contacts.values());
+		return new ArrayList<Contact>(mContacts.values());
 	}
 
 	public Contact getContact(String contactId)
 	{
-		if (!contacts.containsKey(contactId)) {
+		if (!mContacts.containsKey(contactId)) {
 			Contact contact = new Contact();
-			contacts.put(contactId, contact);
+			mContacts.put(contactId, contact);
 		}
-		return contacts.get(contactId);
+		return mContacts.get(contactId);
 	}
 };
 
@@ -145,12 +134,10 @@ public class Contacts
 				final int idIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID);
 				final int nameIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
 				final int numberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
-
-				String id, name, number;
 				while (cursor.moveToNext()) {
 					Contact contact = contactsHash.getContact(cursor.getString(idIndex));
-					contact.fullName = cursor.getString(nameIndex);
-					contact.phones.add(cursor.getString(numberIndex));
+					contact.mFullName = cursor.getString(nameIndex);
+					contact.mPhones.add(cursor.getString(numberIndex));
 				}
 			} finally {
 				cursor.close();
@@ -166,11 +153,9 @@ public class Contacts
 			try {
 				final int idIndex = cursorEmail.getColumnIndex(ContactsContract.CommonDataKinds.Email.CONTACT_ID);
 				final int emailIndex = cursorEmail.getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS);
-
-				String name, number, email, id;
 				while (cursorEmail.moveToNext()) {
 					Contact contact = contactsHash.getContact(cursorEmail.getString(idIndex));
-					contact.emails.add(cursorEmail.getString(emailIndex));
+					contact.mEmails.add(cursorEmail.getString(emailIndex));
 				}
 			} finally {
 				cursorEmail.close();

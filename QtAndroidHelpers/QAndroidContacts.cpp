@@ -62,8 +62,9 @@ QStringList arrayListToQStringList(QJniObject * array_list)
 				result << QString();
 			}
 		}
-		return result;
 	}
+	return result;
+}
 
 }
 
@@ -75,7 +76,7 @@ Q_DECL_EXPORT void JNICALL Java_ContactHelper_recievedContacts(JNIEnv * env, job
 		return;
 	}
 
-	AndroidContacts allContacts;
+	ContactList allContacts;
 
 	QJniObject jniContacts(contactsList, false);
 	int size = jniContacts.callParamInt("size", "");
@@ -90,13 +91,13 @@ Q_DECL_EXPORT void JNICALL Java_ContactHelper_recievedContacts(JNIEnv * env, job
 
 		if (jniContact)
 		{
-			AndroidContact contact;
-			contact.name = jniContact->getStringField("fullName");
+			Contact contact;
+			contact.name = jniContact->getStringField("mFullName");
 
-			QScopedPointer<QJniObject> numbers_array(jniContact->getObjectField("phones", "java/util/List"));
+			QScopedPointer<QJniObject> numbers_array(jniContact->getObjectField("mPhones", "java/util/List"));
 			contact.phones = arrayListToQStringList(numbers_array.data());
 
-			QScopedPointer<QJniObject> emails_array(jniContact->getObjectField("emails", "java/util/List"));
+			QScopedPointer<QJniObject> emails_array(jniContact->getObjectField("mEmails", "java/util/List"));
 			contact.emails = arrayListToQStringList(emails_array.data());
 
 			allContacts.append(contact);
@@ -111,17 +112,16 @@ Q_DECL_EXPORT void JNICALL Java_ContactHelper_recievedContacts(JNIEnv * env, job
 			cppObject
 			, "recievedContacts"
 			, Qt::QueuedConnection
-			, Q_ARG(AndroidContacts, allContacts));
+			, Q_ARG(ContactList, allContacts));
 	}
 }
 
 static const JNINativeMethod methods[] = {
-    {"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
+	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
 	{"nativeRecievedContacts", "(JLjava/lang/Object;)V", reinterpret_cast<void*>(Java_ContactHelper_recievedContacts)},
 };
 
 JNI_LINKER_IMPL(QAndroidContacts, "ru/dublgis/androidhelpers/Contacts", methods)
-
 
 QAndroidContacts::QAndroidContacts(QObject * parent)
 	: QObject(parent)
@@ -142,11 +142,11 @@ void QAndroidContacts::getContacts()
 		{
 			if (jni()->callBool("checkPermission"))
 			{
-        jni()->callVoid("readContacts");
+				jni()->callVoid("readContacts");
 			}
 			else
 			{
-        emit needReadContactPermission();
+				emit needReadContactPermission();
 			}
 		}
 	}

@@ -42,14 +42,14 @@
 #include <QtCore/QString>
 #include <QtCore/QVector>
 
-struct AndroidContact 
+struct Contact
 {
 	QString name;
 	QStringList phones; // phone numbers are not validated after receiving from contacts book
 	QStringList emails; // emails are not validated after receiving from contacts book
 };
-using AndroidContacts = QVector<AndroidContact>;
-Q_DECLARE_METATYPE(AndroidContacts)
+using ContactList = QVector<Contact>;
+Q_DECLARE_METATYPE(ContactList)
 
 
 class QAndroidContacts : public QObject
@@ -62,7 +62,7 @@ public:
 	virtual ~QAndroidContacts();
 
 signals:
-	void recievedContacts(const AndroidContacts & contact);
+	void recievedContacts(const ContactList & contact);
 	void needReadContactPermission();
 
 public slots:
