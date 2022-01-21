@@ -68,7 +68,6 @@ public:
 	CellDataPtr getLastData();
 	QStringList getNetworkCountryIso();
 	static QStringList getSimCountryIso();
-	static QStringList getSimOperatorName();
 	static QList<SimInfo> getSimInfo();
 
 private:
