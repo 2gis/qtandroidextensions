@@ -59,9 +59,17 @@ import ru.dublgis.androidhelpers.Log;
 
 class Contact
 {
-	public String mFullName;
-	public List<String> mPhones = new ArrayList<String>();
-	public List<String> mEmails = new ArrayList<String>();
+	private String mFullName;
+	private List<String> mPhones = new ArrayList<String>();
+	private List<String> mEmails = new ArrayList<String>();
+
+	public String getFullName() { return mFullName; }
+	public List<String> getPhones() { return mPhones; }
+	public List<String> getEmails() { return mEmails; }
+
+	public void setFullName(String name) { mFullName = name; }
+	public void addPhone(String phone) { mPhones.add(phone); }
+	public void addEmail(String email) { mEmails.add(email); }
 };
 
 class ContactsHash
@@ -95,7 +103,7 @@ public class Contacts
 	private static final String[] PROJECTION_EMAIL = new String[]{
 			ContactsContract.CommonDataKinds.Email.CONTACT_ID,
 			ContactsContract.CommonDataKinds.Email.ADDRESS,
-			ContactsContract.CommonDataKinds.Email.DISPLAY_NAME
+			ContactsContract.Contacts.DISPLAY_NAME,
 	};
 
 	public Contacts(long native_ptr) { mNativePtr = native_ptr; }
@@ -103,6 +111,7 @@ public class Contacts
 	//! Called from C++ to notify us that the associated C++ object is being destroyed.
 	public void cppDestroyed() {  }
 
+	//! Called from C++
 	public boolean checkPermission()
 	{
 		Context ctx = getContext();
@@ -110,14 +119,17 @@ public class Contacts
 				== PackageManager.PERMISSION_GRANTED;
 	}
 
-	public void readContacts()
+	//! Called from C++
+	public void requestContacts()
 	{
 		new Thread(new Runnable() {
-			@Override public void run() { getContactList(); }
+			@Override public void run() {
+				requestContactsInternal();
+			}
 		}).start();
 	}
 
-	private void getContactList()
+	private void requestContactsInternal()
 	{
 		Context ctx = getContext();
 		ContentResolver cr = ctx.getContentResolver();
@@ -133,11 +145,11 @@ public class Contacts
 			try {
 				final int idIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID);
 				final int nameIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
-				final int numberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+				final int phoneIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
 				while (cursor.moveToNext()) {
 					Contact contact = contactsHash.getContact(cursor.getString(idIndex));
-					contact.mFullName = cursor.getString(nameIndex);
-					contact.mPhones.add(cursor.getString(numberIndex));
+					contact.setFullName(cursor.getString(nameIndex));
+					contact.addPhone(cursor.getString(phoneIndex));
 				}
 			} finally {
 				cursor.close();
@@ -152,10 +164,12 @@ public class Contacts
 		if (cursorEmail != null) {
 			try {
 				final int idIndex = cursorEmail.getColumnIndex(ContactsContract.CommonDataKinds.Email.CONTACT_ID);
+				final int nameIndex = cursorEmail.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
 				final int emailIndex = cursorEmail.getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS);
 				while (cursorEmail.moveToNext()) {
 					Contact contact = contactsHash.getContact(cursorEmail.getString(idIndex));
-					contact.mEmails.add(cursorEmail.getString(emailIndex));
+					contact.setFullName(cursorEmail.getString(nameIndex));
+					contact.addEmail(cursorEmail.getString(emailIndex));
 				}
 			} finally {
 				cursorEmail.close();

@@ -66,7 +66,7 @@ signals:
 	void needReadContactPermission();
 
 public slots:
-	void getContacts();
+    void requestContacts();
 
 private:
     friend void JNICALL Java_ContactHelper_recievedContacts(JNIEnv *, jobject, jlong param, jobject contacts);

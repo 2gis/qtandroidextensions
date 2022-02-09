@@ -70,12 +70,7 @@ QStringList arrayListToQStringList(QJniObject * array_list)
 
 Q_DECL_EXPORT void JNICALL Java_ContactHelper_recievedContacts(JNIEnv * env, jobject, jlong param, jobject contactsList)
 {
-	if (!contactsList) 
-	{
-		qWarning() << __FUNCTION__ << "zero contacts";
-		return;
-	}
-
+	JNI_LINKER_OBJECT(QAndroidContacts, param, obj)
 	ContactList allContacts;
 
 	QJniObject jniContacts(contactsList, false);
@@ -92,12 +87,12 @@ Q_DECL_EXPORT void JNICALL Java_ContactHelper_recievedContacts(JNIEnv * env, job
 		if (jniContact)
 		{
 			Contact contact;
-			contact.name = jniContact->getStringField("mFullName");
+			contact.name = jniContact->callString("getFullName");
 
-			QScopedPointer<QJniObject> numbers_array(jniContact->getObjectField("mPhones", "java/util/List"));
+			QScopedPointer<QJniObject> numbers_array(jniContact->callObject("getPhones", "java/util/List"));
 			contact.phones = arrayListToQStringList(numbers_array.data());
 
-			QScopedPointer<QJniObject> emails_array(jniContact->getObjectField("mEmails", "java/util/List"));
+			QScopedPointer<QJniObject> emails_array(jniContact->callObject("getEmails", "java/util/List"));
 			contact.emails = arrayListToQStringList(emails_array.data());
 
 			allContacts.append(contact);
@@ -134,7 +129,7 @@ QAndroidContacts::~QAndroidContacts()
 {
 }
 
-void QAndroidContacts::getContacts()
+void QAndroidContacts::requestContacts()
 {
 	try
 	{
@@ -142,7 +137,7 @@ void QAndroidContacts::getContacts()
 		{
 			if (jni()->callBool("checkPermission"))
 			{
-				jni()->callVoid("readContacts");
+				jni()->callVoid("requestContacts");
 			}
 			else
 			{
