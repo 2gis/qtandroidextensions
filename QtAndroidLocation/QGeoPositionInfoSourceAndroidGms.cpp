@@ -136,28 +136,19 @@ void QGeoPositionInfoSourceAndroidGms::startUpdates()
 		return;
 	}
 
-	QAndroidGmsLocationProvider::enPriority priority = QAndroidGmsLocationProvider::PRIORITY_BALANCED_POWER_ACCURACY;
+	QAndroidGmsLocationProvider::enPriority priority = QAndroidGmsLocationProvider::PRIORITY_NO_POWER;
 
-	switch (methods)
+	if (QGeoPositionInfoSource::SatellitePositioningMethods & methods)
 	{
-		case NoPositioningMethods:
-			priority = QAndroidGmsLocationProvider::PRIORITY_NO_POWER;
-			break;
-		case NonSatellitePositioningMethods:
-			priority = QAndroidGmsLocationProvider::PRIORITY_LOW_POWER;
-			break;
-		case AllPositioningMethods:
-			priority = QAndroidGmsLocationProvider::PRIORITY_BALANCED_POWER_ACCURACY;
-			break;
-		case SatellitePositioningMethods:
-			priority = QAndroidGmsLocationProvider::PRIORITY_HIGH_ACCURACY;
-			break;
+		priority = QAndroidGmsLocationProvider::PRIORITY_HIGH_ACCURACY;
 	}
-
+	else if (QGeoPositionInfoSource::NonSatellitePositioningMethods & methods)
+	{
+		priority = QAndroidGmsLocationProvider::PRIORITY_BALANCED_POWER_ACCURACY;
+	}
 	regularProvider_->setPriority(priority);
 
 	updatesRunning_ = true;
-
 	Q_ASSERT(regularProvider_);
 	regularProvider_->setUpdateInterval(updateInterval(), minimumUpdateInterval());
 	regularProvider_->startUpdates();
