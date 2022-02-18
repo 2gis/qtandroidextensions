@@ -62,7 +62,7 @@ public:
 	virtual ~QAndroidContacts();
 
 signals:
-	void recievedContacts(const ContactList & contact);
+	void recievedContacts(const ContactList & contactList);
 	void needReadContactPermission();
 
 public slots:

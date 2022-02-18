@@ -57,40 +57,6 @@ import java.lang.Object;
 
 import ru.dublgis.androidhelpers.Log;
 
-class Contact
-{
-	private String mFullName;
-	private List<String> mPhones = new ArrayList<String>();
-	private List<String> mEmails = new ArrayList<String>();
-
-	public String getFullName() { return mFullName; }
-	public List<String> getPhones() { return mPhones; }
-	public List<String> getEmails() { return mEmails; }
-
-	public void setFullName(String name) { mFullName = name; }
-	public void addPhone(String phone) { mPhones.add(phone); }
-	public void addEmail(String email) { mEmails.add(email); }
-};
-
-class ContactsHash
-{
-	private HashMap<String, Contact> mContacts = new HashMap<String, Contact>();
-
-	public ArrayList<Contact> getContactList()
-	{
-		return new ArrayList<Contact>(mContacts.values());
-	}
-
-	public Contact getContact(String contactId)
-	{
-		if (!mContacts.containsKey(contactId)) {
-			Contact contact = new Contact();
-			mContacts.put(contactId, contact);
-		}
-		return mContacts.get(contactId);
-	}
-};
-
 public class Contacts
 {
 	private static final String TAG = "Grym/Contacts";
@@ -104,6 +70,40 @@ public class Contacts
 			ContactsContract.CommonDataKinds.Email.CONTACT_ID,
 			ContactsContract.CommonDataKinds.Email.ADDRESS,
 			ContactsContract.Contacts.DISPLAY_NAME,
+	};
+
+	public static class Contact
+	{
+		private String mFullName;
+		private List<String> mPhones = new ArrayList<String>();
+		private List<String> mEmails = new ArrayList<String>();
+
+		public String getFullName() { return mFullName; }
+		public List<String> getPhones() { return mPhones; }
+		public List<String> getEmails() { return mEmails; }
+
+		public void setFullName(String name) { mFullName = name; }
+		public void addPhone(String phone) { mPhones.add(phone); }
+		public void addEmail(String email) { mEmails.add(email); }
+	};
+
+	public static class ContactsContainer
+	{
+		private HashMap<String, Contact> mContacts = new HashMap<String, Contact>();
+
+		public ArrayList<Contact> getContactList()
+		{
+			return new ArrayList<Contact>(mContacts.values());
+		}
+
+		public Contact getContact(String contactId)
+		{
+			if (!mContacts.containsKey(contactId)) {
+				Contact contact = new Contact();
+				mContacts.put(contactId, contact);
+			}
+			return mContacts.get(contactId);
+		}
 	};
 
 	public Contacts(long native_ptr) { mNativePtr = native_ptr; }
@@ -131,57 +131,71 @@ public class Contacts
 
 	private void requestContactsInternal()
 	{
-		Context ctx = getContext();
-		ContentResolver cr = ctx.getContentResolver();
+		Cursor cursor = null;
+		Context ctx = null;
+		ContactsContainer contactsContainer = new ContactsContainer();
 
-		ContactsHash contactsHash = new ContactsHash();
-		Cursor cursor = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-				PROJECTION_PHONE,
-				null,
-				null,
-				null);
+		try {
+			ctx = getContext();
+			ContentResolver cr = ctx.getContentResolver();
 
-		if (cursor != null) {
-			try {
+			cursor = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+					PROJECTION_PHONE,
+					null,
+					null,
+					null);
+
+			if (cursor != null) {
 				final int idIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID);
 				final int nameIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
 				final int phoneIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
 				while (cursor.moveToNext()) {
-					Contact contact = contactsHash.getContact(cursor.getString(idIndex));
+					Contact contact = contactsContainer.getContact(cursor.getString(idIndex));
 					contact.setFullName(cursor.getString(nameIndex));
 					contact.addPhone(cursor.getString(phoneIndex));
 				}
-			} finally {
+				cursor.close();
+			}
+
+			cursor = cr.query(ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+					PROJECTION_EMAIL,
+					null,
+					null, null);
+
+			if (cursor != null) {
+				final int idIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.CONTACT_ID);
+				final int nameIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
+				final int emailIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS);
+				while (cursor.moveToNext()) {
+					Contact contact = contactsContainer.getContact(cursor.getString(idIndex));
+					contact.setFullName(cursor.getString(nameIndex));
+					contact.addEmail(cursor.getString(emailIndex));
+				}
 				cursor.close();
 			}
 		}
-
-		Cursor cursorEmail = cr.query(ContactsContract.CommonDataKinds.Email.CONTENT_URI,
-				PROJECTION_EMAIL,
-				null,
-				null, null);
-
-		if (cursorEmail != null) {
-			try {
-				final int idIndex = cursorEmail.getColumnIndex(ContactsContract.CommonDataKinds.Email.CONTACT_ID);
-				final int nameIndex = cursorEmail.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
-				final int emailIndex = cursorEmail.getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS);
-				while (cursorEmail.moveToNext()) {
-					Contact contact = contactsHash.getContact(cursorEmail.getString(idIndex));
-					contact.setFullName(cursorEmail.getString(nameIndex));
-					contact.addEmail(cursorEmail.getString(emailIndex));
-				}
-			} finally {
-				cursorEmail.close();
-			}
+		catch(final Throwable e)
+		{
+			Log.e(TAG, "requestContactsInternal exception: ", e);
+			cursor.close();
 		}
 
-		ArrayList<Contact> contacts = contactsHash.getContactList();
-		new Handler(ctx.getMainLooper()).post(new Runnable() {
-			@Override public void run() {
-				nativeRecievedContacts(mNativePtr, contacts);
-			}
-		});
+		if (ctx != null)
+		{
+			ArrayList<Contact> contacts = contactsContainer.getContactList();
+			new Handler(ctx.getMainLooper()).post(new Runnable() {
+				@Override public void run() {
+					try
+					{
+						nativeRecievedContacts(mNativePtr, contacts);
+					}
+					catch(final Throwable e)
+					{
+						Log.e(TAG, "call nativeRecievedContacts exception: ", e);
+					}
+				}
+			});
+		}
 	}
 
 	public native Context getContext();

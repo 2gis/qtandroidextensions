@@ -46,22 +46,29 @@ namespace  {
 QStringList arrayListToQStringList(QJniObject * array_list)
 {
 	QStringList result;
-	if (array_list && array_list->jObject())
+	try
 	{
-		jint size = array_list->callInt("size");
-		QJniEnvPtr jep;
-		for (jint i = 0; i < size; ++i)
+		if (array_list && array_list->jObject())
 		{
-			QScopedPointer<QJniObject> str_object(array_list->callParamObject("get", "java/lang/Object", "I", i));
-			if (str_object)
+			jint size = array_list->callInt("size");
+			QJniEnvPtr jep;
+			for (jint i = 0; i < size; ++i)
 			{
-				result << jep.JStringToQString(static_cast<jstring>(str_object->jObject()));
-			}
-			else
-			{
-				result << QString();
+				QScopedPointer<QJniObject> str_object(array_list->callParamObject("get", "java/lang/Object", "I", i));
+				if (str_object)
+				{
+					result << jep.JStringToQString(static_cast<jstring>(str_object->jObject()));
+				}
+				else
+				{
+					result << QString();
+				}
 			}
 		}
+	}
+	catch (const std::exception & e)
+	{
+		qWarning() << "JNI exception in " << __FUNCTION__ << ": " << e.what();
 	}
 	return result;
 }
@@ -73,30 +80,36 @@ Q_DECL_EXPORT void JNICALL Java_ContactHelper_recievedContacts(JNIEnv * env, job
 	JNI_LINKER_OBJECT(QAndroidContacts, param, obj)
 	ContactList allContacts;
 
-	QJniObject jniContacts(contactsList, false);
-	int size = jniContacts.callParamInt("size", "");
-	allContacts.reserve(size);
-	for (int i = 0; i < size; ++i)
-	{
-		QScopedPointer<QJniObject> jniContact(jniContacts.callParamObject(
-			"get",
-			"java/lang/Object",
-			"I",
-			i));
-
-		if (jniContact)
+	try {
+		QJniObject jniContacts(contactsList, false);
+		int size = jniContacts.callParamInt("size", "");
+		allContacts.reserve(size);
+		for (int i = 0; i < size; ++i)
 		{
-			Contact contact;
-			contact.name = jniContact->callString("getFullName");
+			QScopedPointer<QJniObject> jniContact(jniContacts.callParamObject(
+				"get",
+				"java/lang/Object",
+				"I",
+				i));
 
-			QScopedPointer<QJniObject> numbers_array(jniContact->callObject("getPhones", "java/util/List"));
-			contact.phones = arrayListToQStringList(numbers_array.data());
+			if (jniContact)
+			{
+				Contact contact;
+				contact.name = jniContact->callString("getFullName");
 
-			QScopedPointer<QJniObject> emails_array(jniContact->callObject("getEmails", "java/util/List"));
-			contact.emails = arrayListToQStringList(emails_array.data());
+				QScopedPointer<QJniObject> numbers_array(jniContact->callObject("getPhones", "java/util/List"));
+				contact.phones = arrayListToQStringList(numbers_array.data());
 
-			allContacts.append(contact);
+				QScopedPointer<QJniObject> emails_array(jniContact->callObject("getEmails", "java/util/List"));
+				contact.emails = arrayListToQStringList(emails_array.data());
+
+				allContacts.append(contact);
+			}
 		}
+	}
+	catch (const std::exception & e)
+	{
+		qWarning() << "JNI exception in " << __FUNCTION__ << ": " << e.what();
 	}
 
 	void * vp = reinterpret_cast<void*>(param);
@@ -104,10 +117,10 @@ Q_DECL_EXPORT void JNICALL Java_ContactHelper_recievedContacts(JNIEnv * env, job
 	if (cppObject)
 	{
 		QMetaObject::invokeMethod(
-			cppObject
-			, "recievedContacts"
-			, Qt::QueuedConnection
-			, Q_ARG(ContactList, allContacts));
+			cppObject,
+			"recievedContacts",
+			Qt::QueuedConnection,
+			Q_ARG(ContactList, allContacts));
 	}
 }
 
