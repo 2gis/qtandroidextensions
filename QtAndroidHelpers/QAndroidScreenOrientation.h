@@ -37,6 +37,8 @@
 #pragma once
 #include <QtCore/QObject>
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
+#include <QJniHelpers/IJniObjectLinker.h>
+#include <QtCore/QSharedPointer>
 
 namespace QAndroidScreenOrientation
 {
@@ -69,9 +71,6 @@ namespace QAndroidScreenOrientation
 	//! Get currently requested screen orientation.
 	int getRequestedOrientation();
 
-	//! Request certain screen orientation.
-	void setRequestedOrientation(int orientation);
-
 	/*!
 	 * Get a fixed (not affected by sensor) screen orientation constant which
 	 * matches current actual screen orientation.
@@ -82,30 +81,18 @@ namespace QAndroidScreenOrientation
 	int getCurrentFixedOrientation();
 
 
-	/*!
-	 * This is a helper class to lock screen in a certain orientation.
-	 */
-	class OrientationLock: public QObject
+	using LockerInfoPtr = QSharedPointer<QJniObject>;
+	class QAndroidScreenOrientationHelper: public QObject
 	{
-		Q_OBJECT
-	public:
-		/*!
-		 * Creates a lock which keeps the screen in its orientaion of the moment of the locking.
-		 */
-		OrientationLock();
+		JNI_LINKER_DECL(QAndroidScreenOrientationHelper)
 
-		/*!
-		 * Creates a lock which locks the screen in a specified orientation.
-		 */
-		OrientationLock(int desired_orientation);
+		public:
+			QAndroidScreenOrientationHelper(QObject * parent = 0);
+			virtual ~QAndroidScreenOrientationHelper();
 
-		/*!
-		 * Restores requested orientation to the one prior to creating the lock.
-		 */
-		~OrientationLock();
-	protected:
-		int saved_orientation_;
-		bool locked_;
+		public:
+			LockerInfoPtr lockRequestedOrientation(int orientation);
+			void releaseLocker(LockerInfoPtr lockerInfo);
 	};
 
 } // namespace QAndroidScreenOrientation

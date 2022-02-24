@@ -37,10 +37,19 @@
 #include <QJniHelpers/QJniHelpers.h>
 #include "QAndroidDisplayMetrics.h"
 #include "QAndroidScreenOrientation.h"
+#include <QJniHelpers/TJniObjectLinker.h>
 
 
 namespace QAndroidScreenOrientation {
 
+
+static const char * const c_locker_helper_class = "ru/dublgis/androidhelpers/AndroidScreenOrientationHelper$LockerOrientationInfo";
+
+static const JNINativeMethod methods[] = {
+	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
+};
+
+JNI_LINKER_IMPL(QAndroidScreenOrientationHelper, "ru/dublgis/androidhelpers/AndroidScreenOrientationHelper", methods)
 
 int getRequestedOrientation()
 {
@@ -55,21 +64,6 @@ int getRequestedOrientation()
 	{
 		qWarning() << "JNI exception in getRequestedOrientation:" << e.what();
 		return ANDROID_ACTIVITYINFO_SCREEN_ORIENTATION_UNSPECIFIED;
-	}
-}
-
-
-void setRequestedOrientation(int orientation)
-{
-	try
-	{
-		// qDebug()<<"QAndroidScreenOrientation::setRequestedOrientation"<<orientation;
-		QAndroidQPAPluginGap::Context activity;
-		activity.callVoid("setRequestedOrientation", jint(orientation));
-	}
-	catch (const std::exception & e)
-	{
-		qWarning() << "JNI exception in setRequestedOrientation:" << e.what();
 	}
 }
 
@@ -229,6 +223,55 @@ OrientationLock::~OrientationLock()
 	if (locked_)
 	{
 		setRequestedOrientation(saved_orientation_);
+	}
+}
+
+QAndroidScreenOrientationHelper::QAndroidScreenOrientationHelper(QObject * parent)
+	: QObject(parent)
+	, jniLinker_(new JniObjectLinker(this))
+{
+	QAndroidQPAPluginGap::preloadJavaClass(c_locker_helper_class);
+}
+
+QAndroidScreenOrientationHelper::~QAndroidScreenOrientationHelper()
+{
+}
+
+LockerInfoPtr QAndroidScreenOrientationHelper::lockRequestedOrientation(int orientation)
+{
+	try
+	{
+		if (isJniReady())
+		{
+			return LockerInfoPtr(jni()->callParamObject(
+				"lockOrientation",
+				c_locker_helper_class,
+				"I",
+				orientation));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qWarning() << "JNI exception in " << __FUNCTION__ << ": " << e.what();
+	}
+	return {};
+}
+
+void QAndroidScreenOrientationHelper::releaseLocker(LockerInfoPtr lockerInfo)
+{
+	try
+	{
+		if (isJniReady())
+		{
+			return jni()->callParamVoid(
+				"releaseLocker",
+				"Lru/dublgis/androidhelpers/AndroidScreenOrientationHelper$LockerOrientationInfo;",
+				lockerInfo->jObject());
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qWarning() << "JNI exception in " << __FUNCTION__ << ": " << e.what();
 	}
 }
 
