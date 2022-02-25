@@ -190,42 +190,6 @@ int getCurrentFixedOrientation()
 }
 
 
-
-
-OrientationLock::OrientationLock()
-	: saved_orientation_(getRequestedOrientation())
-	, locked_(false)
-{
-	if (saved_orientation_ != ANDROID_ACTIVITYINFO_SCREEN_ORIENTATION_NOSENSOR)
-	{
-		int o = getCurrentFixedOrientation();
-		if (o != ANDROID_ACTIVITYINFO_SCREEN_ORIENTATION_UNSPECIFIED)
-		{
-			setRequestedOrientation(o);
-			locked_ = true;
-			return;
-		}
-	}
-	qWarning()<<"QAndroidScreenOrientation::OrientationLock failed to lock current screen orientation.";
-}
-
-
-OrientationLock::OrientationLock(int desired_orientation)
-	: saved_orientation_(getRequestedOrientation())
-	, locked_(true)
-{
-	setRequestedOrientation(desired_orientation);
-}
-
-
-OrientationLock::~OrientationLock()
-{
-	if (locked_)
-	{
-		setRequestedOrientation(saved_orientation_);
-	}
-}
-
 QAndroidScreenOrientationHelper::QAndroidScreenOrientationHelper(QObject * parent)
 	: QObject(parent)
 	, jniLinker_(new JniObjectLinker(this))
