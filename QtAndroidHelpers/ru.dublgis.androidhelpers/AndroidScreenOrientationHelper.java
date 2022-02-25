@@ -49,7 +49,7 @@ public class AndroidScreenOrientationHelper
     public static class LockerOrientationInfo
     {
         private static int mNextId = 0;
-        private int mId;
+        private final int mId;
         private int mSavedOrientation;
 
         public LockerOrientationInfo(int orientation)
@@ -75,65 +75,68 @@ public class AndroidScreenOrientationHelper
 
     public int getRequestedOrientation()
     {
-        return getRequestedOrientation(getContext());
+        return getRequestedOrientation((Activity)getContext());
     }
 
     public LockerOrientationInfo lockOrientation(int desiredOrientation)
     {
-        return lockOrientation(desiredOrientation, getContext());
+        return lockOrientation(desiredOrientation, (Activity)getContext());
     }
 
     public void releaseLocker(LockerOrientationInfo lockerInfo)
     {
-        releaseLocker(lockerInfo, getContext());
+        releaseLocker(lockerInfo, (Activity)getContext());
     }
 
     private void setRequestedOrientaion(int orientaion)
     {
-        setRequestedOrientaion(orientaion, getContext());
+        setRequestedOrientaion(orientaion, (Activity)getContext());
     }
 
-    public static LockerOrientationInfo lockOrientation(int desiredOrientation, Context ctx)
+    public static LockerOrientationInfo lockOrientation(int desiredOrientation, Activity activity)
     {
-        LockerOrientationInfo locker = new LockerOrientationInfo(getRequestedOrientation(ctx));
-        mLockers.add(locker);
-        setRequestedOrientaion(desiredOrientation, ctx);
+        LockerOrientationInfo locker = new LockerOrientationInfo(getRequestedOrientation(activity));
+        synchronized(AndroidScreenOrientationHelper.class) {
+            mLockers.add(locker);
+        }
+        setRequestedOrientaion(desiredOrientation, activity);
         return locker;
     }
 
-    public static void releaseLocker(LockerOrientationInfo lockerInfo, Context ctx)
+    public static void releaseLocker(LockerOrientationInfo lockerInfo, Activity activity)
     {
-        int lockersSize = mLockers.size();
-        if (lockersSize == 0) {
-            return;
-        }
-
-        // Check last locker
-        if (mLockers.get(lockersSize-1).getId() == lockerInfo.getId()) {
-            // Restore saved orientation
-            setRequestedOrientaion(lockerInfo.getSavedOrientation(), ctx);
-            mLockers.remove(lockersSize-1);
-            return;
-        }
-
-        for (int i = lockersSize - 2; i >= 0; --i) {
-            LockerOrientationInfo locker = mLockers.get(i);
-            if (locker.getId() == lockerInfo.getId()) {
-                // Change saved orientation for "next" locker in queue
-                mLockers.get(i+1).setSavedOrientation(locker.getSavedOrientation());
-                mLockers.remove(i);
+        synchronized(AndroidScreenOrientationHelper.class) {
+            int lockersSize = mLockers.size();
+            if (lockersSize == 0) {
                 return;
+            }
+
+            // Check last locker
+            if (mLockers.get(lockersSize - 1).getId() == lockerInfo.getId()) {
+                // Restore saved orientation
+                setRequestedOrientaion(lockerInfo.getSavedOrientation(), activity);
+                mLockers.remove(lockersSize - 1);
+                return;
+            }
+
+            for (int i = lockersSize - 2; i >= 0; --i) {
+                LockerOrientationInfo locker = mLockers.get(i);
+                if (locker.getId() == lockerInfo.getId()) {
+                    // Change saved orientation for "next" locker in queue
+                    mLockers.get(i + 1).setSavedOrientation(locker.getSavedOrientation());
+                    mLockers.remove(i);
+                    return;
+                }
             }
         }
 
         Log.w(TAG, "releaseLocker failed: locker not found. LockerOrientationInfo.getId(): " + lockerInfo.getId());
     }
 
-    public static int getRequestedOrientation(Context ctx)
+    public static int getRequestedOrientation(Activity activity)
     {
         int requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
         try {
-            Activity activity = (Activity) ctx;
             requestedOrientation = activity.getRequestedOrientation();
         } catch (final Throwable e) {
             Log.e(TAG, "getRequestedOrientation failed: " + e);
@@ -141,10 +144,9 @@ public class AndroidScreenOrientationHelper
         return requestedOrientation;
     }
 
-    private static void setRequestedOrientaion(int orientaion, Context ctx)
+    private static void setRequestedOrientaion(int orientaion, Activity activity)
     {
         try {
-            Activity activity = (Activity) ctx;
             activity.setRequestedOrientation(orientaion);
         } catch (final Throwable e) {
             Log.e(TAG, "setRequestedOrientaion failed: " + e);
