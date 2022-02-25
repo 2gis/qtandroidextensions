@@ -62,29 +62,68 @@ public class Contacts
 	private static final String TAG = "Grym/Contacts";
 	private long mNativePtr = 0;
 	private static final String[] PROJECTION_PHONE = new String[]{
-			ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
 			ContactsContract.Contacts.DISPLAY_NAME,
+			ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
+			ContactsContract.CommonDataKinds.Phone.TYPE,
+			ContactsContract.CommonDataKinds.Phone.LABEL,
 			ContactsContract.CommonDataKinds.Phone.NUMBER,
+			ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER,
 	};
 	private static final String[] PROJECTION_EMAIL = new String[]{
-			ContactsContract.CommonDataKinds.Email.CONTACT_ID,
-			ContactsContract.CommonDataKinds.Email.ADDRESS,
 			ContactsContract.Contacts.DISPLAY_NAME,
+			ContactsContract.CommonDataKinds.Email.CONTACT_ID,
+			ContactsContract.CommonDataKinds.Email.TYPE,
+			ContactsContract.CommonDataKinds.Email.LABEL,
+			ContactsContract.CommonDataKinds.Email.ADDRESS,
+	};
+
+	public static class Email
+	{
+		private String mLabel;
+		private String mAddress;
+
+		public Email(String label, String address)
+		{
+			mLabel = label;
+			mAddress = address;
+		}
+
+		public String getLabel() { return mLabel; }
+		public String getAddress() { return mAddress; }
+	};
+
+	public static class Phone
+	{
+		private String mLabel;
+		private String mNumber;
+
+		public Phone(String label, String number)
+		{
+			mLabel = label;
+			mNumber = number;
+		}
+
+		public String getLabel() { return mLabel; }
+		public String getNumber() { return mNumber; }
 	};
 
 	public static class Contact
 	{
+		private String mId;
 		private String mFullName;
-		private List<String> mPhones = new ArrayList<String>();
-		private List<String> mEmails = new ArrayList<String>();
+		private List<Phone> mPhones = new ArrayList<Phone>();
+		private List<Email> mEmails = new ArrayList<Email>();
 
+		public Contact(String id) { mId = id; }
+
+		public String getId() { return mId; }
 		public String getFullName() { return mFullName; }
-		public List<String> getPhones() { return mPhones; }
-		public List<String> getEmails() { return mEmails; }
+		public List<Phone> getPhones() { return mPhones; }
+		public List<Email> getEmails() { return mEmails; }
 
 		public void setFullName(String name) { mFullName = name; }
-		public void addPhone(String phone) { mPhones.add(phone); }
-		public void addEmail(String email) { mEmails.add(email); }
+		public void addPhone(Phone phone) { mPhones.add(phone); }
+		public void addEmail(Email email) { mEmails.add(email); }
 	};
 
 	public static class ContactsContainer
@@ -99,7 +138,7 @@ public class Contacts
 		public Contact getContact(String contactId)
 		{
 			if (!mContacts.containsKey(contactId)) {
-				Contact contact = new Contact();
+				Contact contact = new Contact(contactId);
 				mContacts.put(contactId, contact);
 			}
 			return mContacts.get(contactId);
@@ -146,13 +185,27 @@ public class Contacts
 					null);
 
 			if (cursor != null) {
-				final int idIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID);
-				final int nameIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
-				final int phoneIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+				final int contactIdIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.CONTACT_ID);
+				final int contactNameIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
+				final int phoneTypeIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE);
+				final int phoneLabelIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.LABEL);
+				final int phoneNumberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+				final int normPhoneNumberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER);
+
 				while (cursor.moveToNext()) {
-					Contact contact = contactsContainer.getContact(cursor.getString(idIndex));
-					contact.setFullName(cursor.getString(nameIndex));
-					contact.addPhone(cursor.getString(phoneIndex));
+					Contact contact = contactsContainer.getContact(cursor.getString(contactIdIndex));
+					contact.setFullName(cursor.getString(contactNameIndex));
+
+					final CharSequence phoneLabel = ContactsContract.CommonDataKinds.Phone.getTypeLabel(
+						ctx.getResources(),
+						cursor.getInt(phoneTypeIndex),
+						cursor.getString(phoneLabelIndex));
+
+					final String phoneNumber = cursor.isNull(normPhoneNumberIndex)
+						? cursor.getString(phoneNumberIndex)
+						: cursor.getString(normPhoneNumberIndex);
+
+					contact.addPhone(new Phone(phoneLabel.toString(), phoneNumber));
 				}
 				cursor.close();
 			}
@@ -160,16 +213,28 @@ public class Contacts
 			cursor = cr.query(ContactsContract.CommonDataKinds.Email.CONTENT_URI,
 					PROJECTION_EMAIL,
 					null,
-					null, null);
+					null,
+					null);
 
 			if (cursor != null) {
-				final int idIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.CONTACT_ID);
-				final int nameIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
-				final int emailIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS);
+				final int contactIdIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.CONTACT_ID);
+				final int contactNameIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
+				final int emailTypeIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE);
+				final int emailLabelIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.LABEL);
+				final int emailAddressIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS);
+
 				while (cursor.moveToNext()) {
-					Contact contact = contactsContainer.getContact(cursor.getString(idIndex));
-					contact.setFullName(cursor.getString(nameIndex));
-					contact.addEmail(cursor.getString(emailIndex));
+					Contact contact = contactsContainer.getContact(cursor.getString(contactIdIndex));
+					contact.setFullName(cursor.getString(contactNameIndex));
+
+					final CharSequence emailLabel = ContactsContract.CommonDataKinds.Email.getTypeLabel(
+						ctx.getResources(),
+						cursor.getInt(emailTypeIndex),
+						cursor.getString(emailLabelIndex));
+
+					contact.addEmail(new Email(
+						emailLabel.toString(),
+						cursor.getString(emailAddressIndex)));
 				}
 				cursor.close();
 			}
@@ -187,11 +252,11 @@ public class Contacts
 				@Override public void run() {
 					try
 					{
-						nativeRecievedContacts(mNativePtr, contacts);
+						nativeReceivedContacts(mNativePtr, contacts);
 					}
 					catch(final Throwable e)
 					{
-						Log.e(TAG, "call nativeRecievedContacts exception: ", e);
+						Log.e(TAG, "call nativeReceivedContacts exception: ", e);
 					}
 				}
 			});
@@ -199,5 +264,5 @@ public class Contacts
 	}
 
 	public native Context getContext();
-	public native void nativeRecievedContacts(long nativeptr, java.lang.Object contactsList);
+	public native void nativeReceivedContacts(long nativeptr, java.lang.Object contactsList);
 };

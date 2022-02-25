@@ -41,69 +41,76 @@
 #include <QJniHelpers/TJniObjectLinker.h>
 #include <QtCore/QDebug>
 
-namespace  {
 
-QStringList arrayListToQStringList(QJniObject * array_list)
-{
-	QStringList result;
-	try
-	{
-		if (array_list && array_list->jObject())
-		{
-			jint size = array_list->callInt("size");
-			QJniEnvPtr jep;
-			for (jint i = 0; i < size; ++i)
-			{
-				QScopedPointer<QJniObject> str_object(array_list->callParamObject("get", "java/lang/Object", "I", i));
-				if (str_object)
-				{
-					result << jep.JStringToQString(static_cast<jstring>(str_object->jObject()));
-				}
-				else
-				{
-					result << QString();
-				}
-			}
-		}
-	}
-	catch (const std::exception & e)
-	{
-		qWarning() << "JNI exception in " << __FUNCTION__ << ": " << e.what();
-	}
-	return result;
-}
-
-}
-
-Q_DECL_EXPORT void JNICALL Java_ContactHelper_recievedContacts(JNIEnv * env, jobject, jlong param, jobject contactsList)
+Q_DECL_EXPORT void JNICALL Java_ContactHelper_receivedContacts(JNIEnv * env, jobject, jlong param, jobject contacts)
 {
 	JNI_LINKER_OBJECT(QAndroidContacts, param, obj)
-	ContactList allContacts;
+	ContactList contactList;
 
 	try {
-		QJniObject jniContacts(contactsList, false);
-		int size = jniContacts.callParamInt("size", "");
-		allContacts.reserve(size);
-		for (int i = 0; i < size; ++i)
+		QJniObject jniContactList(contacts, false);
+		const int contactListSize = jniContactList.callParamInt("size", "");
+		contactList.reserve(contactListSize);
+
+		for (int contactIdx = 0; contactIdx < contactListSize; ++contactIdx)
 		{
-			QScopedPointer<QJniObject> jniContact(jniContacts.callParamObject(
+			QScopedPointer<QJniObject> jniContact(jniContactList.callParamObject(
 				"get",
 				"java/lang/Object",
 				"I",
-				i));
+				contactIdx));
 
 			if (jniContact)
 			{
 				Contact contact;
+				contact.id = jniContact->callString("getId");
 				contact.name = jniContact->callString("getFullName");
 
-				QScopedPointer<QJniObject> numbers_array(jniContact->callObject("getPhones", "java/util/List"));
-				contact.phones = arrayListToQStringList(numbers_array.data());
+				QScopedPointer<QJniObject> jniEmailList(jniContact->callObject("getEmails", "java/util/List"));
+				const int emailListSize = jniEmailList->callParamInt("size", "");
+				contact.emails.reserve(emailListSize);
 
-				QScopedPointer<QJniObject> emails_array(jniContact->callObject("getEmails", "java/util/List"));
-				contact.emails = arrayListToQStringList(emails_array.data());
+				for (int emailIdx = 0; emailIdx < emailListSize; ++emailIdx)
+				{
+					QScopedPointer<QJniObject> jniEmail(jniEmailList->callParamObject(
+						"get",
+						"java/lang/Object",
+						"I",
+						emailIdx));
 
-				allContacts.append(contact);
+					if (jniEmail)
+					{
+						Email email;
+						email.label = jniEmail->callString("getLabel");
+						email.address = jniEmail->callString("getAddress");
+
+						contact.emails.append(email);
+					}
+				}
+
+				QScopedPointer<QJniObject> jniPhoneList(jniContact->callObject("getPhones", "java/util/List"));
+				const int phoneListSize = jniPhoneList->callParamInt("size", "");
+				contact.phones.reserve(phoneListSize);
+
+				for (int phoneIdx = 0; phoneIdx < phoneListSize; ++phoneIdx)
+				{
+					QScopedPointer<QJniObject> jniPhone(jniPhoneList->callParamObject(
+						"get",
+						"java/lang/Object",
+						"I",
+						phoneIdx));
+
+					if (jniPhone)
+					{
+						Phone phone;
+						phone.label = jniPhone->callString("getLabel");
+						phone.number = jniPhone->callString("getNumber");
+
+						contact.phones.append(phone);
+					}
+				}
+
+				contactList.append(contact);
 			}
 		}
 	}
@@ -118,15 +125,15 @@ Q_DECL_EXPORT void JNICALL Java_ContactHelper_recievedContacts(JNIEnv * env, job
 	{
 		QMetaObject::invokeMethod(
 			cppObject,
-			"recievedContacts",
+			"receivedContacts",
 			Qt::QueuedConnection,
-			Q_ARG(ContactList, allContacts));
+			Q_ARG(ContactList, contactList));
 	}
 }
 
 static const JNINativeMethod methods[] = {
 	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
-	{"nativeRecievedContacts", "(JLjava/lang/Object;)V", reinterpret_cast<void*>(Java_ContactHelper_recievedContacts)},
+	{"nativeReceivedContacts", "(JLjava/lang/Object;)V", reinterpret_cast<void*>(Java_ContactHelper_receivedContacts)},
 };
 
 JNI_LINKER_IMPL(QAndroidContacts, "ru/dublgis/androidhelpers/Contacts", methods)
@@ -136,7 +143,6 @@ QAndroidContacts::QAndroidContacts(QObject * parent)
 	, jniLinker_(new JniObjectLinker(this))
 {
 }
-
 
 QAndroidContacts::~QAndroidContacts()
 {

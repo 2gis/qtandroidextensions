@@ -42,11 +42,24 @@
 #include <QtCore/QString>
 #include <QtCore/QVector>
 
+struct Email
+{
+	QString label;
+	QString address;
+};
+
+struct Phone
+{
+	QString label;
+	QString number;
+};
+
 struct Contact
 {
+	QString id;
 	QString name;
-	QStringList phones; // phone numbers are not validated after receiving from contacts book
-	QStringList emails; // emails are not validated after receiving from contacts book
+	QVector<Email> emails;
+	QVector<Phone> phones;
 };
 using ContactList = QVector<Contact>;
 Q_DECLARE_METATYPE(ContactList)
@@ -58,16 +71,16 @@ class QAndroidContacts : public QObject
 	JNI_LINKER_DECL(QAndroidContacts)
 
 public:
-	QAndroidContacts(QObject * parent = 0);
+	explicit QAndroidContacts(QObject * parent = 0);
 	virtual ~QAndroidContacts();
 
 signals:
-	void recievedContacts(const ContactList & contactList);
+	void receivedContacts(const ContactList & contactList);
 	void needReadContactPermission();
 
 public slots:
 	void requestContacts();
 
 private:
-	friend void JNICALL Java_ContactHelper_recievedContacts(JNIEnv *, jobject, jlong param, jobject contacts);
+	friend void JNICALL Java_ContactHelper_receivedContacts(JNIEnv *, jobject, jlong param, jobject contacts);
 };
