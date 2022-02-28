@@ -42,98 +42,142 @@
 #include <QtCore/QDebug>
 
 
-Q_DECL_EXPORT void JNICALL Java_ContactHelper_receivedContacts(JNIEnv * env, jobject, jlong param, jobject contacts)
+namespace {
+
+QVector<Email> toEmailList(QJniObject * jniEmailList)
 {
-	JNI_LINKER_OBJECT(QAndroidContacts, param, obj)
+	QVector<Email> emailList;
+
+	if (!jniEmailList || !jniEmailList->jObject())
+	{
+		return emailList;
+	}
+
+	const int emailListSize = jniEmailList->callParamInt("size", "");
+	emailList.reserve(emailListSize);
+
+	for (int emailIdx = 0; emailIdx < emailListSize; ++emailIdx)
+	{
+		QScopedPointer<QJniObject> jniEmail(jniEmailList->callParamObject(
+			"get",
+			"java/lang/Object",
+			"I",
+			emailIdx));
+
+		if (!jniEmail || !jniEmail->jObject())
+		{
+			continue;
+		}
+
+		emailList.append(Email{
+			jniEmail->callString("getLabel"),
+			jniEmail->callString("getAddress"),
+		});
+	}
+
+	return emailList;
+}
+
+QVector<Phone> toPhoneList(QJniObject * jniPhoneList)
+{
+	QVector<Phone> phoneList;
+
+	if (!jniPhoneList || !jniPhoneList->jObject())
+	{
+		return phoneList;
+	}
+
+	const int phoneListSize = jniPhoneList->callParamInt("size", "");
+	phoneList.reserve(phoneListSize);
+
+	for (int phoneIdx = 0; phoneIdx < phoneListSize; ++phoneIdx)
+	{
+		QScopedPointer<QJniObject> jniPhone(jniPhoneList->callParamObject(
+			"get",
+			"java/lang/Object",
+			"I",
+			phoneIdx));
+
+		if (!jniPhone || !jniPhone->jObject())
+		{
+			continue;
+		}
+
+		phoneList.append(Phone{
+			jniPhone->callString("getLabel"),
+			jniPhone->callString("getNumber"),
+		});
+	}
+
+	return phoneList;
+}
+
+} // anonymous namespace
+
+
+Q_DECL_EXPORT void JNICALL Java_ContactsHelper_contactsReceived(JNIEnv * env, jobject, jlong nativePtr, jobject contacts)
+{
+	JNI_LINKER_OBJECT(QAndroidContacts, nativePtr, contactsProxy)
+
 	ContactList contactList;
 
-	try {
-		QJniObject jniContactList(contacts, false);
+	try
+	{
+		QJniObject jniContactList{contacts, false};
 		const int contactListSize = jniContactList.callParamInt("size", "");
 		contactList.reserve(contactListSize);
 
 		for (int contactIdx = 0; contactIdx < contactListSize; ++contactIdx)
 		{
-			QScopedPointer<QJniObject> jniContact(jniContactList.callParamObject(
-				"get",
-				"java/lang/Object",
-				"I",
-				contactIdx));
-
-			if (jniContact)
+			try
 			{
-				Contact contact;
-				contact.id = jniContact->callString("getId");
-				contact.name = jniContact->callString("getFullName");
+				QScopedPointer<QJniObject> jniContact{
+					jniContactList.callParamObject("get", "java/lang/Object", "I", contactIdx)};
 
-				QScopedPointer<QJniObject> jniEmailList(jniContact->callObject("getEmails", "java/util/List"));
-				const int emailListSize = jniEmailList->callParamInt("size", "");
-				contact.emails.reserve(emailListSize);
-
-				for (int emailIdx = 0; emailIdx < emailListSize; ++emailIdx)
+				if (!jniContact || !jniContact->jObject())
 				{
-					QScopedPointer<QJniObject> jniEmail(jniEmailList->callParamObject(
-						"get",
-						"java/lang/Object",
-						"I",
-						emailIdx));
-
-					if (jniEmail)
-					{
-						Email email;
-						email.label = jniEmail->callString("getLabel");
-						email.address = jniEmail->callString("getAddress");
-
-						contact.emails.append(email);
-					}
+					continue;
 				}
 
-				QScopedPointer<QJniObject> jniPhoneList(jniContact->callObject("getPhones", "java/util/List"));
-				const int phoneListSize = jniPhoneList->callParamInt("size", "");
-				contact.phones.reserve(phoneListSize);
+				QScopedPointer<QJniObject> jniEmailList{
+					jniContact->callObject("getEmails", "java/util/List")};
 
-				for (int phoneIdx = 0; phoneIdx < phoneListSize; ++phoneIdx)
-				{
-					QScopedPointer<QJniObject> jniPhone(jniPhoneList->callParamObject(
-						"get",
-						"java/lang/Object",
-						"I",
-						phoneIdx));
+				QScopedPointer<QJniObject> jniPhoneList{
+					jniContact->callObject("getPhones", "java/util/List")};
 
-					if (jniPhone)
-					{
-						Phone phone;
-						phone.label = jniPhone->callString("getLabel");
-						phone.number = jniPhone->callString("getNumber");
-
-						contact.phones.append(phone);
-					}
-				}
-
-				contactList.append(contact);
+				contactList.append(Contact{
+					jniContact->callString("getId"),
+					jniContact->callString("getFullName"),
+					toEmailList(jniEmailList.data()),
+					toPhoneList(jniPhoneList.data()),
+				});
+			}
+			catch (const std::exception & e)
+			{
+				qCritical() << __FUNCTION__ << ": JNI exception while getting contact info - " << e.what();
 			}
 		}
 	}
 	catch (const std::exception & e)
 	{
-		qWarning() << "JNI exception in " << __FUNCTION__ << ": " << e.what();
+		qCritical() << __FUNCTION__ << ": JNI exception while getting contact list - " << e.what();
 	}
 
-	void * vp = reinterpret_cast<void*>(param);
-	QAndroidContacts * cppObject = reinterpret_cast<QAndroidContacts*>(vp);
-	if (cppObject)
+	const bool methodInvoked = QMetaObject::invokeMethod(
+		contactsProxy,
+		"contactsReceived",
+		Qt::QueuedConnection,
+		Q_ARG(ContactList, contactList));
+
+	if (!methodInvoked)
 	{
-		QMetaObject::invokeMethod(
-			cppObject,
-			"receivedContacts",
-			Qt::QueuedConnection,
-			Q_ARG(ContactList, contactList));
+		qCritical() << __FUNCTION__ << ": QMetaObject::invokeMethod failed";
 	}
 }
 
 static const JNINativeMethod methods[] = {
 	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
-	{"nativeReceivedContacts", "(JLjava/lang/Object;)V", reinterpret_cast<void*>(Java_ContactHelper_receivedContacts)},
+	{"nativeContactsReceived", "(JLjava/lang/Object;)V", reinterpret_cast<void*>(Java_ContactsHelper_contactsReceived)},
 };
 
 JNI_LINKER_IMPL(QAndroidContacts, "ru/dublgis/androidhelpers/Contacts", methods)
@@ -160,12 +204,12 @@ void QAndroidContacts::requestContacts()
 			}
 			else
 			{
-				emit needReadContactPermission();
+				emit contactsPermissionRequired();
 			}
 		}
 	}
 	catch (const std::exception & e)
 	{
-		qWarning() << "JNI exception in " << __FUNCTION__ << ": " << e.what();
+		qCritical() << "JNI exception in " << __FUNCTION__ << ": " << e.what();
 	}
 }

@@ -75,12 +75,12 @@ public:
 	virtual ~QAndroidContacts();
 
 signals:
-	void receivedContacts(const ContactList & contactList);
-	void needReadContactPermission();
+	void contactsPermissionRequired();
+	void contactsReceived(const ContactList & contactList);
 
 public slots:
 	void requestContacts();
 
 private:
-	friend void JNICALL Java_ContactHelper_receivedContacts(JNIEnv *, jobject, jlong param, jobject contacts);
+	friend void JNICALL Java_ContactsHelper_contactsReceived(JNIEnv *, jobject, jlong nativePtr, jobject contacts);
 };

@@ -60,7 +60,7 @@ import ru.dublgis.androidhelpers.Log;
 public class Contacts
 {
 	private static final String TAG = "Grym/Contacts";
-	private long mNativePtr = 0;
+	private Long mNativePtr = 0l;
 	private static final String[] PROJECTION_PHONE = new String[]{
 			ContactsContract.Contacts.DISPLAY_NAME,
 			ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
@@ -79,8 +79,8 @@ public class Contacts
 
 	public static class Email
 	{
-		private String mLabel;
-		private String mAddress;
+		private final String mLabel;
+		private final String mAddress;
 
 		public Email(String label, String address)
 		{
@@ -94,8 +94,8 @@ public class Contacts
 
 	public static class Phone
 	{
-		private String mLabel;
-		private String mNumber;
+		private final String mLabel;
+		private final String mNumber;
 
 		public Phone(String label, String number)
 		{
@@ -109,7 +109,7 @@ public class Contacts
 
 	public static class Contact
 	{
-		private String mId;
+		private final String mId;
 		private String mFullName;
 		private List<Phone> mPhones = new ArrayList<Phone>();
 		private List<Email> mEmails = new ArrayList<Email>();
@@ -126,7 +126,7 @@ public class Contacts
 		public void addEmail(Email email) { mEmails.add(email); }
 	};
 
-	public static class ContactsContainer
+	public static class ContactContainer
 	{
 		private HashMap<String, Contact> mContacts = new HashMap<String, Contact>();
 
@@ -145,17 +145,27 @@ public class Contacts
 		}
 	};
 
-	public Contacts(long native_ptr) { mNativePtr = native_ptr; }
+	public Contacts(long nativePtr) { mNativePtr = nativePtr; }
 
 	//! Called from C++ to notify us that the associated C++ object is being destroyed.
-	public void cppDestroyed() {  }
+	public void cppDestroyed() {
+		synchronized(mNativePtr) {
+            mNativePtr = 0l;
+        }
+	}
 
 	//! Called from C++
 	public boolean checkPermission()
 	{
-		Context ctx = getContext();
-		return ContextCompat.checkSelfPermission(ctx, Manifest.permission.READ_CONTACTS)
-				== PackageManager.PERMISSION_GRANTED;
+		try {
+			Context ctx = getContext();
+			return ContextCompat.checkSelfPermission(ctx, Manifest.permission.READ_CONTACTS)
+					== PackageManager.PERMISSION_GRANTED;
+		} catch (final Throwable e) {
+			Log.e(TAG, "checkPermission exception: ", e);
+		}
+
+		return false;
 	}
 
 	//! Called from C++
@@ -172,7 +182,7 @@ public class Contacts
 	{
 		Cursor cursor = null;
 		Context ctx = null;
-		ContactsContainer contactsContainer = new ContactsContainer();
+		ContactContainer contactContainer = new ContactContainer();
 
 		try {
 			ctx = getContext();
@@ -193,7 +203,7 @@ public class Contacts
 				final int normPhoneNumberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER);
 
 				while (cursor.moveToNext()) {
-					Contact contact = contactsContainer.getContact(cursor.getString(contactIdIndex));
+					Contact contact = contactContainer.getContact(cursor.getString(contactIdIndex));
 					contact.setFullName(cursor.getString(contactNameIndex));
 
 					final CharSequence phoneLabel = ContactsContract.CommonDataKinds.Phone.getTypeLabel(
@@ -224,7 +234,7 @@ public class Contacts
 				final int emailAddressIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.ADDRESS);
 
 				while (cursor.moveToNext()) {
-					Contact contact = contactsContainer.getContact(cursor.getString(contactIdIndex));
+					Contact contact = contactContainer.getContact(cursor.getString(contactIdIndex));
 					contact.setFullName(cursor.getString(contactNameIndex));
 
 					final CharSequence emailLabel = ContactsContract.CommonDataKinds.Email.getTypeLabel(
@@ -238,25 +248,22 @@ public class Contacts
 				}
 				cursor.close();
 			}
-		}
-		catch(final Throwable e)
-		{
+		} catch(final Throwable e) {
 			Log.e(TAG, "requestContactsInternal exception: ", e);
 			cursor.close();
 		}
 
-		if (ctx != null)
-		{
-			ArrayList<Contact> contacts = contactsContainer.getContactList();
+		if (ctx != null) {
+			ArrayList<Contact> contacts = contactContainer.getContactList();
+
 			new Handler(ctx.getMainLooper()).post(new Runnable() {
 				@Override public void run() {
-					try
-					{
-						nativeReceivedContacts(mNativePtr, contacts);
-					}
-					catch(final Throwable e)
-					{
-						Log.e(TAG, "call nativeReceivedContacts exception: ", e);
+					try {
+						synchronized(mNativePtr) {
+							nativeContactsReceived(mNativePtr, contacts);
+						}
+					} catch(final Throwable e) {
+						Log.e(TAG, "call nativeContactsReceived exception: ", e);
 					}
 				}
 			});
@@ -264,5 +271,5 @@ public class Contacts
 	}
 
 	public native Context getContext();
-	public native void nativeReceivedContacts(long nativeptr, java.lang.Object contactsList);
+	public native void nativeContactsReceived(long nativePtr, java.lang.Object contactsList);
 };
