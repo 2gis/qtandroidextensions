@@ -190,9 +190,8 @@ int getCurrentFixedOrientation()
 }
 
 
-QAndroidScreenOrientationHelper::QAndroidScreenOrientationHelper(QObject * parent)
-	: QObject(parent)
-	, jniLinker_(new JniObjectLinker(this))
+QAndroidScreenOrientationHelper::QAndroidScreenOrientationHelper()
+	: jniLinker_(new JniObjectLinker(this))
 {
 }
 
