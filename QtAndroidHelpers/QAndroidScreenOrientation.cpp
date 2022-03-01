@@ -194,7 +194,6 @@ QAndroidScreenOrientationHelper::QAndroidScreenOrientationHelper(QObject * paren
 	: QObject(parent)
 	, jniLinker_(new JniObjectLinker(this))
 {
-	QAndroidQPAPluginGap::preloadJavaClass(c_locker_helper_class);
 }
 
 QAndroidScreenOrientationHelper::~QAndroidScreenOrientationHelper()
@@ -216,7 +215,7 @@ LockerInfoPtr QAndroidScreenOrientationHelper::lockRequestedOrientation(int orie
 	}
 	catch (const std::exception & e)
 	{
-		qWarning() << "JNI exception in " << __FUNCTION__ << ": " << e.what();
+		qCritical() << "JNI exception in " << __FUNCTION__ << ": " << e.what();
 	}
 	return {};
 }
@@ -235,7 +234,7 @@ void QAndroidScreenOrientationHelper::releaseLocker(LockerInfoPtr lockerInfo)
 	}
 	catch (const std::exception & e)
 	{
-		qWarning() << "JNI exception in " << __FUNCTION__ << ": " << e.what();
+		qCritical() << "JNI exception in " << __FUNCTION__ << ": " << e.what();
 	}
 }
 
