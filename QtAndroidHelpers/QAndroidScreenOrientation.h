@@ -35,7 +35,6 @@
 */
 
 #pragma once
-#include <QtCore/QObject>
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 #include <QJniHelpers/IJniObjectLinker.h>
 #include <QtCore/QSharedPointer>
@@ -82,12 +81,12 @@ namespace QAndroidScreenOrientation
 
 
 	using LockerInfoPtr = QSharedPointer<QJniObject>;
-	class QAndroidScreenOrientationHelper: public QObject
+	class QAndroidScreenOrientationHelper
 	{
 		JNI_LINKER_DECL(QAndroidScreenOrientationHelper)
 
 		public:
-			QAndroidScreenOrientationHelper(QObject * parent = 0);
+			QAndroidScreenOrientationHelper();
 			virtual ~QAndroidScreenOrientationHelper();
 
 		public:
