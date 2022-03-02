@@ -30,7 +30,8 @@ HEADERS += \
     $$PWD/QAndroidDesktopUtils.h \
     $$PWD/QAndroidStorages_.h \
     $$PWD/QAndroidStorages_p.h
-    $$PWD/QAndroidPartialWakeLocker.h
+    $$PWD/QAndroidPartialWakeLocker.h \
+    $$PWD/QAndroidContacts.h
 
 SOURCES += \
     $$PWD/QAndroidSharedPreferences.cpp \
@@ -56,5 +57,6 @@ SOURCES += \
     $$PWD/QAndroidScreenLayoutHandler.cpp \
     $$PWD/QAndroidToast.cpp \
     $$PWD/QAndroidDesktopUtils.cpp \
-    $$PWD/QAndroidStorages.cpp
+    $$PWD/QAndroidStorages.cpp \
+    $$PWD/QAndroidContacts.cpp
 }
