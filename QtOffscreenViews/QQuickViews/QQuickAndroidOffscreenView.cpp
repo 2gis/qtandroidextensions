@@ -289,6 +289,7 @@ QSGNode * QQuickAndroidOffscreenView::updatePaintNode(QSGNode * node, UpdatePain
 				0,
 				n->fbo_->size(),
 				QQuickWindow::TextureHasAlphaChannel));
+		n->setOwnsTexture(true);
 		n->setFiltering(QSGTexture::Nearest);
 		n->setRect(0, 0, width(), height());
 		redraw_texture_needed_ = true;
