@@ -281,9 +281,12 @@ QSGNode * QQuickAndroidOffscreenView::updatePaintNode(QSGNode * node, UpdatePain
 		QOpenGLFramebufferObjectFormat format;
 		format.setAttachment(QOpenGLFramebufferObject::NoAttachment); // CombinedDepthStencil
 		n->fbo_.reset(new QOpenGLFramebufferObject(fboSize, format));
+		auto textureId = n->fbo_->texture();
 		n->setTexture(
-			window()->createTextureFromId(
-				n->fbo_->texture(),
+			window()->createTextureFromNativeObject(
+				QQuickWindow::NativeObjectTexture,
+				&textureId,
+				0,
 				n->fbo_->size(),
 				QQuickWindow::TextureHasAlphaChannel));
 		n->setFiltering(QSGTexture::Nearest);
