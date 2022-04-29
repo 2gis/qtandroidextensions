@@ -166,7 +166,7 @@ const QStringList & QAndroidFilePaths::ExternalFilesDirectories(const QString & 
 				"Landroid/content/Context;Ljava/lang/String;",
 				QAndroidQPAPluginGap::Context().jObject(),
 				(type.isEmpty())? jobject(0): QJniLocalRef(type).jObject());
-			dirs = paths.split(QLatin1Char('\n'), QString::SkipEmptyParts);
+			dirs = paths.split(QLatin1Char('\n'), Qt::SkipEmptyParts);
 			if (dirs.isEmpty())
 			{
 				qWarning() << "Failed to get dirs from getExternalFilesDirs(), falling back to getExternalFilesDir().";

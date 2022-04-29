@@ -355,7 +355,7 @@ QStringList getInstalledAppsList()
 	QJniClass du(c_desktoputils_class_name_);
 	QAndroidQPAPluginGap::Context activity;
 	QString list = du.callStaticParamString("getInstalledAppsList", "Landroid/content/Context;", activity.jObject());
-	return list.split(QChar('\n'), QString::SkipEmptyParts);
+	return list.split(QChar('\n'), Qt::SkipEmptyParts);
 }
 
 
@@ -431,7 +431,7 @@ QStringList getUserLocaleNames()
 			"getUserLocaleNames",
 			"Landroid/content/Context;",
 			QAndroidQPAPluginGap::Context().jObject())
-			.split(QLatin1Char('\n'), QString::SkipEmptyParts);
+			.split(QLatin1Char('\n'), Qt::SkipEmptyParts);
 	}
 	else
 	{

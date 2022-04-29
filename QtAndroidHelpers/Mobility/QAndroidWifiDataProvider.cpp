@@ -125,7 +125,7 @@ bool QAndroidWifiDataProvider::RetrieveData(WifiDataList & data)
 		return false;
 	}
 
-	QStringList tablelist = table.split(QChar('\n'), QString::SkipEmptyParts);
+	QStringList tablelist = table.split(QChar('\n'), Qt::SkipEmptyParts);
 	
 	if(!tablelist.size())
 	{
@@ -136,7 +136,7 @@ bool QAndroidWifiDataProvider::RetrieveData(WifiDataList & data)
 	
 	for(int i=0; i<tablelist.size(); i++)
 	{
-		QStringList entry = tablelist.at(i).split(QChar('\t'), QString::KeepEmptyParts);
+		QStringList entry = tablelist.at(i).split(QChar('\t'), Qt::KeepEmptyParts);
 
 		if (entry.size() < 4)
 		{
