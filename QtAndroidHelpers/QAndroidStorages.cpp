@@ -245,7 +245,7 @@ const QStringList & externalStorages()
         devs.remove(*it);
     }
 
-    ret = devs.toList();
+    ret = devs.values();
 
     qDebug()<<"Found storages:"<<ret.join(", ");
 
