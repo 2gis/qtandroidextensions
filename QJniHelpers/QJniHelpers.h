@@ -480,6 +480,17 @@ public:
 
 	~QJniLocalRef();
 
+	/*!
+	 * Use to return the object from a JNI function, e.g.:
+	 * JNICALL jstring .... foo() { return QJniLocalRef("Hello World!").detach<jstring>(); }
+	 */
+	template<class RESULT_TYPE> RESULT_TYPE detach()
+	{
+		RESULT_TYPE saved = static_cast<RESULT_TYPE>(local_);
+		local_ = 0;
+		return saved;
+	}
+
 	operator jobject() const { return local_; }
 	operator jstring() const { return static_cast<jstring>(local_); }
 	operator jclass() const { return static_cast<jclass>(local_); }
