@@ -200,15 +200,6 @@ QSharedPointer<QReadLocker> TJniObjectLinker<TNative>::getLocker()
 }
 
 
-#define JNI_LINKER_OBJECT3(nativeClass, param, object)                                          \
-	QSharedPointer<QReadLocker> locker = nativeClass::JniObjectLinker::getLocker();             \
-	nativeClass * object = nativeClass::JniObjectLinker::getClient(param);                      \
-	if (NULL == object)                                                                         \
-	{                                                                                           \
-		qWarning() << "Failed to get native object for " #nativeClass;                          \
-		return;                                                                                 \
-	}                                                                                           \
-
 #define JNI_LINKER_OBJECT4(nativeClass, param, object, error_return)                            \
 	QSharedPointer<QReadLocker> locker = nativeClass::JniObjectLinker::getLocker();             \
 	nativeClass * object = nativeClass::JniObjectLinker::getClient(param);                      \
@@ -216,8 +207,9 @@ QSharedPointer<QReadLocker> TJniObjectLinker<TNative>::getLocker()
 	{                                                                                           \
 		qWarning() << "Failed to get native object for " #nativeClass;                          \
 		return error_return;                                                                    \
-	}                                                                                           \
+	}
 
+#define JNI_LINKER_OBJECT3(nativeClass, param, object) JNI_LINKER_OBJECT4(nativeClass, param, object, (void)0)
 #define JNI_LINKER_EXPAND(x) x
 #define JNI_LINKER_GET_MACRO(_1, _2, _3, _4, NAME, ...) NAME
 #define JNI_LINKER_OBJECT(...) JNI_LINKER_EXPAND(JNI_LINKER_GET_MACRO(__VA_ARGS__, JNI_LINKER_OBJECT4, JNI_LINKER_OBJECT3)(__VA_ARGS__))
