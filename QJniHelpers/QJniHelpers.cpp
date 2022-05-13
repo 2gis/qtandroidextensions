@@ -1258,14 +1258,6 @@ QJniObject::~QJniObject()
 }
 
 
-jobject QJniObject::takeJobjectOver()
-{
-	jobject ret = instance_;
-	instance_ = 0;
-	return ret;
-}
-
-
 void QJniObject::initObject(JNIEnv * env, jobject instance, bool can_have_null_class)
 {
 	VERBOSE(qWarning("QJniObject::initObject(JNIEnv* env, jobject %p) %p, class %s", instance, reinterpret_cast<void*>(this), getClassName().toLatin1().data()));

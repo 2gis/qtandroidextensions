@@ -340,9 +340,18 @@ public:
 	virtual ~QJniObject();
 
 	/*!
-	 * Returns jobject and zeroes it.
+	 * Detach the QJniObject from jobject and return the jobject casted to the
+	 * template-specified type.
 	 */
-	jobject takeJobjectOver();
+	template<class RESULT_TYPE> RESULT_TYPE detach()
+	{
+		RESULT_TYPE saved = static_cast<RESULT_TYPE>(instance_);
+		instance_ = 0;
+		return saved;
+	}
+
+	//! Backward compatibility wrapper for detach<jobject>().
+	jobject takeJobjectOver() { return detach<jobject>(); }
 
 	//! Call void method of the wrapped Java object
 	void callVoid(const char * method_name);
@@ -481,6 +490,8 @@ public:
 	~QJniLocalRef();
 
 	/*!
+	 * Detach the QJniObject from jobject and return the jobject casted to the
+	 * template-specified type.
 	 * Use to return the object from a JNI function, e.g.:
 	 * JNICALL jstring .... foo() { return QJniLocalRef("Hello World!").detach<jstring>(); }
 	 */
