@@ -61,8 +61,21 @@ public class SatelliteLocationProvider implements LocationListener
 	private Looper mlocationUpdatesLooper = null;
 	final private Thread mlocationUpdatesThread = new Thread() {
 		public void run() {
-			Looper.prepare();
-			mlocationUpdatesLooper = Looper.myLooper();
+			synchronized(mProvider) {
+				if (0 == native_ptr_) {
+					return;
+				}
+				Looper.prepare();
+				mlocationUpdatesLooper = Looper.myLooper();
+
+				try {
+					mProvider.notify();
+				}
+				catch (Throwable e) {
+					Log.e(TAG, "Failed to notify", e);
+				}
+			}
+
 			Looper.loop();
 		}
 	};
@@ -81,19 +94,23 @@ public class SatelliteLocationProvider implements LocationListener
 	public void cppDestroyed()
 	{
 		Log.i(TAG, "cppDestroyed");
-		native_ptr_ = 0;
 
-		if (null != mlocationUpdatesLooper)
-		{
-			mlocationUpdatesLooper.quit();
-		}
+		synchronized(mProvider) {
+			native_ptr_ = 0;
 
-		try {
-			if (mlocationUpdatesThread.isAlive()) {
-				mlocationUpdatesThread.join(300);
+			if (null != mlocationUpdatesLooper)
+			{
+				mlocationUpdatesLooper.quit();
 			}
-		} catch (InterruptedException e) {
-			Log.e(TAG, "Exception in cppDestroyed: ", e);
+
+			try {
+				if (mlocationUpdatesThread.isAlive()) {
+					mlocationUpdatesThread.join(300);
+				}
+			} catch (InterruptedException e) {
+				Log.e(TAG, "Exception in cppDestroyed: ", e);
+			}
+			mProvider.notify();
 		}
 	}
 
@@ -118,12 +135,31 @@ public class SatelliteLocationProvider implements LocationListener
 
 
 	public boolean requestSingleUpdate() {
-		return mProvider.requestSingleUpdate(this, mlocationUpdatesLooper);
+		synchronized(mProvider) {
+			while(null == mlocationUpdatesLooper && 0 != native_ptr_) {
+				try {
+					mProvider.wait(1000);
+				} catch (InterruptedException e) {
+					Log.e(TAG, "Sync failed", e);
+				}
+			}
+			return mProvider.requestSingleUpdate(this, mlocationUpdatesLooper);
+		}
 	}
 
 
 	public boolean startLocationUpdates(final int minTime) {
-		return mProvider.requestLocationUpdates(minTime, this, mlocationUpdatesLooper);
+		synchronized(mProvider) {
+			while(null == mlocationUpdatesLooper && 0 != native_ptr_) {
+				try {
+					mProvider.wait(500);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+					Log.e(TAG, "Sync failed", e);
+				}
+			}
+			return mProvider.requestLocationUpdates(minTime, this, mlocationUpdatesLooper);
+		}
 	}
 
 
