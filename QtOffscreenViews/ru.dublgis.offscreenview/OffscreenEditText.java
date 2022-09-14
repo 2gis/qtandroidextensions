@@ -478,7 +478,7 @@ class OffscreenEditText extends OffscreenView
         private int getMinimalTextHeight()
         {
             try {
-                return (new StaticLayout(
+                int textHeight = (new StaticLayout(
                     getText(),
                     getPaint(),
                     getWidth() - getTotalPaddingRight() - getTotalPaddingLeft(),
@@ -486,6 +486,18 @@ class OffscreenEditText extends OffscreenView
                     1.0f,
                     0.0f,
                     true)).getHeight();
+
+                int hintHeight = (new StaticLayout(
+                    getHint(),
+                    getPaint(),
+                    getWidth() - getTotalPaddingRight() - getTotalPaddingLeft(),
+                    Alignment.ALIGN_NORMAL,
+                    1.0f,
+                    0.0f,
+                    true)).getHeight();
+
+                return textHeight > hintHeight ? textHeight : hintHeight;
+
             } catch (final Throwable e) {
                 Log.e(TAG, "getMinimalTextHeight exception: " + e);
                 return 0;
@@ -932,6 +944,8 @@ class OffscreenEditText extends OffscreenView
             @Override
             public void run(){
                 ((MyEditText)getView()).setHint(hint);
+                ((MyEditText)getView()).reflowWorkaround();
+
                 // This should not be done here:
                 //     need_to_reflow_hint_ = false;
                 // (Occasionally causes hint to be unreflown during startup.)
