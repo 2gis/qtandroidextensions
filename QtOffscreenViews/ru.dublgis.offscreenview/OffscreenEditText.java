@@ -492,8 +492,7 @@ class OffscreenEditText extends OffscreenView
                     0.0f,
                     true)).getHeight();
 
-                String hint = getHint().toString();
-                if (hint == null || hint.isEmpty()) {
+                if (getHint() == null || getHint().isEmpty()) {
                     return textHeight;
                 }
 
