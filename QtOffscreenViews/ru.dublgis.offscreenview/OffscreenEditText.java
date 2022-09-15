@@ -478,8 +478,13 @@ class OffscreenEditText extends OffscreenView
         private int getMinimalTextHeight()
         {
             try {
+                String text = getText().toString();
+                if (text.isEmpty()) {
+                    text = "W";
+                }
+
                 int textHeight = (new StaticLayout(
-                    getText(),
+                    text,
                     getPaint(),
                     getWidth() - getTotalPaddingRight() - getTotalPaddingLeft(),
                     Alignment.ALIGN_NORMAL,
@@ -487,8 +492,13 @@ class OffscreenEditText extends OffscreenView
                     0.0f,
                     true)).getHeight();
 
+                String hint = getHint().toString();
+                if (hint == null || hint.isEmpty()) {
+                    return textHeight;
+                }
+
                 int hintHeight = (new StaticLayout(
-                    getHint(),
+                    hint,
                     getPaint(),
                     getWidth() - getTotalPaddingRight() - getTotalPaddingLeft(),
                     Alignment.ALIGN_NORMAL,
