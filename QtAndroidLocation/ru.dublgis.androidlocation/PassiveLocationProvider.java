@@ -6,7 +6,7 @@
 
 	Distrbuted under The BSD License
 
-	Copyright (c) 2017, DoubleGIS, LLC.
+	Copyright (c) 2017-2022, DoubleGIS, LLC.
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -36,99 +36,28 @@
 
 package ru.dublgis.androidlocation;
 
-import android.app.PendingIntent;
 import android.content.Context;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Looper;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.util.Log;
-import androidx.core.content.ContextCompat;
-
-import static android.Manifest.permission.ACCESS_FINE_LOCATION;
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import ru.dublgis.androidlocation.BaseLocationProvider;
 
 
-
-public class PassiveLocationProvider implements LocationListener
+public class PassiveLocationProvider extends BaseLocationProvider
 {
-	private static final String TAG = "PassiveLocationProvider";
-	private long mNativePtr = 0;
-	LocationManagerWrapper mProvider;
-
-	private Looper mlocationUpdatesLooper = null;
-	final private Thread mlocationUpdatesThread = new Thread() {
-		public void run() {
-			Looper.prepare();
-			mlocationUpdatesLooper = Looper.myLooper();
-			Looper.loop();
-		}
-	};
-
+	private static final String TAG = "Grym/PassiveLocationProvider";
+	private volatile long native_ptr_ = 0;
 
 	public PassiveLocationProvider(long native_ptr)
 	{
-		Log.i(TAG, "PassiveLocationProvider");
-		mNativePtr = native_ptr;
-		mProvider = new LocationManagerWrapper(getContext(), LocationManager.PASSIVE_PROVIDER);
-		mlocationUpdatesThread.start();
+		super(native_ptr);
+		native_ptr_ = native_ptr;
+		init(getContext(), LocationManager.PASSIVE_PROVIDER);
 	}
 
-
-	//! Called from C++ to notify us that the associated C++ object is being destroyed.
-	public synchronized void cppDestroyed()
-	{
-		Log.i(TAG, "cppDestroyed");
-		mNativePtr = 0;
-
-		if (null != mlocationUpdatesLooper)
-		{
-			mlocationUpdatesLooper.quit();
-		}
-
-		try {
-			if (mlocationUpdatesThread.isAlive()) {
-				mlocationUpdatesThread.join(300);
-			}
-		} catch (InterruptedException e) {
-			Log.e(TAG, "Exception in cppDestroyed: ", e);
-		}
-	}
-
-
-	public Location lastKnownPosition(boolean fromSatelliteOnly) {
-		return mProvider.getLastKnownLocation();
-	}
-
-
-	public synchronized void onLocationChanged(Location location) {
-		onLocationRecieved(mNativePtr, location);
-	}
-
-
-	public void onStatusChanged(String provider, int status, Bundle extras) {}
-
-
-	public void onProviderEnabled(String provider) {}
-
-
-	public void onProviderDisabled(String provider) {}
-
-
-	public boolean requestSingleUpdate() {
-		return mProvider.requestSingleUpdate(this, mlocationUpdatesLooper);
-	}
-
-
-	public boolean startLocationUpdates(final int minTime) {
-		return mProvider.requestLocationUpdates(minTime, this, mlocationUpdatesLooper);
-	}
-
-
-	public void stopLocationUpdates() {
-		mProvider.removeUpdates(this);
+	public void onLocationChanged(Location location) {
+		Log.i(TAG, "onLocationChanged ");
+		onLocationRecieved(native_ptr_, location);
 	}
 
 
