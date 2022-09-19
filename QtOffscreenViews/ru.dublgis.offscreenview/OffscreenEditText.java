@@ -492,12 +492,12 @@ class OffscreenEditText extends OffscreenView
                     0.0f,
                     true)).getHeight();
 
-                if (getHint() == null || getHint().isEmpty()) {
+                if (getHint() == null || getHint().toString().isEmpty()) {
                     return textHeight;
                 }
 
                 int hintHeight = (new StaticLayout(
-                    hint,
+                    getHint(),
                     getPaint(),
                     getWidth() - getTotalPaddingRight() - getTotalPaddingLeft(),
                     Alignment.ALIGN_NORMAL,
