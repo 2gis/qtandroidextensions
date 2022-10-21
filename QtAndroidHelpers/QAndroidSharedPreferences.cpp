@@ -98,6 +98,30 @@ QString QAndroidSharedPreferences::readString(const QString & key, const QString
 }
 
 
+void QAndroidSharedPreferences::writeLong(const QString & key, int64_t value)
+{
+	if (isJniReady())
+	{
+		QJniEnvPtr jep;
+		jni()->callParamVoid("WriteLong", "Ljava/lang/String;J",
+										QJniLocalRef(jep, key).jObject(), value);
+	}
+}
+
+
+int64_t QAndroidSharedPreferences::readLong(const QString & key, int64_t valueDefault)
+{
+	if (isJniReady())
+	{
+		QJniEnvPtr jep;
+		return jni()->callParamLong("ReadLong", "Ljava/lang/String;J",
+										QJniLocalRef(jep, key).jObject(), valueDefault);
+	}
+
+	return valueDefault;
+}
+
+
 void QAndroidSharedPreferences::writeInt(const QString & key, int32_t value)
 {
 	if (isJniReady())

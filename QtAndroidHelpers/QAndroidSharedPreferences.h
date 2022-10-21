@@ -54,6 +54,9 @@ public:
 	void writeString(const QString & key, const QString & value);
 	QString readString(const QString & key, const QString & valueDefault);
 
+	void writeLong(const QString & key, int64_t value);
+	int64_t readLong(const QString & key, int64_t valueDefault);
+
 	void writeInt(const QString & key, int32_t value);
 	int32_t readInt(const QString & key, int32_t valueDefault);
 };

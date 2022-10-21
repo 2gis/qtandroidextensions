@@ -91,6 +91,30 @@ final public class SharedPreferencesHelper
 	}
 
 
+	public void WriteLong(String key, long value)
+	{
+		try {
+			SharedPreferences sharedPref = getPreferences();
+			SharedPreferences.Editor editor = sharedPref.edit();
+			editor.putLong(key, value);
+			editor.apply();
+		} catch (final Throwable e) {
+			Log.e(TAG, "WriteLong exception: ", e);
+		}
+	}
+
+
+	public long ReadLong(String key, long valueDefault)
+	{
+		try {
+			SharedPreferences sharedPref = getPreferences();
+			return sharedPref.getLong(key, valueDefault);
+		} catch (final Throwable e) {
+			Log.e(TAG, "ReadInt exception: ",  e);
+			return valueDefault;
+		}
+	}
+
 
 	public void WriteInt(String key, int value)
 	{
