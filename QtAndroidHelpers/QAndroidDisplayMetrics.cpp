@@ -182,6 +182,79 @@ static float guessRealisticHardwareDpi(float xdpi, float ydpi, float logicalDpi)
 }
 
 
+std::unique_ptr<QJniObject> QAndroidDisplayMetrics::getWindowManager(QJniObject * custom_context)
+{
+	std::unique_ptr<QJniObject> windowmanager;
+	try
+	{
+		if (!QAndroidQPAPluginGap::customContextSet() && !custom_context)
+		{
+			//  Works only in Activity, gets its local window manager.
+			windowmanager = { QAndroidQPAPluginGap::Context().callObject(
+				"getWindowManager",
+				"android/view/WindowManager") };
+		}
+		else
+		{
+			// Works in any Context. For Service gets system window manager.
+			QJniObject * context = nullptr;
+			QScopedPointer<QJniObject> default_context;
+			if (custom_context)
+			{
+				context = custom_context;
+			}
+			else
+			{
+				default_context.reset(new QAndroidQPAPluginGap::Context());
+				context = default_context.data();
+			}
+			windowmanager = { context->callParamObject(
+				"getSystemService",
+				"Ljava/lang/Object;",
+				"Ljava/lang/String;",
+				QJniLocalRef(QStringLiteral("window")).jObject()) };
+			if (!windowmanager || !windowmanager->jObject())
+			{
+				qCritical() << "Could not get WindowManager";
+				return {};
+			}
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in getWindowManager:" << e.what();
+	}
+	return std::move(windowmanager);
+}
+
+
+std::unique_ptr<QJniObject> QAndroidDisplayMetrics::getDefaultDisplay(QJniObject * custom_context)
+{
+	std::unique_ptr<QJniObject> window_manager = getWindowManager(custom_context);
+	if (!window_manager)
+	{
+		return {};
+	}
+	try
+	{
+		std::unique_ptr<QJniObject> result{ window_manager->callObject(
+			"getDefaultDisplay",
+			"android/view/Display") };
+		if (!result || !result->jObject())
+		{
+			qCritical() << "Could not get default Display";
+			return {};
+		}
+		return std::move(result);
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in getDefaultDisplay:" << e.what();
+		return {};
+	}
+}
+
+
 QAndroidDisplayMetrics::QAndroidDisplayMetrics(
 		QObject * parent,
 		QAndroidDisplayMetrics::IntermediateDensities allow_intermediate_densities,
@@ -205,72 +278,31 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(
 	, themeFromHardwareDpi_(ThemeMDPI)
 	, refreshRate_(0.0f)
 {
+	if (std::unique_ptr<QJniObject> display = getDefaultDisplay(custom_context))
 	{
 		QJniObject metrics("android/util/DisplayMetrics", "");
 		QJniObject point("android/graphics/Point", "");
-		QScopedPointer<QJniObject> windowmanager;
-		if (!QAndroidQPAPluginGap::customContextSet() && !custom_context)
-		{
-			//  Works only in Activity, gets its local window manager.
-			windowmanager.reset(QAndroidQPAPluginGap::Context()
-				.callObject("getWindowManager", "android/view/WindowManager"));
-		}
-		else
-		{
-			// Works in any Context. For Service gets system window manager.
-			QJniObject * context = nullptr;
-			QScopedPointer<QJniObject> default_context;
-			if (custom_context)
-			{
-				context = custom_context;
-			}
-			else
-			{
-				default_context.reset(new QAndroidQPAPluginGap::Context());
-				context = default_context.data();
-			}
-			windowmanager.reset(context->callParamObject(
-				"getSystemService",
-				"Ljava/lang/Object;",
-				"Ljava/lang/String;",
-				QJniLocalRef(QStringLiteral("window")).jObject()));
-		}
-		if (windowmanager)
-		{
-			QScopedPointer<QJniObject> defaultdisplay(windowmanager->callObject("getDefaultDisplay", "android/view/Display"));
-			if (defaultdisplay)
-			{
-				defaultdisplay->callParamVoid("getMetrics", "Landroid/util/DisplayMetrics;", metrics.jObject());
+		display->callParamVoid("getMetrics", "Landroid/util/DisplayMetrics;", metrics.jObject());
 
-				density_ = metrics.getFloatField("density");
-				densityDpi_ = metrics.getIntField("densityDpi");
-				scaledDensity_ = metrics.getFloatField("scaledDensity");
-				physicalXDpi_ = metrics.getFloatField("xdpi");
-				physicalYDpi_ = metrics.getFloatField("ydpi");
-				widthPixels_ = metrics.getIntField("widthPixels");
-				heightPixels_ = metrics.getIntField("heightPixels");
+		density_ = metrics.getFloatField("density");
+		densityDpi_ = metrics.getIntField("densityDpi");
+		scaledDensity_ = metrics.getFloatField("scaledDensity");
+		physicalXDpi_ = metrics.getFloatField("xdpi");
+		physicalYDpi_ = metrics.getFloatField("ydpi");
+		widthPixels_ = metrics.getIntField("widthPixels");
+		heightPixels_ = metrics.getIntField("heightPixels");
 
-				defaultdisplay->callParamVoid("getRealSize", "Landroid/graphics/Point;", point.jObject());
-				realWidthPixels_ = point.getIntField("x");
-				realHeightPixels_ = point.getIntField("y");
+		display->callParamVoid("getRealSize", "Landroid/graphics/Point;", point.jObject());
+		realWidthPixels_ = point.getIntField("x");
+		realHeightPixels_ = point.getIntField("y");
 
-				refreshRate_ = defaultdisplay->callFloat("getRefreshRate");
-			}
-			else
-			{
-				qCritical() << "Cannot get Android Display";
-			}
-		}
-		else
-		{
-			qCritical() << "Cannot get Android WindowManager";
-		}
+		refreshRate_ = display->callFloat("getRefreshRate");
 	}
 
 	realisticPhysicalDpi_ = guessRealisticHardwareDpi(
-		physicalXDpi_
-		, physicalYDpi_
-		, static_cast<float>(densityDpi_));
+		physicalXDpi_,
+		physicalYDpi_,
+		static_cast<float>(densityDpi_));
 
 	themeFromDensityDpi_ = themeFromLogicalDensity(densityDpi_, allow_intermediate_densities);
 	themeFromHardwareDpi_ = themeFromHardwareDensity(realisticPhysicalDpi_, allow_intermediate_densities);
@@ -356,3 +388,4 @@ float QAndroidDisplayMetrics::fontScale()
 	}
 	return static_cast<float>(font_scale);
 }
+

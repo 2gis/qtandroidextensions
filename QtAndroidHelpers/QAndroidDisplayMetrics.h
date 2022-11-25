@@ -6,7 +6,7 @@
 
   Distrbuted under The BSD License
 
-  Copyright (c) 2014-2020, DoubleGIS, LLC.
+  Copyright (c) 2014-2022, DoubleGIS, LLC.
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QMap>
 #include <QJniHelpers/QJniHelpers.h>
+#include <memory>
 
 /*!
  * Access to Android's DisplayMetrics. The metrics are read from system API when the
@@ -118,6 +119,8 @@ public:
 		IntermediateAll         = 2  // Use all possible themes, including X.33 and X.67 themes.
 	};
 
+	static std::unique_ptr<QJniObject> getWindowManager(QJniObject * custom_context = nullptr);
+	static std::unique_ptr<QJniObject> getDefaultDisplay(QJniObject * custom_context = nullptr);
 
 	static float densityFromTheme(QAndroidDisplayMetrics::Theme theme);
 	static Theme themeFromLogicalDensity(
@@ -130,9 +133,8 @@ public:
 		float density_dpi,
 		IntermediateDensities intermediate_densities = IntermediateAll);
 
-
-	// custom_context can be set to use non-standard Context, e.g. in car app it may be
-	// car context to get metrics of the car screen.
+	// custom_context can be set to use non-standard Context, e.g. in Android Auto app it may be
+	// a car context to get metrics of the car screen.
 	QAndroidDisplayMetrics(
 		QObject * parent = 0,
 		IntermediateDensities allow_intermediate_densities = IntermediateAll,
@@ -222,6 +224,8 @@ public:
 	// idea to check it on each application activation.
 	static float fontScale();
 
+	// NB: As other fields, this is a value that has been read once during creation of the object.
+	// Starting from Android 11, refresh rate can be changed dynamically.
 	float refreshRate() const { return refreshRate_; }
 
 private:
