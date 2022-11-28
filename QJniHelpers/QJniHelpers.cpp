@@ -322,6 +322,18 @@ QJniEnvPtr::~QJniEnvPtr()
 }
 
 
+void QJniEnvPtr::checkEnv()
+{
+	if (!env_)
+	{
+		throw QJniThreadAttachException(
+			QString(QLatin1String("Attempted use of null Java environment, thread %1"))
+				.arg(gettid())
+				.toLatin1());
+	}
+}
+
+
 JNIEnv * QJniEnvPtr::env() const
 {
 	return env_;
@@ -330,6 +342,7 @@ JNIEnv * QJniEnvPtr::env() const
 
 bool QJniEnvPtr::preloadClass(const char * class_name)
 {
+	checkEnv();
 	QMutexLocker locker(&g_PreloadedClassesMutex);
 	const QString class_name_qstr = QLatin1String(class_name);
 	if (g_PreloadedClasses.contains(class_name_qstr)) {
@@ -354,6 +367,7 @@ bool QJniEnvPtr::preloadClass(const char * class_name)
 
 int QJniEnvPtr::preloadClasses(const char * const * class_list)
 {
+	checkEnv();
 	int loaded = 0;
 	for(; *class_list != 0; ++class_list)
 	{
@@ -375,6 +389,7 @@ bool QJniEnvPtr::isClassPreloaded(const char * class_name)
 
 void QJniEnvPtr::unloadAllClasses()
 {
+	checkEnv();
 	QMutexLocker locker(&g_PreloadedClassesMutex);
 	for (PreloadedClasses::iterator it = g_PreloadedClasses.begin(); it != g_PreloadedClasses.end(); ++it)
 	{
@@ -386,6 +401,7 @@ void QJniEnvPtr::unloadAllClasses()
 
 jclass QJniEnvPtr::findClass(const char * name)
 {
+	checkEnv();
 	// First try find a preloaded class
 	{
 		QMutexLocker locker(&g_PreloadedClassesMutex);
@@ -455,6 +471,7 @@ void QJniEnvPtr::setJavaVM(JNIEnv* env)
 
 jstring QJniEnvPtr::JStringFromQString(const QString & str)
 {
+	checkEnv();
 	jstring ret = env_->NewString(str.utf16(), str.length());
 	if (clearException())
 	{
@@ -467,6 +484,7 @@ jstring QJniEnvPtr::JStringFromQString(const QString & str)
 
 QString QJniEnvPtr::QStringFromJString(jstring str)
 {
+	checkEnv();
 	if (str == 0)
 	{
 		return QString();
@@ -490,8 +508,126 @@ QString QJniEnvPtr::QStringFromJString(jstring str)
 }
 
 
+std::vector<bool> QJniEnvPtr::convert(jbooleanArray jarray)
+{
+	checkEnv();
+	std::vector<bool> result;
+	const int count  = env_->GetArrayLength(jarray);
+	if (count)
+	{
+		jboolean * elements = env_->GetBooleanArrayElements(jarray, nullptr);
+		result.reserve(count);
+		const jboolean * ptr = elements;
+		for (int i = 0; i < count; i++, ptr++)
+		{
+			result.push_back(static_cast<bool>(*ptr));
+		}
+		env_->ReleaseBooleanArrayElements(jarray, elements, JNI_ABORT);
+	}
+	return result;
+}
+
+
+std::vector<jint> QJniEnvPtr::convert(jintArray jarray)
+{
+	checkEnv();
+	std::vector<jint> result;
+	const int count  = env_->GetArrayLength(jarray);
+	if (count)
+	{
+		jint * elements = env_->GetIntArrayElements(jarray, nullptr);
+		result.reserve(count);
+		const jint * ptr = elements;
+		for (int i = 0; i < count; i++, ptr++)
+		{
+			result.push_back(*ptr);
+		}
+		env_->ReleaseIntArrayElements(jarray, elements, JNI_ABORT);
+	}
+	return result;
+}
+
+
+std::vector<jlong> QJniEnvPtr::convert(jlongArray jarray)
+{
+	checkEnv();
+	std::vector<jlong> result;
+	const int count  = env_->GetArrayLength(jarray);
+	if (count)
+	{
+		jlong * elements = env_->GetLongArrayElements(jarray, nullptr);
+		result.reserve(count);
+		const jlong * ptr = elements;
+		for (int i = 0; i < count; i++, ptr++)
+		{
+			result.push_back(*ptr);
+		}
+		env_->ReleaseLongArrayElements(jarray, elements, JNI_ABORT);
+	}
+	return result;
+}
+
+
+std::vector<jfloat> QJniEnvPtr::convert(jfloatArray jarray)
+{
+	checkEnv();
+	std::vector<jfloat> result;
+	const int count  = env_->GetArrayLength(jarray);
+	if (count)
+	{
+		jfloat * elements = env_->GetFloatArrayElements(jarray, nullptr);
+		result.reserve(count);
+		const jfloat * ptr = elements;
+		for (int i = 0; i < count; i++, ptr++)
+		{
+			result.push_back(*ptr);
+		}
+		env_->ReleaseFloatArrayElements(jarray, elements, JNI_ABORT);
+	}
+	return result;
+}
+
+
+std::vector<jdouble> QJniEnvPtr::convert(jdoubleArray jarray)
+{
+	checkEnv();
+	std::vector<double> result;
+	const int count  = env_->GetArrayLength(jarray);
+	if (count)
+	{
+		double * elements = env_->GetDoubleArrayElements(jarray, nullptr);
+		result.reserve(count);
+		const double * ptr = elements;
+		for (int i = 0; i < count; i++, ptr++)
+		{
+			result.push_back(*ptr);
+		}
+		env_->ReleaseDoubleArrayElements(jarray, elements, JNI_ABORT);
+	}
+	return result;
+}
+
+
+std::vector<QJniObject> QJniEnvPtr::convert(jobjectArray jarray)
+{
+	checkEnv();
+	std::vector<QJniObject> result;
+	const int count  = env_->GetArrayLength(jarray);
+	if (count)
+	{
+		result.reserve(count);
+		for (int i = 0; i < count; i++)
+		{
+			result.emplace_back(env_->GetObjectArrayElement(jarray, static_cast<jsize>(i)), true);
+		}
+	}
+	return result;
+}
+
+
 bool QJniEnvPtr::clearException(bool describe /*= true*/)
 {
+	checkEnv();
 	if (env_->ExceptionCheck())
 	{
 		if (describe)
@@ -577,6 +713,14 @@ QJniClass::QJniClass(const QJniClass & other)
 {
 	QJniEnvPtr jep;
 	initClass(jep.env(), other.class_);
+}
+
+
+QJniClass::QJniClass(QJniClass && other)
+{
+	class_ = other.class_;
+	other.class_ = nullptr;
+	construction_class_name_ = std::move(other.construction_class_name_);
 }
 
 
@@ -1270,7 +1414,14 @@ QJniObject::QJniObject(const QJniObject & other)
 	{
 		instance_ = jep.env()->NewGlobalRef(other.jObject());
 	}
+}
 
+
+QJniObject::QJniObject(QJniObject && other)
+	: QJniClass(other)
+{
+	instance_ = other.instance_;
+	other.instance_ = nullptr;
 }
 
 
@@ -2043,6 +2194,40 @@ void QJniObject::callVoid(const char * method_name, const QString & string1, con
 /////////////////////////////////////////////////////////////////////////////
 // QJniLocalRef
 /////////////////////////////////////////////////////////////////////////////
+
+
+QJniLocalRef::QJniLocalRef()
+	: local_(nullptr)
+	, env_(nullptr)
+{
+}
+
+
+QJniLocalRef::QJniLocalRef(const QJniLocalRef & other)
+	: env_(other.env_)
+{
+	if (other.local_)
+	{
+		if (!env_)
+		{
+			QJniEnvPtr jep;
+			env_ = jep.env();
+		}
+		if (env_)
+		{
+			local_ = env_->NewLocalRef(other.local_);
+		}
+	}
+}
+
+
+QJniLocalRef::QJniLocalRef(QJniLocalRef && other)
+{
+	local_ = other.local_;
+	other.local_ = nullptr;
+	env_ = other.env_; // other можно не занулять
+}
+
 
 QJniLocalRef::~QJniLocalRef()
 {

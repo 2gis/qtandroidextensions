@@ -100,6 +100,9 @@ public:
 
 
 
+class QJniObject;
+
+
 
 //! Basic functionality to get JNIEnv valid for current thread and scope.
 class QJniEnvPtr
@@ -173,6 +176,13 @@ public:
 	QString QStringFromJString(jstring javastring);
 	QString JStringToQString(jstring javastring) { return QStringFromJString(javastring); }
 
+	std::vector<bool> convert(jbooleanArray jarray);
+	std::vector<jint> convert(jintArray jarray);
+	std::vector<jlong> convert(jlongArray jarray);
+	std::vector<jfloat> convert(jfloatArray jarray);
+	std::vector<jdouble> convert(jdoubleArray jarray);
+	std::vector<QJniObject> convert(jobjectArray jarray);
+
 	/*!
 	 * \brief Clear Java exception without taking any specific actions.
 	 * \param describe - if true, will call ExceptionDescribe() to print the exception description into stderr.
@@ -183,6 +193,9 @@ public:
 public:
 	static void setJavaVM(JavaVM*);
 	static void setJavaVM(JNIEnv*);
+
+private:
+	void checkEnv();
 
 private:
 	JNIEnv * env_;
@@ -218,6 +231,7 @@ public:
 	QJniClass(jobject object);
 
 	QJniClass(const QJniClass & other);
+	QJniClass(QJniClass && other);
 
 	virtual ~QJniClass();
 
@@ -349,6 +363,7 @@ public:
 	QJniObject(const char * class_name, const char * param_signature = 0, ...);
 
 	QJniObject(const QJniObject & other);
+	QJniObject(QJniObject && other);
 
 	~QJniObject();
 
@@ -499,6 +514,10 @@ public:
 	//! Converts QString to jstring and keeps the reference.
 	explicit QJniLocalRef(QJniEnvPtr & env, const QString & string);
 
+	QJniLocalRef();
+	QJniLocalRef(const QJniLocalRef & other);
+	QJniLocalRef(QJniLocalRef && other);
+
 	~QJniLocalRef();
 
 	/*!
@@ -523,6 +542,5 @@ public:
 private:
 	jobject local_;
 	JNIEnv * env_;
-	Q_DISABLE_COPY(QJniLocalRef)
 };
 

@@ -187,7 +187,7 @@ std::unique_ptr<QJniObject> QAndroidDisplayMetrics::getWindowManager(QJniObject 
 	std::unique_ptr<QJniObject> windowmanager;
 	try
 	{
-		if (!QAndroidQPAPluginGap::customContextSet() && !custom_context)
+		if (!QAndroidQPAPluginGap::customContextSet() && (!custom_context || !*custom_context))
 		{
 			//  Works only in Activity, gets its local window manager.
 			windowmanager = std::unique_ptr<QJniObject>(QAndroidQPAPluginGap::Context().callObject(
@@ -199,7 +199,7 @@ std::unique_ptr<QJniObject> QAndroidDisplayMetrics::getWindowManager(QJniObject 
 			// Works in any Context. For Service gets system window manager.
 			QJniObject * context = nullptr;
 			QScopedPointer<QJniObject> default_context;
-			if (custom_context)
+			if (custom_context && *custom_context)
 			{
 				context = custom_context;
 			}
