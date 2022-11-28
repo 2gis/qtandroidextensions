@@ -513,6 +513,13 @@ bool QJniEnvPtr::clearException(bool describe /*= true*/)
 // QJniClass
 /////////////////////////////////////////////////////////////////////////////
 
+
+QJniClass::QJniClass()
+	: class_(0)
+{
+}
+
+
 QJniClass::QJniClass(jclass clazz)
 	: class_(0)
 {
@@ -1139,6 +1146,14 @@ QByteArray QJniClass::debugClassName() const
 // QJniObject
 /////////////////////////////////////////////////////////////////////////////
 
+
+QJniObject::QJniObject()
+	: QJniClass()
+	, instance_(0)
+{
+}
+
+
 QJniObject::QJniObject(
 		jobject instance,
 		bool take_ownership,
@@ -1244,6 +1259,18 @@ QJniObject::QJniObject(const char * class_name, const char * param_signature, ..
 
 	// it is dangerous to go alone, use this
 	initObject(env, obj);
+}
+
+
+QJniObject::QJniObject(const QJniObject & other)
+	: QJniClass(other)
+{
+	QJniEnvPtr jep;
+	if (other.jObject())
+	{
+		instance_ = jep.env()->NewGlobalRef(other.jObject());
+	}
+
 }
 
 

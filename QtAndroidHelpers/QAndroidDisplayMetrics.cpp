@@ -190,9 +190,9 @@ std::unique_ptr<QJniObject> QAndroidDisplayMetrics::getWindowManager(QJniObject 
 		if (!QAndroidQPAPluginGap::customContextSet() && !custom_context)
 		{
 			//  Works only in Activity, gets its local window manager.
-			windowmanager = { QAndroidQPAPluginGap::Context().callObject(
+			windowmanager = std::unique_ptr<QJniObject>(QAndroidQPAPluginGap::Context().callObject(
 				"getWindowManager",
-				"android/view/WindowManager") };
+				"android/view/WindowManager"));
 		}
 		else
 		{
@@ -208,11 +208,11 @@ std::unique_ptr<QJniObject> QAndroidDisplayMetrics::getWindowManager(QJniObject 
 				default_context.reset(new QAndroidQPAPluginGap::Context());
 				context = default_context.data();
 			}
-			windowmanager = { context->callParamObject(
+			windowmanager = std::unique_ptr<QJniObject>(context->callParamObject(
 				"getSystemService",
 				"Ljava/lang/Object;",
 				"Ljava/lang/String;",
-				QJniLocalRef(QStringLiteral("window")).jObject()) };
+				QJniLocalRef(QStringLiteral("window")).jObject()));
 			if (!windowmanager || !windowmanager->jObject())
 			{
 				qCritical() << "Could not get WindowManager";
@@ -237,9 +237,9 @@ std::unique_ptr<QJniObject> QAndroidDisplayMetrics::getDefaultDisplay(QJniObject
 	}
 	try
 	{
-		std::unique_ptr<QJniObject> result{ window_manager->callObject(
+		std::unique_ptr<QJniObject> result(window_manager->callObject(
 			"getDefaultDisplay",
-			"android/view/Display") };
+			"android/view/Display"));
 		if (!result || !result->jObject())
 		{
 			qCritical() << "Could not get default Display";

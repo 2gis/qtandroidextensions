@@ -200,6 +200,11 @@ class QJniClass
 {
 public:
 	/*!
+	 * Create null class
+	 */
+	QJniClass();
+
+	/*!
 	 * Create a wrapper for class 'clazz'.
 	 */
 	QJniClass(jclass clazz);
@@ -269,7 +274,8 @@ public:
 
 	QJniClass & operator=(const QJniClass &other);
 
-	operator bool() const { return class_ != 0; }
+	virtual bool isNull() const { return !class_; }
+	operator bool() const { return !isNull(); }
 
 	//! Get JNI reference to the wrapped Java class.
 	jclass jClass() const { return class_; }
@@ -310,6 +316,11 @@ class QJniObject: public QJniClass
 {
 public:
 	/*!
+	 * Create null object
+	 */
+	QJniObject();
+
+	/*!
 	 * Create QJniObject wrapper around specified jobject.
 	 * \param take_ownership means "delete local ref of this object
 	 * and only keep the global one here"
@@ -337,7 +348,9 @@ public:
 	 */
 	QJniObject(const char * class_name, const char * param_signature = 0, ...);
 
-	virtual ~QJniObject();
+	QJniObject(const QJniObject & other);
+
+	~QJniObject();
 
 	/*!
 	 * Detach the QJniObject from jobject and return the jobject casted to the
@@ -443,19 +456,18 @@ public:
 	 */
 	QString getString(const char* field_name);
 
-	operator bool() const { return instance_ != 0; }
-
 	//! Get JNI reference to the wrapped Java object
 	jobject jObject() const { return instance_; }
+
+	// No need to check for class_: sometimes it is valid to have null class;
+	// when it's not valid, null class will cause instance_ to be also null.
+	bool isNull() const override { return !instance_; }
 
 protected:
 	void initObject(JNIEnv* env, jobject instance, bool can_have_null_class = false);
 
 protected:
 	jobject instance_;
-
-private:
-	Q_DISABLE_COPY(QJniObject)
 };
 
 
