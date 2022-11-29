@@ -512,6 +512,10 @@ std::vector<bool> QJniEnvPtr::convert(jbooleanArray jarray)
 {
 	checkEnv();
 	std::vector<bool> result;
+	if (!jarray)
+	{
+		return result;
+	}
 	const int count  = env_->GetArrayLength(jarray);
 	if (count)
 	{
@@ -532,6 +536,10 @@ std::vector<jint> QJniEnvPtr::convert(jintArray jarray)
 {
 	checkEnv();
 	std::vector<jint> result;
+	if (!jarray)
+	{
+		return result;
+	}
 	const int count  = env_->GetArrayLength(jarray);
 	if (count)
 	{
@@ -552,6 +560,10 @@ std::vector<jlong> QJniEnvPtr::convert(jlongArray jarray)
 {
 	checkEnv();
 	std::vector<jlong> result;
+	if (!jarray)
+	{
+		return result;
+	}
 	const int count  = env_->GetArrayLength(jarray);
 	if (count)
 	{
@@ -572,6 +584,10 @@ std::vector<jfloat> QJniEnvPtr::convert(jfloatArray jarray)
 {
 	checkEnv();
 	std::vector<jfloat> result;
+	if (!jarray)
+	{
+		return result;
+	}
 	const int count  = env_->GetArrayLength(jarray);
 	if (count)
 	{
@@ -592,6 +608,10 @@ std::vector<jdouble> QJniEnvPtr::convert(jdoubleArray jarray)
 {
 	checkEnv();
 	std::vector<double> result;
+	if (!jarray)
+	{
+		return result;
+	}
 	const int count  = env_->GetArrayLength(jarray);
 	if (count)
 	{
@@ -612,6 +632,10 @@ std::vector<QJniObject> QJniEnvPtr::convert(jobjectArray jarray)
 {
 	checkEnv();
 	std::vector<QJniObject> result;
+	if (!jarray)
+	{
+		return result;
+	}
 	const int count  = env_->GetArrayLength(jarray);
 	if (count)
 	{

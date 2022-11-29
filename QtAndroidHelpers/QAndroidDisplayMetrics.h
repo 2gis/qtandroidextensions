@@ -40,6 +40,7 @@
 #include <QJniHelpers/QJniHelpers.h>
 #include <memory>
 
+
 /*!
  * Access to Android's DisplayMetrics. The metrics are read from system API when the
  * object is constructed.
@@ -119,8 +120,40 @@ public:
 		IntermediateAll         = 2  // Use all possible themes, including X.33 and X.67 themes.
 	};
 
+
 	static std::unique_ptr<QJniObject> getWindowManager(QJniObject * custom_context = nullptr);
 	static std::unique_ptr<QJniObject> getDefaultDisplay(QJniObject * custom_context = nullptr);
+
+	// Get actual refresh rate (will return 0 if it can't be determined).
+	static float getRefreshRate(QJniObject * custom_context = nullptr);
+	// Get list of refresh rates for seamless switching in current display mode (Android 12+,
+	// device / mode must support seamless switching).
+	static std::vector<float> getAlternativeRefreshRates(QJniObject & mode);
+	static std::vector<float> getAlternativeRefreshRatesForCurrentMode(QJniObject * custom_context = nullptr);
+	// Get list of refresh rates supported by the device.
+	// The function is deprecated (API 21-22) but on some devices may give more information than
+	// newer getSupportedModes().
+	static std::vector<float> getSupportedRefreshRates(QJniObject * custom_context = nullptr);
+
+	struct Mode
+	{
+		int id;
+		int physicalWidth;
+		int physicalHeight;
+		float refreshRate;
+		std::vector<float> alternativeRefreshRates;
+
+		Mode(int i, int w, int h, int rate, std::vector<float> && altRates)
+			: id(i)
+			, physicalWidth(w)
+			, physicalHeight(h)
+			, refreshRate(rate)
+			, alternativeRefreshRates(std::move(altRates))
+		{
+		}
+	};
+	static std::vector<Mode> getSupportedModes(QJniObject * custom_context = nullptr);
+
 
 	static float densityFromTheme(QAndroidDisplayMetrics::Theme theme);
 	static Theme themeFromLogicalDensity(

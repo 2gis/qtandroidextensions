@@ -389,3 +389,157 @@ float QAndroidDisplayMetrics::fontScale()
 	return static_cast<float>(font_scale);
 }
 
+
+float QAndroidDisplayMetrics::getRefreshRate(QJniObject * custom_context)
+{
+	if (QAndroidQPAPluginGap::apiLevel() >= 23) // Android >= 6
+	{
+		try
+		{
+			if (auto display = QAndroidDisplayMetrics::getDefaultDisplay(custom_context))
+			{
+				return static_cast<float>(display->callFloat("getRefreshRate"));
+			}
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception reading refresh rate: " << e.what();
+		}
+	}
+	return 0.0f;
+}
+
+
+std::vector<float> QAndroidDisplayMetrics::getAlternativeRefreshRates(QJniObject & mode)
+{
+	std::vector<float> result;
+	if (QAndroidQPAPluginGap::apiLevel() < 31 || !mode) // Android < 12 or null mode
+	{
+		return result;
+	}
+	try
+	{
+		if (auto array =std::unique_ptr<QJniObject>(
+			mode.callObject("getAlternativeRefreshRates", "[F")))
+		{
+			for (const auto r: QJniEnvPtr().convert(static_cast<jfloatArray>(array->jObject())))
+			{
+				result.push_back(static_cast<float>(r));
+			}
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception reading alternative refresh rates: " << e.what();
+	}
+	return result;
+}
+
+
+std::vector<float>
+QAndroidDisplayMetrics::getAlternativeRefreshRatesForCurrentMode(QJniObject * custom_context)
+{
+	std::vector<float> result;
+	if (QAndroidQPAPluginGap::apiLevel() < 31) // Android < 12
+	{
+		return result;
+	}
+	try
+	{
+		if (auto display = QAndroidDisplayMetrics::getDefaultDisplay(custom_context))
+		{
+			if (!*display)
+			{
+				qWarning() << "Null Display";
+				return result;
+			}
+			if (auto mode = std::unique_ptr<QJniObject>(
+				display->callObject("getMode", "android/view/Display$Mode")))
+			{
+				result = getAlternativeRefreshRates(*mode);
+			}
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception reading alternative refresh rates: " << e.what();
+	}
+	return result;
+}
+
+
+std::vector<float> QAndroidDisplayMetrics::getSupportedRefreshRates(QJniObject * custom_context)
+{
+	std::vector<float> result;
+	if (QAndroidQPAPluginGap::apiLevel() < 21) // Android < 5.0
+	{
+		return result;
+	}
+	try
+	{
+		if (auto display = QAndroidDisplayMetrics::getDefaultDisplay(custom_context))
+		{
+			if (!*display)
+			{
+				qWarning() << "Null Display";
+				return result;
+			}
+			if (auto array = std::unique_ptr<QJniObject>(
+				display->callObject("getSupportedRefreshRates", "[F")))
+			{
+				for (const auto r:
+					 QJniEnvPtr().convert(static_cast<jfloatArray>(array->jObject())))
+				{
+					result.push_back(static_cast<float>(r));
+				}
+			}
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception reading supported refresh rates: " << e.what();
+	}
+	return result;
+}
+
+
+std::vector<QAndroidDisplayMetrics::Mode>
+QAndroidDisplayMetrics::getSupportedModes(QJniObject * custom_context)
+{
+	std::vector<Mode> result;
+	if (QAndroidQPAPluginGap::apiLevel() < 23) // Android < 6.0
+	{
+		return result;
+	}
+	try
+	{
+		if (auto display = QAndroidDisplayMetrics::getDefaultDisplay(custom_context))
+		{
+			if (!*display)
+			{
+				qWarning() << "Null Display";
+				return result;
+			}
+			if (auto array = std::unique_ptr<QJniObject>(
+				display->callObject("getSupportedModes", "[Landroid/view/Display$Mode;")))
+			{
+				auto modes = QJniEnvPtr().convert(static_cast<jobjectArray>(array->jObject()));
+				for (auto & m: modes)
+				{
+					result.emplace_back(
+						static_cast<int>(m.callInt("getModeId")),
+						static_cast<float>(m.callInt("getPhysicalWidth")),
+						static_cast<float>(m.callInt("getPhysicalHeight")),
+						static_cast<float>(m.callFloat("getRefreshRate")),
+						getAlternativeRefreshRates(m));
+				}
+			}
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception reading supported modes: " << e.what();
+	}
+	return result;
+}
+
