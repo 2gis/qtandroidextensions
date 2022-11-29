@@ -396,7 +396,7 @@ float QAndroidDisplayMetrics::getRefreshRate(QJniObject * custom_context)
 	{
 		try
 		{
-			if (auto display = QAndroidDisplayMetrics::getDefaultDisplay(custom_context))
+			if (auto display = getDefaultDisplay(custom_context))
 			{
 				return static_cast<float>(display->callFloat("getRefreshRate"));
 			}
@@ -446,7 +446,7 @@ QAndroidDisplayMetrics::getAlternativeRefreshRatesForCurrentMode(QJniObject * cu
 	}
 	try
 	{
-		if (auto display = QAndroidDisplayMetrics::getDefaultDisplay(custom_context))
+		if (auto display = getDefaultDisplay(custom_context))
 		{
 			if (!*display)
 			{
@@ -477,7 +477,7 @@ std::vector<float> QAndroidDisplayMetrics::getSupportedRefreshRates(QJniObject *
 	}
 	try
 	{
-		if (auto display = QAndroidDisplayMetrics::getDefaultDisplay(custom_context))
+		if (auto display = getDefaultDisplay(custom_context))
 		{
 			if (!*display)
 			{
@@ -513,7 +513,7 @@ QAndroidDisplayMetrics::getSupportedModes(QJniObject * custom_context)
 	}
 	try
 	{
-		if (auto display = QAndroidDisplayMetrics::getDefaultDisplay(custom_context))
+		if (auto display = getDefaultDisplay(custom_context))
 		{
 			if (!*display)
 			{
@@ -539,6 +539,40 @@ QAndroidDisplayMetrics::getSupportedModes(QJniObject * custom_context)
 	catch (const std::exception & e)
 	{
 		qCritical() << "JNI exception reading supported modes: " << e.what();
+	}
+	return result;
+}
+
+
+std::optional<int> QAndroidDisplayMetrics::getCurrentModeId(QJniObject * custom_context)
+{
+	std::optional<int> result;
+	if (QAndroidQPAPluginGap::apiLevel() < 23) // Android < 6
+	{
+		return result;
+	}
+	try
+	{
+		if (auto display = getDefaultDisplay(custom_context))
+		{
+			if (!*display)
+			{
+				qWarning() << "Null Display";
+				return result;
+			}
+			if (auto mode = std::unique_ptr<QJniObject>(
+				display->callObject("getMode", "android/view/Display$Mode")))
+			{
+				if (*mode)
+				{
+					result = mode->callInt("getModeId");
+				}
+			}
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception reading current mode id: " << e.what();
 	}
 	return result;
 }

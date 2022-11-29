@@ -39,6 +39,7 @@
 #include <QtCore/QMap>
 #include <QJniHelpers/QJniHelpers.h>
 #include <memory>
+#include <optional>
 
 
 /*!
@@ -153,6 +154,7 @@ public:
 		}
 	};
 	static std::vector<Mode> getSupportedModes(QJniObject * custom_context = nullptr);
+	static std::optional<int> getCurrentModeId(QJniObject * custom_context = nullptr);
 
 
 	static float densityFromTheme(QAndroidDisplayMetrics::Theme theme);
