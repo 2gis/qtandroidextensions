@@ -748,11 +748,33 @@ QJniClass::QJniClass(QJniClass && other)
 }
 
 
+QJniClass & QJniClass::operator=(const QJniClass &other)
+{
+	if (this != &other)
+	{
+		initClass(QJniEnvPtr().env(), other.jClass());
+	}
+	return *this;
+}
+
+
+QJniClass & QJniClass::operator=(QJniClass && other)
+{
+	if (this != &other)
+	{
+		clearClass(QJniEnvPtr().env());
+		class_ = other.class_;
+		other.class_ = nullptr;
+		construction_class_name_ = std::move(other.construction_class_name_);
+	}
+	return *this;
+}
+
+
 QJniClass::~QJniClass()
 {
 	VERBOSE(qWarning("QJniClass::~QJniClass() %p",this));
-	QJniEnvPtr jep;
-	clearClass(jep.env());
+	clearClass(QJniEnvPtr().env());
 }
 
 
@@ -1220,16 +1242,6 @@ QJniObject * QJniClass::callStaticParamObject(const char * method_name, const ch
 }
 
 
-QJniClass & QJniClass::operator=(const QJniClass &other)
-{
-	if (this != &other)
-	{
-		initClass(QJniEnvPtr().env(), other.jClass());
-	}
-	return *this;
-}
-
-
 bool QJniClass::registerNativeMethod(const char* name, const char* signature, void* ptr)
 {
 	JNINativeMethod jnm = {name, signature, ptr};
@@ -1433,10 +1445,9 @@ QJniObject::QJniObject(const char * class_name, const char * param_signature, ..
 QJniObject::QJniObject(const QJniObject & other)
 	: QJniClass(other)
 {
-	QJniEnvPtr jep;
 	if (other.jObject())
 	{
-		instance_ = jep.env()->NewGlobalRef(other.jObject());
+		instance_ = QJniEnvPtr().env()->NewGlobalRef(other.jObject());
 	}
 }
 
@@ -1449,14 +1460,50 @@ QJniObject::QJniObject(QJniObject && other)
 }
 
 
+QJniObject & QJniObject::operator=(const QJniObject & other)
+{
+	if (this != &other)
+	{
+		dispose();
+		if (other.jObject())
+		{
+			QJniClass::operator=(other);
+			instance_ = QJniEnvPtr().env()->NewGlobalRef(other.jObject());
+		}
+	}
+	return *this;
+}
+
+
+QJniObject & QJniObject::operator=(QJniObject && other)
+{
+	if (this != &other)
+	{
+		dispose();
+		QJniClass::operator=(other);
+		instance_ = other.instance_;
+		other.instance_ = nullptr;
+	}
+	return *this;
+}
+
+
+void QJniObject::dispose()
+{
+	VERBOSE(qWarning("QJniObject::dispose() %p",this));
+	QJniEnvPtr env;
+	clearClass(env.env());
+	if (instance_)
+	{
+		env.env()->DeleteGlobalRef(instance_);
+		instance_ = nullptr;
+	}
+}
+
+
 QJniObject::~QJniObject()
 {
-	VERBOSE(qWarning("QJniObject::~QJniObject() %p",this));
-	QJniEnvPtr jep;
-	if (instance_ != 0)
-	{
-		jep.env()->DeleteGlobalRef(instance_);
-	}
+	dispose();
 }
 
 
@@ -2234,8 +2281,7 @@ QJniLocalRef::QJniLocalRef(const QJniLocalRef & other)
 	{
 		if (!env_)
 		{
-			QJniEnvPtr jep;
-			env_ = jep.env();
+			env_ = QJniEnvPtr().env();
 		}
 		if (env_)
 		{
@@ -2253,7 +2299,41 @@ QJniLocalRef::QJniLocalRef(QJniLocalRef && other)
 }
 
 
-QJniLocalRef::~QJniLocalRef()
+QJniLocalRef & QJniLocalRef::operator=(const QJniLocalRef & other)
+{
+	if (this != &other)
+	{
+		dispose();
+		if (other.local_)
+		{
+			if (!env_)
+			{
+				env_ = QJniEnvPtr().env();
+			}
+			if (env_)
+			{
+				local_ = env_->NewLocalRef(other.local_);
+			}
+		}
+	}
+	return *this;
+}
+
+
+QJniLocalRef & QJniLocalRef::operator=(QJniLocalRef && other)
+{
+	if (this != &other)
+	{
+		dispose();
+		local_ = other.local_;
+		other.local_ = nullptr;
+		env_ = other.env_; // other можно не занулять
+	}
+	return *this;
+}
+
+
+void QJniLocalRef::dispose()
 {
 	if (local_)
 	{
@@ -2265,8 +2345,15 @@ QJniLocalRef::~QJniLocalRef()
 		if (env_)
 		{
 			env_->DeleteLocalRef(local_);
+			local_ = nullptr;
 		}
 	}
+}
+
+
+QJniLocalRef::~QJniLocalRef()
+{
+	dispose();
 }
 
 

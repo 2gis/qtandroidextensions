@@ -232,6 +232,8 @@ public:
 
 	QJniClass(const QJniClass & other);
 	QJniClass(QJniClass && other);
+	QJniClass & operator=(const QJniClass & other);
+	QJniClass & operator=(QJniClass && other);
 
 	virtual ~QJniClass();
 
@@ -285,8 +287,6 @@ public:
 	 * Unregister native methods in the wrapped class.
 	 */
 	bool unregisterNativeMethods();
-
-	QJniClass & operator=(const QJniClass &other);
 
 	virtual bool isNull() const { return !class_; }
 	operator bool() const { return !isNull(); }
@@ -364,8 +364,12 @@ public:
 
 	QJniObject(const QJniObject & other);
 	QJniObject(QJniObject && other);
+	QJniObject & operator=(const QJniObject & other);
+	QJniObject & operator=(QJniObject && other);
 
+	void dispose();
 	~QJniObject();
+
 
 	/*!
 	 * Detach the QJniObject from jobject and return the jobject casted to the
@@ -517,7 +521,10 @@ public:
 	QJniLocalRef();
 	QJniLocalRef(const QJniLocalRef & other);
 	QJniLocalRef(QJniLocalRef && other);
+	QJniLocalRef & operator=(const QJniLocalRef & other);
+	QJniLocalRef & operator=(QJniLocalRef && other);
 
+	void dispose();
 	~QJniLocalRef();
 
 	/*!
