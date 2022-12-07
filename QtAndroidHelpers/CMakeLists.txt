@@ -13,6 +13,8 @@ set(SRC_LIST
     QAndroidDesktopUtils.h
     QAndroidDialog.cpp
     QAndroidDialog.h
+    QAndroidDisplayListener.cpp
+    QAndroidDisplayListener.h
     QAndroidDisplayMetrics.cpp
     QAndroidDisplayMetrics.h
     QAndroidFilePaths.cpp
@@ -67,6 +69,7 @@ if (ANDROID)
         QAndroidContacts.h
         QAndroidConfiguration.h
         QAndroidDialog.h
+        QAndroidDisplayListener.h
         QAndroidDisplayMetrics.h
         QAndroidScreenLayoutHandler.h
         QAndroidScreenOrientation.h
