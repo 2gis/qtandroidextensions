@@ -336,9 +336,10 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(
 void QAndroidDisplayMetrics::preloadJavaClasses()
 {
 	QAndroidQPAPluginGap::preloadJavaClasses();
-	QAndroidQPAPluginGap::preloadJavaClass("android/util/DisplayMetrics");
-	QAndroidQPAPluginGap::preloadJavaClass("android/content/res/Resources");
-	QAndroidQPAPluginGap::preloadJavaClass("android/content/res/Configuration");
+	QAndroidQPAPluginGap::preloadJavaClasses({
+		"android/util/DisplayMetrics",
+		"android/content/res/Resources",
+		"android/content/res/Configuration"});
 }
 
 

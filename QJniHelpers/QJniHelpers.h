@@ -139,9 +139,12 @@ public:
 	/*!
 	 * \brief Preload mutliple classes.
 	 * \param class_list - 0-terminated array of pointers to class names.
-	 * \return Number of loaded classes.
+	 * \return True, if all classes preloaded successfully.
 	 */
-	int preloadClasses(const char * const * class_list);
+	bool preloadClasses(const char * const * class_list);
+	bool preloadClasses(const char * const * class_list, size_t count);
+	bool preloadClasses(const std::initializer_list<const char*> & class_list);
+	bool preloadClasses(const std::vector<const char*> & class_list);
 
 	/*!
 	 * \brief Check if the class has been pre-loaded (see PreloadClass()).

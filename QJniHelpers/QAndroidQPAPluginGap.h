@@ -105,6 +105,7 @@ namespace QAndroidQPAPluginGap {
 	 * objects of the class could later be instantiated from threads not created in Java.
 	 */
 	void preloadJavaClass(const char * class_name);
+	void preloadJavaClasses(const std::initializer_list<const char *> & list);
 
 	void preloadJavaClasses();
 

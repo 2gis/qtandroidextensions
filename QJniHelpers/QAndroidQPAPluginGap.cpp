@@ -254,10 +254,18 @@ void preloadJavaClass(const char * class_name)
 }
 
 
+void preloadJavaClasses(const std::initializer_list<const char *> & list)
+{
+	for (const char * const class_name: list)
+	{
+		preloadJavaClass(class_name);
+	}
+}
+
+
 void preloadJavaClasses()
 {
-	preloadJavaClass(c_activity_getter_class_name);
-	preloadJavaClass("android/os/Build$VERSION");
+	preloadJavaClasses({c_activity_getter_class_name, "android/os/Build$VERSION"});
 }
 
 

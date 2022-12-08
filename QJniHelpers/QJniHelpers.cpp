@@ -343,6 +343,10 @@ JNIEnv * QJniEnvPtr::env() const
 bool QJniEnvPtr::preloadClass(const char * class_name)
 {
 	checkEnv();
+	if (!class_name || !*class_name) {
+		qWarning("Null class name in preloadClass!");
+		return false;
+	}
 	QMutexLocker locker(&g_PreloadedClassesMutex);
 	const QString class_name_qstr = QLatin1String(class_name);
 	if (g_PreloadedClasses.contains(class_name_qstr)) {
@@ -365,18 +369,45 @@ bool QJniEnvPtr::preloadClass(const char * class_name)
 }
 
 
-int QJniEnvPtr::preloadClasses(const char * const * class_list)
+bool QJniEnvPtr::preloadClasses(const char * const * class_list)
 {
 	checkEnv();
-	int loaded = 0;
+	bool all_ok = true;
 	for(; *class_list != 0; ++class_list)
 	{
-		if (preloadClass(*class_list))
+		if (!preloadClass(*class_list))
 		{
-			loaded++;
+			all_ok = false;
 		}
 	}
-	return loaded;
+	return all_ok;
+}
+
+
+bool QJniEnvPtr::preloadClasses(const char * const * class_list, size_t count)
+{
+	checkEnv();
+	bool all_ok = true;
+	for(size_t i = 0; i < count; ++class_list, ++i)
+	{
+		if (!preloadClass(*class_list))
+		{
+			all_ok = false;
+		}
+	}
+	return all_ok;
+}
+
+
+bool QJniEnvPtr::preloadClasses(const std::initializer_list<const char*> & class_list)
+{
+	return preloadClasses(std::data(class_list), class_list.size());
+}
+
+
+bool QJniEnvPtr::preloadClasses(const std::vector<const char*> & class_list)
+{
+	return preloadClasses(std::data(class_list), class_list.size());
 }
 
 

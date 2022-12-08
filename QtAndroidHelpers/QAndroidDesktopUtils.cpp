@@ -48,8 +48,9 @@ void preloadJavaClasses()
 	static bool s_preloaded = false;
 	if (!s_preloaded)
 	{
-		QAndroidQPAPluginGap::preloadJavaClass(c_desktoputils_class_name_);
-		QAndroidQPAPluginGap::preloadJavaClass(c_dateformat_class_name);
+		QAndroidQPAPluginGap::preloadJavaClasses({
+			c_desktoputils_class_name_,
+			c_dateformat_class_name});
 		s_preloaded = true;
 	}
 

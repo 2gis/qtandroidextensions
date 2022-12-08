@@ -326,10 +326,11 @@ void QAndroidFilePaths::preloadJavaClasses()
 	{
 		s_preloaded = true;
 		QAndroidQPAPluginGap::preloadJavaClasses();
-		QAndroidQPAPluginGap::preloadJavaClass("android/os/Environment");
-		QAndroidQPAPluginGap::preloadJavaClass("android/os/StatFs");
-		QAndroidQPAPluginGap::preloadJavaClass("android/content/Context");
-		QAndroidQPAPluginGap::preloadJavaClass(c_directorieshelper_class_);
+		QAndroidQPAPluginGap::preloadJavaClasses({
+			"android/os/Environment",
+			"android/os/StatFs",
+			"android/content/Context",
+			c_directorieshelper_class_});
 	}
 }
 

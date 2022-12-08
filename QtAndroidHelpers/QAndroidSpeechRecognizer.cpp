@@ -469,10 +469,11 @@ void QAndroidSpeechRecognizer::preloadJavaClasses()
 	if (!s_preloaded)
 	{
 		s_preloaded = true;
-		QAndroidQPAPluginGap::preloadJavaClass("android/content/Intent");
-		QAndroidQPAPluginGap::preloadJavaClass("android/os/Bundle");
-		QAndroidQPAPluginGap::preloadJavaClass(c_speech_recognizer_class_name_);
-		QAndroidQPAPluginGap::preloadJavaClass(c_recognition_listener_class_name_);
+		QAndroidQPAPluginGap::preloadJavaClasses({
+			"android/content/Intent",
+			"android/os/Bundle",
+			c_speech_recognizer_class_name_,
+			c_recognition_listener_class_name_});
 	}
 }
 
