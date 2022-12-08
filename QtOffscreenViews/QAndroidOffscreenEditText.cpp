@@ -137,15 +137,14 @@ QAndroidOffscreenEditText::QAndroidOffscreenEditText(const QString & object_name
 	setAttachingMode(true);
 	if (QJniObject * view = offscreenView())
 	{
-		static const JNINativeMethod methods[] = {
+		view->registerNativeMethods({
 			{"nativeOnTextChanged", "(JLjava/lang/String;III)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnTextChanged)},
 			{"nativeOnKey", "(JZI)Z", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnKey)},
 			{"nativeOnEditorAction", "(JI)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnEditorAction)},
 			{"nativeSetSelectionInfo", "(JII)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeSetSelectionInfo)},
 			{"nativeOnContentHeightChanged", "(JI)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnContentHeightChanged)},
 			{"nativeOnHasAcceptableInputChanged", "(JZ)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnHasAcceptableInputChanged)},
-		};
-		view->registerNativeMethods(methods, sizeof(methods));
+		});
 	}
 }
 

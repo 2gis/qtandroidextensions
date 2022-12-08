@@ -419,7 +419,7 @@ QAndroidSpeechRecognizer::QAndroidSpeechRecognizer(QObject * p)
 			listener_->callParamVoid("initialize", "Landroid/app/Activity;", QAndroidQPAPluginGap::Context().jObject());
 			listener_->callVoid("setNativePtr", reinterpret_cast<jlong>(this));
 
-			static const JNINativeMethod methods[] = {
+			listener_->registerNativeMethods({
 				{"nativeOnBeginningOfSpeech", "(J)V", reinterpret_cast<void*>(Java_QAndroidSpeechRecognizer_nativeOnBeginningOfSpeech)},
 				{"nativeOnEndOfSpeech", "(J)V", reinterpret_cast<void*>(Java_QAndroidSpeechRecognizer_nativeOnEndOfSpeech)},
 				{"nativeOnError", "(JI)V", reinterpret_cast<void*>(Java_QAndroidSpeechRecognizer_nativeOnError)},
@@ -428,8 +428,8 @@ QAndroidSpeechRecognizer::QAndroidSpeechRecognizer(QObject * p)
 				{"nativeOnResults", "(JLandroid/os/Bundle;)V", reinterpret_cast<void*>(Java_QAndroidSpeechRecognizer_nativeOnResults)},
 				{"nativeOnRmsChanged", "(JF)V", reinterpret_cast<void*>(Java_QAndroidSpeechRecognizer_nativeOnRmsChanged)},
 				{"nativeSupportedLanguagesReceived", "(JLjava/util/ArrayList;)V", reinterpret_cast<void*>(Java_QAndroidSpeechRecognizer_nativeSupportedLanguagesReceived)},
-			};
-			listener_->registerNativeMethods(methods, sizeof(methods));
+			});
+
 
 			qDebug() << "SpeechRecognizer initialized successfully.";
 		}
