@@ -1242,7 +1242,7 @@ QJniObject * QJniClass::callStaticParamObject(const char * method_name, const ch
 }
 
 
-bool QJniClass::registerNativeMethod(const char* name, const char* signature, void* ptr)
+bool QJniClass::registerNativeMethod(const char * name, const char * signature, void * ptr)
 {
 	JNINativeMethod jnm = {name, signature, ptr};
 	return registerNativeMethods(&jnm, sizeof(jnm));
@@ -1251,16 +1251,34 @@ bool QJniClass::registerNativeMethod(const char* name, const char* signature, vo
 
 bool QJniClass::registerNativeMethods(const JNINativeMethod * methods_list, size_t sizeof_methods_list)
 {
+	return registerNativeMethodsN(methods_list, sizeof_methods_list / sizeof(JNINativeMethod));
+}
+
+
+bool QJniClass::registerNativeMethodsN(const JNINativeMethod * methods_list, size_t count)
+{
 	QJniEnvPtr jep;
-	jint result = jep.env()->RegisterNatives(
-		checkedClass(__FUNCTION__)
-		, methods_list
-		, static_cast<jint>(sizeof_methods_list/sizeof(JNINativeMethod)));
+	const jint result = jep.env()->RegisterNatives(
+		checkedClass(__FUNCTION__),
+		methods_list,
+		static_cast<jint>(count));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), "registerNativeMethods", __FUNCTION__);
 	}
 	return result == 0;
+}
+
+
+bool QJniClass::registerNativeMethods(const std::initializer_list<JNINativeMethod> & list)
+{
+	return registerNativeMethodsN(std::data(list), list.size());
+}
+
+
+bool QJniClass::registerNativeMethods(const std::vector<JNINativeMethod> & list)
+{
+	return registerNativeMethodsN(std::data(list), list.size());
 }
 
 

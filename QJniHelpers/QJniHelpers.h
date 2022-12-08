@@ -36,6 +36,7 @@
 */
 
 #pragma once
+#include <initializer_list>
 #include <jni.h>
 #include <QtCore/QString>
 #include <QtCore/QByteArray>
@@ -282,6 +283,9 @@ public:
 	 * not count of the methods to register!
 	 */
 	bool registerNativeMethods(const JNINativeMethod * methods_list, size_t sizeof_methods_list);
+	bool registerNativeMethodsN(const JNINativeMethod * methods_list, size_t count);
+	bool registerNativeMethods(const std::initializer_list<JNINativeMethod> & list);
+	bool registerNativeMethods(const std::vector<JNINativeMethod> & list);
 
 	/*!
 	 * Unregister native methods in the wrapped class.

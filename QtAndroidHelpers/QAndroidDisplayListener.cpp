@@ -96,13 +96,11 @@ void QAndroidDisplayListener::preloadJavaClasses()
 		try
 		{
 			QAndroidQPAPluginGap::preloadJavaClass(c_listener_class_name);
-			QJniClass clz(c_listener_class_name);
-			static const JNINativeMethod methods[] = {
+			QJniClass(c_listener_class_name).registerNativeMethods({
 				{"nativeDisplayAdded", "(JI)V", reinterpret_cast<void*>(QAndroidDisplayListener::javaDisplayAdded)},
 				{"nativeDisplayRemoved", "(JI)V", reinterpret_cast<void*>(QAndroidDisplayListener::javaDisplayRemoved)},
 				{"nativeDisplayChanged", "(JI)V", reinterpret_cast<void*>(QAndroidDisplayListener::javaDisplayChanged)},
-			};
-			clz.registerNativeMethods(methods, sizeof(methods));
+			});
 			s_preloaded = true;
 		}
 		catch (const std::exception & e)
