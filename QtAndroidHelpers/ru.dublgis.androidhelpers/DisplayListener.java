@@ -57,7 +57,7 @@ public class DisplayListener implements DisplayManager.DisplayListener {
         try {
             Log.i(TAG, "register");
             if (context == null) {
-                Log.w(TAG, "Null Context n register()");
+                Log.w(TAG, "Null Context in register()");
                 return;
             }
             if (context == null) {
