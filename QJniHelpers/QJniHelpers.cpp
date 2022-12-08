@@ -1494,7 +1494,7 @@ QJniObject::QJniObject(const char * class_name, const char * param_signature, ..
 QJniObject::QJniObject(const QJniObject & other)
 	: QJniClass(other)
 {
-	if (other.jObject())
+	if (other)
 	{
 		instance_ = QJniEnvPtr().env()->NewGlobalRef(other.jObject());
 	}
@@ -1514,9 +1514,9 @@ QJniObject & QJniObject::operator=(const QJniObject & other)
 	if (this != &other)
 	{
 		dispose();
-		if (other.jObject())
+		QJniClass::operator=(other);
+		if (other)
 		{
-			QJniClass::operator=(other);
 			instance_ = QJniEnvPtr().env()->NewGlobalRef(other.jObject());
 		}
 	}
