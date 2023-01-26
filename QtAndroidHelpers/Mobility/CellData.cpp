@@ -43,6 +43,7 @@ namespace Mobility {
 
 
 const int32_t CellData::java_integer_max_value = std::numeric_limits<int32_t>::max();
+const int64_t CellData::java_long_max_value = std::numeric_limits<int64_t>::max();
 
 
 CellData::Data::Data(int32_t cell_id)
@@ -52,6 +53,7 @@ CellData::Data::Data(int32_t cell_id)
 	, mobile_network_code_(java_integer_max_value)
 	, signal_strength_(java_integer_max_value)
 	, timing_advance_(java_integer_max_value)
+	, last_seen_ms_(java_long_max_value)
 {
 }
 
@@ -65,6 +67,7 @@ void CellData::Data::accept(DataOperation & operation) const
 	operation.execute(QStringLiteral("signal_strength"), signal_strength_);
 	operation.execute(QStringLiteral("timing_advance"), timing_advance_);
 	operation.execute(QStringLiteral("radio_type"), radio_type_);
+	operation.execute(QStringLiteral("last_seen_ms"), last_seen_ms_);
 }
 
 } // namespace Mobility

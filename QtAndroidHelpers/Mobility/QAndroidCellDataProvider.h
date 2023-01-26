@@ -71,9 +71,9 @@ public:
 	static QList<SimInfo> getSimInfo();
 
 private:
-	friend void JNICALL Java_CellListener_cellUpdate(JNIEnv *, jobject, jlong native_ptr, jstring type, jint cid, jint lac, jint mcc, jint mnc, jint rssi, jint ta);
+	friend void JNICALL Java_CellListener_cellUpdate(JNIEnv *, jobject, jlong native_ptr, jstring type, jint cid, jint lac, jint mcc, jint mnc, jint rssi, jint ta, jlong ls);
 	friend void JNICALL JNICALL Java_CellListener_onSignalChanged(JNIEnv *, jobject, jlong native_ptr);
-	void cellUpdate(jstring type, jint cid, jint lac, jint mcc, jint mnc, jint rssi, jint ta);
+	void cellUpdate(jstring type, jint cid, jint lac, jint mcc, jint mnc, jint rssi, jint ta, jlong ls);
 	void onSignalChanged();
 
 public slots:

@@ -81,11 +81,15 @@ struct CellData
 
 		// gsm, wcdma, lte, cdma
 		QString radio_type_;
+
+		// optional, long
+		int64_t last_seen_ms_;
 	};
 
 	typedef QList<Data> DataColl;
 	DataColl data_;
 	static const int32_t java_integer_max_value;
+	static const int64_t java_long_max_value;
 };
 
 

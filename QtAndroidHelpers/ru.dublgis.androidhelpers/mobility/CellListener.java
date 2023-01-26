@@ -42,6 +42,7 @@ package ru.dublgis.androidhelpers.mobility;
 import android.content.Context;
 import android.os.Build;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.telephony.CellInfo;
 import android.telephony.CellInfoCdma;
 import android.telephony.CellInfoGsm;
@@ -171,6 +172,16 @@ public class CellListener {
     private void reportDataCellInfo(List<CellInfo> cellInfoList) {
         synchronized(mNativePtr) {
             for (CellInfo cellInfo : cellInfoList) {
+                long timeSinceSignalMillis = Long.MAX_VALUE;
+
+                if (android.os.Build.VERSION.SDK_INT >= 30) {
+                    long timestampMillis = cellInfo.getTimestampMillis();
+                    timeSinceSignalMillis = SystemClock.elapsedRealtime() - timestampMillis;
+                } else if (android.os.Build.VERSION.SDK_INT >= 17) {
+                    long timestampMillis = cellInfo.getTimeStamp() / 1000000; // nanoseconds to milliseconds
+                    timeSinceSignalMillis = SystemClock.elapsedRealtime() - timestampMillis;
+                }
+
                 if (Build.VERSION.SDK_INT >= 17) {
                     if (cellInfo instanceof CellInfoCdma) {
                         CellInfoCdma cellInfoCdma = (CellInfoCdma) cellInfo;
@@ -182,7 +193,8 @@ public class CellListener {
                             Integer.MAX_VALUE,
                             cellInfoCdma.getCellIdentity().getSystemId(), // System Id 0..32767, Integer.MAX_VALUE if unknown
                             cellInfoCdma.getCellSignalStrength().getCdmaDbm(), // Get the CDMA RSSI value in dBm
-                            Integer.MAX_VALUE
+                            Integer.MAX_VALUE,
+                            timeSinceSignalMillis
                         );
                     }
                     if (cellInfo instanceof CellInfoGsm) {
@@ -195,7 +207,8 @@ public class CellListener {
                             cellInfoGsm.getCellIdentity().getMcc(), // 3-digit Mobile Country Code, 0..999, Integer.MAX_VALUE if unknown
                             cellInfoGsm.getCellIdentity().getMnc(), // 2 or 3-digit Mobile Network Code, 0..999, Integer.MAX_VALUE if unknown
                             cellInfoGsm.getCellSignalStrength().getDbm(), // Get the signal strength as dBm
-                            android.os.Build.VERSION.SDK_INT >= 26 ? cellInfoGsm.getCellSignalStrength().getTimingAdvance() : Integer.MAX_VALUE // Get the GSM timing advance between 0..219 symbols (normally 0..63). Integer.MAX_VALUE is reported when there is no RR connection.
+                            android.os.Build.VERSION.SDK_INT >= 26 ? cellInfoGsm.getCellSignalStrength().getTimingAdvance() : Integer.MAX_VALUE, // Get the GSM timing advance between 0..219 symbols (normally 0..63). Integer.MAX_VALUE is reported when there is no RR connection.
+                            timeSinceSignalMillis
                         );
                     }
                     if (cellInfo instanceof CellInfoLte) {
@@ -208,7 +221,8 @@ public class CellListener {
                             cellInfoLte.getCellIdentity().getMcc(), // 3-digit Mobile Country Code, 0..999, Integer.MAX_VALUE if unknown
                             cellInfoLte.getCellIdentity().getMnc(), // 2 or 3-digit Mobile Network Code, 0..999, Integer.MAX_VALUE if unknown
                             cellInfoLte.getCellSignalStrength().getDbm(), // Get signal strength as dBm
-                            cellInfoLte.getCellSignalStrength().getTimingAdvance() // Get the timing advance value for LTE, as a value between 0..63. Integer.MAX_VALUE is reported when there is no active RRC connection. Refer to 3GPP 36.213 Sec 4.2.3
+                            cellInfoLte.getCellSignalStrength().getTimingAdvance(), // Get the timing advance value for LTE, as a value between 0..63. Integer.MAX_VALUE is reported when there is no active RRC connection. Refer to 3GPP 36.213 Sec 4.2.3
+                            timeSinceSignalMillis
                         );
                     }
                 }
@@ -223,7 +237,8 @@ public class CellListener {
                             cellInfoWcdma.getCellIdentity().getMcc(), // 3-digit Mobile Country Code, 0..999, Integer.MAX_VALUE if unknown
                             cellInfoWcdma.getCellIdentity().getMnc(), // 2 or 3-digit Mobile Network Code, 0..999, Integer.MAX_VALUE if unknown
                             cellInfoWcdma.getCellSignalStrength().getDbm(), // Get the signal strength as dBm
-                            Integer.MAX_VALUE
+                            Integer.MAX_VALUE,
+                            timeSinceSignalMillis
                         );
                     }
                 }
@@ -243,7 +258,8 @@ public class CellListener {
                     Integer.MAX_VALUE,
                     Integer.MAX_VALUE,
                     getGsmDbm(cellInfo.getRssi()), // received signal strength or UNKNOWN_RSSI if unknown For GSM, it is in "asu" ranging from 0 to 31 (dBm = -113 + 2*asu) 0 means "-113 dBm or less" and 31 means "-51 dBm or greater" For UMTS, it is the Level index of CPICH RSCP defined in TS 25.125
-                    Integer.MAX_VALUE
+                    Integer.MAX_VALUE,
+                    Long.MAX_VALUE
                 );
             }
         }
@@ -269,6 +285,7 @@ public class CellListener {
 
         CellLocation loc = mManager.getCellLocation();
 
+        long timestampMillis = Long.MAX_VALUE;
         synchronized(mNativePtr) {
             if (gsm && loc instanceof GsmCellLocation) {
                 GsmCellLocation locGsm = (GsmCellLocation) loc;
@@ -280,7 +297,8 @@ public class CellListener {
                     Integer.MAX_VALUE,
                     Integer.MAX_VALUE,
                     dbm,
-                    Integer.MAX_VALUE);
+                    Integer.MAX_VALUE,
+                    timestampMillis);
             } else if (loc instanceof CdmaCellLocation) {
                 CdmaCellLocation locCdma = (CdmaCellLocation) loc;
                 cellUpdate(
@@ -291,7 +309,8 @@ public class CellListener {
                     Integer.MAX_VALUE,
                     Integer.MAX_VALUE,
                     dbm,
-                    Integer.MAX_VALUE);
+                    Integer.MAX_VALUE,
+                    timestampMillis);
             }
         }
     }
@@ -445,6 +464,6 @@ public class CellListener {
     }
 
     private native void onSignalChanged(long native_ptr);
-    private native void cellUpdate(long native_ptr, String type, int cid, int lac, int mcc, int mnc, int rssi, int ta);
+    private native void cellUpdate(long native_ptr, String type, int cid, int lac, int mcc, int mnc, int rssi, int ta, long ls);
     private native Context getContext();
 }

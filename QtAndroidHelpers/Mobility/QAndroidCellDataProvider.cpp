@@ -48,10 +48,10 @@
 namespace Mobility {
 
 
-Q_DECL_EXPORT void JNICALL Java_CellListener_cellUpdate(JNIEnv *, jobject, jlong native_ptr, jstring type, jint cid, jint lac, jint mcc, jint mnc, jint rssi, jint ta)
+Q_DECL_EXPORT void JNICALL Java_CellListener_cellUpdate(JNIEnv *, jobject, jlong native_ptr, jstring type, jint cid, jint lac, jint mcc, jint mnc, jint rssi, jint ta, jlong ls)
 {
 	JNI_LINKER_OBJECT(Mobility::QAndroidCellDataProvider, native_ptr, proxy)
-	proxy->cellUpdate(type, cid, lac, mcc, mnc, rssi, ta);
+	proxy->cellUpdate(type, cid, lac, mcc, mnc, rssi, ta, ls);
 }
 
 
@@ -65,7 +65,7 @@ Q_DECL_EXPORT void JNICALL Java_CellListener_onSignalChanged(JNIEnv *, jobject, 
 static const JNINativeMethod methods[] = {
 	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
 	{"onSignalChanged", "(J)V", reinterpret_cast<void*>(Java_CellListener_onSignalChanged)},
-	{"cellUpdate", "(JLjava/lang/String;IIIIII)V", reinterpret_cast<void*>(Java_CellListener_cellUpdate)},
+	{"cellUpdate", "(JLjava/lang/String;IIIIIIJ)V", reinterpret_cast<void*>(Java_CellListener_cellUpdate)},
 };
 
 
@@ -150,7 +150,7 @@ void QAndroidCellDataProvider::requestData()
 }
 
 
-void QAndroidCellDataProvider::cellUpdate(jstring type, jint cid, jint lac, jint mcc, jint mnc, jint rssi, jint ta)
+void QAndroidCellDataProvider::cellUpdate(jstring type, jint cid, jint lac, jint mcc, jint mnc, jint rssi, jint ta, jlong ls)
 {
 	if (current_data_ && cid > 0 && cid != CellData::java_integer_max_value)
 	{
@@ -166,6 +166,7 @@ void QAndroidCellDataProvider::cellUpdate(jstring type, jint cid, jint lac, jint
 		current_data_->data_.back().mobile_network_code_ = mnc;
 		current_data_->data_.back().signal_strength_ = rssi;
 		current_data_->data_.back().timing_advance_ = ta;
+		current_data_->data_.back().last_seen_ms_ = ls;
 	}
 }
 
