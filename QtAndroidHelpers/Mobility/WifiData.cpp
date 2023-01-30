@@ -127,7 +127,7 @@ bool WifiDataList::SameAs(const WifiDataList &other, bool compareSignalStrength)
 		{
 			return false;
 		}
-		if( compareSignalStrength && myiter->signalStrength != otheriter->signalStrength)
+		if (compareSignalStrength && myiter->signalStrength != otheriter->signalStrength)
 		{
 			return false;
 		}
