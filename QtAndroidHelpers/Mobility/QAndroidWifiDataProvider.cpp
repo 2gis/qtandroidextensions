@@ -148,6 +148,7 @@ bool QAndroidWifiDataProvider::RetrieveData(WifiDataList & data)
 		wd.signalStrength = entry.at(1).toInt();
 		wd.name = entry[2];
 		wd.timestamp_mks = entry.at(3).toInt();
+		wd.since_signal_ms = entry.at(4).toLong();
 
 		data.push_back(wd);
 	}

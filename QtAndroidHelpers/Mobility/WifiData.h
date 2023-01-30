@@ -55,6 +55,7 @@ struct WifiData
 	int signalStrength;
 	QString name;
 	int timestamp_mks;
+	qint64 since_signal_ms;
 
 	QString MacAsString(const QString& delim = QLatin1String("-")) const;
 	void StringAsMac(const QString& str, const QString& delim = QLatin1String(":"));

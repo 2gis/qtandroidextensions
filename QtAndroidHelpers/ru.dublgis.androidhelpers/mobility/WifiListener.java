@@ -46,6 +46,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
 import android.net.wifi.ScanResult;
+import android.os.SystemClock;
 
 import ru.dublgis.androidhelpers.Log;
 
@@ -186,13 +187,23 @@ public class WifiListener extends BroadcastReceiver
 			{
 				ScanResult sr = it.next();
 				long timestamp = 0;
+				long timeSinceSignalMillis = Long.MAX_VALUE;
 
 				if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1)
 				{
 					timestamp = sr.timestamp;
+					timeSinceSignalMillis =
+						SystemClock.elapsedRealtime() -
+						timestamp / 1000; // microseconds to milliseconds
 				}
 
-				result += sr.BSSID + "\t" + sr.level + "\t" + sr.SSID + "\t" + timestamp + "\n";
+				result +=
+					sr.BSSID
+					+ "\t" + sr.level
+					+ "\t" + sr.SSID
+					+ "\t" + timestamp
+					+ "\t" + timeSinceSignalMillis
+					+ "\n";
 			}
 
 			return result;
