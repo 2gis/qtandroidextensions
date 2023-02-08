@@ -8,7 +8,7 @@
 
     Distrbuted under The BSD License
 
-    Copyright (c) 2015, DoubleGIS, LLC.
+    Copyright (c) 2015-2023, DoubleGIS, LLC.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -157,7 +157,7 @@ public class WifiListener extends BroadcastReceiver
 	// So just a string with a table of all Wi Fi spots seen pass us let;
 	// and on C++ side will better and without oveflowing JNI reference
 	// table it parsed be.
-	public String getLastWifiScanResultsTable()
+	public boolean getLastWifiScanResultsTable()
 	{
 		try
 		{
@@ -170,53 +170,36 @@ public class WifiListener extends BroadcastReceiver
 
 			if (wm == null)
 			{
-				return "";
+				return false;
 			}
 
 			List<ScanResult> srlist = wm.getScanResults();
 
 			if (srlist==null || srlist.size()==0)
 			{
-				return "";
+				return false;
 			}
 
-			// To String the data converted be will
-			String result = "";
-
-			for( Iterator<ScanResult> it = srlist.iterator(); it.hasNext(); )
+			for (Iterator<ScanResult> it = srlist.iterator(); it.hasNext(); )
 			{
 				ScanResult sr = it.next();
-				long timestamp = 0;
-				long timeSinceSignalMillis = Long.MAX_VALUE;
 
-				if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1)
-				{
-					timestamp = sr.timestamp;
-					timeSinceSignalMillis =
-						SystemClock.elapsedRealtime() -
-						timestamp / 1000; // microseconds to milliseconds
-				}
+				setScanResult(mNativePtr, sr);
 
-				result +=
-					sr.BSSID
-					+ "\t" + sr.level
-					+ "\t" + sr.SSID
-					+ "\t" + timestamp
-					+ "\t" + timeSinceSignalMillis
-					+ "\n";
 			}
 
-			return result;
+			return true;
 		}
 		catch (Exception e)
 		{
 			Log.e(LOG_TAG, "getLastWifiScanResultsTable exception: "+e);
-			return "";
+			return false;
 		}
 	}
 
 
 	// Will call getLastWifiScanResultsTable() to update WiFi status
 	private native void scanUpdate(long native_ptr);
+	private native void setScanResult(long native_ptr, ScanResult scan_res);
 	private native Context getContext();
 } // class WifiListener

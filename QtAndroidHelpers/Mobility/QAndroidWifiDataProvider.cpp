@@ -8,7 +8,7 @@
 
 	Distrbuted under The BSD License
 
-	Copyright (c) 2015, DoubleGIS, LLC.
+	Copyright (c) 2015-2024, DoubleGIS, LLC.
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -51,9 +51,22 @@ Q_DECL_EXPORT void JNICALL Java_WifiListener_scanUpdate(JNIEnv *, jobject, jlong
 }
 
 
+Q_DECL_EXPORT void JNICALL Java_WifiListener_setScanResult(JNIEnv *, jobject, jlong native_ptr, jobject scan_result)
+{
+	if (0x0 == scan_result)
+	{
+		return;
+	}
+
+	JNI_LINKER_OBJECT(Mobility::QAndroidWifiDataProvider, native_ptr, proxy)
+	proxy->setScanResult(scan_result);
+}
+
+
 static const JNINativeMethod methods[] = {
 	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
 	{"scanUpdate", "(J)V", reinterpret_cast<void*>(Java_WifiListener_scanUpdate)},
+	{"setScanResult", "(JLandroid/net/wifi/ScanResult;)V", reinterpret_cast<void*>(Java_WifiListener_setScanResult)},
 };
 
 
@@ -104,55 +117,63 @@ void QAndroidWifiDataProvider::scanUpdate()
 }
 
 
-QString QAndroidWifiDataProvider::getSignalsData()
+bool QAndroidWifiDataProvider::getSignalsData()
 {
 	if (isJniReady())
 	{
-		return jni()->callString("getLastWifiScanResultsTable");
+		return jni()->callBool("getLastWifiScanResultsTable");
 	}
 
-	return QString();
+	return false;
+}
+
+
+void QAndroidWifiDataProvider::setScanResult(jobject scan_result)
+{
+	WifiData wd;
+	QJniObject result(scan_result, false);
+
+	wd.StringAsMac(result.getStringField("BSSID"));
+	wd.signalStrength =result.getIntField("level");
+	
+	if (QAndroidQPAPluginGap::apiLevel() < 33)
+	{
+		wd.name = result.getStringField("SSID");
+	}
+	else
+	{
+		QScopedPointer<QJniObject> wifi_ssid(result.callObject("getWifiSsid", "android/net/wifi/WifiSsid"));
+		wd.name = wifi_ssid->callString("toString");
+	}
+
+	if (QAndroidQPAPluginGap::apiLevel() >= 17)
+	{
+		wd.timestamp_mks = result.getLongField("timestamp");
+		qint64 elapsed_realtime_ms = QJniClass("android/os/SystemClock").callStaticLong("elapsedRealtime");
+		wd.since_signal_ms = elapsed_realtime_ms - wd.timestamp_mks / 1000;
+	}
+	else
+	{
+		wd.timestamp_mks = 0;
+		wd.since_signal_ms = 0;
+	}
+
+	data_buf_.push_back(wd);
 }
 
 
 bool QAndroidWifiDataProvider::RetrieveData(WifiDataList & data)
 {
 	data.clear();
-	QString table = getSignalsData();
+	data_buf_.clear();
 
-	if(table.isEmpty())
+	if (!getSignalsData())
 	{
 		return false;
 	}
 
-	QStringList tablelist = table.split(QChar('\n'), Qt::SkipEmptyParts);
-	
-	if(!tablelist.size())
-	{
-		return false;
-	}
-	
-	WifiData wd;
-	
-	for(int i=0; i<tablelist.size(); i++)
-	{
-		QStringList entry = tablelist.at(i).split(QChar('\t'), Qt::KeepEmptyParts);
+	data.swap(data_buf_);
 
-		if (entry.size() < 4)
-		{
-			qWarning() << "WiFi table entry is too short!";
-			return false;
-		}
-
-		wd.StringAsMac(entry[0]);
-		wd.signalStrength = entry.at(1).toInt();
-		wd.name = entry[2];
-		wd.timestamp_mks = entry.at(3).toInt();
-		wd.since_signal_ms = entry.at(4).toLong();
-
-		data.push_back(wd);
-	}
-	
 	return true;
 }
 

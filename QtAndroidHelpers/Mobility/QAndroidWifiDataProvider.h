@@ -8,7 +8,7 @@
 
 	Distrbuted under The BSD License
 
-	Copyright (c) 2015, DoubleGIS, LLC.
+	Copyright (c) 2015-2024, DoubleGIS, LLC.
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -56,12 +56,14 @@ public:
 	virtual ~QAndroidWifiDataProvider();
 
 public:
-	QString getSignalsData();
+	bool getSignalsData();
 	bool RetrieveData(WifiDataList & list);
 
 private:
 	friend void JNICALL Java_WifiListener_scanUpdate(JNIEnv *, jobject, jlong native_ptr);
+	friend void JNICALL Java_WifiListener_setScanResult(JNIEnv *, jobject, jlong native_ptr, jobject scan_result);
 	void scanUpdate();
+	void setScanResult(jobject scan_result);
 
 public slots:
 	void start();
@@ -72,6 +74,7 @@ signals:
 
 private:
 	bool started_;
+	WifiDataList data_buf_;
 };
 
 }
