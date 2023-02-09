@@ -47,49 +47,50 @@ struct CellData
 {
 	struct DataOperation
 	{
-		virtual void execute(const QString & key, int32_t value) = 0;
+		virtual void execute(const QString & key, const qint64 value) = 0;
+		virtual void execute(const QString & key, const qint32 value) = 0;
 		virtual void execute(const QString & key, const QString & value) = 0;
 	};
 
 	struct Data
 	{
-		Data(int32_t cell_id);
+		Data(qint32 cell_id);
 		void accept(DataOperation & operation) const;
 
 		// required, int.
 		// Cell ID (CID) for GSM
 		// Base Station ID (BID) for CDMA
 		// UTRAN/GERAN Cell Identity (UC-Id) for WCDMA.
-		int32_t cell_id_;
+		qint32 cell_id_;
 
 		// optional, int.
 		// Location Area Code (LAC) for GSM and WCDMA.
 		// Network ID (NID) for CDMA сетей. 0 <= LAC <= 65535.
-		int32_t location_area_code_;
+		qint32 location_area_code_;
 
 		// optional, int. 0 <= MCC < 1000
-		int32_t mobile_country_code_;
+		qint32 mobile_country_code_;
 
 		// optional, int. 0 <= MNC < 1000
-		int32_t mobile_network_code_;
+		qint32 mobile_network_code_;
 
 		// optional, int. RSSI в dBm.
-		int32_t signal_strength_;
+		qint32 signal_strength_;
 
 		// optional, int
-		int32_t timing_advance_;
+		qint32 timing_advance_;
 
 		// gsm, wcdma, lte, cdma
 		QString radio_type_;
 
 		// optional, long
-		int64_t last_seen_ms_;
+		qint64 last_seen_ms_;
 	};
 
 	typedef QList<Data> DataColl;
 	DataColl data_;
-	static const int32_t java_integer_max_value;
-	static const int64_t java_long_max_value;
+	static const qint32 java_integer_max_value;
+	static const qint64 java_long_max_value;
 };
 
 

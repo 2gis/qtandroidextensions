@@ -42,8 +42,8 @@
 namespace Mobility {
 
 
-const int32_t CellData::java_integer_max_value = std::numeric_limits<int32_t>::max();
-const int64_t CellData::java_long_max_value = std::numeric_limits<int64_t>::max();
+const qint32 CellData::java_integer_max_value = std::numeric_limits<qint32>::max();
+const qint64 CellData::java_long_max_value = std::numeric_limits<qint64>::max();
 
 
 CellData::Data::Data(int32_t cell_id)
