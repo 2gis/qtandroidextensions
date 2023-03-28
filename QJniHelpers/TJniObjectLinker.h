@@ -59,6 +59,7 @@ public:
 	static TNative * getClient(jlong ptr);
 	static QByteArray preloadJavaClasses();
 	static QSharedPointer<QReadLocker> getLocker();
+	static bool isPreloaded();
 
 protected:
 	QJniObject * handler() const;
@@ -142,6 +143,14 @@ TNative * TJniObjectLinker<TNative>::getClient(jlong ptr)
 	}
 
 	return NULL;
+}
+
+
+template <typename TNative>
+bool TJniObjectLinker<TNative>::isPreloaded()
+{
+	QReadLocker locker(&mutex_);
+	return preloaded_;
 }
 
 
