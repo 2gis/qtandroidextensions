@@ -37,6 +37,7 @@
 #pragma once
 
 #include <QtPositioning/QGeoPositionInfoSource>
+#include <QJniHelpers/TJniObjectLinker.h>
 
 
 class QAndroidGmsLocationProvider;
@@ -92,3 +93,9 @@ private:
 };
 
 
+template <>
+class TJniObjectLinker<QGeoPositionInfoSourceAndroidGms>
+{
+public:
+	static bool isPreloaded() { return TJniObjectLinker<QAndroidGmsLocationProvider>::isPreloaded(); }
+};
