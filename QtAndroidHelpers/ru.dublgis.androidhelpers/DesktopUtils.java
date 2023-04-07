@@ -51,6 +51,7 @@ import java.time.ZoneId;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.FeatureInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -900,6 +901,32 @@ public class DesktopUtils
         } else {
             return new String();
         }
+    }
+
+    public static String getVulkanLevel(final Context ctx)
+    {
+        FeatureInfo[] featureInfos = ctx.getPackageManager().getSystemAvailableFeatures();
+        for (FeatureInfo featureInfo : featureInfos) {
+            if (PackageManager.FEATURE_VULKAN_HARDWARE_LEVEL.equals(featureInfo.name)) {
+                return String.valueOf(featureInfo.version);
+            }
+        }
+        return "";
+    }
+
+    public static String getVulkanVersion(final Context ctx)
+    {
+        FeatureInfo[] featureInfos = ctx.getPackageManager().getSystemAvailableFeatures();
+        for (FeatureInfo featureInfo : featureInfos) {
+            if (PackageManager.FEATURE_VULKAN_HARDWARE_VERSION.equals(featureInfo.name)) {
+                return String.format("%d.%d.%d",
+                            (featureInfo.version >> 22) & 0x3ff,
+                            (featureInfo.version >> 12) & 0x3ff,
+                            featureInfo.version & 0xfff);
+            }
+        }
+        
+        return "";
     }
 
 

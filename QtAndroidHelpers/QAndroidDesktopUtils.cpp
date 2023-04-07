@@ -616,6 +616,40 @@ bool is24HourFormat()
 	return QLocale().timeFormat(QLocale::ShortFormat).contains('A', Qt::CaseInsensitive);
 }
 
+QString getVulkanLevel()
+{
+	QJniClass du(c_desktoputils_class_name_);
+	if (du.jClass())
+	{
+		return du.callStaticParamString(
+			"getVulkanLevel",
+			"Landroid/content/Context;",
+			QAndroidQPAPluginGap::Context().jObject());
+	}
+	else
+	{
+		qCritical() << "Null class:" << c_desktoputils_class_name_;
+	}
+	return {};
+}
+
+QString getVulkanVersion()
+{
+	QJniClass du(c_desktoputils_class_name_);
+	if (du.jClass())
+	{
+		return du.callStaticParamString(
+			"getVulkanVersion",
+			"Landroid/content/Context;",
+			QAndroidQPAPluginGap::Context().jObject());
+	}
+	else
+	{
+		qCritical() << "Null class:" << c_desktoputils_class_name_;
+	}
+	return {};
+}
+
 } // namespace QAndroidDesktopUtils
 
 

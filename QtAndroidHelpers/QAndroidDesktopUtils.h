@@ -155,5 +155,9 @@ bool zipFiles(const QStringList & src_pathes, const QString & dst_path);
 
 bool is24HourFormat();
 
+QString getVulkanLevel();
+
+QString getVulkanVersion();
+
 } // namespace QAndroidDesktopUtils
 
