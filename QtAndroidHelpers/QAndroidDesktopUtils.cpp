@@ -620,18 +620,10 @@ QString getVulkanLevel()
 {
 	try
 	{
-		QJniClass du(c_desktoputils_class_name_);
-		if (du)
-		{
-			return du.callStaticParamString(
-				"getVulkanLevel",
-				"Landroid/content/Context;",
-				QAndroidQPAPluginGap::Context().jObject());
-		}
-		else
-		{
-			qCritical() << "Null class:" << c_desktoputils_class_name_;
-		}
+		return QJniClass(c_desktoputils_class_name_).callStaticParamString(
+			"getVulkanLevel",
+			"Landroid/content/Context;",
+			QAndroidQPAPluginGap::Context().jObject());
 	}
 	catch (const std::exception &e) {
 		qCritical() << "JNI exception in getVulkanLevel: " << e.what();
@@ -643,18 +635,10 @@ QString getVulkanVersion()
 {
 	try
 	{
-		QJniClass du(c_desktoputils_class_name_);
-		if (du)
-		{
-			return du.callStaticParamString(
-				"getVulkanVersion",
-				"Landroid/content/Context;",
-				QAndroidQPAPluginGap::Context().jObject());
-		}
-		else
-		{
-			qCritical() << "Null class:" << c_desktoputils_class_name_;
-		}
+		return QJniClass(c_desktoputils_class_name_).callStaticParamString(
+			"getVulkanVersion",
+			"Landroid/content/Context;",
+			QAndroidQPAPluginGap::Context().jObject());
 	}
 	catch (const std::exception &e) {
 		qCritical() << "JNI exception in getVulkanVersion: " << e.what();
