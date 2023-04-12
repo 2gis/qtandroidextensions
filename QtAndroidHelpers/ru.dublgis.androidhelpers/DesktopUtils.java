@@ -906,16 +906,19 @@ public class DesktopUtils
     public static String getVulkanLevel(final Context ctx)
     {
         try {
-            FeatureInfo[] featureInfos = ctx.getPackageManager().getSystemAvailableFeatures();
-            if (featureInfos != null) {
-                for (FeatureInfo featureInfo : featureInfos) {
-                    if (PackageManager.FEATURE_VULKAN_HARDWARE_LEVEL.equals(featureInfo.name)) {
-                        return String.valueOf(featureInfo.version);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+            && ctx.getPackageManager().hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_LEVEL)) {
+                FeatureInfo[] featureInfos = ctx.getPackageManager().getSystemAvailableFeatures();
+                if (featureInfos != null) {
+                    for (FeatureInfo featureInfo : featureInfos) {
+                        if (PackageManager.FEATURE_VULKAN_HARDWARE_LEVEL.equals(featureInfo.name)) {
+                            return String.valueOf(featureInfo.version);
+                        }
                     }
                 }
             }
         } catch (final Throwable e) {
-            Log.e(TAG, "Can't get getVulkanLevel", e);
+            Log.e(TAG, "Can't get Vulkan level: ", e);
         }
         return "";
     }
@@ -923,19 +926,22 @@ public class DesktopUtils
     public static String getVulkanVersion(final Context ctx)
     {
         try {
-            FeatureInfo[] featureInfos = ctx.getPackageManager().getSystemAvailableFeatures();
-            if (featureInfos != null) {
-                for (FeatureInfo featureInfo : featureInfos) {
-                    if (PackageManager.FEATURE_VULKAN_HARDWARE_VERSION.equals(featureInfo.name)) {
-                        return String.format("%d.%d.%d",
-                                    (featureInfo.version >> 22) & 0x3ff,
-                                    (featureInfo.version >> 12) & 0x3ff,
-                                    featureInfo.version & 0xfff);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+            && ctx.getPackageManager().hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_VERSION)) {
+                FeatureInfo[] featureInfos = ctx.getPackageManager().getSystemAvailableFeatures();
+                if (featureInfos != null) {
+                    for (FeatureInfo featureInfo : featureInfos) {
+                        if (PackageManager.FEATURE_VULKAN_HARDWARE_VERSION.equals(featureInfo.name)) {
+                            return String.format("%d.%d.%d",
+                                        (featureInfo.version >> 22) & 0x3ff,
+                                        (featureInfo.version >> 12) & 0x3ff,
+                                        featureInfo.version & 0xfff);
+                        }
                     }
                 }
             }
         } catch (final Throwable e) {
-            Log.e(TAG, "Can't get getVulkanVersion", e);
+            Log.e(TAG, "Can't get Vulkan version: ", e);
         }
         return "";
     }

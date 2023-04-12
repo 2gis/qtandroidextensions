@@ -618,34 +618,46 @@ bool is24HourFormat()
 
 QString getVulkanLevel()
 {
-	QJniClass du(c_desktoputils_class_name_);
-	if (du.jClass())
+	try
 	{
-		return du.callStaticParamString(
-			"getVulkanLevel",
-			"Landroid/content/Context;",
-			QAndroidQPAPluginGap::Context().jObject());
+		QJniClass du(c_desktoputils_class_name_);
+		if (du)
+		{
+			return du.callStaticParamString(
+				"getVulkanLevel",
+				"Landroid/content/Context;",
+				QAndroidQPAPluginGap::Context().jObject());
+		}
+		else
+		{
+			qCritical() << "Null class:" << c_desktoputils_class_name_;
+		}
 	}
-	else
-	{
-		qCritical() << "Null class:" << c_desktoputils_class_name_;
+	catch (const std::exception &e) {
+		qCritical() << "JNI exception in getVulkanLevel: " << e.what();
 	}
 	return {};
 }
 
 QString getVulkanVersion()
 {
-	QJniClass du(c_desktoputils_class_name_);
-	if (du.jClass())
+	try
 	{
-		return du.callStaticParamString(
-			"getVulkanVersion",
-			"Landroid/content/Context;",
-			QAndroidQPAPluginGap::Context().jObject());
+		QJniClass du(c_desktoputils_class_name_);
+		if (du)
+		{
+			return du.callStaticParamString(
+				"getVulkanVersion",
+				"Landroid/content/Context;",
+				QAndroidQPAPluginGap::Context().jObject());
+		}
+		else
+		{
+			qCritical() << "Null class:" << c_desktoputils_class_name_;
+		}
 	}
-	else
-	{
-		qCritical() << "Null class:" << c_desktoputils_class_name_;
+	catch (const std::exception &e) {
+		qCritical() << "JNI exception in getVulkanVersion: " << e.what();
 	}
 	return {};
 }
