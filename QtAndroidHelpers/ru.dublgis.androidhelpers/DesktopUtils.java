@@ -907,7 +907,7 @@ public class DesktopUtils
     {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
-            && ctx.getPackageManager().hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_LEVEL)) {
+                && ctx.getPackageManager().hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_LEVEL)) {
                 FeatureInfo[] featureInfos = ctx.getPackageManager().getSystemAvailableFeatures();
                 if (featureInfos != null) {
                     for (FeatureInfo featureInfo : featureInfos) {
@@ -927,7 +927,7 @@ public class DesktopUtils
     {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
-            && ctx.getPackageManager().hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_VERSION)) {
+                && ctx.getPackageManager().hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_VERSION)) {
                 FeatureInfo[] featureInfos = ctx.getPackageManager().getSystemAvailableFeatures();
                 if (featureInfos != null) {
                     for (FeatureInfo featureInfo : featureInfos) {
