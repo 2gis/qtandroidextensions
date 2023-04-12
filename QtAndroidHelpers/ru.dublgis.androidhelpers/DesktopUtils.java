@@ -907,9 +907,11 @@ public class DesktopUtils
     {
         try {
             FeatureInfo[] featureInfos = ctx.getPackageManager().getSystemAvailableFeatures();
-            for (FeatureInfo featureInfo : featureInfos) {
-                if (PackageManager.FEATURE_VULKAN_HARDWARE_LEVEL.equals(featureInfo.name)) {
-                    return String.valueOf(featureInfo.version);
+            if (featureInfos != null) {
+                for (FeatureInfo featureInfo : featureInfos) {
+                    if (PackageManager.FEATURE_VULKAN_HARDWARE_LEVEL.equals(featureInfo.name)) {
+                        return String.valueOf(featureInfo.version);
+                    }
                 }
             }
         } catch (final Throwable e) {
@@ -922,12 +924,14 @@ public class DesktopUtils
     {
         try {
             FeatureInfo[] featureInfos = ctx.getPackageManager().getSystemAvailableFeatures();
-            for (FeatureInfo featureInfo : featureInfos) {
-                if (PackageManager.FEATURE_VULKAN_HARDWARE_VERSION.equals(featureInfo.name)) {
-                    return String.format("%d.%d.%d",
-                                (featureInfo.version >> 22) & 0x3ff,
-                                (featureInfo.version >> 12) & 0x3ff,
-                                featureInfo.version & 0xfff);
+            if (featureInfos != null) {
+                for (FeatureInfo featureInfo : featureInfos) {
+                    if (PackageManager.FEATURE_VULKAN_HARDWARE_VERSION.equals(featureInfo.name)) {
+                        return String.format("%d.%d.%d",
+                                    (featureInfo.version >> 22) & 0x3ff,
+                                    (featureInfo.version >> 12) & 0x3ff,
+                                    featureInfo.version & 0xfff);
+                    }
                 }
             }
         } catch (final Throwable e) {
