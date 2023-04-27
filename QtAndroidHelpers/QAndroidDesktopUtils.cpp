@@ -625,8 +625,8 @@ QString getVulkanLevel()
 			"Landroid/content/Context;",
 			QAndroidQPAPluginGap::Context().jObject());
 	}
-	catch (const std::exception &e) {
-		qCritical() << "JNI exception in getVulkanLevel: " << e.what();
+	catch (const std::exception & e) {
+		qCritical() << "JNI exception in getVulkanLevel:" << e.what();
 	}
 	return {};
 }
@@ -640,8 +640,8 @@ QString getVulkanVersion()
 			"Landroid/content/Context;",
 			QAndroidQPAPluginGap::Context().jObject());
 	}
-	catch (const std::exception &e) {
-		qCritical() << "JNI exception in getVulkanVersion: " << e.what();
+	catch (const std::exception & e) {
+		qCritical() << "JNI exception in getVulkanVersion:" << e.what();
 	}
 	return {};
 }
