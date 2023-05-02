@@ -17,6 +17,8 @@ set(SRC_LIST
     QAndroidDisplayListener.h
     QAndroidDisplayMetrics.cpp
     QAndroidDisplayMetrics.h
+    QAndroidExecutor.cpp
+    QAndroidExecutor.h
     QAndroidFilePaths.cpp
     QAndroidFilePaths.h
     QAndroidPartialWakeLocker.cpp
