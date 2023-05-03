@@ -88,40 +88,20 @@ QAndroidExecutor::QAndroidExecutor(const QJniObject & handler, int exitWaitTimeM
 
 QAndroidExecutor::~QAndroidExecutor()
 {
-	if (isValid())
-	{
-		if (exitWaitTimeMs_ > 0)
-		{
-			if (!wait(exitWaitTimeMs_))
-			{
-				qWarning() << "Failed to finish all tasks in" << exitWaitTimeMs_ << "ms.";
-			}
-		}
-		else
-		{
-			QMutexLocker locker(&taskQueueMutex_);
-			if (!tasks_.empty())
-			{
-				qWarning() << "Destroying executor with " << tasks_.size() << "pending tasks.";
-			}
-		}
-		try
-		{
-			executor_.callVoid("terminate");
-		}
-		catch (const std::exception & e)
-		{
-			qCritical() << "JNI exception in ~QAndroidExecutor():" << e.what();
-		}
-	}
-	// Make sure we will not be destroying a locked mutex
-	dropQueue();
+	finish();
 }
 
 
+bool QAndroidExecutor::isValid() const
+{
+	return !!executor_ && !disabled_;
+}
+
+
+// private
 void QAndroidExecutor::dropQueue()
 {
-	QMutexLocker locker(&taskQueueMutex_);
+	QMutexLocker locker(&mainMutex_);
 	if (!tasks_.empty())
 	{
 		qDebug() << "Dropping" << tasks_.size() << "pending tasks.";
@@ -154,21 +134,25 @@ bool QAndroidExecutor::isCurrentThread()
 // Post the task to the handler. The task will be executed asynchronously.
 void QAndroidExecutor::post(Task && task)
 {
+	if (!task)
+	{
+		qWarning() << "post() called for null task";
+		return;
+	}
 	try
 	{
-		if (!task || !isValid())
+		QMutexLocker locker(&mainMutex_);
+		if (!isValid())
 		{
 			return;
 		}
+		if (tasks_.empty())
 		{
-			QMutexLocker locker(&taskQueueMutex_);
-			if (tasks_.empty())
-			{
-				hasPendingTasksMutex_.lock();
-			}
-			tasks_.push(task);
+			hasPendingTasksMutex_.lock();
 		}
-		executor_.callVoid("execute");
+		tasks_.push(task);
+		// Number of scheduled callbacks equals number of scheduled tasks
+		executor_.callVoid("scheduleCallback");
 	}
 	catch (const std::exception & e)
 	{
@@ -181,18 +165,25 @@ void QAndroidExecutor::post(Task && task)
 // execute it immediately.
 void QAndroidExecutor::execute(Task && task)
 {
+	if (!task)
+	{
+		qWarning() << "execute() called for null task";
+		return;
+	}
 	try
 	{
-		if (task)
+		QMutexLocker locker(&mainMutex_);
+		if (!isValid())
 		{
-			if (isCurrentThread())
-			{
-				task();
-			}
-			else
-			{
-				post(std::move(task));
-			}
+			return;
+		}
+		if (isCurrentThread())
+		{
+			task();
+		}
+		else
+		{
+			post(std::move(task));
 		}
 	}
 	catch (const std::exception & e)
@@ -202,9 +193,10 @@ void QAndroidExecutor::execute(Task && task)
 }
 
 
-bool QAndroidExecutor::wait(int timeMs)
+// private
+bool QAndroidExecutor::wait(int waitTimeMs)
 {
-	QMutexLocker locker(&taskQueueMutex_);
+	QMutexLocker locker(&mainMutex_);
 	// If we're in a broken condition we should not wait for tasks to be executed.
 	if (!isValid())
 	{
@@ -216,7 +208,7 @@ bool QAndroidExecutor::wait(int timeMs)
 	{
 		if (!tasks_.empty())
 		{
-			hasPendingTasksMutex_.tryLock(timeMs);
+			hasPendingTasksMutex_.tryLock(waitTimeMs);
 		}
 	}
 	else
@@ -227,6 +219,25 @@ bool QAndroidExecutor::wait(int timeMs)
 }
 
 
+bool QAndroidExecutor::finish(int waitTimeMs)
+{
+	QMutexLocker locker(&mainMutex_);
+	try
+	{
+		executor_.callVoid("terminate");
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in call to terminate():" << e.what();
+	}
+	const bool hasDroppedTasks = (waitTimeMs > 0) ? wait(waitTimeMs) : tasks_.empty();
+	dropQueue();
+	disabled_= true;
+	return hasDroppedTasks;
+}
+
+
+// static
 QJniObject QAndroidExecutor::getMainThreadLooper()
 {
 	try
@@ -245,6 +256,7 @@ QJniObject QAndroidExecutor::getMainThreadLooper()
 }
 
 
+// public static
 QJniObject QAndroidExecutor::createHandler(const QJniObject & looper)
 {
 	try
@@ -264,6 +276,7 @@ QJniObject QAndroidExecutor::createHandler(const QJniObject & looper)
 }
 
 
+// private
 QJniObject QAndroidExecutor::createExecutor(const QJniObject & handler)
 {
 	try
@@ -287,6 +300,7 @@ QJniObject QAndroidExecutor::createExecutor(const QJniObject & handler)
 }
 
 
+// private static
 void QAndroidExecutor::jcallback(JNIEnv *, jobject, jlong ptr)
 {
 	if (ptr)
@@ -296,18 +310,20 @@ void QAndroidExecutor::jcallback(JNIEnv *, jobject, jlong ptr)
 }
 
 
+// private
 void QAndroidExecutor::callback()
 {
 	try
 	{
 		Task task = nullptr;
 		{
-			QMutexLocker locker(&taskQueueMutex_);
+			QMutexLocker locker(&mainMutex_);
 			if (tasks_.empty())
 			{
 				qCritical() << "Callback called with empty task queue!";
 				return;
 			}
+			// Kudos for C++ committee for no function to move the element out ;)
 			task = tasks_.front();
 			tasks_.pop();
 			if (tasks_.empty())
