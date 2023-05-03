@@ -94,7 +94,7 @@ QAndroidExecutor::~QAndroidExecutor()
 
 bool QAndroidExecutor::isValid() const
 {
-	return !!executor_ && !disabled_;
+	return !!executor_ && !finished_;
 }
 
 
@@ -223,6 +223,11 @@ void QAndroidExecutor::dropQueue()
 bool QAndroidExecutor::finish(int waitTimeMs)
 {
 	QMutexLocker locker(&mainMutex_);
+	if (finished_)
+	{
+		qWarning() << "finish() called twice!";
+		return true;
+	}
 	try
 	{
 		executor_.callVoid("terminate");
@@ -233,7 +238,7 @@ bool QAndroidExecutor::finish(int waitTimeMs)
 	}
 	const bool noDroppedTasks = (waitTimeMs > 0) ? wait(waitTimeMs) : tasks_.empty();
 	dropQueue();
-	disabled_= true;
+	finished_= true;
 	return noDroppedTasks;
 }
 

@@ -100,7 +100,7 @@ private:
 
 private:
 	int exitWaitTimeMs_;
-	std::atomic<bool> disabled_ { false };
+	std::atomic<bool> finished_ { false };
 	QJniObject executor_;
 	mutable QMutex mainMutex_ { QMutex::Recursive };
 	// Protected by mainMutex_, locked if there are pending tasks
