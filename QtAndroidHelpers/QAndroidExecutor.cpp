@@ -98,21 +98,6 @@ bool QAndroidExecutor::isValid() const
 }
 
 
-// private
-void QAndroidExecutor::dropQueue()
-{
-	QMutexLocker locker(&mainMutex_);
-	if (!tasks_.empty())
-	{
-		qDebug() << "Dropping" << tasks_.size() << "pending tasks.";
-		// Kudos to C++ commitee for not adding std::queue::reset() ;)
-		TaskQueue empty;
-		tasks_.swap(empty);
-		hasPendingTasksMutex_.unlock();
-	}
-}
-
-
 bool QAndroidExecutor::isExecutionThread()
 {
 	try
@@ -216,6 +201,21 @@ bool QAndroidExecutor::wait(int waitTimeMs)
 		qCritical() << "wait() should not be called on the execution thread!";
 	}
 	return tasks_.empty();
+}
+
+
+// private
+void QAndroidExecutor::dropQueue()
+{
+	QMutexLocker locker(&mainMutex_);
+	if (!tasks_.empty())
+	{
+		qDebug() << "Dropping" << tasks_.size() << "pending tasks.";
+		// Kudos to C++ commitee for not adding std::queue::reset() ;)
+		TaskQueue empty;
+		tasks_.swap(empty);
+		hasPendingTasksMutex_.unlock();
+	}
 }
 
 
