@@ -183,6 +183,7 @@ bool QAndroidExecutor::wait(int waitTimeMs)
 {
 	QMutexLocker locker(&mainMutex_);
 	// If we're in a broken condition we should not wait for tasks to be executed.
+	// Also, we cannot verify if we're on the execution thread.
 	if (!isValid())
 	{
 		return tasks_.empty();
