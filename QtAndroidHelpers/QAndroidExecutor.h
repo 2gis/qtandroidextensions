@@ -63,11 +63,13 @@ public:
 	bool isCurrentThread();
 	bool isValid() const { return !!executor_; }
 
-	// Post the task to the handler. The task will be executed asynchronously.
+	// Post the task to the handler. Posted tasks will be executed asynchronously
+	// in order of posting.
 	void post(Task && task);
 
 	// Post the task to the handler, or, if we're already on the execution thread
-	// execute it immediately.
+	// execute it immediately. Tasks that are executed from different threads
+	// may be executed out of order.
 	void execute(Task && task);
 
 	// Wait for empty queue for specified time period. Returns true is the queue was
@@ -75,11 +77,13 @@ public:
 	// other thread may post to the queue right after the wait() and it may return
 	// true, but with a new pending task. Waiting is only real useful when you know
 	// no one else is posting.
+	// Will not wait if called on the execution thread because it might cause lock up!
 	bool wait(int timeMs);
 
 	bool wait() { return wait(exitWaitTimeMs_); }
 
 private:
+	void dropQueue();
 	static QJniObject getMainThreadLooper();
 	QJniObject createExecutor(const QJniObject & handler);
 
@@ -90,5 +94,10 @@ private:
 	int exitWaitTimeMs_;
 	QJniObject executor_;
 	mutable QMutex taskQueueMutex_ { QMutex::Recursive };
-	std::queue<Task> tasks_;
+	// Protected by taskQueueMutex_, locked if there are pending tasks
+	// and unlocked otherwise.
+	mutable QMutex hasPendingTasksMutex_ { QMutex::NonRecursive };
+	// Protected by taskQueueMutex_
+	using TaskQueue = std::queue<Task>;
+	TaskQueue tasks_;
 };

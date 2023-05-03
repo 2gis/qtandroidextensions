@@ -37,7 +37,6 @@
 #include <mutex>
 #include <QtCore/QDebug>
 #include <QtCore/QScopedPointer>
-#include <QtCore/QThread>
 
 
 namespace
@@ -89,31 +88,47 @@ QAndroidExecutor::QAndroidExecutor(const QJniObject & handler, int exitWaitTimeM
 
 QAndroidExecutor::~QAndroidExecutor()
 {
-	try
+	if (isValid())
 	{
-		if (isValid())
+		if (exitWaitTimeMs_ > 0)
 		{
-			if (exitWaitTimeMs_ > 0)
+			if (!wait(exitWaitTimeMs_))
 			{
-				if (!wait(exitWaitTimeMs_))
-				{
-					qWarning() << "Failed to finish all tasks in" << exitWaitTimeMs_ << "ms!";
-				}
+				qWarning() << "Failed to finish all tasks in" << exitWaitTimeMs_ << "ms.";
 			}
-			else
+		}
+		else
+		{
+			QMutexLocker locker(&taskQueueMutex_);
+			if (!tasks_.empty())
 			{
-				QMutexLocker locker(&taskQueueMutex_);
-				if (!tasks_.empty())
-				{
-					qWarning() << "Destroying executor with " << tasks_.size() << " pending tasks!";
-				}
+				qWarning() << "Destroying executor with " << tasks_.size() << "pending tasks.";
 			}
+		}
+		try
+		{
 			executor_.callVoid("terminate");
 		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in ~QAndroidExecutor():" << e.what();
+		}
 	}
-	catch (const std::exception & e)
+	// Make sure we will not be destroying a locked mutex
+	dropQueue();
+}
+
+
+void QAndroidExecutor::dropQueue()
+{
+	QMutexLocker locker(&taskQueueMutex_);
+	if (!tasks_.empty())
 	{
-		qCritical() << "Exception in ~QAndroidExecutor():" << e.what();
+		qDebug() << "Dropping" << tasks_.size() << "pending tasks.";
+		// Kudos to C++ commitee for not adding std::queue::reset() ;)
+		TaskQueue empty;
+		tasks_.swap(empty);
+		hasPendingTasksMutex_.unlock();
 	}
 }
 
@@ -147,6 +162,10 @@ void QAndroidExecutor::post(Task && task)
 		}
 		{
 			QMutexLocker locker(&taskQueueMutex_);
+			if (tasks_.empty())
+			{
+				hasPendingTasksMutex_.lock();
+			}
 			tasks_.push(task);
 		}
 		executor_.callVoid("execute");
@@ -185,19 +204,25 @@ void QAndroidExecutor::execute(Task && task)
 
 bool QAndroidExecutor::wait(int timeMs)
 {
-	// TODO: Rewrite using semaphore?
-	for (int i = 0; i < timeMs; ++i)
-	{
-		{
-			QMutexLocker locker(&taskQueueMutex_);
-			if (tasks_.empty())
-			{
-				return true;
-			}
-		}
-		QThread::msleep(1);
-	}
 	QMutexLocker locker(&taskQueueMutex_);
+	// If we're in a broken condition we should not wait for tasks to be executed.
+	if (!isValid())
+	{
+		return tasks_.empty();
+	}
+	// If we do tryLock() on the execution thread we would block it from executing the tasks
+	// and only waste time until timeout.
+	if (!isCurrentThread())
+	{
+		if (!tasks_.empty())
+		{
+			hasPendingTasksMutex_.tryLock(timeMs);
+		}
+	}
+	else
+	{
+		qCritical() << "wait() should not be called on the execution thread!";
+	}
 	return tasks_.empty();
 }
 
@@ -285,6 +310,10 @@ void QAndroidExecutor::callback()
 			}
 			task = tasks_.front();
 			tasks_.pop();
+			if (tasks_.empty())
+			{
+				hasPendingTasksMutex_.unlock();
+			}
 		}
 		if (!task)
 		{
