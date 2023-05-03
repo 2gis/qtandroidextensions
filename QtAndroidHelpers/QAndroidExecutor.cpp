@@ -113,7 +113,7 @@ void QAndroidExecutor::dropQueue()
 }
 
 
-bool QAndroidExecutor::isCurrentThread()
+bool QAndroidExecutor::isExecutionThread()
 {
 	try
 	{
@@ -177,7 +177,7 @@ void QAndroidExecutor::execute(Task && task)
 		{
 			return;
 		}
-		if (isCurrentThread())
+		if (isExecutionThread())
 		{
 			task();
 		}
@@ -204,7 +204,7 @@ bool QAndroidExecutor::wait(int waitTimeMs)
 	}
 	// If we do tryLock() on the execution thread we would block it from executing the tasks
 	// and only waste time until timeout.
-	if (!isCurrentThread())
+	if (!isExecutionThread())
 	{
 		if (!tasks_.empty())
 		{

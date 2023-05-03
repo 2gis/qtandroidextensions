@@ -65,7 +65,7 @@ public:
 	bool isValid() const;
 
 	// Returns true if current thread is the execution thread AND the executor is in valid state.
-	bool isCurrentThread();
+	bool isExecutionThread();
 
 	// Post the task to the handler. Posted tasks will be executed asynchronously
 	// in order of posting.
