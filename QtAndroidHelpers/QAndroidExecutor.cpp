@@ -230,10 +230,10 @@ bool QAndroidExecutor::finish(int waitTimeMs)
 	{
 		qCritical() << "JNI exception in call to terminate():" << e.what();
 	}
-	const bool hasDroppedTasks = (waitTimeMs > 0) ? wait(waitTimeMs) : tasks_.empty();
+	const bool noDroppedTasks = (waitTimeMs > 0) ? wait(waitTimeMs) : tasks_.empty();
 	dropQueue();
 	disabled_= true;
-	return hasDroppedTasks;
+	return noDroppedTasks;
 }
 
 
