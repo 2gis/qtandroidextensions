@@ -194,7 +194,11 @@ bool QAndroidExecutor::wait(int waitTimeMs)
 	{
 		if (!tasks_.empty())
 		{
-			hasPendingTasksMutex_.tryLock(waitTimeMs);
+			if (hasPendingTasksMutex_.tryLock(waitTimeMs))
+			{
+				// The mutexes job is done, do not leave it locked behind
+				hasPendingTasksMutex_.unlock();
+			}
 		}
 	}
 	else
