@@ -273,6 +273,7 @@ QJniObject QAndroidExecutor::createHandler(const QJniObject & looper)
 	{
 		if (!looper)
 		{
+			qWarning() << "Trying to create handler for null looper!";
 			return {};
 		}
 		// Java: new Handler(looper)
@@ -293,6 +294,7 @@ QJniObject QAndroidExecutor::createExecutor(const QJniObject & handler)
 	{
 		if (!handler)
 		{
+			qWarning() << "Trying to create executor for null handler!";
 			return {};
 		}
 		// Java: new HandlerExecutor(ptr, handler)
