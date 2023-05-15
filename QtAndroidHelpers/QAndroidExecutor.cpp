@@ -192,7 +192,7 @@ bool QAndroidExecutor::wait(int waitTimeMs)
 	// and only waste time until timeout.
 	if (!isExecutionThread())
 	{
-		if (!tasks_.empty())
+		if (!tasks_.empty() && waitTimeMs > 0)
 		{
 			if (hasPendingTasksMutex_.tryLock(waitTimeMs))
 			{
