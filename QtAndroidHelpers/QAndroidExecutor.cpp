@@ -226,22 +226,29 @@ void QAndroidExecutor::dropQueue()
 
 bool QAndroidExecutor::finish(int waitTimeMs)
 {
+	// No new tasks can be added while this mutex is locked
 	QMutexLocker locker(&mainMutex_);
 	if (finished_)
 	{
 		qWarning() << "finish() called twice!";
 		return true;
 	}
+	const bool noDroppedTasks = (waitTimeMs > 0) ? wait(waitTimeMs) : tasks_.empty();
+	// Throw away pending tasks still left, if any
+	if (!noDroppedTasks)
+	{
+		dropQueue();
+	}
 	try
 	{
+		// Disable all furher callbacks from the Handler
 		executor_.callVoid("terminate");
 	}
 	catch (const std::exception & e)
 	{
 		qCritical() << "JNI exception in call to terminate():" << e.what();
 	}
-	const bool noDroppedTasks = (waitTimeMs > 0) ? wait(waitTimeMs) : tasks_.empty();
-	dropQueue();
+	// No new tasks can be added after this
 	finished_= true;
 	return noDroppedTasks;
 }
