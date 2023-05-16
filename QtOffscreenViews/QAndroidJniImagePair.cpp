@@ -81,9 +81,7 @@ static QImage::Format qtImageFormatForBitness(int bitness)
 
 
 QAndroidJniImagePair::QAndroidJniImagePair(int bitness)
-	: mBitmap()
-	, mImageOnBitmap()
-	, bitness_(bitness)
+	: bitness_(bitness)
 {
 	dispose();
 }
@@ -111,11 +109,11 @@ void QAndroidJniImagePair::dispose()
 	}
 
 	mImageOnBitmap = QImage(1, 1, qtImageFormatForBitness(bitness_));
-	mBitmap.reset();
+	mBitmap = {};
 }
 
 
-QJniObject * QAndroidJniImagePair::createBitmap(const QSize & size)
+QJniObject QAndroidJniImagePair::createBitmap(const QSize & size)
 {
 	// qDebug()<<"createBitmap:"<<size.width()<<"size.height()"<<size.height()<<"Bits:"<<bitness_;
 	try
@@ -134,7 +132,7 @@ QJniObject * QAndroidJniImagePair::createBitmap(const QSize & size)
 
 			default:
 				qWarning() << "createBitmap: Invalid pixel bit depth:" << bitness_;
-				return 0; // Not throwing an exception
+				return {}; // Not throwing an exception
 		}
 
 		// qDebug()<<"createBitmap: selecting format"<<format_name;
@@ -143,11 +141,11 @@ QJniObject * QAndroidJniImagePair::createBitmap(const QSize & size)
 		if (!fmt)
 		{
 			qWarning() << "createBitmap: failed to get bimap format:" << format_name;
-			return 0; // Not throwing an exception
+			return {}; // Not throwing an exception
 		}
 
 		// qDebug()<<"createBitmap: calling Java createBitmap(). Fmt ="<<fmt.data();
-		QJniObject * result = QJniClass("android/graphics/Bitmap").callStaticParamObject(
+		QJniObject result = QJniClass("android/graphics/Bitmap").callStaticParamObj(
 			"createBitmap", "android/graphics/Bitmap", "IILandroid/graphics/Bitmap$Config;",
 			jint(size.width()), jint(size.height()), fmt.jObject());
 		if (!result)
@@ -155,13 +153,12 @@ QJniObject * QAndroidJniImagePair::createBitmap(const QSize & size)
 			qWarning() << "createBitmap: failed to create bitmap:"
 				<< size.width() << "size.height()" << size.height() << "Bits:" << bitness_;
 		}
-
-		return result;
+		return std::move(result);
 	}
 	catch(QJniBaseException & e)
 	{
 		qCritical() << "Failed to create bitmap:" << e.what();
-		return 0; // Not throwing an exception
+		return {}; // Not throwing an exception
 	}
 }
 
@@ -182,15 +179,14 @@ bool QAndroidJniImagePair::doResize(const QSize & size)
 	QImage::Format format = qtImageFormatForBitness(bitness_);
 
 	// Create new Android bitmap
-	QScopedPointer<QJniObject> newBitmap(createBitmap(size));
+	QJniObject newBitmap(createBitmap(size));
 
-	if (!newBitmap || newBitmap->jObject() == 0)
+	if (!newBitmap)
 	{
-		qCritical("Could not create %dx%d bitmap! bitmap=%p, jbitmap=%p"
-			, size.width()
-			, size.height()
-			, reinterpret_cast<void*>(newBitmap.data())
-			, reinterpret_cast<void*>((newBitmap.data()) ? newBitmap->jObject() : 0));
+		qCritical("Could not create %dx%d bitmap! jbitmap=%p",
+			size.width(),
+			size.height(),
+			reinterpret_cast<void*>(newBitmap.jObject()));
 		dispose();
 		return false;
 	}
@@ -199,7 +195,7 @@ bool QAndroidJniImagePair::doResize(const QSize & size)
 	uint32_t bwidth, bheight, bstride;
 	AndroidBitmapInfo binfo;
 	memset(&binfo, 0, sizeof(binfo)); // Important!
-	int get_info_result = AndroidBitmap_getInfo(jep.env(), newBitmap->jObject(), &binfo);
+	int get_info_result = AndroidBitmap_getInfo(jep.env(), newBitmap.jObject(), &binfo);
 
 	if (get_info_result != 0)
 	{
@@ -255,7 +251,7 @@ bool QAndroidJniImagePair::doResize(const QSize & size)
 	// Lock Android bitmap's pixels so we could create a QImage over it
 	//
 	void * ptr = 0;
-	int lock_pixels_result = AndroidBitmap_lockPixels(jep.env(), newBitmap->jObject(), &ptr);
+	int lock_pixels_result = AndroidBitmap_lockPixels(jep.env(), newBitmap.jObject(), &ptr);
 
 	if (lock_pixels_result != 0)
 	{
@@ -295,7 +291,7 @@ bool QAndroidJniImagePair::doResize(const QSize & size)
 		return false;
 	}
 
-	mBitmap.reset(newBitmap.take());
+	mBitmap = std::move(newBitmap);
 	return true;
 }
 
@@ -401,7 +397,7 @@ void QAndroidJniImagePair::convert32BitImageFromAndroidToQt(QImage & out_image) 
 
 bool QAndroidJniImagePair::isAllocated() const
 {
-	return mBitmap && mBitmap->jObject() != 0 && !mImageOnBitmap.isNull();
+	return mBitmap && !mImageOnBitmap.isNull();
 }
 
 
@@ -452,18 +448,19 @@ bool QAndroidJniImagePair::loadResource(jint res_id)
 		ops.setIntField("inTargetDensity", 0);
 		ops.setIntField("inScreenDensity", 0);
 		QJniClass bitmapfactory("android/graphics/BitmapFactory");
-		QScopedPointer<QJniObject> loadedbitmap(bitmapfactory.callStaticParamObject(
-				"decodeResource",
-				"android/graphics/Bitmap",
-				"Landroid/content/res/Resources;ILandroid/graphics/BitmapFactory$Options;",
-				resources.jObject(),
-				jint(res_id),
-				ops.jObject()));
+		QJniObject loadedbitmap(bitmapfactory.callStaticParamObj(
+			"decodeResource",
+			"android/graphics/Bitmap",
+			"Landroid/content/res/Resources;ILandroid/graphics/BitmapFactory$Options;",
+			resources.jObject(),
+			jint(res_id),
+			ops.jObject()));
 
 		if (loadedbitmap)
 		{
 			// Get size of the decoded Bitmap
-			int w = loadedbitmap->callInt("getWidth"), h = loadedbitmap->callInt("getHeight");
+			int w = loadedbitmap.callInt("getWidth");
+			int h = loadedbitmap.callInt("getHeight");
 			qDebug() << __FUNCTION__ << "Bitmap size is:" << w << "x" << h;
 
 			// Resize our image pair
@@ -477,9 +474,14 @@ bool QAndroidJniImagePair::loadResource(jint res_id)
 
 			// Draw the loaded Bitmap over our Bitmap
 			QJniObject canvas("android/graphics/Canvas", "");
-			canvas.callParamVoid("setBitmap", "Landroid/graphics/Bitmap;", mBitmap->jObject());
-			canvas.callParamVoid("drawBitmap", "Landroid/graphics/Bitmap;FFLandroid/graphics/Paint;",
-								 loadedbitmap->jObject(), jfloat(0), jfloat(0), jobject(0));
+			canvas.callParamVoid("setBitmap", "Landroid/graphics/Bitmap;", mBitmap.jObject());
+			canvas.callParamVoid(
+				"drawBitmap",
+				"Landroid/graphics/Bitmap;FFLandroid/graphics/Paint;",
+				loadedbitmap.jObject(),
+				jfloat(0),
+				jfloat(0),
+				jobject(0));
 
 			return true;
 		}

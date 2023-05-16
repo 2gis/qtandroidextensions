@@ -83,7 +83,7 @@ public:
 	void dispose();
 
 	//! Global Java reference to the Java-side Bitmap.
-	jobject jbitmap(){ return (mBitmap)? mBitmap->jObject(): 0; }
+	jobject jbitmap(){ return mBitmap.jObject(); }
 
 	//! Reference to the const QImage.
 	const QImage & qImage() const { return mImageOnBitmap; }
@@ -148,7 +148,7 @@ protected:
 	 * Create Java-side bitmap of the given size for current bitness_.
 	 * \return Returns JNI object or 0.
 	 */
-	QJniObject * createBitmap(const QSize & size);
+	QJniObject createBitmap(const QSize & size);
 
 	/*!
 	 * After a call to  this function, imageOnBitmap and bitmap have "size" size
@@ -159,7 +159,7 @@ protected:
 	bool doResize(const QSize & size);
 
 private:
-	QScopedPointer<QJniObject> mBitmap;
+	QJniObject mBitmap;
 	QImage mImageOnBitmap;
 	int bitness_;
 };
