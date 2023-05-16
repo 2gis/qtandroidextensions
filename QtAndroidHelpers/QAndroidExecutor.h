@@ -91,7 +91,6 @@ public:
 
 private:
 	void dropQueue();
-	bool wait(int waitTimeMs);
 	static QJniObject getMainThreadLooper();
 	QJniObject createExecutor(const QJniObject & handler);
 
@@ -103,8 +102,7 @@ private:
 	std::atomic<bool> finished_ { false };
 	QJniObject executor_;
 	mutable QMutex mainMutex_ { QMutex::Recursive };
-	// Protected by mainMutex_, locked if there are pending tasks
-	// and unlocked otherwise.
+	// Locked if there are pending tasks and unlocked otherwise.
 	mutable QMutex hasPendingTasksMutex_ { QMutex::NonRecursive };
 	// Protected by mainMutex_
 	using TaskQueue = std::queue<Task>;

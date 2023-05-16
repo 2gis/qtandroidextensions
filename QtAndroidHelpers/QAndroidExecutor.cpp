@@ -88,7 +88,7 @@ QAndroidExecutor::QAndroidExecutor(const QJniObject & handler, int exitWaitTimeM
 
 QAndroidExecutor::~QAndroidExecutor()
 {
-	finish();
+	finish(); // Should not be called with mainMutex_ locked!
 }
 
 
@@ -157,13 +157,14 @@ void QAndroidExecutor::execute(Task && task)
 	}
 	try
 	{
-		QMutexLocker locker(&mainMutex_);
+		QMutexLocker locker(&mainMutex_); // isValid() context
 		if (!isValid())
 		{
 			return;
 		}
 		if (isExecutionThread())
 		{
+			locker.unlock();
 			task();
 		}
 		else
@@ -175,37 +176,6 @@ void QAndroidExecutor::execute(Task && task)
 	{
 		qCritical() << "Exception in execute():" << e.what();
 	}
-}
-
-
-// private
-bool QAndroidExecutor::wait(int waitTimeMs)
-{
-	QMutexLocker locker(&mainMutex_);
-	// If we're in a broken condition we should not wait for tasks to be executed.
-	// Also, we cannot verify if we're on the execution thread.
-	if (!isValid())
-	{
-		return tasks_.empty();
-	}
-	// If we do tryLock() on the execution thread we would block it from executing the tasks
-	// and only waste time until timeout.
-	if (!isExecutionThread())
-	{
-		if (!tasks_.empty() && waitTimeMs > 0)
-		{
-			if (hasPendingTasksMutex_.tryLock(waitTimeMs))
-			{
-				// The mutexes job is done, do not leave it locked behind
-				hasPendingTasksMutex_.unlock();
-			}
-		}
-	}
-	else
-	{
-		qCritical() << "wait() should not be called on the execution thread!";
-	}
-	return tasks_.empty();
 }
 
 
@@ -224,6 +194,7 @@ void QAndroidExecutor::dropQueue()
 }
 
 
+// Should not be called with mainMutex_ locked!
 bool QAndroidExecutor::finish(int waitTimeMs)
 {
 	// No new tasks can be added while this mutex is locked
@@ -233,24 +204,46 @@ bool QAndroidExecutor::finish(int waitTimeMs)
 		qWarning() << "finish() called twice!";
 		return true;
 	}
-	const bool noDroppedTasks = (waitTimeMs > 0) ? wait(waitTimeMs) : tasks_.empty();
+	// No new tasks can be added after this
+	finished_= true;
+	bool tasksLeft = !tasks_.empty();
+	if (waitTimeMs > 0 && executor_)
+	{
+		if (isExecutionThread())
+		{
+			qCritical() << "finish() should not be called with wait time on the execution thread!";
+		}
+		else if (tasksLeft)
+		{
+			// Temporarily unlock to enable callbacks
+			locker.unlock();
+			if (hasPendingTasksMutex_.tryLock(waitTimeMs))
+			{
+				// The mutexes job is done, do not leave it locked behind
+				hasPendingTasksMutex_.unlock();
+			}
+			locker.relock();
+			tasksLeft = !tasks_.empty();
+		}
+	}
 	// Throw away pending tasks still left, if any
-	if (!noDroppedTasks)
+	if (tasksLeft)
 	{
 		dropQueue();
 	}
 	try
 	{
-		// Disable all furher callbacks from the Handler
-		executor_.callVoid("terminate");
+		// Disable all further callbacks from the Handler
+		if (executor_)
+		{
+			executor_.callVoid("terminate");
+		}
 	}
 	catch (const std::exception & e)
 	{
 		qCritical() << "JNI exception in call to terminate():" << e.what();
 	}
-	// No new tasks can be added after this
-	finished_= true;
-	return noDroppedTasks;
+	return !tasksLeft;
 }
 
 
@@ -336,6 +329,7 @@ void QAndroidExecutor::callback()
 	{
 		Task task = nullptr;
 		{
+			// Lock only while popping a task from the queue
 			QMutexLocker locker(&mainMutex_);
 			if (tasks_.empty())
 			{
