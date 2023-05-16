@@ -139,35 +139,31 @@ jobject JNICALL getActivityNoThrow(JNIEnv * env, jobject jo)
 
 
 
-static QScopedPointer<QJniObject> custom_context_;
+static QJniObject custom_context_;
 
 
 void setCustomContext(jobject context)
 {
 	if (context)
 	{
-		custom_context_.reset(new QJniObject(context, true));
+		custom_context_ = QJniObject(context, true);
 	}
 	else
 	{
-		custom_context_.reset();
+		custom_context_ = {};
 	}
 }
 
 
 jobject JNICALL getCustomContext(JNIEnv *, jobject)
 {
-	if (custom_context_)
-	{
-		return custom_context_->jObject();
-	}
-	return 0;
+	return custom_context_.jObject();
 }
 
 
 bool customContextSet()
 {
-	return (custom_context_)? true: false;
+	return !!custom_context_;
 }
 
 
