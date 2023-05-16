@@ -55,27 +55,27 @@ QGeoPositionInfo get()
 				qCritical() << "No Android Context!";
 				return result;
 			}
-			const QScopedPointer<QJniObject> location_manager(jcontext.callParamObject(
+			QJniObject location_manager(jcontext.callParamObj(
 				"getSystemService"
 				, "java/lang/Object" // "android/location/LocationManager"
 				, "Ljava/lang/String;"
 				, QJniLocalRef(QStringLiteral("location")).jObject()));
-			if (!location_manager || !location_manager->jObject())
+			if (!location_manager)
 			{
 				qWarning() << "No LocationManager!";
 				return result;
 			}
-			const QScopedPointer<QJniObject> location(location_manager->callParamObject(
+			QJniObject location(location_manager.callParamObj(
 				"getLastKnownLocation"
 				, "android/location/Location"
 				, "Ljava/lang/String;"
 				, QJniLocalRef(QStringLiteral("passive")).jObject()));
-			if (location && location->jObject())
+			if (location)
 			{
-				const jdouble lon = location->callDouble("getLongitude");
-				const jdouble lat = location->callDouble("getLatitude");
-				const jfloat accuracy = location->callFloat("getAccuracy");
-				const jlong time  = location->callLong("getTime");
+				const jdouble lon = location.callDouble("getLongitude");
+				const jdouble lat = location.callDouble("getLatitude");
+				const jfloat accuracy = location.callFloat("getAccuracy");
+				const jlong time  = location.callLong("getTime");
 				result.setCoordinate(QGeoCoordinate(static_cast<double>(lat), static_cast<double>(lon)));
 				result.setTimestamp(QDateTime::fromMSecsSinceEpoch(static_cast<qint64>(time), Qt::TimeSpec::UTC));
 				result.setAttribute(QGeoPositionInfo::Attribute::HorizontalAccuracy, static_cast<qreal>(accuracy));

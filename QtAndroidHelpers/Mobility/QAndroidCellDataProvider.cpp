@@ -204,14 +204,12 @@ QList<Mobility::QAndroidCellDataProvider::SimInfo> Mobility::QAndroidCellDataPro
 		QAndroidQPAPluginGap::Context activity;
 
 		javaFullClassName.append("$SimInfo");
-		QJniObject * simInfo = du.callStaticParamObject("getSimInfo", javaFullClassName, "Landroid/content/Context;", activity.jObject());
+		QJniObject simInfo(du.callStaticParamObj("getSimInfo", javaFullClassName, "Landroid/content/Context;", activity.jObject()));
 
-		if(simInfo != nullptr)
+		if (simInfo)
 		{
-			list.simCountryIso_ = simInfo->getStringField("mSimCountryIso");
-			list.simOperatorName_ = simInfo->getStringField("mSimOperatorName");
-
-			delete simInfo;
+			list.simCountryIso_ = simInfo.getStringField("mSimCountryIso");
+			list.simOperatorName_ = simInfo.getStringField("mSimOperatorName");
 		}
 	}
 	catch (const std::exception & ex)

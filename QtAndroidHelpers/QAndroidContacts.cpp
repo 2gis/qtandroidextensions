@@ -44,68 +44,68 @@
 
 namespace {
 
-QVector<Email> toEmailList(QJniObject * jniEmailList)
+QVector<Email> toEmailList(QJniObject & jniEmailList)
 {
 	QVector<Email> emailList;
 
-	if (!jniEmailList || !jniEmailList->jObject())
+	if (!jniEmailList)
 	{
 		return emailList;
 	}
 
-	const int emailListSize = jniEmailList->callParamInt("size", "");
+	const int emailListSize = jniEmailList.callParamInt("size", "");
 	emailList.reserve(emailListSize);
 
 	for (int emailIdx = 0; emailIdx < emailListSize; ++emailIdx)
 	{
-		QScopedPointer<QJniObject> jniEmail(jniEmailList->callParamObject(
+		QJniObject jniEmail(jniEmailList.callParamObj(
 			"get",
 			"java/lang/Object",
 			"I",
 			emailIdx));
 
-		if (!jniEmail || !jniEmail->jObject())
+		if (!jniEmail)
 		{
 			continue;
 		}
 
 		emailList.append(Email{
-			jniEmail->callString("getLabel"),
-			jniEmail->callString("getAddress"),
+			jniEmail.callString("getLabel"),
+			jniEmail.callString("getAddress"),
 		});
 	}
 
 	return emailList;
 }
 
-QVector<Phone> toPhoneList(QJniObject * jniPhoneList)
+QVector<Phone> toPhoneList(QJniObject & jniPhoneList)
 {
 	QVector<Phone> phoneList;
 
-	if (!jniPhoneList || !jniPhoneList->jObject())
+	if (!jniPhoneList)
 	{
 		return phoneList;
 	}
 
-	const int phoneListSize = jniPhoneList->callParamInt("size", "");
+	const int phoneListSize = jniPhoneList.callParamInt("size", "");
 	phoneList.reserve(phoneListSize);
 
 	for (int phoneIdx = 0; phoneIdx < phoneListSize; ++phoneIdx)
 	{
-		QScopedPointer<QJniObject> jniPhone(jniPhoneList->callParamObject(
+		QJniObject jniPhone(jniPhoneList.callParamObj(
 			"get",
 			"java/lang/Object",
 			"I",
 			phoneIdx));
 
-		if (!jniPhone || !jniPhone->jObject())
+		if (!jniPhone)
 		{
 			continue;
 		}
 
 		phoneList.append(Phone{
-			jniPhone->callString("getLabel"),
-			jniPhone->callString("getNumber"),
+			jniPhone.callString("getLabel"),
+			jniPhone.callString("getNumber"),
 		});
 	}
 
@@ -131,25 +131,25 @@ Q_DECL_EXPORT void JNICALL Java_ContactsHelper_contactsReceived(JNIEnv * env, jo
 		{
 			try
 			{
-				QScopedPointer<QJniObject> jniContact{
-					jniContactList.callParamObject("get", "java/lang/Object", "I", contactIdx)};
+				QJniObject jniContact{
+					jniContactList.callParamObj("get", "java/lang/Object", "I", contactIdx)};
 
-				if (!jniContact || !jniContact->jObject())
+				if (!jniContact)
 				{
 					continue;
 				}
 
-				QScopedPointer<QJniObject> jniEmailList{
-					jniContact->callObject("getEmails", "java/util/List")};
+				QJniObject jniEmailList{
+					jniContact.callObj("getEmails", "java/util/List")};
 
-				QScopedPointer<QJniObject> jniPhoneList{
-					jniContact->callObject("getPhones", "java/util/List")};
+				QJniObject jniPhoneList{
+					jniContact.callObj("getPhones", "java/util/List")};
 
 				contactList.append(Contact{
-					jniContact->callString("getId"),
-					jniContact->callString("getFullName"),
-					toEmailList(jniEmailList.data()),
-					toPhoneList(jniPhoneList.data()),
+					jniContact.callString("getId"),
+					jniContact.callString("getFullName"),
+					toEmailList(jniEmailList),
+					toPhoneList(jniPhoneList),
 				});
 			}
 			catch (const std::exception & e)

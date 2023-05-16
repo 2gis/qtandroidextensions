@@ -74,24 +74,24 @@ int getSurfaceRotation()
 	try
 	{
 		static QMutex s_mutex;
-		static QScopedPointer<QJniObject> s_display;
+		static QJniObject s_display;
 		QMutexLocker locker(&s_mutex);
-		if (!s_display || !s_display->jObject())
+		if (!s_display)
 		{
-			QScopedPointer<QJniObject> wm(QAndroidQPAPluginGap::Context().callObject(
+			QJniObject wm(QAndroidQPAPluginGap::Context().callObj(
 				"getWindowManager"
 				, "android/view/WindowManager"));
-			if (!wm || !wm->jObject())
+			if (!wm)
 			{
 				throw QJniBaseException("No WindowManager.");
 			}
-			s_display.reset(wm->callObject("getDefaultDisplay", "android/view/Display"));
-			if (!s_display || !s_display->jObject())
+			s_display = wm.callObj("getDefaultDisplay", "android/view/Display");
+			if (!s_display)
 			{
 				throw QJniBaseException("No default Display.");
 			}
 		}
-		rotation = s_display->callInt("getRotation");
+		rotation = s_display.callInt("getRotation");
 	}
 	catch (const std::exception & e)
 	{
@@ -205,7 +205,7 @@ LockerInfoPtr QAndroidScreenOrientationHelper::lockRequestedOrientation(int orie
 	{
 		if (isJniReady())
 		{
-			return LockerInfoPtr(jni()->callParamObject(
+			return LockerInfoPtr::create(jni()->callParamObj(
 				"lockOrientation",
 				c_locker_helper_class,
 				"I",

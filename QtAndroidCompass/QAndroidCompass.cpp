@@ -65,7 +65,7 @@ namespace {
 		try 
 		{
 			QAndroidQPAPluginGap::Context context;
-			const QScopedPointer<QJniObject> sensorManager(context.callParamObject(
+			QJniObject sensorManager(context.callParamObj(
 				"getSystemService",
 				"java/lang/Object",
 				"Ljava/lang/String;",
@@ -76,7 +76,7 @@ namespace {
 			{
 				const jint TYPE_ROTATION_VECTOR = QJniClass("android/hardware/Sensor").getStaticIntField("TYPE_ROTATION_VECTOR");
 
-				const QScopedPointer<QJniObject> sensor(sensorManager->callParamObject(
+				const QJniObject sensor(sensorManager.callParamObj(
 					"getDefaultSensor", 
 					"Landroid/hardware/Sensor;",
 					"I",

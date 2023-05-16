@@ -45,13 +45,13 @@ QAndroidConfiguration::QAndroidConfiguration(QObject * parent)
 {
 	QAndroidQPAPluginGap::Context activity;
 	int screenLayout = ANDROID_SCREENLAYOUT_SIZE_NORMAL;
-	QScopedPointer<QJniObject> resources(activity.callObject("getResources", "android/content/res/Resources"));
+	QJniObject resources(activity.callObj("getResources", "android/content/res/Resources"));
 	if (resources)
 	{
-		QScopedPointer<QJniObject> configuration(resources->callObject("getConfiguration", "android/content/res/Configuration"));
+		QJniObject configuration(resources.callObj("getConfiguration", "android/content/res/Configuration"));
 		if (configuration)
 		{
-			screenLayout = configuration->getIntField("screenLayout") & ANDROID_SCREENLAYOUT_SIZE_MASK;
+			screenLayout = configuration.getIntField("screenLayout") & ANDROID_SCREENLAYOUT_SIZE_MASK;
 		}
 		else
 		{
@@ -60,7 +60,7 @@ QAndroidConfiguration::QAndroidConfiguration(QObject * parent)
 
 		try
 		{
-			jint statusBarId = resources->callParamInt(
+			jint statusBarId = resources.callParamInt(
 				"getIdentifier",
 				"Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;",
 				QJniLocalRef("status_bar_height").jObject(),
@@ -68,7 +68,7 @@ QAndroidConfiguration::QAndroidConfiguration(QObject * parent)
 				QJniLocalRef("android").jObject());
 			if (statusBarId > 0)
 			{
-				status_bar_height_ = resources->callParamInt(
+				status_bar_height_ = resources.callParamInt(
 					"getDimensionPixelSize",
 					"I",
 					statusBarId);
@@ -76,7 +76,7 @@ QAndroidConfiguration::QAndroidConfiguration(QObject * parent)
 		}
 		catch(const std::exception & e)
 		{
-			qWarning() << __FUNCTION__ << "QAndroidConfiguration exception:" << e.what();
+			qWarning() << "QAndroidConfiguration exception:" << e.what();
 		}
 	}
 	else
@@ -107,8 +107,8 @@ QAndroidConfiguration::QAndroidConfiguration(QObject * parent)
 
 	//! \todo Add reading of more fields here.
 
-	qDebug()<<"QAndroidConfiguration: screen layout is"<<screenLayout<<"=>"<<screen_size_<<"("<<screenSizeName()<<")"
-			<<", a tablet size:"<<isTablet();
+	qDebug() << "QAndroidConfiguration: screen layout is" << screenLayout << "=>" <<
+		screen_size_ << "(" << screenSizeName() << ")" << ", a tablet size:" << isTablet();
 }
 
 void QAndroidConfiguration::preloadJavaClasses()

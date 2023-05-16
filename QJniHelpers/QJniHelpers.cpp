@@ -353,10 +353,7 @@ JNIEnv * QJniEnvPtr::env() const
 bool QJniEnvPtr::preloadClass(const char * class_name)
 {
 	// Make sure the variable is not thrown away by linker
-	if (!(&g_ClassUnloader))
-	{
-		qFatal("Linking error?");
-	}
+	(void*)(&g_ClassUnloader);
 	checkEnv();
 	if (!class_name || !*class_name) {
 		qWarning("Null class name in preloadClass!");

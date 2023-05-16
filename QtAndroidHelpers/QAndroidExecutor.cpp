@@ -252,11 +252,8 @@ QJniObject QAndroidExecutor::getMainThreadLooper()
 {
 	try
 	{
-		// TODO: Rewrite to non-pointer return function later
 		// Java: context.getMainLooper()
-		const QScopedPointer<QJniObject> looper(
-			QAndroidQPAPluginGap::Context().callObject("getMainLooper", "android/os/Looper"));
-		return (looper) ? *looper : QJniObject{};
+		return QAndroidQPAPluginGap::Context().callObj("getMainLooper", "android/os/Looper");
 	}
 	catch (const std::exception & e)
 	{

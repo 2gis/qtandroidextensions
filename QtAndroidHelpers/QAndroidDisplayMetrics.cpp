@@ -182,42 +182,42 @@ static float guessRealisticHardwareDpi(float xdpi, float ydpi, float logicalDpi)
 }
 
 
-std::unique_ptr<QJniObject> QAndroidDisplayMetrics::getWindowManager(QJniObject * custom_context)
+QJniObject QAndroidDisplayMetrics::getWindowManager(QJniObject custom_context)
 {
-	std::unique_ptr<QJniObject> windowmanager;
+	QJniObject windowmanager;
 	try
 	{
-		if (!QAndroidQPAPluginGap::customContextSet() && (!custom_context || !*custom_context))
+		// Not in Service and no custom context -> we're in QtActivity.
+		if (!QAndroidQPAPluginGap::customContextSet() && !custom_context)
 		{
 			//  Works only in Activity, gets its local window manager.
-			windowmanager = std::unique_ptr<QJniObject>(QAndroidQPAPluginGap::Context().callObject(
+			windowmanager = QAndroidQPAPluginGap::Context().callObj(
 				"getWindowManager",
-				"android/view/WindowManager"));
+				"android/view/WindowManager");
 		}
 		else
 		{
 			// Works in any Context. For Service gets system window manager.
-			QJniObject * context = nullptr;
-			QScopedPointer<QJniObject> default_context;
-			if (custom_context && *custom_context)
+			QJniObject context = (custom_context)
+				? custom_context
+				: QAndroidQPAPluginGap::Context();
+			if (!context)
 			{
-				context = custom_context;
+				qWarning() << "getWindowManager: no context; custom context passed:"
+					<< !!custom_context;
 			}
 			else
 			{
-				default_context.reset(new QAndroidQPAPluginGap::Context());
-				context = default_context.data();
+				windowmanager = context.callParamObj(
+					"getSystemService",
+					"Ljava/lang/Object;",
+					"Ljava/lang/String;",
+					QJniLocalRef(QStringLiteral("window")).jObject());
 			}
-			windowmanager = std::unique_ptr<QJniObject>(context->callParamObject(
-				"getSystemService",
-				"Ljava/lang/Object;",
-				"Ljava/lang/String;",
-				QJniLocalRef(QStringLiteral("window")).jObject()));
-			if (!windowmanager || !windowmanager->jObject())
-			{
-				qCritical() << "Could not get WindowManager";
-				return {};
-			}
+		}
+		if (!windowmanager)
+		{
+			qCritical() << "getWindowManager: could not get WindowManager";
 		}
 	}
 	catch (const std::exception & e)
@@ -228,19 +228,19 @@ std::unique_ptr<QJniObject> QAndroidDisplayMetrics::getWindowManager(QJniObject 
 }
 
 
-std::unique_ptr<QJniObject> QAndroidDisplayMetrics::getDefaultDisplay(QJniObject * custom_context)
+QJniObject QAndroidDisplayMetrics::getDefaultDisplay(QJniObject custom_context)
 {
-	std::unique_ptr<QJniObject> window_manager = getWindowManager(custom_context);
+	QJniObject window_manager = getWindowManager(std::move(custom_context));
 	if (!window_manager)
 	{
 		return {};
 	}
 	try
 	{
-		std::unique_ptr<QJniObject> result(window_manager->callObject(
+		QJniObject result(window_manager.callObj(
 			"getDefaultDisplay",
 			"android/view/Display"));
-		if (!result || !result->jObject())
+		if (!result)
 		{
 			qCritical() << "Could not get default Display";
 			return {};
@@ -258,7 +258,7 @@ std::unique_ptr<QJniObject> QAndroidDisplayMetrics::getDefaultDisplay(QJniObject
 QAndroidDisplayMetrics::QAndroidDisplayMetrics(
 		QObject * parent,
 		QAndroidDisplayMetrics::IntermediateDensities allow_intermediate_densities,
-		QJniObject * custom_context)
+		QJniObject custom_context)
 	: QObject(parent)
 	, density_(1.0f)
 	, densityDpi_(160)
@@ -278,11 +278,11 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(
 	, themeFromHardwareDpi_(ThemeMDPI)
 	, refreshRate_(0.0f)
 {
-	if (std::unique_ptr<QJniObject> display = getDefaultDisplay(custom_context))
+	if (QJniObject display = getDefaultDisplay(std::move(custom_context)))
 	{
 		QJniObject metrics("android/util/DisplayMetrics", "");
 		QJniObject point("android/graphics/Point", "");
-		display->callParamVoid("getMetrics", "Landroid/util/DisplayMetrics;", metrics.jObject());
+		display.callParamVoid("getMetrics", "Landroid/util/DisplayMetrics;", metrics.jObject());
 
 		density_ = metrics.getFloatField("density");
 		densityDpi_ = metrics.getIntField("densityDpi");
@@ -292,11 +292,11 @@ QAndroidDisplayMetrics::QAndroidDisplayMetrics(
 		widthPixels_ = metrics.getIntField("widthPixels");
 		heightPixels_ = metrics.getIntField("heightPixels");
 
-		display->callParamVoid("getRealSize", "Landroid/graphics/Point;", point.jObject());
+		display.callParamVoid("getRealSize", "Landroid/graphics/Point;", point.jObject());
 		realWidthPixels_ = point.getIntField("x");
 		realHeightPixels_ = point.getIntField("y");
 
-		refreshRate_ = display->callFloat("getRefreshRate");
+		refreshRate_ = display.callFloat("getRefreshRate");
 	}
 
 	realisticPhysicalDpi_ = guessRealisticHardwareDpi(
@@ -370,13 +370,13 @@ float QAndroidDisplayMetrics::fontScale()
 {
 	jfloat font_scale = 1.0f;
 	QAndroidQPAPluginGap::Context context;
-	QScopedPointer<QJniObject> resources(context.callObject("getResources", "android/content/res/Resources"));
+	QJniObject resources(context.callObj("getResources", "android/content/res/Resources"));
 	if (resources)
 	{
-		QScopedPointer<QJniObject> configuration(resources->callObject("getConfiguration", "android/content/res/Configuration"));
+		QJniObject configuration(resources.callObj("getConfiguration", "android/content/res/Configuration"));
 		if (configuration)
 		{
-			font_scale = configuration->getFloatField("fontScale");
+			font_scale = configuration.getFloatField("fontScale");
 		}
 		else
 		{
@@ -391,15 +391,15 @@ float QAndroidDisplayMetrics::fontScale()
 }
 
 
-float QAndroidDisplayMetrics::getRefreshRate(QJniObject * custom_context)
+float QAndroidDisplayMetrics::getRefreshRate(QJniObject custom_context)
 {
 	if (QAndroidQPAPluginGap::apiLevel() >= 23) // Android >= 6
 	{
 		try
 		{
-			if (auto display = getDefaultDisplay(custom_context))
+			if (auto display = getDefaultDisplay(std::move(custom_context)))
 			{
-				return static_cast<float>(display->callFloat("getRefreshRate"));
+				return static_cast<float>(display.callFloat("getRefreshRate"));
 			}
 		}
 		catch (const std::exception & e)
@@ -420,10 +420,9 @@ std::vector<float> QAndroidDisplayMetrics::getAlternativeRefreshRates(QJniObject
 	}
 	try
 	{
-		if (auto array =std::unique_ptr<QJniObject>(
-			mode.callObject("getAlternativeRefreshRates", "[F")))
+		if (auto array = mode.callObj("getAlternativeRefreshRates", "[F"))
 		{
-			for (const auto r: QJniEnvPtr().convert(static_cast<jfloatArray>(array->jObject())))
+			for (const auto r: QJniEnvPtr().convert(static_cast<jfloatArray>(array.jObject())))
 			{
 				result.push_back(static_cast<float>(r));
 			}
@@ -438,7 +437,7 @@ std::vector<float> QAndroidDisplayMetrics::getAlternativeRefreshRates(QJniObject
 
 
 std::vector<float>
-QAndroidDisplayMetrics::getAlternativeRefreshRatesForCurrentMode(QJniObject * custom_context)
+QAndroidDisplayMetrics::getAlternativeRefreshRatesForCurrentMode(QJniObject custom_context)
 {
 	std::vector<float> result;
 	if (QAndroidQPAPluginGap::apiLevel() < 31) // Android < 12
@@ -447,17 +446,16 @@ QAndroidDisplayMetrics::getAlternativeRefreshRatesForCurrentMode(QJniObject * cu
 	}
 	try
 	{
-		if (auto display = getDefaultDisplay(custom_context))
+		if (auto display = getDefaultDisplay(std::move(custom_context)))
 		{
-			if (!*display)
+			if (!display)
 			{
 				qWarning() << "Null Display";
 				return result;
 			}
-			if (auto mode = std::unique_ptr<QJniObject>(
-				display->callObject("getMode", "android/view/Display$Mode")))
+			if (auto mode = display.callObj("getMode", "android/view/Display$Mode"))
 			{
-				result = getAlternativeRefreshRates(*mode);
+				result = getAlternativeRefreshRates(mode);
 			}
 		}
 	}
@@ -469,7 +467,7 @@ QAndroidDisplayMetrics::getAlternativeRefreshRatesForCurrentMode(QJniObject * cu
 }
 
 
-std::vector<float> QAndroidDisplayMetrics::getSupportedRefreshRates(QJniObject * custom_context)
+std::vector<float> QAndroidDisplayMetrics::getSupportedRefreshRates(QJniObject custom_context)
 {
 	std::vector<float> result;
 	if (QAndroidQPAPluginGap::apiLevel() < 21) // Android < 5.0
@@ -478,18 +476,17 @@ std::vector<float> QAndroidDisplayMetrics::getSupportedRefreshRates(QJniObject *
 	}
 	try
 	{
-		if (auto display = getDefaultDisplay(custom_context))
+		if (auto display = getDefaultDisplay(std::move(custom_context)))
 		{
-			if (!*display)
+			if (!display)
 			{
 				qWarning() << "Null Display";
 				return result;
 			}
-			if (auto array = std::unique_ptr<QJniObject>(
-				display->callObject("getSupportedRefreshRates", "[F")))
+			if (auto array = display.callObj("getSupportedRefreshRates", "[F"))
 			{
 				for (const auto r:
-					 QJniEnvPtr().convert(static_cast<jfloatArray>(array->jObject())))
+					 QJniEnvPtr().convert(static_cast<jfloatArray>(array.jObject())))
 				{
 					result.push_back(static_cast<float>(r));
 				}
@@ -505,7 +502,7 @@ std::vector<float> QAndroidDisplayMetrics::getSupportedRefreshRates(QJniObject *
 
 
 std::vector<QAndroidDisplayMetrics::Mode>
-QAndroidDisplayMetrics::getSupportedModes(QJniObject * custom_context)
+QAndroidDisplayMetrics::getSupportedModes(QJniObject custom_context)
 {
 	std::vector<Mode> result;
 	if (QAndroidQPAPluginGap::apiLevel() < 23) // Android < 6.0
@@ -514,17 +511,16 @@ QAndroidDisplayMetrics::getSupportedModes(QJniObject * custom_context)
 	}
 	try
 	{
-		if (auto display = getDefaultDisplay(custom_context))
+		if (auto display = getDefaultDisplay(std::move(custom_context)))
 		{
-			if (!*display)
+			if (!display)
 			{
 				qWarning() << "Null Display";
 				return result;
 			}
-			if (auto array = std::unique_ptr<QJniObject>(
-				display->callObject("getSupportedModes", "[Landroid/view/Display$Mode;")))
+			if (auto array = display.callObj("getSupportedModes", "[Landroid/view/Display$Mode;"))
 			{
-				auto modes = QJniEnvPtr().convert(static_cast<jobjectArray>(array->jObject()));
+				auto modes = QJniEnvPtr().convert(static_cast<jobjectArray>(array.jObject()));
 				for (auto & m: modes)
 				{
 					result.emplace_back(
@@ -545,7 +541,7 @@ QAndroidDisplayMetrics::getSupportedModes(QJniObject * custom_context)
 }
 
 
-std::optional<int> QAndroidDisplayMetrics::getCurrentModeId(QJniObject * custom_context)
+std::optional<int> QAndroidDisplayMetrics::getCurrentModeId(QJniObject custom_context)
 {
 	std::optional<int> result;
 	if (QAndroidQPAPluginGap::apiLevel() < 23) // Android < 6
@@ -554,20 +550,16 @@ std::optional<int> QAndroidDisplayMetrics::getCurrentModeId(QJniObject * custom_
 	}
 	try
 	{
-		if (auto display = getDefaultDisplay(custom_context))
+		if (auto display = getDefaultDisplay(std::move(custom_context)))
 		{
-			if (!*display)
+			if (!display)
 			{
 				qWarning() << "Null Display";
 				return result;
 			}
-			if (auto mode = std::unique_ptr<QJniObject>(
-				display->callObject("getMode", "android/view/Display$Mode")))
+			if (auto mode = display.callObj("getMode", "android/view/Display$Mode"))
 			{
-				if (*mode)
-				{
-					result = mode->callInt("getModeId");
-				}
+				result = mode.callInt("getModeId");
 			}
 		}
 	}

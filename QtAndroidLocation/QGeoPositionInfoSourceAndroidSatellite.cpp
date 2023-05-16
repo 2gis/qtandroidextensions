@@ -143,16 +143,16 @@ QGeoPositionInfo QGeoPositionInfoSourceAndroidSatellite::lastKnownPosition(bool 
 	{
 		if (isJniReady())
 		{
-			QScopedPointer<QJniObject> jlocation(
-				jni()->callParamObject(
+			QJniObject jlocation(
+				jni()->callParamObj(
 					"lastKnownPosition",
 					"Landroid/location/Location;",
 					"Z",
 					jboolean(fromSatellitePositioningMethodsOnly)));
 
-			if (jlocation && jlocation->jObject())
+			if (jlocation)
 			{
-				info = positionInfoFromJavaLocation(jlocation->jObject());
+				info = positionInfoFromJavaLocation(jlocation.jObject());
 			}
 		}
 	}

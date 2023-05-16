@@ -122,19 +122,19 @@ public:
 	};
 
 
-	static std::unique_ptr<QJniObject> getWindowManager(QJniObject * custom_context = nullptr);
-	static std::unique_ptr<QJniObject> getDefaultDisplay(QJniObject * custom_context = nullptr);
+	static QJniObject getWindowManager(QJniObject custom_context = {});
+	static QJniObject getDefaultDisplay(QJniObject custom_context = {});
 
 	// Get actual refresh rate (will return 0 if it can't be determined).
-	static float getRefreshRate(QJniObject * custom_context = nullptr);
+	static float getRefreshRate(QJniObject custom_context = {});
 	// Get list of refresh rates for seamless switching in current display mode (Android 12+,
 	// device / mode must support seamless switching).
 	static std::vector<float> getAlternativeRefreshRates(QJniObject & mode);
-	static std::vector<float> getAlternativeRefreshRatesForCurrentMode(QJniObject * custom_context = nullptr);
+	static std::vector<float> getAlternativeRefreshRatesForCurrentMode(QJniObject custom_context = {});
 	// Get list of refresh rates supported by the device.
 	// The function is deprecated (API 21-22) but on some devices may give more information than
 	// newer getSupportedModes().
-	static std::vector<float> getSupportedRefreshRates(QJniObject * custom_context = nullptr);
+	static std::vector<float> getSupportedRefreshRates(QJniObject custom_context = {});
 
 	struct Mode
 	{
@@ -153,8 +153,8 @@ public:
 		{
 		}
 	};
-	static std::vector<Mode> getSupportedModes(QJniObject * custom_context = nullptr);
-	static std::optional<int> getCurrentModeId(QJniObject * custom_context = nullptr);
+	static std::vector<Mode> getSupportedModes(QJniObject custom_context = {});
+	static std::optional<int> getCurrentModeId(QJniObject custom_context = {});
 
 
 	static float densityFromTheme(QAndroidDisplayMetrics::Theme theme);
@@ -173,7 +173,7 @@ public:
 	QAndroidDisplayMetrics(
 		QObject * parent = 0,
 		IntermediateDensities allow_intermediate_densities = IntermediateAll,
-		QJniObject * custom_context = nullptr);
+		QJniObject custom_context = {});
 
 	static void preloadJavaClasses();
 

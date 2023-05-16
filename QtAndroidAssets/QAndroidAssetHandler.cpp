@@ -42,12 +42,11 @@ QTANDROIDASSETS_EXPORT void installQAndroidAssetHandler(QJniObject & context)
 	static QScopedPointer<QObject> manager;
 	if (!manager)
 	{
-		QScopedPointer<QJniObject> assetmanager(context.callObject("getAssets", "android/content/res/AssetManager"));
-
+		QJniObject assetmanager(context.callObj("getAssets", "android/content/res/AssetManager"));
 		if (assetmanager)
 		{
 			QJniEnvPtr jep;
-			AAssetManager * assetManager = AAssetManager_fromJava(jep.env(), assetmanager->jObject());
+			AAssetManager * assetManager = AAssetManager_fromJava(jep.env(), assetmanager.jObject());
 			manager.reset(new QtAndroidAssets::AndroidAssetsFileEngineHandler(assetManager));
 		}
 		else
