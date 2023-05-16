@@ -15,6 +15,12 @@ set(SRC_LIST
     TJniObjectLinker.h
 )
 
+option(QTANDROIDEXTENSIONS_NO_DEPRECATES "Do not compile deprecated interfaces" OFF)
+
+if (QTANDROIDEXTENSIONS_NO_DEPRECATES)
+    add_definitions(-DQTANDROIDEXTENSIONS_NO_DEPRECATES)
+endif (QTANDROIDEXTENSIONS_NO_DEPRECATES)
+
 if (ANDROID)
     add_library(${MODULE_NAME} STATIC ${SRC_LIST})
     add_library(${PROJECT_NAME}::${MODULE_NAME} ALIAS ${MODULE_NAME})

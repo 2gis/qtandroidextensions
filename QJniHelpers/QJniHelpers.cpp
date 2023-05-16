@@ -168,6 +168,8 @@ bool classObjectMayHaveNullClass(const char * class_name)
 }
 
 
+#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
+
 // Simulate pre-C++14 object return behaviour for deprecated backward compatibility functions
 QJniObject * legacyWrapToHeap(QJniObject && stackObject)
 {
@@ -177,6 +179,8 @@ QJniObject * legacyWrapToHeap(QJniObject && stackObject)
 	}
 	return new QJniObject(std::move(stackObject));
 }
+
+#endif
 
 } // anonymous namespace
 
@@ -353,7 +357,7 @@ JNIEnv * QJniEnvPtr::env() const
 bool QJniEnvPtr::preloadClass(const char * class_name)
 {
 	// Make sure the variable is not thrown away by linker
-	(void*)(&g_ClassUnloader);
+	Q_UNUSED((void*)(&g_ClassUnloader));
 	checkEnv();
 	if (!class_name || !*class_name) {
 		qWarning("Null class name in preloadClass!");
@@ -1119,11 +1123,12 @@ QString QJniClass::callStaticString(const char *method_name)
 }
 
 
-// deprecated
+#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
 QJniObject * QJniClass::getStaticObjectField(const char * field_name, const char * objname)
 {
 	return legacyWrapToHeap(getStaticObjField(field_name, objname));
 }
+#endif
 
 
 QJniObject QJniClass::getStaticObjField(const char * field_name, const char * objname)
@@ -1215,11 +1220,12 @@ bool QJniClass::getStaticBooleanField(const char * field_name)
 }
 
 
-// deprecated
+#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
 QJniObject * QJniClass::callStaticObject(const char * method_name, const char * objname)
 {
 	return legacyWrapToHeap(callStaticObj(method_name, objname));
 }
+#endif
 
 
 QJniObject QJniClass::callStaticObj(const char * method_name, const char * objname)
@@ -1260,7 +1266,7 @@ QJniObject QJniClass::callStaticObj(const char * method_name, const char * objna
 }
 
 
-// deprecated
+#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
 QJniObject * QJniClass::callStaticParamObject(const char * method_name, const char * objname, const char * param_signature, ...)
 {
 	VERBOSE(qWarning("void QJniClass(%p)::callStaticParamObject(\"%s\", \"%s\", \"%s\"...)", reinterpret_cast<void*>(this), method_name, objname, param_signature));
@@ -1298,6 +1304,7 @@ QJniObject * QJniClass::callStaticParamObject(const char * method_name, const ch
 	}
 	return new QJniObject(jret, true, objname);
 }
+#endif
 
 
 QJniObject QJniClass::callStaticParamObj(const char * method_name, const char * objname, const char * param_signature, ...)
@@ -1799,11 +1806,12 @@ double QJniObject::callDouble(const char* method_name)
 }
 
 
-// deprecated
+#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
 QJniObject * QJniObject::callObject(const char * method_name, const char * objname)
 {
 	return legacyWrapToHeap(callObj(method_name, objname));
 }
+#endif
 
 
 QJniObject QJniObject::callObj(const char * method_name, const char * objname)
@@ -1839,7 +1847,7 @@ QJniObject QJniObject::callObj(const char * method_name, const char * objname)
 }
 
 
-// deprecated
+#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
 QJniObject * QJniObject::callParamObject(const char * method_name, const char * objname, const char * param_signature, ...)
 {
 	VERBOSE(qWarning("void QJniObject(%p)::callParamObject(\"%s\", \"%s\", \"%s\"...)", reinterpret_cast<void*>(this), method_name, objname, param_signature));
@@ -1877,6 +1885,7 @@ QJniObject * QJniObject::callParamObject(const char * method_name, const char * 
 	}
 	return new QJniObject(jret, true, objname);
 }
+#endif
 
 
 QJniObject QJniObject::callParamObj(const char * method_name, const char * objname, const char * param_signature, ...)
@@ -2240,11 +2249,12 @@ void QJniObject::setBooleanField(const char * field_name, jboolean value)
 }
 
 
-// deprecated
+#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
 QJniObject * QJniObject::getObjectField(const char* field_name, const char * objname)
 {
 	return legacyWrapToHeap(getObjField(field_name, objname));
 }
+#endif
 
 
 QJniObject QJniObject::getObjField(const char * field_name, const char * objname)
