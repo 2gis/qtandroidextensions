@@ -46,30 +46,41 @@
 	#define VERBOSE(x)
 #endif
 
+
 /////////////////////////////////////////////////////////////////////////////
 // Private Stuff
 /////////////////////////////////////////////////////////////////////////////
 
 namespace {
 
-static JavaVM * g_JavaVm = 0;
+JavaVM * g_JavaVm = 0;
 
-//! Data type to keep list of JNI references to Java classes ever preloaded or loaded.
-typedef QHash<QString, jclass> PreloadedClasses;
+// Data type to keep list of JNI references to Java classes ever preloaded or loaded.
+using PreloadedClasses = QHash<QString, jclass>;
 
-//! QThreadStorage object to detach thread from JNI when it's finished and prevent Java reference leak.
+
+// QThreadStorage object to detach thread from JNI when it's finished and prevent Java reference leak.
 class QJniEnvPtrThreadDetacher
 {
 public:
-	~QJniEnvPtrThreadDetacher();
+	~QJniEnvPtrThreadDetacher()
+	{
+		if (g_JavaVm)
+		{
+			int errsv = g_JavaVm->DetachCurrentThread();
+			if (errsv != JNI_OK)
+			{
+				qWarning("Thread %d detach failed: %d", static_cast<int>(gettid()), errsv);
+			}
+		}
+	}
 };
 
-/*!
- * Static object to free Java class references upon deinitalization of the module. This is not totally
- * necessary in Android as whold Java machine is destroyed when application exists and the reference
- * leak is not an issue, but let's just be on the good side.
- */
-class QJniClassUnloader
+
+// Static object to free Java class references upon deinitalization of the module.
+// This is not totally necessary in Android as whole Java machine is destroyed when application
+// exists and the reference leak is not an issue, but just let's be on the good side.
+ class QJniClassUnloader
 {
 public:
 	~QJniClassUnloader()
@@ -82,32 +93,22 @@ public:
 };
 
 
-static QMutex g_PreloadedClassesMutex(QMutex::Recursive);
-static PreloadedClasses g_PreloadedClasses;
-static QThreadStorage<QJniEnvPtrThreadDetacher*> g_JavaThreadDetacher;
-static QJniClassUnloader g_class_unloader_;
+QMutex g_PreloadedClassesMutex(QMutex::Recursive);
+PreloadedClasses g_PreloadedClasses;
+QThreadStorage<QJniEnvPtrThreadDetacher*> g_JavaThreadDetacher;
+QJniClassUnloader g_ClassUnloader;
 
 
-QJniEnvPtrThreadDetacher::~QJniEnvPtrThreadDetacher()
+#if defined(Q_OS_ANDROID)
+
+void AutoSetJavaVM()
 {
-	if (g_JavaVm)
+	if (!g_JavaVm)
 	{
-		int errsv = g_JavaVm->DetachCurrentThread();
-		if (errsv != JNI_OK)
-		{
-			qWarning("Thread %d detach failed: %d", static_cast<int>(gettid()), errsv);
-		}
+		g_JavaVm = QAndroidQPAPluginGap::detectJavaVM();
 	}
 }
 
-#if defined(Q_OS_ANDROID)
-	static inline void AutoSetJavaVM()
-	{
-		if (!g_JavaVm)
-		{
-			g_JavaVm = QAndroidQPAPluginGap::detectJavaVM();
-		}
-	}
 #endif
 
 
@@ -120,9 +121,7 @@ QJniEnvPtrThreadDetacher::~QJniEnvPtrThreadDetacher()
 // in: "java/lang/String" => "Ljava/lang/String;"
 // in: "Ljava/lang/String;" => "Ljava/lang/String;"
 // in: "[F" => "[F"
-static inline void appendNormalizedObjectName(
-	QByteArray & out_signature
-	, const char * objname)
+void appendNormalizedObjectName(QByteArray & out_signature, const char * objname)
 {
 	if (size_t length = strlen(objname))
 	{
@@ -146,10 +145,10 @@ static inline void appendNormalizedObjectName(
 // params = "II", returning: "java/lang/String" => "(II)Ljava/lang/String;"
 // params = "II", returning: "Ljava/lang/String;" => "(II)Ljava/lang/String;"
 // params = "II", returning: "[F" => "(II)[F"
-static inline void makeObjectFunctionSignature(
-	QByteArray & out_signature
-	, const char * param_signature
-	, const char * returning_objname)
+void makeObjectFunctionSignature(
+	QByteArray & out_signature,
+	const char * param_signature,
+	const char * returning_objname)
 {
 	out_signature.append('(');
 	out_signature.append(param_signature);
@@ -159,13 +158,24 @@ static inline void makeObjectFunctionSignature(
 
 
 // Automatically ignore null class reference for arrays
-static inline bool classObjectMayHaveNullClass(const char * class_name)
+bool classObjectMayHaveNullClass(const char * class_name)
 {
 	if (!class_name)
 	{
 		return true;
 	}
 	return class_name[0] == '[';
+}
+
+
+// Simulate pre-C++14 object return behaviour for deprecated backward compatibility functions
+QJniObject * legacyWrapToHeap(QJniObject && stackObject)
+{
+	if (!stackObject)
+	{
+		return nullptr;
+	}
+	return new QJniObject(std::move(stackObject));
 }
 
 } // anonymous namespace
@@ -342,6 +352,11 @@ JNIEnv * QJniEnvPtr::env() const
 
 bool QJniEnvPtr::preloadClass(const char * class_name)
 {
+	// Make sure the variable is not thrown away by linker
+	if (!(&g_ClassUnloader))
+	{
+		qFatal("Linking error?");
+	}
 	checkEnv();
 	if (!class_name || !*class_name) {
 		qWarning("Null class name in preloadClass!");
@@ -1107,7 +1122,14 @@ QString QJniClass::callStaticString(const char *method_name)
 }
 
 
+// deprecated
 QJniObject * QJniClass::getStaticObjectField(const char * field_name, const char * objname)
+{
+	return legacyWrapToHeap(getStaticObjField(field_name, objname));
+}
+
+
+QJniObject QJniClass::getStaticObjField(const char * field_name, const char * objname)
 {
 	VERBOSE(qWarning("int QJniObject::getStaticObjectField(const char * field_name, const char * objname) %p \"%s\"", reinterpret_cast<void*>(this), field_name, objname));
 	QByteArray obj;
@@ -1133,9 +1155,9 @@ QJniObject * QJniClass::getStaticObjectField(const char * field_name, const char
 	}
 	if (!jret)
 	{
-		return nullptr;
+		return {};
 	}
-	return new QJniObject(jret, true, objname);
+	return QJniObject(jret, true, objname);
 }
 
 
@@ -1196,9 +1218,16 @@ bool QJniClass::getStaticBooleanField(const char * field_name)
 }
 
 
-QJniObject* QJniClass::callStaticObject(const char * method_name, const char * objname)
+// deprecated
+QJniObject * QJniClass::callStaticObject(const char * method_name, const char * objname)
 {
-	VERBOSE(qWarning("QJniClass::CallStaticObject(\"%s\",\"%s\")", method_name, objname));
+	return legacyWrapToHeap(callStaticObj(method_name, objname));
+}
+
+
+QJniObject QJniClass::callStaticObj(const char * method_name, const char * objname)
+{
+	VERBOSE(qWarning("QJniClass::CallStaticObj(\"%s\",\"%s\")", method_name, objname));
 	QByteArray signature("()");
 	appendNormalizedObjectName(signature, objname);
 
@@ -1230,10 +1259,11 @@ QJniObject* QJniClass::callStaticObject(const char * method_name, const char * o
 	{
 		return nullptr;
 	}
-	return new QJniObject(jret, true, objname);
+	return QJniObject(jret, true, objname);
 }
 
 
+// deprecated
 QJniObject * QJniClass::callStaticParamObject(const char * method_name, const char * objname, const char * param_signature, ...)
 {
 	VERBOSE(qWarning("void QJniClass(%p)::callStaticParamObject(\"%s\", \"%s\", \"%s\"...)", reinterpret_cast<void*>(this), method_name, objname, param_signature));
@@ -1270,6 +1300,45 @@ QJniObject * QJniClass::callStaticParamObject(const char * method_name, const ch
 		return nullptr;
 	}
 	return new QJniObject(jret, true, objname);
+}
+
+
+QJniObject QJniClass::callStaticParamObj(const char * method_name, const char * objname, const char * param_signature, ...)
+{
+	VERBOSE(qWarning("void QJniClass(%p)::callStaticParamObj(\"%s\", \"%s\", \"%s\"...)", reinterpret_cast<void*>(this), method_name, objname, param_signature));
+	va_list args;
+	QJniEnvPtr jep;
+	JNIEnv* env = jep.env();
+
+	QByteArray signature;
+	makeObjectFunctionSignature(signature, param_signature, objname);
+
+	jmethodID mid = env->GetStaticMethodID(checkedClass(__FUNCTION__), method_name, signature.data());
+	if (!mid)
+	{
+		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
+	}
+
+	va_start(args, param_signature);
+	jobject jret = env->CallStaticObjectMethodV(jClass(), mid, args);
+	va_end(args);
+	if (jep.clearException())
+	{
+		qWarning("void QJniClass(%p)::callStaticParamObject(\"%s\", \"%s\", ...): exception occured", reinterpret_cast<void*>(this), method_name, param_signature);
+		if (jret)
+		{
+			env->DeleteLocalRef(jret);
+		}
+		throw QJniJavaCallException(
+			debugClassName().constData()
+			, QByteArray().append(method_name).append("->").append(objname).constData()
+			, __FUNCTION__);
+	}
+	if (!jret)
+	{
+		return QJniObject{};
+	}
+	return QJniObject(jret, true, objname);
 }
 
 
@@ -1733,12 +1802,19 @@ double QJniObject::callDouble(const char* method_name)
 }
 
 
+// deprecated
 QJniObject * QJniObject::callObject(const char * method_name, const char * objname)
+{
+	return legacyWrapToHeap(callObj(method_name, objname));
+}
+
+
+QJniObject QJniObject::callObj(const char * method_name, const char * objname)
 {
 	QByteArray signature("()");
 	appendNormalizedObjectName(signature, objname);
 
-	VERBOSE(qWarning("QJniObject::callObject: \"%s\", \"%s\"", method_name, signature.data()));
+	VERBOSE(qWarning("QJniObject::callObj: \"%s\", \"%s\"", method_name, signature.data()));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 	jmethodID mid = env->GetMethodID(checkedClass(__FUNCTION__), method_name, signature.data());
@@ -1760,13 +1836,13 @@ QJniObject * QJniObject::callObject(const char * method_name, const char * objna
 	}
 	if (!jret)
 	{
-		return nullptr;
+		return {};
 	}
-	QJniObject * result = new QJniObject(jret, true, objname);
-	return result;
+	return QJniObject(jret, true, objname);
 }
 
 
+// deprecated
 QJniObject * QJniObject::callParamObject(const char * method_name, const char * objname, const char * param_signature, ...)
 {
 	VERBOSE(qWarning("void QJniObject(%p)::callParamObject(\"%s\", \"%s\", \"%s\"...)", reinterpret_cast<void*>(this), method_name, objname, param_signature));
@@ -1803,6 +1879,45 @@ QJniObject * QJniObject::callParamObject(const char * method_name, const char * 
 		return nullptr;
 	}
 	return new QJniObject(jret, true, objname);
+}
+
+
+QJniObject QJniObject::callParamObj(const char * method_name, const char * objname, const char * param_signature, ...)
+{
+	VERBOSE(qWarning("void QJniObject(%p)::callParamObj(\"%s\", \"%s\", \"%s\"...)", reinterpret_cast<void*>(this), method_name, objname, param_signature));
+
+	va_list args;
+	QJniEnvPtr jep;
+	JNIEnv* env = jep.env();
+
+	QByteArray signature;
+	makeObjectFunctionSignature(signature, param_signature, objname);
+
+	jmethodID mid = env->GetMethodID(checkedClass(__FUNCTION__), method_name, signature.data());
+	if (!mid)
+	{
+		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
+	}
+
+	va_start(args, param_signature);
+	jobject jret = env->CallObjectMethodV(instance_, mid, args);
+	va_end(args);
+	if (jep.clearException())
+	{
+		if (jret)
+		{
+			env->DeleteLocalRef(jret);
+		}
+		throw QJniJavaCallException(
+			debugClassName().constData()
+			, QByteArray().append(method_name).append("->").append(objname).constData()
+			, __FUNCTION__);
+	}
+	if (!jret)
+	{
+		return {};
+	}
+	return QJniObject(jret, true, objname);
 }
 
 
@@ -2128,9 +2243,16 @@ void QJniObject::setBooleanField(const char * field_name, jboolean value)
 }
 
 
+// deprecated
 QJniObject * QJniObject::getObjectField(const char* field_name, const char * objname)
 {
-	VERBOSE(qWarning("int QJniObject::getObjectField(const char * field_name, const char * objname) %p \"%s\" \"%s\"", reinterpret_cast<void*>(this), field_name, objname));
+	return legacyWrapToHeap(getObjField(field_name, objname));
+}
+
+
+QJniObject QJniObject::getObjField(const char * field_name, const char * objname)
+{
+	VERBOSE(qWarning("int QJniObject::getObjField(const char * field_name, const char * objname) %p \"%s\" \"%s\"", reinterpret_cast<void*>(this), field_name, objname));
 	QByteArray obj;
 	appendNormalizedObjectName(obj, objname);
 
@@ -2152,9 +2274,9 @@ QJniObject * QJniObject::getObjectField(const char* field_name, const char * obj
 	}
 	if (!jret)
 	{
-		return nullptr;
+		return {};
 	}
-	return new QJniObject(jret, true, objname);
+	return QJniObject(jret, true, objname);
 }
 
 

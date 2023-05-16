@@ -263,16 +263,19 @@ public:
 	 * \return Pointer to a wrapper for the object returned by the call.
 	 * The wrapper should be deleted after use via 'delete'.
 	 */
-	QJniObject * callStaticObject(const char * method_name, const char * objname);
-	QJniObject * callStaticParamObject(const char * method_name, const char * objname, const char * param_signature, ...);
+	[[deprecated]] QJniObject * callStaticObject(const char * method_name, const char * objname);
+	QJniObject callStaticObj(const char * method_name, const char * objname);
+	[[deprecated]] QJniObject * callStaticParamObject(const char * method_name, const char * objname, const char * param_signature, ...);
+	QJniObject callStaticParamObj(const char * method_name, const char * objname, const char * param_signature, ...);
+
 
 	/*!
 	 * Call static jstring method of the wrapped Java class and
 	 * return the result as a QString.
 	 */
 	QString callStaticString(const char * method_name);
-
-	QJniObject * getStaticObjectField(const char * field_name, const char * objname);
+	[[deprecated]] QJniObject * getStaticObjectField(const char * field_name, const char * objname);
+	QJniObject getStaticObjField(const char * field_name, const char * objname);
 	QString getStaticStringField(const char * field_name);
 	jint getStaticIntField(const char * field_name);
 	bool getStaticBooleanField(const char * field_name);
@@ -420,8 +423,10 @@ public:
 	 * \return Pointer to a wrapper for the object returned by the call.
 	 * The wrapper should be deleted after use via 'delete'.
 	 */
-	QJniObject * callObject(const char * method_name, const char * objname);
-	QJniObject * callParamObject(const char * method_name, const char * objname, const char * param_signature, ...);
+	[[deprecated]] QJniObject * callObject(const char * method_name, const char * objname);
+	QJniObject callObj(const char * method_name, const char * objname);
+	[[deprecated]] QJniObject * callParamObject(const char * method_name, const char * objname, const char * param_signature, ...);
+	QJniObject callParamObj(const char * method_name, const char * objname, const char * param_signature, ...);
 
 	/*!
 	 * Call void method of the wrapped Java object with specified
@@ -464,7 +469,8 @@ public:
 	void setBooleanField(const char * field_name, jboolean value);
 
 	//! Get value of float field of the wrapped Java object
-	QJniObject * getObjectField(const char * field_name, const char * objname);
+	[[deprecated]] QJniObject * getObjectField(const char * field_name, const char * objname);
+	QJniObject getObjField(const char * field_name, const char * objname);
 
 	QString getStringField(const char * field_name);
 
