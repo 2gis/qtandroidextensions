@@ -62,10 +62,10 @@ public:
 	static bool isPreloaded();
 
 protected:
-	QJniObject * handler() const;
+	QJniObject & handler() const;
 
 private:
-	QScopedPointer<QJniObject> handler_;
+	mutable QJniObject handler_;
 	jlong nativePtr_;
 
 	static bool preloaded_;
@@ -93,12 +93,10 @@ TJniObjectLinker<TNative>::TJniObjectLinker(TNative * nativePtr)
 	{
 		QByteArray javaFullClassName = preloadJavaClasses();
 		qDebug() << "Ready to create jni object" << javaFullClassName;
-		handler_.reset(new QJniObject(javaFullClassName, "J", nativePtr_));
-
-		if (!handler_->jObject())
+		handler_ = QJniObject(javaFullClassName, "J", nativePtr_);
+		if (!handler_)
 		{
 			qCritical() << "Failed to create " << javaFullClassName << " instance!";
-			handler_.reset();
 		}
 	}
 	catch (const std::exception & ex)
@@ -121,8 +119,8 @@ TJniObjectLinker<TNative>::~TJniObjectLinker()
 	{
 		try
 		{
-			handler_->callVoid("cppDestroyed");
-			handler_.reset();
+			handler_.callVoid("cppDestroyed");
+			handler_ = {};
 		}
 		catch (const std::exception & ex)
 		{
@@ -195,9 +193,9 @@ QByteArray TJniObjectLinker<TNative>::preloadJavaClasses()
 
 
 template <typename TNative>
-QJniObject * TJniObjectLinker<TNative>::handler() const
+QJniObject & TJniObjectLinker<TNative>::handler() const
 {
-	return handler_.data();
+	return handler_;
 }
 
 
@@ -233,13 +231,14 @@ void nativeClass::preloadJavaClasses()                                          
                                                                                                 \
 bool nativeClass::isJniReady() const                                                            \
 {                                                                                               \
-	return jniLinker_ && jniLinker_->handler() && jniLinker_->handler()->jObject();             \
+	return jniLinker_ && jniLinker_->handler();                                                 \
 }                                                                                               \
                                                                                                 \
 QJniObject * nativeClass::jni() const                                                           \
 {                                                                                               \
 	Q_ASSERT(isJniReady());                                                                     \
-	return jniLinker_->handler();                                                               \
+	auto & handler = jniLinker_->handler();                                                     \
+	return (handler) ? &handler : nullptr;                                                      \
 }                                                                                               \
                                                                                                 \
 void nativeClass::getNativeMethods(                                                             \

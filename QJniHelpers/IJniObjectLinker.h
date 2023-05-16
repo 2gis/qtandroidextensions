@@ -44,7 +44,7 @@ class IJniObjectLinker
 {
 public:
 	virtual ~IJniObjectLinker() {};
-	virtual QJniObject * handler() const = 0;
+	virtual QJniObject & handler() const = 0;
 };
 
 
