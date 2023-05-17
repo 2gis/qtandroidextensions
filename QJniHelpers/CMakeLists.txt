@@ -15,11 +15,9 @@ set(SRC_LIST
     TJniObjectLinker.h
 )
 
+
 option(QTANDROIDEXTENSIONS_NO_DEPRECATES "Do not compile deprecated interfaces" OFF)
 
-if (QTANDROIDEXTENSIONS_NO_DEPRECATES)
-    add_definitions(-DQTANDROIDEXTENSIONS_NO_DEPRECATES)
-endif (QTANDROIDEXTENSIONS_NO_DEPRECATES)
 
 if (ANDROID)
     add_library(${MODULE_NAME} STATIC ${SRC_LIST})
@@ -36,5 +34,12 @@ if (ANDROID)
         PUBLIC
             ${PROJECT_SOURCE_DIR}
     )
+
+    if (QTANDROIDEXTENSIONS_NO_DEPRECATES)
+        target_compile_definitions(${MODULE_NAME}
+            PUBLIC
+                QTANDROIDEXTENSIONS_NO_DEPRECATES
+        )
+    endif()
 endif(ANDROID)
 
