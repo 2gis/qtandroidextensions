@@ -843,7 +843,7 @@ QJniObject QAndroidOffscreenView::getView()
 	{
 		return offscreen_view_.callObj("getView", "android/view/View");
 	}
-	return 0; // View not created yet
+	return {}; // View not created yet
 }
 
 void QAndroidOffscreenView::mouse(int android_action, int x, int y, long long timestamp_uptime_millis)

@@ -267,7 +267,7 @@ QAndroidOffscreenWebView::QAndroidOffscreenWebView(const QString & object_name, 
 		{"onCanGoForwardReceived", "(JZ)V", reinterpret_cast<void*>(Java_onCanGoForwardReceived)},
 		{"onCanGoBackOrForwardReceived", "(JZI)V", reinterpret_cast<void*>(Java_onCanGoBackOrForwardReceived)},
 	};
-	if (auto & ov = offscreenView())
+	if (QJniObject & ov = offscreenView())
 	{
 		qDebug()<<__PRETTY_FUNCTION__<<"Registering"<<sizeof(methods)/sizeof(JNINativeMethod)<<"JNI methods for WebView";
 		bool ok = ov.registerNativeMethods(methods, sizeof(methods));
@@ -299,7 +299,7 @@ void QAndroidOffscreenWebView::preloadJavaClasses()
 
 bool QAndroidOffscreenWebView::loadUrl(const QString & url)
 {
-	auto & view = offscreenView();
+	QJniObject & view = offscreenView();
 	if (view)
 	{
 		view.callVoid("loadUrl", url);
@@ -311,7 +311,7 @@ bool QAndroidOffscreenWebView::loadUrl(const QString & url)
 
 bool QAndroidOffscreenWebView::loadUrl(const QString & url, const QMap<QString, QString> & additionalHttpHeaders)
 {
-	auto & view = offscreenView();
+	QJniObject & view = offscreenView();
 	if (view)
 	{
 		QString strheaders;
@@ -331,7 +331,7 @@ bool QAndroidOffscreenWebView::loadUrl(const QString & url, const QMap<QString, 
 
 bool QAndroidOffscreenWebView::loadData(const QString & text, const QString & mime, const QString & encoding)
 {
-	auto & view = offscreenView();
+	QJniObject & view = offscreenView();
 	if (view)
 	{
 		view.callVoid("loadData", text, mime, encoding);
@@ -343,7 +343,7 @@ bool QAndroidOffscreenWebView::loadData(const QString & text, const QString & mi
 
 bool QAndroidOffscreenWebView::loadDataWithBaseURL(const QString & baseUrl, const QString & data, const QString & mimeType, const QString & encoding, const QString & historyUrl)
 {
-	auto & view = offscreenView();
+	QJniObject & view = offscreenView();
 	if (view)
 	{
 		view.callVoid("loadDataWithBaseURL", baseUrl, data, mimeType, encoding, historyUrl);
@@ -355,7 +355,7 @@ bool QAndroidOffscreenWebView::loadDataWithBaseURL(const QString & baseUrl, cons
 
 bool QAndroidOffscreenWebView::requestContentHeight()
 {
-	auto & view = offscreenView();
+	QJniObject & view = offscreenView();
 	if (view)
 	{
 		return view.callBool("requestContentHeight");
@@ -366,7 +366,7 @@ bool QAndroidOffscreenWebView::requestContentHeight()
 
 void QAndroidOffscreenWebView::requestCanGoBack()
 {
-	auto & view = offscreenView();
+	QJniObject & view = offscreenView();
 	if (view)
 	{
 		view.callVoid("requestCanGoBack");
@@ -378,7 +378,7 @@ void QAndroidOffscreenWebView::requestCanGoBack()
 
 void QAndroidOffscreenWebView::goBack()
 {
-	if (auto & view = offscreenView())
+	if (QJniObject & view = offscreenView())
 	{
 		view.callVoid("goBack");
 	}
@@ -386,7 +386,7 @@ void QAndroidOffscreenWebView::goBack()
 
 void QAndroidOffscreenWebView::requestCanGoForward()
 {
-	auto & view = offscreenView();
+	QJniObject & view = offscreenView();
 	if (view)
 	{
 		view.callVoid("requestCanGoForward");
@@ -398,7 +398,7 @@ void QAndroidOffscreenWebView::requestCanGoForward()
 
 void QAndroidOffscreenWebView::goForward()
 {
-	if (auto & view = offscreenView())
+	if (QJniObject & view = offscreenView())
 	{
 		view.callVoid("goForward");
 	}
@@ -406,7 +406,7 @@ void QAndroidOffscreenWebView::goForward()
 
 void QAndroidOffscreenWebView::setWebContentsDebuggingEnabled(bool enabled)
 {
-    if (auto & view = offscreenView())
+    if (QJniObject & view = offscreenView())
     {
         view.callVoid("setWebContentsDebuggingEnabled", static_cast<jboolean>(enabled));
     }
@@ -414,7 +414,7 @@ void QAndroidOffscreenWebView::setWebContentsDebuggingEnabled(bool enabled)
 
 void QAndroidOffscreenWebView::requestCanGoBackOrForward(int steps)
 {
-	auto & view = offscreenView();
+	QJniObject & view = offscreenView();
 	if (view)
 	{
 		view.callVoid("requestCanGoBackOrForward", static_cast<jint>(steps));
@@ -426,7 +426,7 @@ void QAndroidOffscreenWebView::requestCanGoBackOrForward(int steps)
 
 void QAndroidOffscreenWebView::goBackOrForward(int steps)
 {
-	if (auto & view = offscreenView())
+	if (QJniObject & view = offscreenView())
 	{
 		view.callVoid("goForward", static_cast<jint>(steps));
 	}
@@ -554,7 +554,7 @@ jboolean QAndroidOffscreenWebView::shouldOverrideUrlLoading(JNIEnv *, jobject, j
 	// Doing OffscreenWebView.loadUrl(url).
 	// This should always be done for Chrome to avoid opening links in external browser.
 	// qDebug() << "QAndroidOffscreenWebView::shouldOverrideUrlLoading" << QJniEnvPtr(env).JStringToQString(static_cast<jstring>(url));
-	if (auto aview = QAndroidOffscreenView::getView())
+	if (QJniObject aview = QAndroidOffscreenView::getView())
 	{
 		aview.callParamVoid("loadUrl", "Ljava/lang/String;", url);
 	}
