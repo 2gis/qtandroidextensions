@@ -35,6 +35,7 @@
 */
 
 #pragma once
+#include <atomic>
 #include <QtCore/QScopedPointer>
 #include <QtCore/QMutex>
 #include <QtCore/QObject>
@@ -80,7 +81,7 @@ protected:
 	bool eventFilter(QObject * obj, QEvent * event);
 
 private:
-	volatile bool is_active_;
+	std::atomic<bool> is_active_;
 	Q_DISABLE_COPY(QApplicationActivityObserver)
 };
 

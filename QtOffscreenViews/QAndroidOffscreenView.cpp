@@ -34,6 +34,7 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <mutex>
 #include <unistd.h>
 #include <stdlib.h>
 #include <GLES2/gl2.h>
@@ -232,12 +233,8 @@ const QString & QAndroidOffscreenView::getDefaultJavaClassPath()
 
 void QAndroidOffscreenView::preloadJavaClasses()
 {
-	static volatile bool preloaded_ = false;
-
-	if (!preloaded_)
-	{
-		preloaded_ = true;
-
+	static std::once_flag s_once;
+	std::call_once(s_once, []() {
 		QApplicationActivityObserver::instance();
 
 		QAndroidQPAPluginGap::preloadJavaClasses();
@@ -250,7 +247,7 @@ void QAndroidOffscreenView::preloadJavaClasses()
 			{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getActivityNoThrow)},
 			{"nativeOnVisibleRect", "(JIIII)V", reinterpret_cast<void*>(Java_OffscreenView_onVisibleRect)},
 		});
-	}
+	});
 }
 
 static int getApiLevel()

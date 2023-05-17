@@ -35,6 +35,7 @@
 */
 
 #pragma once
+#include <atomic>
 #include <QtGui/QColor>
 #include <QtCore/QSize>
 #include <QtCore/QRect>
@@ -375,13 +376,13 @@ private:
 	QJniObject offscreen_view_;
 	QSize size_;
 	QColor fill_color_;
-	volatile bool need_update_texture_;
-	volatile bool view_painted_;
+	std::atomic<bool> need_update_texture_;
+	std::atomic<bool> view_painted_;
 	bool texture_received_;
 	bool view_creation_requested_;
 	bool is_visible_;
 	bool is_enabled_;
-	volatile mutable bool view_created_; //!< Cache for isCreated()
+	mutable std::atomic<bool> view_created_; //!< Cache for isCreated()
 	int last_texture_width_, last_texture_height_;
 private:
 	Q_DISABLE_COPY(QAndroidOffscreenView)
