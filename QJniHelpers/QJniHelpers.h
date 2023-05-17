@@ -264,11 +264,11 @@ public:
 	 * The wrapper should be deleted after use via 'delete'.
 	 */
 #if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
-	[[deprecated]] [[nodiscard]] QJniObject * callStaticObject(const char * method_name, const char * objname);
+	[[nodiscard, deprecated("Use callStaticObj()")]] QJniObject * callStaticObject(const char * method_name, const char * objname);
 #endif
 	QJniObject callStaticObj(const char * method_name, const char * objname);
 #if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
-	[[deprecated]] [[nodiscard]] QJniObject * callStaticParamObject(const char * method_name, const char * objname, const char * param_signature, ...);
+	[[nodiscard, deprecated("Use callStaticParamObj()")]] QJniObject * callStaticParamObject(const char * method_name, const char * objname, const char * param_signature, ...);
 #endif
 	QJniObject callStaticParamObj(const char * method_name, const char * objname, const char * param_signature, ...);
 
@@ -279,7 +279,7 @@ public:
 	 */
 	QString callStaticString(const char * method_name);
 #if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
-	[[deprecated]] [[nodiscard]] QJniObject * getStaticObjectField(const char * field_name, const char * objname);
+	[[nodiscard, deprecated("Use getStaticObjField()")]] QJniObject * getStaticObjectField(const char * field_name, const char * objname);
 #endif
 	QJniObject getStaticObjField(const char * field_name, const char * objname);
 	QString getStaticStringField(const char * field_name);
@@ -430,11 +430,11 @@ public:
 	 * The wrapper should be deleted after use via 'delete'.
 	 */
 #if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
-	[[deprecated]] [[nodiscard]] QJniObject * callObject(const char * method_name, const char * objname);
+	[[nodiscard, deprecated("Use callObj()")]] QJniObject * callObject(const char * method_name, const char * objname);
 #endif
 	QJniObject callObj(const char * method_name, const char * objname);
 #if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
-	[[deprecated]] [[nodiscard]] QJniObject * callParamObject(const char * method_name, const char * objname, const char * param_signature, ...);
+	[[nodiscard, deprecated("Use callParamObj()")]] QJniObject * callParamObject(const char * method_name, const char * objname, const char * param_signature, ...);
 #endif
 	QJniObject callParamObj(const char * method_name, const char * objname, const char * param_signature, ...);
 
@@ -480,7 +480,7 @@ public:
 
 	//! Get value of float field of the wrapped Java object
 #if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
-	[[deprecated]] [[nodiscard]] QJniObject * getObjectField(const char * field_name, const char * objname);
+	[[nodiscard, deprecated("Use getObjField()")]] QJniObject * getObjectField(const char * field_name, const char * objname);
 #endif
 	QJniObject getObjField(const char * field_name, const char * objname);
 
