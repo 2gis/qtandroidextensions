@@ -331,8 +331,29 @@ QJniEnvPtr::QJniEnvPtr(JNIEnv * env)
 }
 
 
-QJniEnvPtr::~QJniEnvPtr()
+QJniEnvPtr::QJniEnvPtr(const QJniEnvPtr & other)
+	: env_(other.env_)
 {
+}
+
+
+QJniEnvPtr::QJniEnvPtr(QJniEnvPtr && other)
+	: env_(other.env_)
+{
+}
+
+
+QJniEnvPtr & QJniEnvPtr::operator=(const QJniEnvPtr & other)
+{
+	env_ = other.env_;
+	return *this;
+}
+
+
+QJniEnvPtr & QJniEnvPtr::operator=(QJniEnvPtr && other)
+{
+	env_ = other.env_;
+	return *this;
 }
 
 

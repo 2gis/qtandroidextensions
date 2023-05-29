@@ -105,7 +105,10 @@ class QJniObject;
 
 
 
-//! Basic functionality to get JNIEnv valid for current thread and scope.
+/*!
+ * Basic functionality to get JNIEnv valid for current thread and scope.
+ * Using this object across threads is UB.
+ */
 class QJniEnvPtr
 {
 public:
@@ -117,8 +120,13 @@ public:
 	 *  it exits.
 	 * \throw Throws QJniThreadAttachException if attaching to thread failed.
 	 */
-	QJniEnvPtr(JNIEnv * env = 0);
-	~QJniEnvPtr();
+	explicit QJniEnvPtr(JNIEnv * env = 0);
+
+	// Note: copying / moving across threads is UB!
+	QJniEnvPtr(const QJniEnvPtr & other);
+	QJniEnvPtr(QJniEnvPtr && other);
+	QJniEnvPtr & operator=(const QJniEnvPtr & other);
+	QJniEnvPtr & operator=(QJniEnvPtr && other);
 
 	//! \brief Get current Java environment.
 	JNIEnv * env() const;
@@ -203,7 +211,6 @@ private:
 
 private:
 	JNIEnv * env_;
-	Q_DISABLE_COPY(QJniEnvPtr)
 };
 
 
