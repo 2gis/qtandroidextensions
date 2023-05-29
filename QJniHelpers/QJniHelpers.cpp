@@ -234,6 +234,15 @@ QJniClassNotSetException::QJniClassNotSetException(const char * class_name, cons
 }
 
 
+QJniObjectIsNullException::QJniObjectIsNullException(const char * class_name, const char * call_point_info)
+	: QJniBaseException(QByteArray("JNI: Java object is null: ")
+		.append(readableIdString(class_name))
+		.append(", more info: ")
+		.append(readableIdString(call_point_info)))
+{
+}
+
+
 QJniMethodNotFoundException::QJniMethodNotFoundException(
 		const char * class_name
 		, const char * method_name
@@ -740,6 +749,16 @@ bool QJniEnvPtr::clearException(bool describe /*= true*/)
 /////////////////////////////////////////////////////////////////////////////
 // QJniClass
 /////////////////////////////////////////////////////////////////////////////
+
+
+jclass QJniClass::checkedClass(const char * call_point_info)
+{
+	if (!class_)
+	{
+		throw QJniClassNotSetException(construction_class_name_.constData(), call_point_info);
+	}
+	return class_;
+}
 
 
 QJniClass::QJniClass()
@@ -1469,6 +1488,15 @@ QByteArray QJniClass::debugClassName() const
 // QJniObject
 /////////////////////////////////////////////////////////////////////////////
 
+jobject QJniObject::checkedInstance(const char * call_point_info)
+{
+	if (!instance_)
+	{
+		throw QJniObjectIsNullException(constructionClassName().constData(), call_point_info);
+	}
+	return instance_;
+}
+
 
 QJniObject::QJniObject()
 	: QJniClass()
@@ -1676,6 +1704,7 @@ void QJniObject::initObject(JNIEnv * env, jobject instance, bool can_have_null_c
 }
 
 
+
 void QJniObject::callVoid(const char* method_name)
 {
 	VERBOSE(qWarning("void QJniObject::CallVoid(const char* method_name) %p \"%s\"", reinterpret_cast<void*>(this), method_name));
@@ -1686,7 +1715,7 @@ void QJniObject::callVoid(const char* method_name)
 	{
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
-	env->CallVoidMethod(instance_, mid);
+	env->CallVoidMethod(checkedInstance(__FUNCTION__), mid);
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), method_name, __FUNCTION__);
@@ -1704,7 +1733,7 @@ bool QJniObject::callBool(const char* method_name)
 	{
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
-	bool result = (JNI_TRUE==env->CallBooleanMethod(instance_, mid));
+	bool result = (JNI_TRUE==env->CallBooleanMethod(checkedInstance(__FUNCTION__), mid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), method_name, __FUNCTION__);
@@ -1723,7 +1752,7 @@ bool QJniObject::callBool(const char* method_name, bool param)
 	{
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
-	bool result = (JNI_TRUE==env->CallBooleanMethod(instance_, mid, jboolean(param)));
+	bool result = (JNI_TRUE==env->CallBooleanMethod(checkedInstance(__FUNCTION__), mid, jboolean(param)));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), method_name, __FUNCTION__);
@@ -1742,7 +1771,7 @@ int QJniObject::callInt(const char* method_name)
 	{
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
-	int result = static_cast<int>(env->CallIntMethod(instance_, mid));
+	int result = static_cast<int>(env->CallIntMethod(checkedInstance(__FUNCTION__), mid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), method_name, __FUNCTION__);
@@ -1761,7 +1790,7 @@ long long QJniObject::callLong(const char* method_name)
 	{
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
-	long long result = static_cast<long long>(env->CallLongMethod(instance_, mid));
+	long long result = static_cast<long long>(env->CallLongMethod(checkedInstance(__FUNCTION__), mid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), method_name, __FUNCTION__);
@@ -1780,7 +1809,7 @@ float QJniObject::callFloat(const char* method_name)
 	{
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
-	float result = static_cast<float>(env->CallFloatMethod(instance_, mid));
+	float result = static_cast<float>(env->CallFloatMethod(checkedInstance(__FUNCTION__), mid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), method_name, __FUNCTION__);
@@ -1799,7 +1828,7 @@ float QJniObject::callFloat(const char* method_name, int param)
 	{
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
-	float result = static_cast<float>(env->CallFloatMethod(instance_, mid, jint(param)));
+	float result = static_cast<float>(env->CallFloatMethod(checkedInstance(__FUNCTION__), mid, jint(param)));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), method_name, __FUNCTION__);
@@ -1818,7 +1847,7 @@ double QJniObject::callDouble(const char* method_name)
 	{
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
-	double result = static_cast<double>(env->CallDoubleMethod(instance_, mid));
+	double result = static_cast<double>(env->CallDoubleMethod(checkedInstance(__FUNCTION__), mid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), method_name, __FUNCTION__);
@@ -1848,7 +1877,7 @@ QJniObject QJniObject::callObj(const char * method_name, const char * objname)
 	{
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
-	jobject jret = env->CallObjectMethod(instance_, mid);
+	jobject jret = env->CallObjectMethod(checkedInstance(__FUNCTION__), mid);
 	if (jep.clearException())
 	{
 		if (jret)
@@ -1887,7 +1916,7 @@ QJniObject * QJniObject::callParamObject(const char * method_name, const char * 
 	}
 
 	va_start(args, param_signature);
-	jobject jret = env->CallObjectMethodV(instance_, mid, args);
+	jobject jret = env->CallObjectMethodV(checkedInstance(__FUNCTION__), mid, args);
 	va_end(args);
 	if (jep.clearException())
 	{
@@ -1927,7 +1956,7 @@ QJniObject QJniObject::callParamObj(const char * method_name, const char * objna
 	}
 
 	va_start(args, param_signature);
-	jobject jret = env->CallObjectMethodV(instance_, mid, args);
+	jobject jret = env->CallObjectMethodV(checkedInstance(__FUNCTION__), mid, args);
 	va_end(args);
 	if (jep.clearException())
 	{
@@ -1963,7 +1992,7 @@ jint QJniObject::callParamInt(const char* method_name, const char* param_signatu
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
 	va_start(args, param_signature);
-	jint result = env->CallIntMethodV(instance_, mid, args);
+	jint result = env->CallIntMethodV(checkedInstance(__FUNCTION__), mid, args);
 	va_end(args);
 	if (jep.clearException())
 	{
@@ -1988,7 +2017,7 @@ jlong QJniObject::callParamLong(const char* method_name, const char* param_signa
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
 	va_start(args, param_signature);
-	jlong result = env->CallLongMethodV(instance_, mid, args);
+	jlong result = env->CallLongMethodV(checkedInstance(__FUNCTION__), mid, args);
 	va_end(args);
 	if (jep.clearException())
 	{
@@ -2013,7 +2042,7 @@ jfloat QJniObject::callParamFloat(const char* method_name, const char* param_sig
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
 	va_start(args, param_signature);
-	jfloat result = env->CallFloatMethodV(instance_, mid, args);
+	jfloat result = env->CallFloatMethodV(checkedInstance(__FUNCTION__), mid, args);
 	va_end(args);
 	if (jep.clearException())
 	{
@@ -2038,7 +2067,7 @@ jdouble QJniObject::callParamDouble(const char* method_name, const char* param_s
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
 	va_start(args, param_signature);
-	jdouble result = env->CallFloatMethodV(instance_, mid, args);
+	jdouble result = env->CallFloatMethodV(checkedInstance(__FUNCTION__), mid, args);
 	va_end(args);
 	if (jep.clearException())
 	{
@@ -2063,7 +2092,7 @@ jboolean QJniObject::callParamBoolean(const char* method_name, const char* param
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
 	va_start(args, param_signature);
-	jboolean result = env->CallBooleanMethodV(instance_, mid, args);
+	jboolean result = env->CallBooleanMethodV(checkedInstance(__FUNCTION__), mid, args);
 	va_end(args);
 	if (jep.clearException())
 	{
@@ -2083,7 +2112,7 @@ QString QJniObject::callString(const char *method_name)
 	{
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
-	QString ret = QJniLocalRef(env, env->CallObjectMethod(instance_, mid));
+	QString ret = QJniLocalRef(env, env->CallObjectMethod(checkedInstance(__FUNCTION__), mid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), method_name, __FUNCTION__);
@@ -2111,7 +2140,7 @@ QString QJniObject::callParamString(const char *method_name, const char* param_s
 	}
 
 	va_start(args, param_signature);
-	QString ret = QJniLocalRef(env, env->CallObjectMethodV(instance_, mid, args));
+	QString ret = QJniLocalRef(env, env->CallObjectMethodV(checkedInstance(__FUNCTION__), mid, args));
 	va_end(args);
 
 	if (jep.clearException())
@@ -2132,7 +2161,7 @@ QString QJniObject::getString(const char *field_name)
 	{
 		throw QJniFieldNotFoundException(debugClassName().constData(), field_name, __FUNCTION__);
 	}
-	QString ret = QJniLocalRef(env, env->GetObjectField(instance_, fid));
+	QString ret = QJniLocalRef(env, env->GetObjectField(checkedInstance(__FUNCTION__), fid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), field_name, __FUNCTION__);
@@ -2151,7 +2180,7 @@ int QJniObject::getIntField(const char * field_name)
 	{
 		throw QJniFieldNotFoundException(debugClassName().constData(), field_name, __FUNCTION__);
 	}
-	int result = static_cast<int>(env->GetIntField(instance_, fid));
+	int result = static_cast<int>(env->GetIntField(checkedInstance(__FUNCTION__), fid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), field_name, __FUNCTION__);
@@ -2169,7 +2198,7 @@ jlong QJniObject::getLongField(const char * field_name)
 	{
 		throw QJniFieldNotFoundException(debugClassName().constData(), field_name, __FUNCTION__);
 	}
-	jlong result = env->GetLongField(instance_, fid);
+	jlong result = env->GetLongField(checkedInstance(__FUNCTION__), fid);
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), field_name, __FUNCTION__);
@@ -2188,7 +2217,7 @@ float QJniObject::getFloatField(const char * field_name)
 	{
 		throw QJniFieldNotFoundException(debugClassName().constData(), field_name, __FUNCTION__);
 	}
-	float result = static_cast<float>(env->GetFloatField(instance_, fid));
+	float result = static_cast<float>(env->GetFloatField(checkedInstance(__FUNCTION__), fid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), field_name, __FUNCTION__);
@@ -2206,7 +2235,7 @@ double QJniObject::getDoubleField(const char * field_name)
 	{
 		throw QJniFieldNotFoundException(debugClassName().constData(), field_name, __FUNCTION__);
 	}
-	double result = static_cast<double>(env->GetDoubleField(instance_, fid));
+	double result = static_cast<double>(env->GetDoubleField(checkedInstance(__FUNCTION__), fid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), field_name, __FUNCTION__);
@@ -2225,7 +2254,7 @@ jboolean QJniObject::getBooleanField(const char * field_name)
 	{
 		throw QJniFieldNotFoundException(debugClassName().constData(), field_name, __FUNCTION__);
 	}
-	jboolean result = env->GetBooleanField(instance_, fid);
+	jboolean result = env->GetBooleanField(checkedInstance(__FUNCTION__), fid);
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), field_name, __FUNCTION__);
@@ -2244,7 +2273,7 @@ void QJniObject::setIntField(const char * field_name, jint value)
 	{
 		throw QJniFieldNotFoundException(debugClassName().constData(), field_name, __FUNCTION__);
 	}
-	env->SetIntField(instance_, fid, value);
+	env->SetIntField(checkedInstance(__FUNCTION__), fid, value);
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), field_name, __FUNCTION__);
@@ -2262,7 +2291,7 @@ void QJniObject::setBooleanField(const char * field_name, jboolean value)
 	{
 		throw QJniFieldNotFoundException(debugClassName().constData(), field_name, __FUNCTION__);
 	}
-	env->SetBooleanField(instance_, fid, value);
+	env->SetBooleanField(checkedInstance(__FUNCTION__), fid, value);
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), field_name, __FUNCTION__);
@@ -2291,7 +2320,7 @@ QJniObject QJniObject::getObjField(const char * field_name, const char * objname
 	{
 		throw QJniFieldNotFoundException(debugClassName().constData(), field_name, __FUNCTION__);
 	}
-	jobject jret = env->GetObjectField(instance_, fid);
+	jobject jret = env->GetObjectField(checkedInstance(__FUNCTION__), fid);
 	if (jep.clearException())
 	{
 		if (jret)
@@ -2318,7 +2347,7 @@ QString QJniObject::getStringField(const char * field_name)
 	{
 		throw QJniFieldNotFoundException(debugClassName().constData(), field_name, __FUNCTION__);
 	}
-	QString ret = QJniLocalRef(env, env->GetObjectField(instance_, fid));
+	QString ret = QJniLocalRef(env, env->GetObjectField(checkedInstance(__FUNCTION__), fid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), field_name, __FUNCTION__);
@@ -2345,7 +2374,7 @@ void QJniObject::callParamVoid(const char * method_name, const char * param_sign
 	}
 
 	va_start(args, param_signature);
-	env->CallVoidMethodV(instance_, mid, args);
+	env->CallVoidMethodV(checkedInstance(__FUNCTION__), mid, args);
 	va_end(args);
 
 	if (jep.clearException())

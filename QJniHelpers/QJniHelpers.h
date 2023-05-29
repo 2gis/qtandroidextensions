@@ -79,6 +79,13 @@ public:
 };
 
 
+class QJniObjectIsNullException: public QJniBaseException
+{
+public:
+	QJniObjectIsNullException(const char * class_name, const char * call_point_info);
+};
+
+
 class QJniMethodNotFoundException: public QJniBaseException
 {
 public:
@@ -330,15 +337,7 @@ public:
 protected:
 	void initClass(JNIEnv * env, jclass clazz);
 	void clearClass(JNIEnv * env);
-
-	inline jclass checkedClass(const char * call_point_info)
-	{
-		if (!class_)
-		{
-			throw QJniClassNotSetException(construction_class_name_.constData(), call_point_info);
-		}
-		return class_;
-	}
+	inline jclass checkedClass(const char * call_point_info);
 
 private:
 	jclass class_;
@@ -405,8 +404,10 @@ public:
 		return saved;
 	}
 
+#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
 	//! Backward compatibility wrapper for detach<jobject>().
 	jobject takeJobjectOver() { return detach<jobject>(); }
+#endif
 
 	//! Call void method of the wrapped Java object
 	void callVoid(const char * method_name);
@@ -516,6 +517,7 @@ public:
 
 protected:
 	void initObject(JNIEnv* env, jobject instance, bool can_have_null_class = false);
+	inline jobject checkedInstance(const char * call_point_info);
 
 protected:
 	jobject instance_;
