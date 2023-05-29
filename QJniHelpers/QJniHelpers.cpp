@@ -228,7 +228,7 @@ QJniClassNotFoundException::QJniClassNotFoundException(const char * class_name)
 QJniClassNotSetException::QJniClassNotSetException(const char * class_name, const char * call_point_info)
 	: QJniBaseException(QByteArray("JNI: Java class is null: ")
 		.append(readableIdString(class_name))
-		.append(", more info: ")
+		.append(", source: ")
 		.append(readableIdString(call_point_info)))
 {
 }
@@ -237,7 +237,7 @@ QJniClassNotSetException::QJniClassNotSetException(const char * class_name, cons
 QJniObjectIsNullException::QJniObjectIsNullException(const char * class_name, const char * call_point_info)
 	: QJniBaseException(QByteArray("JNI: Java object is null: ")
 		.append(readableIdString(class_name))
-		.append(", more info: ")
+		.append(", source: ")
 		.append(readableIdString(call_point_info)))
 {
 }
@@ -251,7 +251,7 @@ QJniMethodNotFoundException::QJniMethodNotFoundException(
 		.append(readableIdString(class_name))
 		.append(".")
 		.append(readableIdString(method_name))
-		.append(", more info: ")
+		.append(", source: ")
 		.append(readableIdString(call_point_info)))
 {
 }
@@ -265,7 +265,7 @@ QJniFieldNotFoundException::QJniFieldNotFoundException(
 		.append(readableIdString(class_name))
 		.append(".")
 		.append(readableIdString(field_name))
-		.append(", more info: ")
+		.append(", source: ")
 		.append(readableIdString(call_point_info)))
 {
 }
@@ -279,7 +279,7 @@ QJniJavaCallException::QJniJavaCallException(
 		.append(readableIdString(class_name))
 		.append(".")
 		.append(readableIdString(method_name))
-		.append(", more info: ")
+		.append(", source: ")
 		.append(readableIdString(call_point_info)))
 {
 }
