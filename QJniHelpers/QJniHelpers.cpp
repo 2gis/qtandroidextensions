@@ -551,7 +551,7 @@ void QJniEnvPtr::setJavaVM(JNIEnv* env)
 }
 
 
-jstring QJniEnvPtr::JStringFromQString(const QString & str)
+jstring QJniEnvPtr::toJString(const QString & str)
 {
 	checkEnv();
 	jstring ret = env_->NewString(str.utf16(), str.length());
@@ -564,7 +564,7 @@ jstring QJniEnvPtr::JStringFromQString(const QString & str)
 }
 
 
-QString QJniEnvPtr::QStringFromJString(jstring str)
+QString QJniEnvPtr::toQString(jstring str)
 {
 	checkEnv();
 	if (str == 0)
@@ -1461,7 +1461,7 @@ QString QJniClass::getClassName(bool simple) const
 			{
 				if (jstring className = static_cast<jstring>(jep.env()->CallObjectMethod(jClass(), methodId)))
 				{
-					result = jep.JStringToQString(className);
+					result = jep.toQString(className);
 					jep.env()->DeleteLocalRef(className);
 				}
 			}
@@ -1661,6 +1661,18 @@ QJniObject & QJniObject::operator=(QJniObject && other)
 		other.instance_ = nullptr;
 	}
 	return *this;
+}
+
+
+QJniObject QJniObject::fromString(const QString & str)
+{
+	return QJniObject(QJniEnvPtr().toJString(str), true);
+}
+
+
+QString QJniObject::toQString() const
+{
+	return QJniEnvPtr().toQString(static_cast<jstring>(instance_));
 }
 
 
@@ -2594,12 +2606,12 @@ QJniLocalRef::QJniLocalRef(const QString & string)
 	: local_(0), env_(0)
 {
 	QJniEnvPtr jep;
-	local_ = jep.JStringFromQString(string);
+	local_ = jep.toJString(string);
 	env_ = jep.env();
 }
 
 
 QJniLocalRef::QJniLocalRef(QJniEnvPtr & env, const QString & string)
-	: local_(env.JStringFromQString(string)), env_(env.env())
+	: local_(env.toJString(string)), env_(env.env())
 {
 }

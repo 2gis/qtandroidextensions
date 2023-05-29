@@ -35,6 +35,7 @@
 */
 
 #include "QAndroidConfiguration.h"
+#include <QtCore/QDebug>
 #include <QJniHelpers/QJniHelpers.h>
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 

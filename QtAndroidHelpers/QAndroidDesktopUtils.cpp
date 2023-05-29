@@ -35,7 +35,8 @@
 */
 
 #include "QAndroidDesktopUtils.h"
-#include "QLocale"
+#include <QtCore/QDebug>
+#include <QtCore/QLocale>
 
 namespace QAndroidDesktopUtils {
 

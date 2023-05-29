@@ -457,14 +457,14 @@ void QAndroidOffscreenWebView::onLoadResource(JNIEnv *, jobject, jobject url)
 void QAndroidOffscreenWebView::onPageFinished(JNIEnv * env, jobject, jobject url)
 {
 	emit pageFinished();
-	emit pageFinished(QJniEnvPtr(env).JStringToQString(static_cast<jstring>(url)));
+	emit pageFinished(QJniEnvPtr(env).toQString(static_cast<jstring>(url)));
 }
 
 void QAndroidOffscreenWebView::onPageStarted(JNIEnv * env, jobject, jobject url, jobject favicon)
 {
 	Q_UNUSED(favicon);
 	emit pageStarted();
-	emit pageStarted(QJniEnvPtr(env).JStringToQString(static_cast<jstring>(url)));
+	emit pageStarted(QJniEnvPtr(env).toQString(static_cast<jstring>(url)));
 }
 
 void QAndroidOffscreenWebView::onReceivedError(JNIEnv * env, jobject, int errorCode, jobject description, jobject failingUrl)
@@ -473,7 +473,7 @@ void QAndroidOffscreenWebView::onReceivedError(JNIEnv * env, jobject, int errorC
 	try
 	{
 		QJniEnvPtr e(env);
-		emit receivedError(errorCode, e.JStringToQString(static_cast<jstring>(description)), e.JStringToQString(static_cast<jstring>(failingUrl)));
+		emit receivedError(errorCode, e.toQString(static_cast<jstring>(description)), e.toQString(static_cast<jstring>(failingUrl)));
 	}
 	catch(const std::exception & e)
 	{

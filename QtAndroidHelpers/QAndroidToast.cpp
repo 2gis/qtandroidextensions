@@ -35,6 +35,7 @@
 */
 
 #include "QAndroidToast.h"
+#include <QtCore/QDebug>
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 
 

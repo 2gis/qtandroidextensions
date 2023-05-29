@@ -124,13 +124,12 @@ template<class T> T arrayListOfStringToContainer(QJniObject & array_list)
 	if (array_list)
 	{
 		jint size = array_list.callInt("size");
-		QJniEnvPtr jep;
 		for (jint i = 0; i < size; ++i)
 		{
 			QJniObject str_object(array_list.callParamObj("get", "java/lang/Object", "I", i));
 			if (str_object)
 			{
-				result << jep.JStringToQString(static_cast<jstring>(str_object.jObject()));
+				result << str_object.toQString();
 			}
 			else
 			{

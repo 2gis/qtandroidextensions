@@ -36,6 +36,7 @@
 
 
 #include "PositionInfoConvertor.h"
+#include <QtCore/QDebug>
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 
 

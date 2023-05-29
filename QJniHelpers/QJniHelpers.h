@@ -180,16 +180,23 @@ public:
 	 * \brief Convert QString into jstring.
 	 * \return Java String reference or 0. Don't forget to call DeleteLocalRef on the returned reference.
 	 */
-	jstring JStringFromQString(const QString & qstring);
-	jstring QStringToJString(const QString & qstring) { return JStringFromQString(qstring); }
+	jstring toJString(const QString & qstring);
+
+#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
+	[[deprecated("Use toJString()")]] jstring JStringFromQString(const QString & qstring) { return toJString(qstring); }
+	[[deprecated("Use toJString()")]] jstring QStringToJString(const QString & qstring) { return toJString(qstring); }
+#endif
 
 	/*!
 	 * \brief Convert jstring to QString.
 	 * \param javastring - Java reference to String object.
 	 * \return QString.
 	 */
-	QString QStringFromJString(jstring javastring);
-	QString JStringToQString(jstring javastring) { return QStringFromJString(javastring); }
+	QString toQString(jstring javastring);
+#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
+	[[deprecated("Use toQString()")]] QString QStringFromJString(jstring javastring) { return toQString(javastring); }
+	[[deprecated("Use toQString()")]] QString JStringToQString(jstring javastring) { return toQString(javastring); }
+#endif
 
 	std::vector<bool> convert(jbooleanArray jarray);
 	std::vector<jint> convert(jintArray jarray);
@@ -385,8 +392,11 @@ public:
 	QJniObject & operator=(const QJniObject & other);
 	QJniObject & operator=(QJniObject && other);
 
+	static QJniObject fromString(const QString & str);
+	QString toQString() const;
+
 	void dispose();
-	~QJniObject();
+	~QJniObject() override;
 
 
 	/*!
@@ -402,7 +412,7 @@ public:
 
 #if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
 	//! Backward compatibility wrapper for detach<jobject>().
-	jobject takeJobjectOver() { return detach<jobject>(); }
+	[[deprecated("Use detach<jobject>()")]] jobject takeJobjectOver() { return detach<jobject>(); }
 #endif
 
 	//! Call void method of the wrapped Java object
@@ -574,7 +584,7 @@ public:
 	operator jstring() const { return static_cast<jstring>(local_); }
 	operator jclass() const { return static_cast<jclass>(local_); }
 	jobject jObject() const { return local_; }
-	operator QString() const { return QJniEnvPtr(env_).JStringToQString(operator jstring()); }
+	operator QString() const { return QJniEnvPtr(env_).toQString(operator jstring()); }
 
 private:
 	jobject local_;

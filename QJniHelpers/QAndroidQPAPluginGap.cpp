@@ -356,7 +356,7 @@ JNIEXPORT void JNICALL Java_ru_dublgis_qjnihelpers_ClassLoader_nativeJNIPreloadC
 JNIEXPORT void JNICALL Java_ru_dublgis_qjnihelpers_ClassLoader_nativeJNIPreloadClass(JNIEnv * env, jobject, jstring classname)
 {
 	QJniEnvPtr jep(env);
-	const QString qclassname = jep.QStringFromJString(classname);
+	const QString qclassname = jep.toQString(classname);
 	if (!jep.preloadClass(qclassname.toLatin1()))
 	{
 		qCritical() << "Failed to preload Java class:" << qclassname;

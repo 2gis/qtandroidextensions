@@ -38,6 +38,7 @@
 
 #include "IJniObjectLinker.h"
 
+#include <QtCore/QDebug>
 #include <QtCore/QObject>
 #include <QtCore/QThread>
 #include <QtCore/QReadLocker>

@@ -47,8 +47,7 @@ Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnTextChanged(JNI
 		QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(reinterpret_cast<QAndroidOffscreenView*>(vp));
 		if (edit)
 		{
-			QString qstr = QJniEnvPtr().JStringToQString(str);
-			edit->javaOnTextChanged(qstr, start, before, count);
+			edit->javaOnTextChanged(QJniEnvPtr().toQString(str), start, before, count);
 			return;
 		}
 	}

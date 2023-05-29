@@ -23,6 +23,7 @@
 #include <android/api-level.h>
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
+#include <QtCore/QDebug>
 #include <QtCore/QScopedPointer>
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 #include "AndroidAssetsFileEngineHandler_p.h"

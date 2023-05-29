@@ -35,6 +35,7 @@
 */
 
 #include "QAndroidPassiveGeoPosition.h"
+#include <QtCore/QDebug>
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 #include <QtAndroidHelpers/QAndroidDesktopUtils.h>
 

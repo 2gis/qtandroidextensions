@@ -35,6 +35,7 @@
 */
 
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
+#include <QtCore/QDebug>
 #include "QAndroidDisplayMetrics.h"
 
 

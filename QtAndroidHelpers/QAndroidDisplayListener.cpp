@@ -35,6 +35,7 @@
 */
 
 #include "QAndroidDisplayListener.h"
+#include <QtCore/QDebug>
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 
 

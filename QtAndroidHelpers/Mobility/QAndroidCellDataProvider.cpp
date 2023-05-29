@@ -158,8 +158,7 @@ void QAndroidCellDataProvider::cellUpdate(jstring type, jint cid, jint lac, jint
 
 		if (isJniReady())
 		{
-			QJniEnvPtr jep;
-			current_data_->data_.back().radio_type_ = jep.JStringToQString(type);
+			current_data_->data_.back().radio_type_ = QJniEnvPtr().toQString(type);
 		}
 
 		current_data_->data_.back().location_area_code_ = lac;
