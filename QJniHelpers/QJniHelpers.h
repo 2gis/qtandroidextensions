@@ -40,17 +40,14 @@
 #include <jni.h>
 #include <QtCore/QString>
 #include <QtCore/QByteArray>
-#include <QtCore/QDebug>
-#include <QtCore/QMutex>
-#include <QtCore/QMutexLocker>
-#include <QtCore/QThreadStorage>
 
 
 class QJniBaseException: public std::exception
 {
 public:
 	QJniBaseException(const QByteArray & message);
-	virtual const char * what() const throw();
+public: // std::exception
+	const char * what() const throw() override;
 protected:
 	static QByteArray readableIdString(const char * id);
 private:
@@ -525,7 +522,7 @@ protected:
 
 
 /*!
- * A helper class which keeps and automatically deletes local JNI references.
+ * A helper class that keeps and automatically deletes local JNI references.
  * Global references are handled by QJniObject or inside of QJniEnvPtr, but we also
  * need a cleaner way to handle local ones.
  * Also this class can handle QString <=> jstring conversion in a shorter manner
@@ -562,7 +559,7 @@ public:
 	~QJniLocalRef();
 
 	/*!
-	 * Detach the QJniObject from jobject and return the jobject casted to the
+	 * Detach the QJniLocalRef from jobject and return the jobject casted to the
 	 * template-specified type.
 	 * Use to return the object from a JNI function, e.g.:
 	 * JNICALL jstring .... foo() { return QJniLocalRef("Hello World!").detach<jstring>(); }

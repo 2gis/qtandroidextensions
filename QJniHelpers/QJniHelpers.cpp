@@ -37,6 +37,12 @@
 
 #include <unistd.h>
 #include <sys/types.h>
+
+#include <QtCore/QDebug>
+#include <QtCore/QMutex>
+#include <QtCore/QMutexLocker>
+#include <QtCore/QThreadStorage>
+
 #include "QJniHelpers.h"
 #include "QAndroidQPAPluginGap.h"
 
@@ -2523,7 +2529,7 @@ QJniLocalRef::QJniLocalRef(QJniLocalRef && other)
 {
 	local_ = other.local_;
 	other.local_ = nullptr;
-	env_ = other.env_; // other можно не занулять
+	env_ = other.env_; // No need to zero other.env_
 }
 
 
@@ -2555,7 +2561,7 @@ QJniLocalRef & QJniLocalRef::operator=(QJniLocalRef && other)
 		dispose();
 		local_ = other.local_;
 		other.local_ = nullptr;
-		env_ = other.env_; // other можно не занулять
+		env_ = other.env_; // No need to zero other.env_
 	}
 	return *this;
 }
