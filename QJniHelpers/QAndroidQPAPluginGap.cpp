@@ -140,7 +140,7 @@ Activity::Activity()
 
 
 
-JavaVM * detectJavaVM()
+JavaVM * getJavaVM()
 {
 	#if defined(QPA_QT4GRYM)
 		return qt_android_get_java_vm();

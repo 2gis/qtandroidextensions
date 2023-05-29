@@ -105,7 +105,7 @@ void AutoSetJavaVM()
 {
 	if (!g_JavaVm)
 	{
-		g_JavaVm = QAndroidQPAPluginGap::detectJavaVM();
+		g_JavaVm = QAndroidQPAPluginGap::getJavaVM();
 	}
 }
 

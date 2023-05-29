@@ -68,7 +68,10 @@ public:
 /*!
  * Return pointer to JavaVM using helpers available in current QPA plug-in.
  */
-JavaVM * detectJavaVM();
+JavaVM * getJavaVM();
+#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
+const auto & detectJavaVM = getJavaVM;
+#endif
 
 /*!
  * Obtain QtActivity object.
