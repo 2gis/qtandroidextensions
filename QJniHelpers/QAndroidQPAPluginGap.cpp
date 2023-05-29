@@ -36,6 +36,10 @@
 
 #include "QAndroidQPAPluginGap.h"
 
+#include <atomic>
+#include <mutex>
+#include <optional>
+
 #include <QtCore/qconfig.h>
 #include <QtCore/QDebug>
 #include <QtCore/QScopedPointer>
@@ -43,6 +47,7 @@
 #if QT_VERSION < 0x050000 && defined(QJNIHELPERS_GRYM)
 	#define QPA_QT4GRYM
 #elif QT_VERSION >= 0x050000
+	// Should work for Qt 6 as well ;)
 	#define QPA_QT5
 #else
 	#error "Unimplemented QPA case"
@@ -63,29 +68,76 @@
 	#error "Unimplemented QPA case"
 #endif
 
+
+namespace
+{
+
 #if defined(QPA_QT4GRYM)
-	static const char * const c_activity_getter_class_name = "org/qt/core/QtApplicationBase";
-	static const char * const c_activity_getter_method_name = "getActivityStatic";
-	// It is OK to return QtActivityBase as it's a descendant of Activity and
-	// Java will handle the type casting.
-	static const char * const c_activity_getter_result_name = "org/qt/core/QtActivityBase";
+	const char * const c_activity_getter_class_name = "org/qt/core/QtApplicationBase";
+	const char * const c_activity_getter_method_name = "getActivityStatic";
+	const char * const c_activity_getter_result_name = "org/qt/core/QtActivityBase";
 #elif defined(QPA_QT5)
-	//! \todo If we make another plugin for Qt 5, this place might need an update!
-	static const char * const c_activity_getter_class_name = "org/qtproject/qt5/android/QtNative";
-	static const char * const c_activity_getter_method_name = "activity";
-	static const char * const c_activity_getter_result_name = "android/app/Activity";
+	const char * const c_activity_getter_class_name = "org/qtproject/qt5/android/QtNative";
+	const char * const c_activity_getter_method_name = "activity";
+	const char * const c_activity_getter_result_name = "android/app/Activity";
 #else
 	#error "Unimplemented QPA case"
 #endif
 
+} // anonymous namespace
 
-namespace QAndroidQPAPluginGap {
 
 
-QAndroidSpecificJniException::QAndroidSpecificJniException(const char * message)
-	: QJniBaseException(message? message: "Android-specific JNI exception.")
+namespace QAndroidQPAPluginGap
+{
+
+namespace
+{
+
+QMutex s_global_context_mutex { QMutex::Recursive };
+std::optional<QJniObject> s_activity;
+QJniObject s_custom_context;
+
+
+void initActivity()
+{
+	QMutexLocker locker(&s_global_context_mutex);
+	if (s_activity)
+	{
+		return;
+	}
+	QJniClass activityGetterClass(c_activity_getter_class_name);
+	if (!activityGetterClass)
+	{
+		s_activity = QJniObject {};
+		qWarning() << "QtActivity retriever class could not be accessed.";
+		return;
+	}
+	s_activity = activityGetterClass.callStaticObj(
+		c_activity_getter_method_name,
+		c_activity_getter_result_name);
+	if (!(*s_activity))
+	{
+		qInfo() << "QtActivity retriever didn't return an object.";
+	}
+}
+
+} // anonymous namespace
+
+
+
+Context::Context()
+	: QJniObject(getCurrentContextNoThrow(), true)
 {
 }
+
+
+
+Activity::Activity()
+	: QJniObject(getActivityNoThrow(), true)
+{
+}
+
 
 
 JavaVM * detectJavaVM()
@@ -100,79 +152,111 @@ JavaVM * detectJavaVM()
 }
 
 
-jobject JNICALL getActivity(JNIEnv *, jobject)
+jobject JNICALL getActivityEx(JNIEnv * env, jobject, bool errorIfNone)
 {
-	static QJniObject s_activity;
-	static QMutex s_mutex;
-	QMutexLocker locker(&s_mutex);
-
+	QMutexLocker locker(&s_global_context_mutex);
 	if (!s_activity)
 	{
-		QJniClass theclass(c_activity_getter_class_name);
-		if (!theclass)
+		initActivity();
+	}
+	if (s_activity && *s_activity)
+	{
+		return QJniEnvPtr(env).env()->NewLocalRef(s_activity->jObject());
+	}
+	else
+	{
+		if (errorIfNone)
 		{
-			throw QAndroidSpecificJniException("QAndroid: Activity retriever class could not be accessed.");
+			 throw QJniBaseException("Failed to get QtActivity object.");
 		}
-		s_activity = theclass.callStaticObj(c_activity_getter_method_name, c_activity_getter_result_name);
-		if (!s_activity)
+		else
 		{
-			throw QAndroidSpecificJniException("QAndroid: Failed to get Activity object.");
+			return nullptr;
 		}
 	}
+}
 
-	return QJniEnvPtr().env()->NewLocalRef(s_activity.jObject());
+
+jobject JNICALL getActivity(JNIEnv * env, jobject jo)
+{
+	return getActivityEx(env, jo, true);
+}
+
+
+jobject JNICALL getActivityNoThrowEx(JNIEnv * env, jobject jo, bool errorIfNone)
+{
+	try
+	{
+		return getActivityEx(env, jo, errorIfNone);
+	}
+	catch (const std::exception & e)
+	{
+		if (errorIfNone)
+		{
+			qCritical() << "getActivityNoThrowEx exception:" << e.what();
+		}
+		else
+		{
+			qInfo() << "getActivityNoThrowEx exception:" << e.what();
+		}
+		return nullptr;
+	}
 }
 
 
 jobject JNICALL getActivityNoThrow(JNIEnv * env, jobject jo)
 {
-	try
-	{
-		return getActivity(env, jo);
-	}
-	catch (const std::exception & e)
-	{
-		qCritical() << "getActivity exception:" << e.what();
-		return static_cast<jobject>(0);
-	}
+	return getActivityNoThrowEx(env, jo, true);
 }
 
 
-
-static QJniObject custom_context_;
+bool isActivityAvailable()
+{
+	QMutexLocker locker(&s_global_context_mutex);
+	if (!s_activity)
+	{
+		initActivity();
+	}
+	return s_activity && *s_activity;
+}
 
 
 void setCustomContext(jobject context)
 {
+	QMutexLocker locker(&s_global_context_mutex);
 	if (context)
 	{
-		custom_context_ = QJniObject(context, true);
+		s_custom_context = QJniObject(context, true);
 	}
 	else
 	{
-		custom_context_ = {};
+		s_custom_context = {};
 	}
 }
 
 
-jobject JNICALL getCustomContext(JNIEnv *, jobject)
+jobject JNICALL getCustomContext(JNIEnv * env, jobject)
 {
-	return custom_context_.jObject();
+	QMutexLocker locker(&s_global_context_mutex);
+	return (s_custom_context)
+		? QJniEnvPtr(env).env()->NewLocalRef(s_custom_context.jObject())
+		: jobject { nullptr };
 }
 
 
 bool customContextSet()
 {
-	return !!custom_context_;
+	QMutexLocker locker(&s_global_context_mutex);
+	return !!s_custom_context;
 }
 
 
 jobject JNICALL getCurrentContext(JNIEnv * env, jobject)
 {
+	QMutexLocker locker(&s_global_context_mutex);
 	if (jobject ret = getCustomContext())
 	{
-		QJniEnvPtr jep(env);
-		return jep.env()->NewLocalRef(ret);
+		return ret;
 	}
 	return getActivity();
 }
@@ -187,24 +271,9 @@ jobject JNICALL getCurrentContextNoThrow(JNIEnv * env, jobject jo)
 	catch (const std::exception & e)
 	{
 		qCritical() << "getCurrentContext exception:" << e.what();
-		return static_cast<jobject>(0);
+		return nullptr;
 	}
 }
-
-
-
-Context::Context():
-	QJniObject(getCurrentContextNoThrow(), true)
-{
-}
-
-
-
-Activity::Activity():
-	QJniObject(getActivityNoThrow(), true)
-{
-}
-
 
 
 void preloadJavaClass(const char * class_name)
@@ -213,7 +282,6 @@ void preloadJavaClass(const char * class_name)
 	// not working properly in some situations (???)
 	// Also, it is nicer to have a single function to preload classed and single path to call it.
 	// So, let's call it through Java.
-	// qDebug()<<__PRETTY_FUNCTION__<<class_name;
 	if (!class_name || !(*class_name))
 	{
 		qWarning() << "preloadJavaClass has been called with empty class name!";
@@ -224,10 +292,8 @@ void preloadJavaClass(const char * class_name)
 		QJniEnvPtr jep;
 		if (jep.isClassPreloaded(class_name))
 		{
-			// qDebug()<<"Class already pre-loaded:"<<class_name;
 			return;
 		}
-		// qDebug()<<"Pre-loading:"<<class_name;
 
 		static const char * const c_class_name = "ru/dublgis/qjnihelpers/ClassLoader";
 		static const char * const c_method_name = "callJNIPreloadClass";
@@ -241,7 +307,7 @@ void preloadJavaClass(const char * class_name)
 	catch (const std::exception & e)
 	{
 		qWarning() << "Failed to preload class:" << class_name << "Exception:" << e.what();
-		throw;
+		throw e;
 	}
 }
 
@@ -257,13 +323,18 @@ void preloadJavaClasses(const std::initializer_list<const char *> & list)
 
 void preloadJavaClasses()
 {
-	preloadJavaClasses({c_activity_getter_class_name, "android/os/Build$VERSION"});
+	static std::once_flag call_flag;
+	std::call_once(call_flag, [] {
+		preloadJavaClasses({
+			c_activity_getter_class_name,
+			"android/os/Build$VERSION"});
+	});
 }
 
 
 int apiLevel()
 {
-	static int level_ = -1;
+	static std::atomic<int> level_ = -1;
 	if (level_ < 0)
 	{
 		QJniClass version("android/os/Build$VERSION");
@@ -285,24 +356,20 @@ JNIEXPORT void JNICALL Java_ru_dublgis_qjnihelpers_ClassLoader_nativeJNIPreloadC
 JNIEXPORT void JNICALL Java_ru_dublgis_qjnihelpers_ClassLoader_nativeJNIPreloadClass(JNIEnv * env, jobject, jstring classname)
 {
 	QJniEnvPtr jep(env);
-	QString qclassname = jep.QStringFromJString(classname);
-	bool ok = jep.preloadClass(qclassname.toLatin1());
-	if (!ok)
+	const QString qclassname = jep.QStringFromJString(classname);
+	if (!jep.preloadClass(qclassname.toLatin1()))
 	{
 		qCritical() << "Failed to preload Java class:" << qclassname;
 	}
 
 	// During the first call of this function, we can also pre-load classes for our own use.
-	static bool first_call = true;
-	if (first_call)
-	{
-		bool mok = jep.preloadClass(c_activity_getter_class_name);
-		if (!mok)
+	static std::once_flag call_flag;
+	std::call_once(call_flag, [&jep] {
+		if (!jep.preloadClass(c_activity_getter_class_name))
 		{
-			qCritical() << "Failed to preload Java class:" << qclassname;
+			qCritical() << "Failed to preload Java class:" << c_activity_getter_class_name;
 		}
-		first_call = false;
-	}
+	});
 }
 
 } // extern "C"

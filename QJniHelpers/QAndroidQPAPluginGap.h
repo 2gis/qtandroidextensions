@@ -41,75 +41,86 @@
  * This namespace contains some functions which screen differences between various
  * Android QPA plugin implementations.
  */
-namespace QAndroidQPAPluginGap {
+namespace QAndroidQPAPluginGap
+{
 
-	class QAndroidSpecificJniException: public QJniBaseException
-	{
-	public:
-		QAndroidSpecificJniException(const char * message);
-	};
+#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
+using QAndroidSpecificJniException = QJniBaseException;
+#endif
 
-	/*!
-	 * Return pointer to JavaVM using helpers available in current QPA plug-in.
-	 */
-	JavaVM * detectJavaVM();
 
-	/*!
-	 * Obtain Activity object.
-	 * \param env, jo are not used and only needed so the function could be set as native
-	 *  method in Java object and called from there over JNI.
-	 * \return Returns local JNI reference to the Activity object.
-	 */
-	jobject JNICALL getActivity(JNIEnv * env = 0, jobject jo = 0);
+//! A lightweight object to access QtActivity.
+class Activity: public QJniObject
+{
+public:
+	Activity();
+};
 
-	jobject JNICALL getActivityNoThrow(JNIEnv * env = 0, jobject jo = 0);
 
-	void setCustomContext(jobject context);
+//! A lightweight object to access Context (either custom context or QtActivity).
+class Context: public QJniObject
+{
+public:
+	Context();
+};
 
-	/*!
-	 * Returns custom context if it's set, or null if it's not set.
-	 * \param env, jo are not used and only needed so the function could be set as native
-	 *  method in Java object and called from there over JNI.*
-	 */
-	jobject JNICALL getCustomContext(JNIEnv * env = 0, jobject jo = 0);
 
-	bool customContextSet();
+/*!
+ * Return pointer to JavaVM using helpers available in current QPA plug-in.
+ */
+JavaVM * detectJavaVM();
 
-	/*!
-	 * Returns custom context if it's set, or activity if it's not set.
-	 * \param env, jo are not used and only needed so the function could be set as native
-	 *  method in Java object and called from there over JNI.*
-	 */
-	jobject JNICALL getCurrentContext(JNIEnv * env = 0, jobject jo = 0);
+/*!
+ * Obtain QtActivity object.
+ * Returns new local reference that must be disposed after use if the function was called from C++.
+ * Use Activity object to handle that automatically.
+ * If errorIfNone == true, the functions will output to qCritical if failed,
+ * no-NoThrow versions will also throw an exception if failed.
+ */
+jobject JNICALL getActivityEx(JNIEnv * env = nullptr, jobject jo = nullptr, bool errorIfNone = true);
+jobject JNICALL getActivity(JNIEnv * env = nullptr, jobject jo = nullptr);
+jobject JNICALL getActivityNoThrowEx(JNIEnv * env = nullptr, jobject jo = nullptr, bool errorIfNone = true);
+jobject JNICALL getActivityNoThrow(JNIEnv * env = nullptr, jobject jo = nullptr);
 
-	jobject JNICALL getCurrentContextNoThrow(JNIEnv * env = 0, jobject jo = 0);
+/*!
+ * Helper to check if we have QtActivity without throwing exceptions & logging errors.
+ */
+bool isActivityAvailable();
 
-	class Activity: public QJniObject
-	{
-	public:
-		Activity();
-	private:
-		Q_DISABLE_COPY(Activity)
-	};
+/*!
+ * Sets custom Context. It is usually expected to be an Activity or Service.
+ * Useful for writing Service-based apps.
+ */
+void setCustomContext(jobject context);
 
-	class Context: public QJniObject
-	{
-	public:
-		Context();
-	private:
-		Q_DISABLE_COPY(Context)
-	};
+/*!
+ * Returns new local reference that must be disposed after use if the function was called from C++.
+ * If custom context is not set the function quietly returns nullptr.
+ */
+jobject JNICALL getCustomContext(JNIEnv * env = nullptr, jobject jo = nullptr);
 
-	/*!
-	 * This function should be called from main thread to pre-load Java class, so
-	 * objects of the class could later be instantiated from threads not created in Java.
-	 */
-	void preloadJavaClass(const char * class_name);
-	void preloadJavaClasses(const std::initializer_list<const char *> & list);
+bool customContextSet();
 
-	void preloadJavaClasses();
+/*!
+ * Returns custom context if it's set, or QtActivity if it's not set.
+ * Use Context object to handle that automatically.
+ * Returns new local reference that must be disposed after use if the function was called from C++.
+ */
+jobject JNICALL getCurrentContext(JNIEnv * env = nullptr, jobject jo = nullptr);
+jobject JNICALL getCurrentContextNoThrow(JNIEnv * env = nullptr, jobject jo = nullptr);
 
-	int apiLevel();
+/*!
+ * This function should be called from main thread to pre-load Java class, so
+ * objects of the class could later be instantiated from threads not created in Java.
+ */
+void preloadJavaClass(const char * class_name);
+void preloadJavaClasses(const std::initializer_list<const char *> & list);
+
+//! Preload classes used by QAndroidQPAPluginGap itself.
+void preloadJavaClasses();
+
+//! Simple & cached access to android.os.Build.VERSION.SDK_INT
+int apiLevel();
 
 } // namespace QAndroidQPAPluginGap
 
