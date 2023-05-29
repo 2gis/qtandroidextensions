@@ -1,13 +1,12 @@
 /*
   QJniHelpers library
 
-  Authors:
-  Ivan Avdeev <marflon@gmail.com>
   Sergey A. Galin <sergey.galin@gmail.com>
+  Based on idea & some code by Ivan Avdeev <marflon@gmail.com>
 
   Distrbuted under The BSD License
 
-  Copyright (c) 2017, DoubleGIS, LLC.
+  Copyright (c) 2017-2023, DoubleGIS, LLC.
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
