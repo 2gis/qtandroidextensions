@@ -37,9 +37,10 @@
 #pragma once
 #include "QJniHelpers.h"
 
+
 /*!
- * This namespace contains some functions which screen differences between various
- * Android QPA plugin implementations.
+ * This namespace contains some vital Android JNI functions
+ * that are compatible to different QPA plugins.
  */
 namespace QAndroidQPAPluginGap
 {
