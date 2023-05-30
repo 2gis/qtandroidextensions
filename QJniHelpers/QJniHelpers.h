@@ -241,15 +241,15 @@ public:
 	/*!
 	 * Create a wrapper for class 'clazz'.
 	 */
-	QJniClass(jclass clazz);
+	explicit QJniClass(jclass clazz);
 
 	/*!
 	 * Create a wrapper for class 'full_class_name'.
 	 */
-	QJniClass(const char * full_class_name);
+	explicit QJniClass(const char * full_class_name);
 
 	//! Create QJniClass for the jobject.
-	QJniClass(jobject object);
+	explicit QJniClass(jobject object);
 
 	QJniClass(const QJniClass & other);
 	QJniClass(QJniClass && other);

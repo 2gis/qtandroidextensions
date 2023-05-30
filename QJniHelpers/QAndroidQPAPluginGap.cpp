@@ -182,7 +182,7 @@ jobject JNICALL getActivityEx(JNIEnv * env, jobject, bool errorIfNone)
 		}
 		else
 		{
-			return nullptr;
+			return 0;
 		}
 	}
 }
@@ -210,7 +210,7 @@ jobject JNICALL getActivityNoThrowEx(JNIEnv * env, jobject jo, bool errorIfNone)
 		{
 			qInfo() << "getActivityNoThrowEx exception:" << e.what();
 		}
-		return nullptr;
+		return 0;
 	}
 }
 
@@ -251,7 +251,7 @@ jobject JNICALL getCustomContext(JNIEnv * env, jobject)
 	QMutexLocker locker(&s_global_context_mutex);
 	return (s_custom_context)
 		? QJniEnvPtr(env).env()->NewLocalRef(s_custom_context.jObject())
-		: jobject { nullptr };
+		: jobject { 0 };
 }
 
 
@@ -282,7 +282,7 @@ jobject JNICALL getCurrentContextNoThrow(JNIEnv * env, jobject jo)
 	catch (const std::exception & e)
 	{
 		qCritical() << "getCurrentContext exception:" << e.what();
-		return nullptr;
+		return 0;
 	}
 }
 

@@ -785,11 +785,13 @@ QJniClass::QJniClass(const char * full_class_name)
 {
 	if (!full_class_name)
 	{
-		throw QJniBaseException("Null class name in QJniClass::QJniClass");
+		qWarning() << "Null class name in QJniClass::QJniClass";
+		return;
 	}
 	if (!(*full_class_name))
 	{
-		throw QJniBaseException("Empty class name in QJniClass::QJniClass");
+		qWarning() << "Empty class name in QJniClass::QJniClass";
+		return;
 	}
 	construction_class_name_ = full_class_name;
 
@@ -799,7 +801,7 @@ QJniClass::QJniClass(const char * full_class_name)
 	{
 		throw QJniBaseException("Exception in JniEnvPtr::findClass");
 	}
-	if (cls == 0)
+	if (!cls)
 	{
 		throw QJniClassNotFoundException(full_class_name);
 	}
@@ -835,15 +837,16 @@ QJniClass::QJniClass(const QJniClass & other)
 QJniClass::QJniClass(QJniClass && other)
 {
 	class_ = other.class_;
-	other.class_ = nullptr;
+	other.class_ = 0;
 	construction_class_name_ = std::move(other.construction_class_name_);
 }
 
 
-QJniClass & QJniClass::operator=(const QJniClass &other)
+QJniClass & QJniClass::operator=(const QJniClass & other)
 {
 	if (this != &other)
 	{
+		construction_class_name_ = other.construction_class_name_;
 		initClass(QJniEnvPtr().env(), other.jClass());
 	}
 	return *this;
@@ -856,7 +859,7 @@ QJniClass & QJniClass::operator=(QJniClass && other)
 	{
 		clearClass(QJniEnvPtr().env());
 		class_ = other.class_;
-		other.class_ = nullptr;
+		other.class_ = 0;
 		construction_class_name_ = std::move(other.construction_class_name_);
 	}
 	return *this;
@@ -878,11 +881,11 @@ bool QJniClass::classAvailable(const char * full_class_name)
 	{
 		return false;
 	}
-	return cls != nullptr;
+	return cls != 0;
 }
 
 
-void QJniClass::initClass(JNIEnv* env, jclass clazz)
+void QJniClass::initClass(JNIEnv * env, jclass clazz)
 {
 	QJniEnvPtr jep(env);
 	clearClass(jep.env());
@@ -897,7 +900,7 @@ void QJniClass::initClass(JNIEnv* env, jclass clazz)
 }
 
 
-void QJniClass::clearClass(JNIEnv* env)
+void QJniClass::clearClass(JNIEnv * env)
 {
 	if (class_ != 0)
 	{
@@ -907,7 +910,7 @@ void QJniClass::clearClass(JNIEnv* env)
 }
 
 
-void QJniClass::callStaticVoid(const char* method_name)
+void QJniClass::callStaticVoid(const char * method_name)
 {
 	VERBOSE(qWarning("void QJniClass::CallStaticVoid(const char* method_name) %p \"%s\"", reinterpret_cast<void*>(this), method_name));
 	QJniEnvPtr jep;
@@ -925,7 +928,7 @@ void QJniClass::callStaticVoid(const char* method_name)
 }
 
 
-jint QJniClass::callStaticInt(const char* method_name)
+jint QJniClass::callStaticInt(const char * method_name)
 {
 	VERBOSE(qWarning("void QJniClass::callStaticInt(const char* method_name) %p \"%s\"", reinterpret_cast<void*>(this), method_name));
 	QJniEnvPtr jep;
@@ -944,7 +947,7 @@ jint QJniClass::callStaticInt(const char* method_name)
 }
 
 
-jlong QJniClass::callStaticLong(const char* method_name)
+jlong QJniClass::callStaticLong(const char * method_name)
 {
 	VERBOSE(qWarning("void QJniClass::callStaticLong(const char* method_name) %p \"%s\"", reinterpret_cast<void*>(this), method_name));
 	QJniEnvPtr jep;
@@ -963,7 +966,7 @@ jlong QJniClass::callStaticLong(const char* method_name)
 }
 
 
-bool QJniClass::callStaticBoolean(const char* method_name)
+bool QJniClass::callStaticBoolean(const char * method_name)
 {
 	VERBOSE(qWarning("void QJniClass::callStaticBoolean(const char* method_name) %p \"%s\"", reinterpret_cast<void*>(this), method_name));
 	QJniEnvPtr jep;
@@ -1305,7 +1308,7 @@ QJniObject QJniClass::callStaticObj(const char * method_name, const char * objna
 	}
 	if (!jret)
 	{
-		return nullptr;
+		return {};
 	}
 	return QJniObject(jret, true, objname);
 }
@@ -1345,7 +1348,7 @@ QJniObject * QJniClass::callStaticParamObject(const char * method_name, const ch
 	}
 	if (!jret)
 	{
-		return nullptr;
+		return 0;
 	}
 	return new QJniObject(jret, true, objname);
 }
@@ -1632,7 +1635,7 @@ QJniObject::QJniObject(QJniObject && other)
 	: QJniClass(other)
 {
 	instance_ = other.instance_;
-	other.instance_ = nullptr;
+	other.instance_ = 0;
 }
 
 
@@ -1658,7 +1661,7 @@ QJniObject & QJniObject::operator=(QJniObject && other)
 		dispose();
 		QJniClass::operator=(other);
 		instance_ = other.instance_;
-		other.instance_ = nullptr;
+		other.instance_ = 0;
 	}
 	return *this;
 }
@@ -1684,7 +1687,7 @@ void QJniObject::dispose()
 	if (instance_)
 	{
 		env.env()->DeleteGlobalRef(instance_);
-		instance_ = nullptr;
+		instance_ = 0;
 	}
 }
 
@@ -2513,8 +2516,8 @@ void QJniObject::callVoid(const char * method_name, const QString & string1, con
 
 
 QJniLocalRef::QJniLocalRef()
-	: local_(nullptr)
-	, env_(nullptr)
+	: local_(0)
+	, env_(0)
 {
 }
 
@@ -2539,7 +2542,7 @@ QJniLocalRef::QJniLocalRef(const QJniLocalRef & other)
 QJniLocalRef::QJniLocalRef(QJniLocalRef && other)
 {
 	local_ = other.local_;
-	other.local_ = nullptr;
+	other.local_ = 0;
 	env_ = other.env_; // No need to zero other.env_
 }
 
@@ -2571,7 +2574,7 @@ QJniLocalRef & QJniLocalRef::operator=(QJniLocalRef && other)
 	{
 		dispose();
 		local_ = other.local_;
-		other.local_ = nullptr;
+		other.local_ = 0;
 		env_ = other.env_; // No need to zero other.env_
 	}
 	return *this;
@@ -2590,7 +2593,7 @@ void QJniLocalRef::dispose()
 		if (env_)
 		{
 			env_->DeleteLocalRef(local_);
-			local_ = nullptr;
+			local_ = 0;
 		}
 	}
 }
