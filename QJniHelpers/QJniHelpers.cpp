@@ -1348,7 +1348,7 @@ QJniObject * QJniClass::callStaticParamObject(const char * method_name, const ch
 	}
 	if (!jret)
 	{
-		return 0;
+		return nullptr;
 	}
 	return new QJniObject(jret, true, objname);
 }
