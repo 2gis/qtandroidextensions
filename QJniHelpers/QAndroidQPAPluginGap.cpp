@@ -106,19 +106,30 @@ void initActivity()
 	{
 		return;
 	}
-	QJniClass activityGetterClass(c_activity_getter_class_name);
-	if (!activityGetterClass)
+	try
 	{
-		s_activity = QJniObject {};
-		qWarning() << "QtActivity retriever class could not be accessed.";
-		return;
+		QJniClass activityGetterClass(c_activity_getter_class_name);
+		if (!activityGetterClass)
+		{
+			s_activity = QJniObject {};
+			qWarning() << "QtActivity retriever class could not be accessed.";
+			return;
+		}
+		s_activity = activityGetterClass.callStaticObj(
+			c_activity_getter_method_name,
+			c_activity_getter_result_name);
+		if (!(*s_activity))
+		{
+			qInfo() << "QtActivity retriever didn't return an object.";
+		}
 	}
-	s_activity = activityGetterClass.callStaticObj(
-		c_activity_getter_method_name,
-		c_activity_getter_result_name);
-	if (!(*s_activity))
+	catch (const std::exception & e)
 	{
-		qInfo() << "QtActivity retriever didn't return an object.";
+		qWarning() << "JNI exception in initActivity: " << e.what();
+		if (!s_activity)
+		{
+			s_activity = QJniObject {};
+		}
 	}
 }
 
