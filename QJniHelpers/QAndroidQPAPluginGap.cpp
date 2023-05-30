@@ -167,7 +167,7 @@ jobject JNICALL getActivityEx(JNIEnv * env, jobject, bool errorIfNone)
 	{
 		if (errorIfNone)
 		{
-			 throw QJniBaseException("Failed to get QtActivity object.");
+			throw QJniBaseException("Failed to get QtActivity object.");
 		}
 		else
 		{
