@@ -6,7 +6,7 @@
 
   Distrbuted under The BSD License
 
-  Copyright (c) 2014, DoubleGIS, LLC.
+  Copyright (c) 2014-2023, DoubleGIS, LLC.
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -131,6 +131,14 @@ void initActivity() noexcept
 			s_activity = QJniObject {};
 		}
 	}
+	catch (...)
+	{
+		qWarning() << "Unknwon exception in initActivity";
+		if (!s_activity)
+		{
+			s_activity = QJniObject {};
+		}
+	}
 }
 
 } // anonymous namespace
@@ -138,14 +146,14 @@ void initActivity() noexcept
 
 
 Context::Context()
-	: QJniObject(getCurrentContextNoThrow(), true)
+	: QJniObject(getCurrentContextNoThrowEx(nullptr, 0, true), true)
 {
 }
 
 
 
 Activity::Activity()
-	: QJniObject(getActivityNoThrow(), true)
+	: QJniObject(getActivityNoThrowEx(nullptr, 0, true), true)
 {
 }
 
@@ -226,6 +234,18 @@ jobject JNICALL getActivityNoThrowEx(JNIEnv * env, jobject jo, bool errorIfNone)
 		}
 		return 0;
 	}
+	catch (...)
+	{
+		if (errorIfNone)
+		{
+			qCritical() << "Unknown getActivityNoThrowEx exception";
+		}
+		else
+		{
+			qInfo() << "Unknown getActivityNoThrowEx exception";
+		}
+		return 0;
+	}
 }
 
 
@@ -276,28 +296,45 @@ bool customContextSet()
 }
 
 
-jobject JNICALL getCurrentContext(JNIEnv * env, jobject)
+jobject JNICALL getCurrentContextEx(JNIEnv * env, jobject jo, bool errorIfNone)
 {
 	QMutexLocker locker(&s_global_context_mutex);
 	if (jobject ret = getCustomContext())
 	{
 		return ret;
 	}
-	return getActivity();
+	return getActivityEx(env, jo, errorIfNone);
 }
 
 
-jobject JNICALL getCurrentContextNoThrow(JNIEnv * env, jobject jo) noexcept
+jobject JNICALL getCurrentContext(JNIEnv * env, jobject jo)
+{
+	return getCurrentContextEx(env, jo, true);
+}
+
+
+jobject JNICALL getCurrentContextNoThrowEx(JNIEnv * env, jobject jo, bool errorIfNone) noexcept
 {
 	try
 	{
-		return getCurrentContext(env, jo);
+		return getCurrentContextEx(env, jo, errorIfNone);
 	}
 	catch (const std::exception & e)
 	{
 		qCritical() << "getCurrentContext exception:" << e.what();
 		return 0;
 	}
+	catch (...)
+	{
+		qCritical() << "Unknown getCurrentContext exception";
+		return 0;
+	}
+}
+
+
+jobject JNICALL getCurrentContextNoThrow(JNIEnv * env, jobject jo) noexcept
+{
+	return getCurrentContextNoThrowEx(env, jo, true);
 }
 
 
@@ -374,27 +411,38 @@ int apiLevel()
 // JNI entry points. Must be "C" because the function names should not be mangled.
 extern "C" {
 
-JNIEXPORT void JNICALL Java_ru_dublgis_qjnihelpers_ClassLoader_nativeJNIPreloadClass(JNIEnv * env, jobject, jstring classname);
+JNIEXPORT void JNICALL Java_ru_dublgis_qjnihelpers_ClassLoader_nativeJNIPreloadClass(JNIEnv * env, jobject, jstring classname) noexcept;
 
 /*! This function does the actual pre-loading of a Java class. It can be called either from Java
 	via ClassLoader.callJNIPreloadClass() or from C++ main() thread as QAndroidQPAPluginGap.preloadJavaClass(). */
-JNIEXPORT void JNICALL Java_ru_dublgis_qjnihelpers_ClassLoader_nativeJNIPreloadClass(JNIEnv * env, jobject, jstring classname)
+JNIEXPORT void JNICALL Java_ru_dublgis_qjnihelpers_ClassLoader_nativeJNIPreloadClass(JNIEnv * env, jobject, jstring classname) noexcept
 {
-	QJniEnvPtr jep(env);
-	const QString qclassname = jep.toQString(classname);
-	if (!jep.preloadClass(qclassname.toLatin1()))
+	try
 	{
-		qCritical() << "Failed to preload Java class:" << qclassname;
-	}
-
-	// During the first call of this function, we can also pre-load classes for our own use.
-	static std::once_flag call_flag;
-	std::call_once(call_flag, [&jep] {
-		if (!jep.preloadClass(c_activity_getter_class_name))
+		QJniEnvPtr jep(env);
+		const QString qclassname = jep.toQString(classname);
+		if (!jep.preloadClass(qclassname.toLatin1()))
 		{
-			qCritical() << "Failed to preload Java class:" << c_activity_getter_class_name;
+			qCritical() << "Failed to preload Java class:" << qclassname;
 		}
-	});
+
+		// During the first call of this function, we can also pre-load classes for our own use.
+		static std::once_flag call_flag;
+		std::call_once(call_flag, [&jep] {
+			if (!jep.preloadClass(c_activity_getter_class_name))
+			{
+				qCritical() << "Failed to preload Java class:" << c_activity_getter_class_name;
+			}
+		});
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "Exception in nativeJNIPreloadClass:" << e.what();
+	}
+	catch (...)
+	{
+		qCritical() << "Unknown exception in nativeJNIPreloadClass";
+	}
 }
 
 } // extern "C"

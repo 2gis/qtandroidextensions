@@ -6,7 +6,7 @@
 
   Distrbuted under The BSD License
 
-  Copyright (c) 2014, DoubleGIS, LLC.
+  Copyright (c) 2014-2023, DoubleGIS, LLC.
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -110,7 +110,9 @@ bool customContextSet();
  * Use Context object to handle that automatically.
  * Returns new local reference that must be disposed after use if the function was called from C++.
  */
+jobject JNICALL getCurrentContextEx(JNIEnv * env = nullptr, jobject jo = nullptr, bool errorIfNone = true);
 jobject JNICALL getCurrentContext(JNIEnv * env = nullptr, jobject jo = nullptr);
+jobject JNICALL getCurrentContextNoThrowEx(JNIEnv * env = nullptr, jobject jo = nullptr, bool errorIfNone = true) noexcept;
 jobject JNICALL getCurrentContextNoThrow(JNIEnv * env = nullptr, jobject jo = nullptr) noexcept;
 
 /*!
