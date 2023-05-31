@@ -112,7 +112,7 @@ void initActivity() noexcept
 		if (!activityGetterClass)
 		{
 			s_activity = QJniObject {};
-			qWarning() << "QtActivity retriever class could not be accessed.";
+			qWarning() << "initActivity: QtActivity retriever class could not be accessed.";
 			return;
 		}
 		s_activity = activityGetterClass.callStaticObj(
@@ -120,7 +120,7 @@ void initActivity() noexcept
 			c_activity_getter_result_name);
 		if (!(*s_activity))
 		{
-			qInfo() << "QtActivity retriever didn't return an object.";
+			qInfo() << "initActivity: QtActivity retriever didn't return an object.";
 		}
 	}
 	catch (const std::exception & e)

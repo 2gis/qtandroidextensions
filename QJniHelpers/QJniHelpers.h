@@ -213,8 +213,8 @@ public:
 	bool clearException(bool describe = true);
 
 public:
-	static void setJavaVM(JavaVM*);
-	static void setJavaVM(JNIEnv*);
+	static void setJavaVM(JavaVM *);
+	static void setJavaVM(JNIEnv *);
 
 private:
 	void checkEnv();

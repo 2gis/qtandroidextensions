@@ -403,8 +403,8 @@ bool QJniEnvPtr::preloadClass(const char * class_name)
 	QMutexLocker locker(&g_PreloadedClassesMutex);
 	const QString class_name_qstr = QLatin1String(class_name);
 	if (g_PreloadedClasses.contains(class_name_qstr)) {
-		VERBOSE(qWarning("Class already preloaded: \"%s\" as %p for tid %d",
-			class_name, gclazz, (int)gettid()));
+		VERBOSE(qWarning("Class already preloaded: \"%s\", tid %d",
+			class_name, (int)gettid()));
 		return true;
 	}
 	VERBOSE(qWarning("Preloading class \"%s\"", class_name));
@@ -416,8 +416,8 @@ bool QJniEnvPtr::preloadClass(const char * class_name)
 	}
 	jclass gclazz = static_cast<jclass>(env_->NewGlobalRef(clazz));
 	g_PreloadedClasses.insert(class_name_qstr, gclazz);
-	VERBOSE(qWarning("...Preloaded class \"%s\" as %p for tid %d",
-		class_name, gclazz, (int)gettid()));
+	VERBOSE(qWarning("...Preloaded class \"%s\", tid %d",
+		class_name, (int)gettid()));
 	return true;
 }
 
@@ -778,8 +778,10 @@ QJniClass::QJniClass()
 QJniClass::QJniClass(jclass clazz)
 	: class_(0)
 {
-	QJniEnvPtr jep;
-	initClass(jep.env(), clazz);
+	if (clazz)
+	{
+		initClass(QJniEnvPtr().env(), clazz);
+	}
 }
 
 
@@ -796,8 +798,8 @@ QJniClass::QJniClass(const char * full_class_name)
 		qWarning() << "Empty class name in QJniClass::QJniClass";
 		return;
 	}
+	VERBOSE(qWarning("Loading class \"%s\"", full_class_name));
 	construction_class_name_ = full_class_name;
-
 	QJniEnvPtr jep;
 	jclass cls = jep.findClass(full_class_name); // this is a preloaded global ref, we don't need to delete it as a local ref
 	if (jep.clearException())
@@ -809,7 +811,6 @@ QJniClass::QJniClass(const char * full_class_name)
 		throw QJniClassNotFoundException(full_class_name);
 	}
 	VERBOSE(qWarning("Class \"%s\" is loaded @ %p", full_class_name, cls));
-
 	initClass(jep.env(), cls);
 }
 
@@ -817,10 +818,10 @@ QJniClass::QJniClass(const char * full_class_name)
 QJniClass::QJniClass(jobject object)
 	: class_(0)
 {
-	QJniEnvPtr jep;
 	// Note: class is expected to be a valid ref during the whole lifetime of the object.
 	if (object)
 	{
+		QJniEnvPtr jep;
 		QJniLocalRef clazz(jep.env(), jep.env()->GetObjectClass(object));
 		// Note: clazz may be null (for arrays).
 		initClass(jep.env(), clazz);
@@ -832,8 +833,10 @@ QJniClass::QJniClass(const QJniClass & other)
 	: class_(0)
 	, construction_class_name_(other.construction_class_name_)
 {
-	QJniEnvPtr jep;
-	initClass(jep.env(), other.class_);
+	if (other)
+	{
+		initClass(QJniEnvPtr().env(), other.class_);
+	}
 }
 
 
@@ -872,7 +875,10 @@ QJniClass & QJniClass::operator=(QJniClass && other)
 QJniClass::~QJniClass()
 {
 	VERBOSE(qWarning("QJniClass::~QJniClass() %p",this));
-	clearClass(QJniEnvPtr().env());
+	if (class_)
+	{
+		clearClass(QJniEnvPtr().env());
+	}
 }
 
 
@@ -1184,7 +1190,8 @@ QJniObject * QJniClass::getStaticObjectField(const char * field_name, const char
 
 QJniObject QJniClass::getStaticObjField(const char * field_name, const char * objname)
 {
-	VERBOSE(qWarning("int QJniObject::getStaticObjectField(const char * field_name, const char * objname) %p \"%s\"", reinterpret_cast<void*>(this), field_name, objname));
+	VERBOSE(qWarning("int QJniObject::getStaticObjectField(const char * field_name, const char * objname) %p \"%s\", \"%s\"",
+		reinterpret_cast<void*>(this), field_name, objname));
 	QByteArray obj;
 	appendNormalizedObjectName(obj, objname);
 	QJniEnvPtr jep;
@@ -1685,12 +1692,15 @@ QString QJniObject::toQString() const
 void QJniObject::dispose()
 {
 	VERBOSE(qWarning("QJniObject::dispose() %p",this));
-	QJniEnvPtr env;
-	clearClass(env.env());
-	if (instance_)
+	if (jClass() || instance_)
 	{
-		env.env()->DeleteGlobalRef(instance_);
-		instance_ = 0;
+		QJniEnvPtr env;
+		clearClass(env.env());
+		if (instance_)
+		{
+			env.env()->DeleteGlobalRef(instance_);
+			instance_ = 0;
+		}
 	}
 }
 
