@@ -256,7 +256,7 @@ public:
 	QJniClass & operator=(const QJniClass & other);
 	QJniClass & operator=(QJniClass && other);
 
-	virtual ~QJniClass();
+	virtual ~QJniClass() noexcept;
 
 	static bool classAvailable(const char * full_class_name);
 
@@ -396,7 +396,7 @@ public:
 	QString toQString() const;
 
 	void dispose();
-	~QJniObject() override;
+	~QJniObject() noexcept override;
 
 
 	/*!
@@ -565,7 +565,7 @@ public:
 	QJniLocalRef & operator=(QJniLocalRef && other);
 
 	void dispose();
-	~QJniLocalRef();
+	~QJniLocalRef() noexcept;
 
 	/*!
 	 * Detach the QJniLocalRef from jobject and return the jobject casted to the

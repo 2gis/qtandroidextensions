@@ -69,7 +69,7 @@ using PreloadedClasses = QHash<QString, jclass>;
 class QJniEnvPtrThreadDetacher
 {
 public:
-	~QJniEnvPtrThreadDetacher()
+	~QJniEnvPtrThreadDetacher() noexcept
 	{
 		if (JavaVM * jvm = g_JavaVm)
 		{
@@ -89,11 +89,22 @@ public:
  class QJniClassUnloader
 {
 public:
-	~QJniClassUnloader()
+	~QJniClassUnloader() noexcept
 	{
 		if (g_JavaVm != 0)
 		{
-			QJniEnvPtr().unloadAllClasses();
+			try
+			{
+				QJniEnvPtr().unloadAllClasses();
+			}
+			catch (const std::exception & e)
+			{
+				qCritical() << "Exception in ~QJniClassUnloader: " << e.what();
+			}
+			catch (...)
+			{
+				qCritical() << "Unknown exception in ~QJniClassUnloader";
+			}
 		}
 	}
 };
@@ -872,12 +883,23 @@ QJniClass & QJniClass::operator=(QJniClass && other)
 }
 
 
-QJniClass::~QJniClass()
+QJniClass::~QJniClass() noexcept
 {
-	VERBOSE(qWarning("QJniClass::~QJniClass() %p",this));
-	if (class_)
+	try
 	{
-		clearClass(QJniEnvPtr().env());
+		VERBOSE(qWarning("QJniClass::~QJniClass() %p",this));
+		if (class_)
+		{
+			clearClass(QJniEnvPtr().env());
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "Exception in ~QJniClass: " << e.what();
+	}
+	catch (...)
+	{
+		qCritical() << "Unknown exception in ~QJniClass";
 	}
 }
 
@@ -1705,9 +1727,20 @@ void QJniObject::dispose()
 }
 
 
-QJniObject::~QJniObject()
+QJniObject::~QJniObject() noexcept
 {
-	dispose();
+	try
+	{
+		dispose();
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "Exception in ~QJniObject: " << e.what();
+	}
+	catch (...)
+	{
+		qCritical() << "Unknown exception in ~QJniObject";
+	}
 }
 
 
@@ -2612,9 +2645,20 @@ void QJniLocalRef::dispose()
 }
 
 
-QJniLocalRef::~QJniLocalRef()
+QJniLocalRef::~QJniLocalRef() noexcept
 {
-	dispose();
+	try
+	{
+		dispose();
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "Exception in ~QJniLocalRef: " << e.what();
+	}
+	catch (...)
+	{
+		qCritical() << "Unknown exception in ~QJniLocalRef";
+	}
 }
 
 
