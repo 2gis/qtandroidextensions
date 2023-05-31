@@ -69,7 +69,7 @@ public:
 /*!
  * Return pointer to JavaVM using helpers available in current QPA plug-in.
  */
-JavaVM * getJavaVM();
+JavaVM * getJavaVM() noexcept;
 #if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
 const auto & detectJavaVM = getJavaVM;
 #endif
@@ -83,8 +83,8 @@ const auto & detectJavaVM = getJavaVM;
  */
 jobject JNICALL getActivityEx(JNIEnv * env = nullptr, jobject jo = nullptr, bool errorIfNone = true);
 jobject JNICALL getActivity(JNIEnv * env = nullptr, jobject jo = nullptr);
-jobject JNICALL getActivityNoThrowEx(JNIEnv * env = nullptr, jobject jo = nullptr, bool errorIfNone = true);
-jobject JNICALL getActivityNoThrow(JNIEnv * env = nullptr, jobject jo = nullptr);
+jobject JNICALL getActivityNoThrowEx(JNIEnv * env = nullptr, jobject jo = nullptr, bool errorIfNone = true) noexcept;
+jobject JNICALL getActivityNoThrow(JNIEnv * env = nullptr, jobject jo = nullptr) noexcept;
 
 /*!
  * Helper to check if we have QtActivity without throwing exceptions & logging errors.
@@ -111,7 +111,7 @@ bool customContextSet();
  * Returns new local reference that must be disposed after use if the function was called from C++.
  */
 jobject JNICALL getCurrentContext(JNIEnv * env = nullptr, jobject jo = nullptr);
-jobject JNICALL getCurrentContextNoThrow(JNIEnv * env = nullptr, jobject jo = nullptr);
+jobject JNICALL getCurrentContextNoThrow(JNIEnv * env = nullptr, jobject jo = nullptr) noexcept;
 
 /*!
  * This function should be called from main thread to pre-load Java class, so

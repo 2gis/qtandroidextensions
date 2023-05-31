@@ -220,7 +220,7 @@ private:
 	void checkEnv();
 
 private:
-	JNIEnv * env_;
+	JNIEnv * env_ = nullptr;
 };
 
 
@@ -343,7 +343,7 @@ protected:
 	inline jclass checkedClass(const char * call_point_info);
 
 private:
-	jclass class_;
+	jclass class_ = 0;
 	QByteArray construction_class_name_;
 };
 
@@ -526,7 +526,7 @@ protected:
 	inline jobject checkedInstance(const char * call_point_info);
 
 protected:
-	jobject instance_;
+	jobject instance_ = 0;
 };
 
 
@@ -544,7 +544,7 @@ public:
 	 * Create without JNIEnv pointer. The object will use QJniEnvPtr to find it.
 	 * The object takes ownership over the existing local reference.
 	 */
-	explicit QJniLocalRef(jobject local): local_(local), env_(0) {}
+	explicit QJniLocalRef(jobject local): local_(local), env_(nullptr) {}
 
 	//! The object takes ownership over the existing local reference.
 	explicit QJniLocalRef(JNIEnv * env, jobject local): local_(local), env_(env) {}
@@ -587,7 +587,7 @@ public:
 	operator QString() const { return QJniEnvPtr(env_).toQString(operator jstring()); }
 
 private:
-	jobject local_;
-	JNIEnv * env_;
+	jobject local_ = 0;
+	JNIEnv * env_ = nullptr;
 };
 

@@ -99,7 +99,7 @@ std::optional<QJniObject> s_activity;
 QJniObject s_custom_context;
 
 
-void initActivity()
+void initActivity() noexcept
 {
 	QMutexLocker locker(&s_global_context_mutex);
 	if (s_activity)
@@ -151,15 +151,29 @@ Activity::Activity()
 
 
 
-JavaVM * getJavaVM()
+JavaVM * getJavaVM() noexcept
 {
-	#if defined(QPA_QT4GRYM)
-		return qt_android_get_java_vm();
-	#elif defined(QPA_QT5)
-		return QAndroidJniEnvironment::javaVM();
-	#else
-		#error "Unimplemented QPA case"
-	#endif
+	try
+	{
+		#if defined(QPA_QT4GRYM)
+			return qt_android_get_java_vm();
+		#elif defined(QPA_QT5)
+			return QAndroidJniEnvironment::javaVM();
+		#else
+			#error "Unimplemented QPA case"
+			return nullptr;
+		#endif
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "Exception in getJavaVM: " << e.what();
+		return nullptr;
+	}
+	catch (...)
+	{
+		qCritical() << "Unknown exception in getJavaVM";
+		return nullptr;
+	}
 }
 
 
@@ -194,7 +208,7 @@ jobject JNICALL getActivity(JNIEnv * env, jobject jo)
 }
 
 
-jobject JNICALL getActivityNoThrowEx(JNIEnv * env, jobject jo, bool errorIfNone)
+jobject JNICALL getActivityNoThrowEx(JNIEnv * env, jobject jo, bool errorIfNone) noexcept
 {
 	try
 	{
@@ -215,7 +229,7 @@ jobject JNICALL getActivityNoThrowEx(JNIEnv * env, jobject jo, bool errorIfNone)
 }
 
 
-jobject JNICALL getActivityNoThrow(JNIEnv * env, jobject jo)
+jobject JNICALL getActivityNoThrow(JNIEnv * env, jobject jo) noexcept
 {
 	return getActivityNoThrowEx(env, jo, true);
 }
@@ -273,7 +287,7 @@ jobject JNICALL getCurrentContext(JNIEnv * env, jobject)
 }
 
 
-jobject JNICALL getCurrentContextNoThrow(JNIEnv * env, jobject jo)
+jobject JNICALL getCurrentContextNoThrow(JNIEnv * env, jobject jo) noexcept
 {
 	try
 	{
@@ -318,7 +332,7 @@ void preloadJavaClass(const char * class_name)
 	catch (const std::exception & e)
 	{
 		qWarning() << "Failed to preload class:" << class_name << "Exception:" << e.what();
-		throw e;
+		throw;
 	}
 }
 

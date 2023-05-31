@@ -34,6 +34,7 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <atomic>
 #include <unistd.h>
 #include <sys/types.h>
 
@@ -58,7 +59,7 @@
 
 namespace {
 
-JavaVM * g_JavaVm = 0;
+std::atomic<JavaVM *> g_JavaVm = 0;
 
 // Data type to keep list of JNI references to Java classes ever preloaded or loaded.
 using PreloadedClasses = QHash<QString, jclass>;
@@ -70,9 +71,9 @@ class QJniEnvPtrThreadDetacher
 public:
 	~QJniEnvPtrThreadDetacher()
 	{
-		if (g_JavaVm)
+		if (JavaVM * jvm = g_JavaVm)
 		{
-			int errsv = g_JavaVm->DetachCurrentThread();
+			int errsv = jvm->DetachCurrentThread();
 			if (errsv != JNI_OK)
 			{
 				qWarning("Thread %d detach failed: %d", static_cast<int>(gettid()), errsv);
@@ -301,17 +302,18 @@ QJniEnvPtr::QJniEnvPtr(JNIEnv * env)
 	#if defined(Q_OS_ANDROID) || defined(ANDROID)
 		AutoSetJavaVM();
 	#endif
-	if (g_JavaVm == 0)
+	JavaVM * jvm = g_JavaVm;
+	if (jvm == 0)
 	{
 		throw QJniThreadAttachException("Java VM pointer is not set.");
 	}
 	if (!env_)
 	{
-		int errsv = g_JavaVm->GetEnv(reinterpret_cast<void**>(&env_), JNI_VERSION_1_6);
+		int errsv = jvm->GetEnv(reinterpret_cast<void**>(&env_), JNI_VERSION_1_6);
 		if (errsv == JNI_EDETACHED)
 		{
 			VERBOSE(qWarning("Current thread %d is not attached, attaching it...", (int)gettid()));
-			errsv = g_JavaVm->AttachCurrentThread(&env_, 0);
+			errsv = jvm->AttachCurrentThread(&env_, 0);
 			if (errsv != 0)
 			{
 				throw QJniThreadAttachException(
@@ -525,10 +527,10 @@ JavaVM * QJniEnvPtr::getJavaVM()
 
 bool QJniEnvPtr::isCurrentThreadAttached()
 {
-	if (g_JavaVm)
+	if (JavaVM * jvm = g_JavaVm)
 	{
 		JNIEnv * env = 0;
-		int errsv = g_JavaVm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
+		int errsv = jvm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
 		if (errsv == JNI_OK && env)
 		{
 			return true;
@@ -538,16 +540,17 @@ bool QJniEnvPtr::isCurrentThreadAttached()
 }
 
 
-void QJniEnvPtr::setJavaVM(JavaVM* vm)
+void QJniEnvPtr::setJavaVM(JavaVM * vm)
 {
-	// qWarning()<<"SetJavaVM"<<vm;
 	g_JavaVm = vm;
 }
 
 
-void QJniEnvPtr::setJavaVM(JNIEnv* env)
+void QJniEnvPtr::setJavaVM(JNIEnv * env)
 {
-	env->GetJavaVM(&g_JavaVm);
+	JavaVM * jvm = nullptr;
+	env->GetJavaVM(&jvm);
+	g_JavaVm = jvm;
 }
 
 
