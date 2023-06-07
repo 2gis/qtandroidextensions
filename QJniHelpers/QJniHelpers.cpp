@@ -745,6 +745,20 @@ std::vector<QJniObject> QJniEnvPtr::convert(jobjectArray jarray)
 }
 
 
+QStringList QJniEnvPtr::convertToStringList(jobjectArray jarray)
+{
+	VERBOSE(qWarning("QStringList QJniEnvPtr::convertToStringList()"));
+	const std::vector<QJniObject> jstrings = convert(jarray);
+	QStringList result;
+	result.reserve(static_cast<int>(jstrings.size()));
+	for (const QJniObject & jstr : jstrings)
+	{
+		result << jstr.toQString();
+	}
+	return std::move(result);
+}
+
+
 bool QJniEnvPtr::clearException(bool describe /*= true*/)
 {
 	checkEnv();
@@ -770,7 +784,7 @@ bool QJniEnvPtr::clearException(bool describe /*= true*/)
 /////////////////////////////////////////////////////////////////////////////
 
 
-jclass QJniClass::checkedClass(const char * call_point_info)
+jclass QJniClass::checkedClass(const char * call_point_info) const
 {
 	if (!class_)
 	{
@@ -1203,16 +1217,16 @@ QString QJniClass::callStaticString(const char *method_name)
 
 
 #if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
-QJniObject * QJniClass::getStaticObjectField(const char * field_name, const char * objname)
+QJniObject * QJniClass::getStaticObjectField(const char * field_name, const char * objname) const
 {
 	return legacyWrapToHeap(getStaticObjField(field_name, objname));
 }
 #endif
 
 
-QJniObject QJniClass::getStaticObjField(const char * field_name, const char * objname)
+QJniObject QJniClass::getStaticObjField(const char * field_name, const char * objname) const
 {
-	VERBOSE(qWarning("int QJniObject::getStaticObjectField(const char * field_name, const char * objname) %p \"%s\", \"%s\"",
+	VERBOSE(qWarning("int QJniObject::getStaticObjField(const char * field_name, const char * objname) %p \"%s\", \"%s\"",
 		reinterpret_cast<void*>(this), field_name, objname));
 	QByteArray obj;
 	appendNormalizedObjectName(obj, objname);
@@ -1243,7 +1257,7 @@ QJniObject QJniClass::getStaticObjField(const char * field_name, const char * ob
 }
 
 
-QString QJniClass::getStaticStringField(const char * field_name)
+QString QJniClass::getStaticStringField(const char * field_name) const
 {
 	VERBOSE(qWarning("int QJniObject::getStaticStringField(const char * field_name) %p \"%s\"", reinterpret_cast<void*>(this), field_name));
 	QJniEnvPtr jep;
@@ -1262,7 +1276,7 @@ QString QJniClass::getStaticStringField(const char * field_name)
 }
 
 
-jint QJniClass::getStaticIntField(const char * field_name)
+jint QJniClass::getStaticIntField(const char * field_name) const
 {
 	VERBOSE(qWarning("int QJniObject::getStaticIntField(const char * field_name) %p \"%s\"", reinterpret_cast<void*>(this), field_name));
 	QJniEnvPtr jep;
@@ -1281,7 +1295,7 @@ jint QJniClass::getStaticIntField(const char * field_name)
 }
 
 
-bool QJniClass::getStaticBooleanField(const char * field_name)
+bool QJniClass::getStaticBooleanField(const char * field_name) const
 {
 	VERBOSE(qWarning("int QJniObject::getStaticBooleanField(const char * field_name) %p \"%s\"", reinterpret_cast<void*>(this), field_name));
 	QJniEnvPtr jep;
@@ -1297,6 +1311,95 @@ bool QJniClass::getStaticBooleanField(const char * field_name)
 		throw QJniJavaCallException(debugClassName().constData(), field_name, __FUNCTION__);
 	}
 	return (result)? true: false;
+}
+
+
+jfloat QJniClass::getStaticFloatField(const char * field_name) const
+{
+	VERBOSE(qWarning("int QJniObject::getStaticFloatField(const char * field_name) %p \"%s\"", reinterpret_cast<void*>(this), field_name));
+	QJniEnvPtr jep;
+	JNIEnv * env = jep.env();
+	jfieldID fid = env->GetStaticFieldID(checkedClass(__FUNCTION__), field_name, "F");
+	if (!fid)
+	{
+		throw QJniFieldNotFoundException(debugClassName().constData(), field_name, __FUNCTION__);
+	}
+	jfloat result = env->GetStaticFloatField(jClass(), fid);
+	if (jep.clearException())
+	{
+		throw QJniJavaCallException(debugClassName().constData(), field_name, __FUNCTION__);
+	}
+	return result;
+}
+
+
+jfloat QJniClass::getStaticDoubleField(const char * field_name) const
+{
+	VERBOSE(qWarning("int QJniObject::getStaticDoubleField(const char * field_name) %p \"%s\"", reinterpret_cast<void*>(this), field_name));
+	QJniEnvPtr jep;
+	JNIEnv * env = jep.env();
+	jfieldID fid = env->GetStaticFieldID(checkedClass(__FUNCTION__), field_name, "D");
+	if (!fid)
+	{
+		throw QJniFieldNotFoundException(debugClassName().constData(), field_name, __FUNCTION__);
+	}
+	jdouble result = env->GetStaticFloatField(jClass(), fid);
+	if (jep.clearException())
+	{
+		throw QJniJavaCallException(debugClassName().constData(), field_name, __FUNCTION__);
+	}
+	return result;
+}
+
+
+std::vector<bool> QJniClass::getStaticBooleanArrayField(const char * name) const
+{
+	VERBOSE(qWarning("QJniClass::getStaticBooleanArrayField(\"%s\")", name));
+	return QJniEnvPtr().convert(static_cast<jbooleanArray>(getStaticObjField(name, "[Z").jObject()));
+}
+
+
+std::vector<jint> QJniClass::getStaticIntArrayField(const char * name) const
+{
+	VERBOSE(qWarning("QJniClass::getStaticIntArrayField(\"%s\")", name));
+	return QJniEnvPtr().convert(static_cast<jintArray>(getStaticObjField(name, "[I").jObject()));
+}
+
+
+std::vector<jlong> QJniClass::getStaticLongArrayField(const char * name) const
+{
+	VERBOSE(qWarning("QJniClass::getStaticLongArrayField(\"%s\")", name));
+	return QJniEnvPtr().convert(static_cast<jlongArray>(getStaticObjField(name, "[J").jObject()));
+}
+
+
+std::vector<jfloat> QJniClass::getStaticFloatArrayField(const char * name) const
+{
+	VERBOSE(qWarning("QJniClass::getStaticFloatArrayField(\"%s\")", name));
+	return QJniEnvPtr().convert(static_cast<jfloatArray>(getStaticObjField(name, "[F").jObject()));
+}
+
+
+std::vector<jdouble> QJniClass::getStaticDoubleArrayField(const char * name) const
+{
+	VERBOSE(qWarning("QJniClass::getStaticDoubleArrayField(\"%s\")", name));
+	return QJniEnvPtr().convert(static_cast<jdoubleArray>(getStaticObjField(name, "[D").jObject()));
+}
+
+
+std::vector<QJniObject> QJniClass::getStaticObjectArrayField(const char * name, const char * objname) const
+{
+	VERBOSE(qWarning("QJniClass::getStaticObjectArrayField(\"%s\", \"%s\")", name, objname));
+	QByteArray type("[");
+	appendNormalizedObjectName(type, objname);
+	return QJniEnvPtr().convert(static_cast<jobjectArray>(getStaticObjField(name, type.constData()).jObject()));
+}
+
+
+QStringList QJniClass::getStaticStringArrayField(const char * name) const
+{
+	VERBOSE(qWarning("QJniClass::getStaticStringArrayField(\"%s\")", name));
+	return QJniEnvPtr().convertToStringList(static_cast<jobjectArray>(getStaticObjField(name, "[Ljava/lang/String;").jObject()));
 }
 
 
@@ -1528,7 +1631,7 @@ QByteArray QJniClass::debugClassName() const
 // QJniObject
 /////////////////////////////////////////////////////////////////////////////
 
-jobject QJniObject::checkedInstance(const char * call_point_info)
+jobject QJniObject::checkedInstance(const char * call_point_info) const
 {
 	if (!instance_)
 	{
@@ -1701,13 +1804,64 @@ QJniObject & QJniObject::operator=(QJniObject && other)
 
 QJniObject QJniObject::fromString(const QString & str)
 {
+	VERBOSE(qWarning("QJniObject::fromString()"));
 	return QJniObject(QJniEnvPtr().toJString(str), true);
 }
 
 
 QString QJniObject::toQString() const
 {
+	VERBOSE(qWarning("QJniObject::toQString()"));
 	return QJniEnvPtr().toQString(static_cast<jstring>(instance_));
+}
+
+
+std::vector<bool> QJniObject::toBooleanArray() const
+{
+	VERBOSE(qWarning("QJniObject::toBooleanArray()"));
+	return QJniEnvPtr().convert(static_cast<jbooleanArray>(jObject()));
+}
+
+
+std::vector<jint> QJniObject::toIntArray() const
+{
+	VERBOSE(qWarning("QJniObject::toIntArray()"));
+	return QJniEnvPtr().convert(static_cast<jintArray>(jObject()));
+}
+
+
+std::vector<jlong> QJniObject::toLongArray() const
+{
+	VERBOSE(qWarning("QJniObject::toLongArray()"));
+	return QJniEnvPtr().convert(static_cast<jlongArray>(jObject()));
+}
+
+
+std::vector<jfloat> QJniObject::toFloatArray() const
+{
+	VERBOSE(qWarning("QJniObject::toFloatArray()"));
+	return QJniEnvPtr().convert(static_cast<jfloatArray>(jObject()));
+}
+
+
+std::vector<jdouble> QJniObject::toDoubleArray() const
+{
+	VERBOSE(qWarning("QJniObject::toDoubleArray()"));
+	return QJniEnvPtr().convert(static_cast<jdoubleArray>(jObject()));
+}
+
+
+std::vector<QJniObject> QJniObject::toObjectArray() const
+{
+	VERBOSE(qWarning("QJniObject::toObjectArray()"));
+	return QJniEnvPtr().convert(static_cast<jobjectArray>(jObject()));
+}
+
+
+QStringList QJniObject::toStringList() const
+{
+	VERBOSE(qWarning("QJniObject::toStringList()"));
+	return QJniEnvPtr().convertToStringList(static_cast<jobjectArray>(jObject()));
 }
 
 
@@ -2236,7 +2390,7 @@ QString QJniObject::getString(const char *field_name)
 }
 
 
-int QJniObject::getIntField(const char * field_name)
+int QJniObject::getIntField(const char * field_name) const
 {
 	VERBOSE(qWarning("int QJniObject::getIntField(const char* fieldd_name) %p \"%s\"",this,field_name));
 	QJniEnvPtr jep;
@@ -2254,7 +2408,8 @@ int QJniObject::getIntField(const char * field_name)
 	return result;
 }
 
-jlong QJniObject::getLongField(const char * field_name)
+
+jlong QJniObject::getLongField(const char * field_name) const
 {
 	VERBOSE(qWarning("int QJniObject::getLongField(const char* field_name) %p \"%s\"", reinterpret_cast<void*>(this), field_name));
 	QJniEnvPtr jep;
@@ -2273,7 +2428,7 @@ jlong QJniObject::getLongField(const char * field_name)
 }
 
 
-float QJniObject::getFloatField(const char * field_name)
+float QJniObject::getFloatField(const char * field_name) const
 {
 	VERBOSE(qWarning("int QJniObject::getFloatField(const char* field_name) %p \"%s\"", reinterpret_cast<void*>(this), field_name));
 	QJniEnvPtr jep;
@@ -2291,7 +2446,8 @@ float QJniObject::getFloatField(const char * field_name)
 	return result;
 }
 
-double QJniObject::getDoubleField(const char * field_name)
+
+double QJniObject::getDoubleField(const char * field_name) const
 {
 	VERBOSE(qWarning("int QJniObject::getDoubleField(const char* field_name) %p \"%s\"", reinterpret_cast<void*>(this), field_name));
 	QJniEnvPtr jep;
@@ -2310,7 +2466,7 @@ double QJniObject::getDoubleField(const char * field_name)
 }
 
 
-jboolean QJniObject::getBooleanField(const char * field_name)
+jboolean QJniObject::getBooleanField(const char * field_name) const
 {
 	VERBOSE(qWarning("int QJniObject::getBooleanField(const char* field_name) %p \"%s\"", reinterpret_cast<void*>(this), field_name));
 	QJniEnvPtr jep;
@@ -2326,6 +2482,57 @@ jboolean QJniObject::getBooleanField(const char * field_name)
 		throw QJniJavaCallException(debugClassName().constData(), field_name, __FUNCTION__);
 	}
 	return result;
+}
+
+
+std::vector<bool> QJniObject::getBooleanArrayField(const char * name) const
+{
+	VERBOSE(qWarning("QJniObject::getBooleanArrayField(\"%s\")", name));
+	return QJniEnvPtr().convert(static_cast<jbooleanArray>(getObjField(name, "[Z").jObject()));
+}
+
+
+std::vector<jint> QJniObject::getIntArrayField(const char * name) const
+{
+	VERBOSE(qWarning("QJniObject::getIntArrayField(\"%s\")", name));
+	return QJniEnvPtr().convert(static_cast<jintArray>(getObjField(name, "[I").jObject()));
+}
+
+
+std::vector<jlong> QJniObject::getLongArrayField(const char * name) const
+{
+	VERBOSE(qWarning("QJniObject::getLongArrayField(\"%s\")", name));
+	return QJniEnvPtr().convert(static_cast<jlongArray>(getObjField(name, "[J").jObject()));
+}
+
+
+std::vector<jfloat> QJniObject::getFloatArrayField(const char * name) const
+{
+	VERBOSE(qWarning("QJniObject::getFloatArrayField(\"%s\")", name));
+	return QJniEnvPtr().convert(static_cast<jfloatArray>(getObjField(name, "[F").jObject()));
+}
+
+
+std::vector<jdouble> QJniObject::getDoubleArrayField(const char * name) const
+{
+	VERBOSE(qWarning("QJniObject::getDoubleArrayField(\"%s\")", name));
+	return QJniEnvPtr().convert(static_cast<jdoubleArray>(getObjField(name, "[D").jObject()));
+}
+
+
+std::vector<QJniObject> QJniObject::getObjectArrayField(const char * name, const char * objname) const
+{
+	VERBOSE(qWarning("QJniObject::getObjectArrayField(\"%s\", \"%s\")", name, objname));
+	QByteArray type("[");
+	appendNormalizedObjectName(type, objname);
+	return QJniEnvPtr().convert(static_cast<jobjectArray>(getObjField(name, type.constData()).jObject()));
+}
+
+
+QStringList QJniObject::getStringArrayField(const char * name) const
+{
+	VERBOSE(qWarning("QJniObject::getStringArrayField(\"%s\")", name));
+	return QJniEnvPtr().convertToStringList(static_cast<jobjectArray>(getObjField(name, "[Ljava/lang/String;").jObject()));
 }
 
 
@@ -2366,14 +2573,14 @@ void QJniObject::setBooleanField(const char * field_name, jboolean value)
 
 
 #if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
-QJniObject * QJniObject::getObjectField(const char* field_name, const char * objname)
+QJniObject * QJniObject::getObjectField(const char* field_name, const char * objname) const
 {
 	return legacyWrapToHeap(getObjField(field_name, objname));
 }
 #endif
 
 
-QJniObject QJniObject::getObjField(const char * field_name, const char * objname)
+QJniObject QJniObject::getObjField(const char * field_name, const char * objname) const
 {
 	VERBOSE(qWarning("int QJniObject::getObjField(const char * field_name, const char * objname) %p \"%s\" \"%s\"", reinterpret_cast<void*>(this), field_name, objname));
 	QByteArray obj;
@@ -2403,7 +2610,7 @@ QJniObject QJniObject::getObjField(const char * field_name, const char * objname
 }
 
 
-QString QJniObject::getStringField(const char * field_name)
+QString QJniObject::getStringField(const char * field_name) const
 {
 	VERBOSE(qWarning("int QJniObject::getStringField(const char * field_name) %p \"%s\"", reinterpret_cast<void*>(this), field_name));
 	QJniEnvPtr jep;

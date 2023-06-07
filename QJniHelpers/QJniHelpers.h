@@ -204,6 +204,7 @@ public:
 	std::vector<jfloat> convert(jfloatArray jarray);
 	std::vector<jdouble> convert(jdoubleArray jarray);
 	std::vector<QJniObject> convert(jobjectArray jarray);
+	QStringList convertToStringList(jobjectArray jarray);
 
 	/*!
 	 * \brief Clear Java exception without taking any specific actions.
@@ -296,12 +297,22 @@ public:
 	 */
 	QString callStaticString(const char * method_name);
 #if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
-	[[nodiscard, deprecated("Use getStaticObjField()")]] QJniObject * getStaticObjectField(const char * field_name, const char * objname);
+	[[nodiscard, deprecated("Use getStaticObjField()")]] QJniObject * getStaticObjectField(const char * field_name, const char * objname) const;
 #endif
-	QJniObject getStaticObjField(const char * field_name, const char * objname);
-	QString getStaticStringField(const char * field_name);
-	jint getStaticIntField(const char * field_name);
-	bool getStaticBooleanField(const char * field_name);
+	QJniObject getStaticObjField(const char * field_name, const char * objname) const;
+	QString getStaticStringField(const char * field_name) const;
+	jint getStaticIntField(const char * field_name) const;
+	bool getStaticBooleanField(const char * field_name) const;
+	jfloat getStaticFloatField(const char * field_name) const;
+	jfloat getStaticDoubleField(const char * field_name) const;
+
+	std::vector<bool> getStaticBooleanArrayField(const char * name) const;
+	std::vector<jint> getStaticIntArrayField(const char * name) const;
+	std::vector<jlong> getStaticLongArrayField(const char * name) const;
+	std::vector<jfloat> getStaticFloatArrayField(const char * name) const;
+	std::vector<jdouble> getStaticDoubleArrayField(const char * name) const;
+	std::vector<QJniObject> getStaticObjectArrayField(const char * name, const char * objname) const;
+	QStringList getStaticStringArrayField(const char * name) const;
 
 	//! Register native method in the wrapped class
 	bool registerNativeMethod(const char * name, const char * signature, void * ptr);
@@ -340,7 +351,7 @@ public:
 protected:
 	void initClass(JNIEnv * env, jclass clazz);
 	void clearClass(JNIEnv * env);
-	inline jclass checkedClass(const char * call_point_info);
+	inline jclass checkedClass(const char * call_point_info) const;
 
 private:
 	jclass class_ = 0;
@@ -394,6 +405,13 @@ public:
 
 	static QJniObject fromString(const QString & str);
 	QString toQString() const;
+	std::vector<bool> toBooleanArray() const;
+	std::vector<jint> toIntArray() const;
+	std::vector<jlong> toLongArray() const;
+	std::vector<jfloat> toFloatArray() const;
+	std::vector<jdouble> toDoubleArray() const;
+	std::vector<QJniObject> toObjectArray() const;
+	QStringList toStringList() const;
 
 	void dispose();
 	~QJniObject() noexcept override;
@@ -477,28 +495,36 @@ public:
 	jboolean callParamBoolean(const char * method_name, const char * param_signature, ...);
 
 	//! Get value of int field of the wrapped Java object
-	int getIntField(const char * field_name);
+	int getIntField(const char * field_name) const;
 
 	//! Get value of long field of the wrapped Java object
-	jlong getLongField(const char * field_name);
+	jlong getLongField(const char * field_name) const;
 
 	//! Get value of float field of the wrapped Java object
-	float getFloatField(const char * field_name);
+	float getFloatField(const char * field_name) const;
 
-	double getDoubleField(const char * field_name);
+	double getDoubleField(const char * field_name) const;
 
-	jboolean getBooleanField(const char * field_name);
+	jboolean getBooleanField(const char * field_name) const;
 
 	void setIntField(const char * field_name, jint value);
 	void setBooleanField(const char * field_name, jboolean value);
 
 	//! Get value of float field of the wrapped Java object
 #if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
-	[[nodiscard, deprecated("Use getObjField()")]] QJniObject * getObjectField(const char * field_name, const char * objname);
+	[[nodiscard, deprecated("Use getObjField()")]] QJniObject * getObjectField(const char * field_name, const char * objname) const;
 #endif
-	QJniObject getObjField(const char * field_name, const char * objname);
+	QJniObject getObjField(const char * field_name, const char * objname) const;
 
-	QString getStringField(const char * field_name);
+	QString getStringField(const char * field_name) const;
+
+	std::vector<bool> getBooleanArrayField(const char * name) const;
+	std::vector<jint> getIntArrayField(const char * name) const;
+	std::vector<jlong> getLongArrayField(const char * name) const;
+	std::vector<jfloat> getFloatArrayField(const char * name) const;
+	std::vector<jdouble> getDoubleArrayField(const char * name) const;
+	std::vector<QJniObject> getObjectArrayField(const char * name, const char * objname) const;
+	QStringList getStringArrayField(const char * name) const;
 
 	/*!
 	 * Call jstring method of the wrapped Java object and
@@ -523,7 +549,7 @@ public:
 
 protected:
 	void initObject(JNIEnv* env, jobject instance, bool can_have_null_class = false);
-	inline jobject checkedInstance(const char * call_point_info);
+	inline jobject checkedInstance(const char * call_point_info) const;
 
 protected:
 	jobject instance_ = 0;
