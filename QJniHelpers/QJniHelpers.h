@@ -263,19 +263,15 @@ public:
 	std::vector<QJniObject> getStaticObjectArrayField(const char * name, const char * objname) const;
 	QStringList getStaticStringArrayField(const char * name) const;
 
-	// Register native method in the wrapped class
 	bool registerNativeMethod(const char * name, const char * signature, void * ptr);
 	bool registerNativeMethodsN(const JNINativeMethod * methods_list, size_t count);
 	bool registerNativeMethods(const std::initializer_list<JNINativeMethod> & list);
 	bool registerNativeMethods(const std::vector<JNINativeMethod> & list);
-
-	// Unregister native methods in the wrapped class.
 	bool unregisterNativeMethods();
 
 	virtual bool isNull() const { return !class_; }
 	operator bool() const { return !isNull(); }
 
-	// Get JNI reference to the wrapped Java class.
 	jclass jClass() const { return class_; }
 
 	// Retrieve class name (via JNI). If 'simple' is true then only the class name is returned
@@ -360,8 +356,8 @@ public:
 	void dispose();
 	~QJniObject() noexcept override;
 
-	// Detach the QJniObject from jobject and return the jobject casted to the
-	// template-specified type.
+	// Caller gets ownership over the object reference (casted to specified type),
+	// the QJniObject becomes null.
 	template<class RESULT_TYPE> RESULT_TYPE detach()
 	{
 		RESULT_TYPE saved = static_cast<RESULT_TYPE>(instance_);
@@ -505,8 +501,8 @@ public:
 	void dispose();
 	~QJniLocalRef() noexcept;
 
-	// Detach the QJniLocalRef from jobject and return the jobject casted to the
-	// template-specified type.
+	// Caller gets ownership over the object reference (casted to specified type),
+	// the QJniLocalRef becomes null.
 	// Use to return an object from a JNICALL function, e.g.:
 	// JNICALL jstring .... foo() { return QJniLocalRef("Hello World!").detach<jstring>(); }
 	template<class RESULT_TYPE> RESULT_TYPE detach()
@@ -521,6 +517,9 @@ public:
 	operator jclass() const { return static_cast<jclass>(local_); }
 	jobject jObject() const { return local_; }
 	operator QString() const { return QJniEnvPtr(env_).toQString(operator jstring()); }
+
+	bool isNull() const { return !local_; }
+	operator bool() const { return !isNull(); }
 
 private:
 	jobject local_ = 0;
