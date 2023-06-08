@@ -935,6 +935,14 @@ bool QJniClass::classAvailable(const char * full_class_name)
 }
 
 
+bool QJniClass::isCastableTo(const QJniClass & other) const
+{
+	return JNI_TRUE == QJniEnvPtr().env()->IsAssignableFrom(
+		checkedClass("castableTo(clazz1)"),
+		other.checkedClass("castableTo(clazz2)"));
+}
+
+
 void QJniClass::initClass(JNIEnv * env, jclass clazz)
 {
 	QJniEnvPtr jep(env);

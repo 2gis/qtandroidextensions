@@ -232,6 +232,10 @@ public:
 
 	static bool classAvailable(const char * full_class_name);
 
+	// True if: 'other' is the same class, OR 'this' is a subclass of 'other',
+	// OR 'other' is one of 'this's interfaces.
+	bool isCastableTo(const QJniClass & other) const;
+
 	void callStaticVoid(const char * method_name);
 	jint callStaticInt(const char * method_name);
 	jlong callStaticLong(const char * method_name);
