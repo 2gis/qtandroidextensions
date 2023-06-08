@@ -192,21 +192,12 @@ public:
 	 */
 	jstring toJString(const QString & qstring);
 
-#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
-	[[deprecated("Use toJString()")]] jstring JStringFromQString(const QString & qstring) { return toJString(qstring); }
-	[[deprecated("Use toJString()")]] jstring QStringToJString(const QString & qstring) { return toJString(qstring); }
-#endif
-
 	/*!
 	 * \brief Convert jstring to QString.
 	 * \param javastring - Java reference to String object.
 	 * \return QString.
 	 */
 	QString toQString(jstring javastring);
-#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
-	[[deprecated("Use toQString()")]] QString QStringFromJString(jstring javastring) { return toQString(javastring); }
-	[[deprecated("Use toQString()")]] QString JStringToQString(jstring javastring) { return toQString(javastring); }
-#endif
 
 	std::vector<bool> convert(jbooleanArray jarray);
 	std::vector<jint> convert(jintArray jarray);
@@ -223,6 +214,17 @@ public:
 	 * \return Returns false if there was no exceptions.
 	 */
 	bool clearException(bool describe = true);
+
+#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
+	[[deprecated("Use toJString()")]] jstring JStringFromQString(const QString & qstring)
+	{ return toJString(qstring); }
+	[[deprecated("Use toJString()")]] jstring QStringToJString(const QString & qstring)
+	{ return toJString(qstring); }
+	[[deprecated("Use toQString()")]] QString QStringFromJString(jstring javastring)
+	{ return toQString(javastring); }
+	[[deprecated("Use toQString()")]] QString JStringToQString(jstring javastring)
+	{ return toQString(javastring); }
+#endif
 
 public:
 	static void setJavaVM(JavaVM *);
@@ -292,13 +294,8 @@ public:
 	 * \return Pointer to a wrapper for the object returned by the call.
 	 * The wrapper should be deleted after use via 'delete'.
 	 */
-#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
-	[[nodiscard, deprecated("Use callStaticObj()")]] QJniObject * callStaticObject(const char * method_name, const char * objname);
-#endif
+
 	QJniObject callStaticObj(const char * method_name, const char * objname);
-#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
-	[[nodiscard, deprecated("Use callStaticParamObj()")]] QJniObject * callStaticParamObject(const char * method_name, const char * objname, const char * param_signature, ...);
-#endif
 	QJniObject callStaticParamObj(const char * method_name, const char * objname, const char * param_signature, ...);
 
 
@@ -307,9 +304,6 @@ public:
 	 * return the result as a QString.
 	 */
 	QString callStaticString(const char * method_name);
-#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
-	[[nodiscard, deprecated("Use getStaticObjField()")]] QJniObject * getStaticObjectField(const char * field_name, const char * objname) const;
-#endif
 	QJniObject getStaticObjField(const char * field_name, const char * objname) const;
 	QString getStaticStringField(const char * field_name) const;
 	jint getStaticIntField(const char * field_name) const;
@@ -358,6 +352,19 @@ public:
 	const QByteArray & constructionClassName() const { return construction_class_name_; }
 
 	QByteArray debugClassName() const;
+
+#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
+	[[nodiscard, deprecated("Use callStaticObj()")]] QJniObject * callStaticObject(
+		const char * method_name,
+		const char * objname);
+	[[nodiscard, deprecated("Use callStaticParamObj()")]] QJniObject * callStaticParamObject(
+		const char * method_name,
+		const char * objname,
+		const char * param_signature, ...);
+	[[nodiscard, deprecated("Use getStaticObjField()")]] QJniObject * getStaticObjectField(
+		const char * field_name,
+		const char * objname) const;
+#endif
 
 protected:
 	void initClass(JNIEnv * env, jclass clazz);
@@ -439,11 +446,6 @@ public:
 		return saved;
 	}
 
-#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
-	//! Backward compatibility wrapper for detach<jobject>().
-	[[deprecated("Use detach<jobject>()")]] jobject takeJobjectOver() { return detach<jobject>(); }
-#endif
-
 	//! Call void method of the wrapped Java object
 	void callVoid(const char * method_name);
 
@@ -472,13 +474,7 @@ public:
 	 * \return Pointer to a wrapper for the object returned by the call.
 	 * The wrapper should be deleted after use via 'delete'.
 	 */
-#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
-	[[nodiscard, deprecated("Use callObj()")]] QJniObject * callObject(const char * method_name, const char * objname);
-#endif
 	QJniObject callObj(const char * method_name, const char * objname);
-#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
-	[[nodiscard, deprecated("Use callParamObj()")]] QJniObject * callParamObject(const char * method_name, const char * objname, const char * param_signature, ...);
-#endif
 	QJniObject callParamObj(const char * method_name, const char * objname, const char * param_signature, ...);
 
 	/*!
@@ -544,9 +540,6 @@ public:
 	void setBooleanField(const char * field_name, jboolean value);
 
 	//! Get value of float field of the wrapped Java object
-#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
-	[[nodiscard, deprecated("Use getObjField()")]] QJniObject * getObjectField(const char * field_name, const char * objname) const;
-#endif
 	QJniObject getObjField(const char * field_name, const char * objname) const;
 
 	QString getStringField(const char * field_name) const;
@@ -579,6 +572,22 @@ public:
 	// No need to check for class_: sometimes it is valid to have null class;
 	// when it's not valid, null class will cause instance_ to be also null.
 	bool isNull() const override { return !instance_; }
+
+#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
+	//! Backward compatibility wrapper for detach<jobject>().
+	[[deprecated("Use detach<jobject>()")]] jobject takeJobjectOver()
+	{ return detach<jobject>(); }
+	[[nodiscard, deprecated("Use callObj()")]] QJniObject * callObject(
+		const char * method_name,
+		const char * objname);
+	[[nodiscard, deprecated("Use callParamObj()")]] QJniObject * callParamObject(
+		const char * method_name,
+		const char * objname,
+		const char * param_signature, ...);
+	[[nodiscard, deprecated("Use getObjField()")]] QJniObject * getObjectField(
+		const char * field_name,
+		const char * objname) const;
+#endif
 
 protected:
 	void initObject(JNIEnv* env, jobject instance, bool can_have_null_class = false);
