@@ -265,9 +265,9 @@ QJniObjectIsNullException::QJniObjectIsNullException(
 
 
 QJniMethodNotFoundException::QJniMethodNotFoundException(
-		const char * class_name
-		, const char * method_name
-		, const char * call_point_info)
+		const char * class_name,
+		const char * method_name,
+		const char * call_point_info)
 	: QJniBaseException(QByteArray("JNI: Java method not found: ")
 		.append(readableIdString(class_name))
 		.append(".")
@@ -279,9 +279,9 @@ QJniMethodNotFoundException::QJniMethodNotFoundException(
 
 
 QJniFieldNotFoundException::QJniFieldNotFoundException(
-		const char * class_name
-		, const char * field_name
-		, const char * call_point_info)
+		const char * class_name,
+		const char * field_name,
+		const char * call_point_info)
 	: QJniBaseException(QByteArray("JNI: Java field not found: ")
 		.append(readableIdString(class_name))
 		.append(".")
@@ -293,9 +293,9 @@ QJniFieldNotFoundException::QJniFieldNotFoundException(
 
 
 QJniJavaCallException::QJniJavaCallException(
-		const char * class_name
-		, const char * method_name
-		, const char * call_point_info)
+		const char * class_name,
+		const char * method_name,
+		const char * call_point_info)
 	: QJniBaseException(QByteArray("JNI: Java method raised an unhandled exception: ")
 		.append(readableIdString(class_name))
 		.append(".")
@@ -467,13 +467,13 @@ bool QJniEnvPtr::preloadClasses(const char * const * class_list, size_t count)
 }
 
 
-bool QJniEnvPtr::preloadClasses(const std::initializer_list<const char*> & class_list)
+bool QJniEnvPtr::preloadClasses(const std::initializer_list<const char *> & class_list)
 {
 	return preloadClasses(std::data(class_list), class_list.size());
 }
 
 
-bool QJniEnvPtr::preloadClasses(const std::vector<const char*> & class_list)
+bool QJniEnvPtr::preloadClasses(const std::vector<const char *> & class_list)
 {
 	return preloadClasses(std::data(class_list), class_list.size());
 }
@@ -596,7 +596,7 @@ QString QJniEnvPtr::toQString(jstring str)
 		return QString();
 	}
 
-	const jchar* str_ptr = env_->GetStringChars(str, 0);
+	const jchar * str_ptr = env_->GetStringChars(str, 0);
 	if (str_ptr == 0)
 	{
 		return QString();
@@ -962,7 +962,7 @@ void QJniClass::clearClass(JNIEnv * env)
 
 void QJniClass::callStaticVoid(const char * method_name)
 {
-	VERBOSE(qWarning("void QJniClass::CallStaticVoid(const char* method_name) %p \"%s\"",
+	VERBOSE(qWarning("void QJniClass::CallStaticVoid(const char * method_name) %p \"%s\"",
 		reinterpret_cast<void*>(this), method_name));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
@@ -981,7 +981,7 @@ void QJniClass::callStaticVoid(const char * method_name)
 
 jint QJniClass::callStaticInt(const char * method_name)
 {
-	VERBOSE(qWarning("void QJniClass::callStaticInt(const char* method_name) %p \"%s\"",
+	VERBOSE(qWarning("void QJniClass::callStaticInt(const char * method_name) %p \"%s\"",
 		reinterpret_cast<void*>(this), method_name));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
@@ -1001,7 +1001,7 @@ jint QJniClass::callStaticInt(const char * method_name)
 
 jlong QJniClass::callStaticLong(const char * method_name)
 {
-	VERBOSE(qWarning("void QJniClass::callStaticLong(const char* method_name) %p \"%s\"",
+	VERBOSE(qWarning("void QJniClass::callStaticLong(const char * method_name) %p \"%s\"",
 		reinterpret_cast<void*>(this), method_name));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
@@ -1021,7 +1021,7 @@ jlong QJniClass::callStaticLong(const char * method_name)
 
 bool QJniClass::callStaticBoolean(const char * method_name)
 {
-	VERBOSE(qWarning("void QJniClass::callStaticBoolean(const char* method_name) %p \"%s\"",
+	VERBOSE(qWarning("void QJniClass::callStaticBoolean(const char * method_name) %p \"%s\"",
 		reinterpret_cast<void*>(this), method_name));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
@@ -1206,7 +1206,7 @@ QString QJniClass::callStaticParamString(const char * method_name, const char * 
 }
 
 
-void QJniClass::callStaticVoid(const char* method_name, const QString & string)
+void QJniClass::callStaticVoid(const char * method_name, const QString & string)
 {
 	callStaticParamVoid(method_name, "Ljava/lang/String;", QJniLocalRef(string).jObject());
 }
@@ -1214,7 +1214,7 @@ void QJniClass::callStaticVoid(const char* method_name, const QString & string)
 
 QString QJniClass::callStaticString(const char *method_name)
 {
-	VERBOSE(qWarning("QString QJniClass::CallStaticString(const char* method_name) %p \"%s\"",
+	VERBOSE(qWarning("QString QJniClass::CallStaticString(const char * method_name) %p \"%s\"",
 		reinterpret_cast<void*>(this), method_name));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
@@ -1261,9 +1261,9 @@ QJniObject QJniClass::getStaticObjField(const char * field_name, const char * ob
 			env->DeleteLocalRef(jret);
 		}
 		throw QJniJavaCallException(
-			debugClassName().constData()
-			, QByteArray().append(field_name).append("->").append(objname)
-			, __FUNCTION__);
+			debugClassName().constData(),
+			QByteArray().append(field_name).append("->").append(objname),
+			__FUNCTION__);
 	}
 	if (!jret)
 	{
@@ -1463,9 +1463,9 @@ QJniObject QJniClass::callStaticObj(const char * method_name, const char * objna
 			env->DeleteLocalRef(jret);
 		}
 		throw QJniJavaCallException(
-			debugClassName().constData()
-			, QByteArray().append(method_name).append("->").append(objname).constData()
-			, __FUNCTION__);
+			debugClassName().constData(),
+			QByteArray().append(method_name).append("->").append(objname).constData(),
+			__FUNCTION__);
 	}
 	if (!jret)
 	{
@@ -1508,9 +1508,9 @@ QJniObject * QJniClass::callStaticParamObject(
 			env->DeleteLocalRef(jret);
 		}
 		throw QJniJavaCallException(
-			debugClassName().constData()
-			, QByteArray().append(method_name).append("->").append(objname).constData()
-			, __FUNCTION__);
+			debugClassName().constData(),
+			QByteArray().append(method_name).append("->").append(objname).constData(),
+			__FUNCTION__);
 	}
 	if (!jret)
 	{
@@ -1554,9 +1554,9 @@ QJniObject QJniClass::callStaticParamObj(
 			env->DeleteLocalRef(jret);
 		}
 		throw QJniJavaCallException(
-			debugClassName().constData()
-			, QByteArray().append(method_name).append("->").append(objname).constData()
-			, __FUNCTION__);
+			debugClassName().constData(),
+			QByteArray().append(method_name).append("->").append(objname).constData(),
+			__FUNCTION__);
 	}
 	if (!jret)
 	{
@@ -1639,9 +1639,9 @@ QString QJniClass::getClassName(bool simple) const
 		if (jclass classClazz = jep.env()->GetObjectClass(jClass()))
 		{
 			if (jmethodID methodId = jep.env()->GetMethodID(
-				classClazz
-				, (simple) ? "getSimpleName" : "getName"
-				, "()Ljava/lang/String;"))
+				classClazz,
+				(simple) ? "getSimpleName" : "getName",
+				"()Ljava/lang/String;"))
 			{
 				if (jstring className =
 					static_cast<jstring>(jep.env()->CallObjectMethod(jClass(), methodId)))
@@ -1739,9 +1739,9 @@ QJniObject::QJniObject(const QJniClass & clazz, const char * param_signature, ..
 	if (!mid_init)
 	{
 		throw QJniMethodNotFoundException(
-			debugClassName().constData()
-			, QByteArray("<init>(").append(signature).append(")")
-			, __FUNCTION__);
+			debugClassName().constData(),
+			QByteArray("<init>(").append(signature).append(")"),
+			__FUNCTION__);
 	}
 
 	va_list args;
@@ -1780,9 +1780,9 @@ QJniObject::QJniObject(const char * class_name, const char * param_signature, ..
 	if (!mid_init)
 	{
 		throw QJniMethodNotFoundException(
-			debugClassName().constData()
-			, QByteArray("<init>(").append(signature).append(")")
-			, __FUNCTION__);
+			debugClassName().constData(),
+			QByteArray("<init>(").append(signature).append(")"),
+			__FUNCTION__);
 	}
 
 	va_list args;
@@ -1974,9 +1974,9 @@ void QJniObject::initObject(JNIEnv * env, jobject instance, bool can_have_null_c
 
 
 
-void QJniObject::callVoid(const char* method_name)
+void QJniObject::callVoid(const char * method_name)
 {
-	VERBOSE(qWarning("void QJniObject::CallVoid(const char* method_name) %p \"%s\"",
+	VERBOSE(qWarning("void QJniObject::CallVoid(const char * method_name) %p \"%s\"",
 		reinterpret_cast<void*>(this), method_name));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
@@ -1993,9 +1993,9 @@ void QJniObject::callVoid(const char* method_name)
 }
 
 
-bool QJniObject::callBool(const char* method_name)
+bool QJniObject::callBool(const char * method_name)
 {
-	VERBOSE(qWarning("bool QJniObject::CallBool(const char* method_name) %p \"%s\"",
+	VERBOSE(qWarning("bool QJniObject::CallBool(const char * method_name) %p \"%s\"",
 		reinterpret_cast<void*>(this), method_name));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
@@ -2013,30 +2013,15 @@ bool QJniObject::callBool(const char* method_name)
 }
 
 
-bool QJniObject::callBool(const char* method_name, bool param)
+bool QJniObject::callBool(const char * method_name, bool param)
 {
-	VERBOSE(qWarning("bool QJniObject::CallBool(const char* method_name, bool param) %p \"%s\"",
-		reinterpret_cast<void*>(this), method_name));
-	QJniEnvPtr jep;
-	JNIEnv* env = jep.env();
-	jmethodID mid = env->GetMethodID(checkedClass(__FUNCTION__), method_name, "(Z)Z");
-	if (!mid)
-	{
-		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
-	}
-	bool result =
-		(JNI_TRUE==env->CallBooleanMethod(checkedInstance(__FUNCTION__), mid, jboolean(param)));
-	if (jep.clearException())
-	{
-		throw QJniJavaCallException(debugClassName().constData(), method_name, __FUNCTION__);
-	}
-	return result;
+	return callParamBoolean(method_name, "Z", static_cast<jboolean>(param));
 }
 
 
-jint QJniObject::callInt(const char* method_name)
+jint QJniObject::callInt(const char * method_name)
 {
-	VERBOSE(qWarning("int QJniObject::CallInt(const char* method_name) %p \"%s\"",
+	VERBOSE(qWarning("int QJniObject::CallInt(const char * method_name) %p \"%s\"",
 		reinterpret_cast<void*>(this), method_name));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
@@ -2054,9 +2039,9 @@ jint QJniObject::callInt(const char* method_name)
 }
 
 
-jlong QJniObject::callLong(const char* method_name)
+jlong QJniObject::callLong(const char * method_name)
 {
-	VERBOSE(qWarning("int QJniObject::CallLong(const char* method_name) %p \"%s\"",
+	VERBOSE(qWarning("int QJniObject::CallLong(const char * method_name) %p \"%s\"",
 		reinterpret_cast<void*>(this), method_name));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
@@ -2074,9 +2059,9 @@ jlong QJniObject::callLong(const char* method_name)
 }
 
 
-jfloat QJniObject::callFloat(const char* method_name)
+jfloat QJniObject::callFloat(const char * method_name)
 {
-	VERBOSE(qWarning("float QJniObject::CallFloat(const char* method_name) %p \"%s\"",
+	VERBOSE(qWarning("float QJniObject::CallFloat(const char * method_name) %p \"%s\"",
 		reinterpret_cast<void*>(this), method_name));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
@@ -2094,30 +2079,15 @@ jfloat QJniObject::callFloat(const char* method_name)
 }
 
 
-jfloat QJniObject::callFloat(const char* method_name, int param)
+jfloat QJniObject::callFloat(const char * method_name, jint param)
 {
-	VERBOSE(qWarning("float QJniObject::CallFloat(const char* method_name) %p \"%s\" (%d)",
-		reinterpret_cast<void*>(this), method_name, param));
-	QJniEnvPtr jep;
-	JNIEnv* env = jep.env();
-	jmethodID mid = env->GetMethodID(checkedClass(__FUNCTION__), method_name, "(I)F");
-	if (!mid)
-	{
-		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
-	}
-	jfloat result =
-		static_cast<float>(env->CallFloatMethod(checkedInstance(__FUNCTION__), mid, jint(param)));
-	if (jep.clearException())
-	{
-		throw QJniJavaCallException(debugClassName().constData(), method_name, __FUNCTION__);
-	}
-	return result;
+	return callParamFloat(method_name, "I", param);
 }
 
 
-jdouble QJniObject::callDouble(const char* method_name)
+jdouble QJniObject::callDouble(const char * method_name)
 {
-	VERBOSE(qWarning("float QJniObject::CallDouble(const char* method_name) %p \"%s\"",
+	VERBOSE(qWarning("float QJniObject::CallDouble(const char * method_name) %p \"%s\"",
 		reinterpret_cast<void*>(this), method_name));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
@@ -2164,9 +2134,9 @@ QJniObject QJniObject::callObj(const char * method_name, const char * objname)
 			env->DeleteLocalRef(jret);
 		}
 		throw QJniJavaCallException(
-			debugClassName().constData()
-			, QByteArray().append(method_name).append("->").append(objname).constData()
-			, __FUNCTION__);
+			debugClassName().constData(),
+			QByteArray().append(method_name).append("->").append(objname).constData(),
+			__FUNCTION__);
 	}
 	if (!jret)
 	{
@@ -2209,9 +2179,9 @@ QJniObject * QJniObject::callParamObject(
 			env->DeleteLocalRef(jret);
 		}
 		throw QJniJavaCallException(
-			debugClassName().constData()
-			, QByteArray().append(method_name).append("->").append(objname).constData()
-			, __FUNCTION__);
+			debugClassName().constData(),
+			QByteArray().append(method_name).append("->").append(objname).constData(),
+			__FUNCTION__);
 	}
 	if (!jret)
 	{
@@ -2253,9 +2223,9 @@ QJniObject QJniObject::callParamObj(
 			env->DeleteLocalRef(jret);
 		}
 		throw QJniJavaCallException(
-			debugClassName().constData()
-			, QByteArray().append(method_name).append("->").append(objname).constData()
-			, __FUNCTION__);
+			debugClassName().constData(),
+			QByteArray().append(method_name).append("->").append(objname).constData(),
+			__FUNCTION__);
 	}
 	if (!jret)
 	{
@@ -2265,7 +2235,7 @@ QJniObject QJniObject::callParamObj(
 }
 
 
-jint QJniObject::callParamInt(const char* method_name, const char* param_signature, ...)
+jint QJniObject::callParamInt(const char * method_name, const char * param_signature, ...)
 {
 	VERBOSE(qWarning("void QJniObject(%p)::callParamInt(\"%s\", \"%s\", ...)",
 		reinterpret_cast<void*>(this), method_name, param_signature));
@@ -2291,7 +2261,7 @@ jint QJniObject::callParamInt(const char* method_name, const char* param_signatu
 }
 
 
-jlong QJniObject::callParamLong(const char* method_name, const char* param_signature, ...)
+jlong QJniObject::callParamLong(const char * method_name, const char * param_signature, ...)
 {
 	VERBOSE(qWarning("void QJniObject(%p)::callParamLong(\"%s\", \"%s\", ...)",
 		reinterpret_cast<void*>(this), method_name, param_signature));
@@ -2317,7 +2287,7 @@ jlong QJniObject::callParamLong(const char* method_name, const char* param_signa
 }
 
 
-jfloat QJniObject::callParamFloat(const char* method_name, const char* param_signature, ...)
+jfloat QJniObject::callParamFloat(const char * method_name, const char * param_signature, ...)
 {
 	VERBOSE(qWarning("void QJniObject(%p)::callParamFloat(\"%s\", \"%s\", ...)",
 		reinterpret_cast<void*>(this), method_name, param_signature));
@@ -2343,7 +2313,7 @@ jfloat QJniObject::callParamFloat(const char* method_name, const char* param_sig
 }
 
 
-jdouble QJniObject::callParamDouble(const char* method_name, const char* param_signature, ...)
+jdouble QJniObject::callParamDouble(const char * method_name, const char * param_signature, ...)
 {
 	VERBOSE(qWarning("void QJniObject(%p)::callParamDouble(\"%s\", \"%s\", ...)",
 		reinterpret_cast<void*>(this), method_name, param_signature));
@@ -2369,7 +2339,7 @@ jdouble QJniObject::callParamDouble(const char* method_name, const char* param_s
 }
 
 
-jboolean QJniObject::callParamBoolean(const char* method_name, const char* param_signature, ...)
+jboolean QJniObject::callParamBoolean(const char * method_name, const char * param_signature, ...)
 {
 	VERBOSE(qWarning("void QJniObject(%p)::callParamBoolean(\"%s\", \"%s\", ...)",
 		reinterpret_cast<void*>(this), method_name, param_signature));
@@ -2397,7 +2367,7 @@ jboolean QJniObject::callParamBoolean(const char* method_name, const char* param
 
 QString QJniObject::callString(const char *method_name)
 {
-	VERBOSE(qWarning("QString QJniObject::CallString(const char* method_name) %p \"%s\"",
+	VERBOSE(qWarning("QString QJniObject::CallString(const char * method_name) %p \"%s\"",
 		reinterpret_cast<void*>(this), method_name));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
@@ -2415,7 +2385,7 @@ QString QJniObject::callString(const char *method_name)
 }
 
 
-QString QJniObject::callParamString(const char *method_name, const char* param_signature, ...)
+QString QJniObject::callParamString(const char *method_name, const char * param_signature, ...)
 {
 	VERBOSE(qWarning("void QJniObject(%p)::callParamString(\"%s\", \"%s\", ...)",
 		reinterpret_cast<void*>(this), method_name, param_signature));
@@ -2467,7 +2437,7 @@ QString QJniObject::getString(const char *field_name)
 
 jint QJniObject::getIntField(const char * field_name) const
 {
-	VERBOSE(qWarning("int QJniObject::getIntField(const char* fieldd_name) %p \"%s\"",this,field_name));
+	VERBOSE(qWarning("int QJniObject::getIntField(const char * fieldd_name) %p \"%s\"",this,field_name));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
 	jfieldID fid = env->GetFieldID(checkedClass(__FUNCTION__), field_name, "I");
@@ -2486,7 +2456,7 @@ jint QJniObject::getIntField(const char * field_name) const
 
 jlong QJniObject::getLongField(const char * field_name) const
 {
-	VERBOSE(qWarning("int QJniObject::getLongField(const char* field_name) %p \"%s\"",
+	VERBOSE(qWarning("int QJniObject::getLongField(const char * field_name) %p \"%s\"",
 		reinterpret_cast<void*>(this), field_name));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
@@ -2506,7 +2476,7 @@ jlong QJniObject::getLongField(const char * field_name) const
 
 jfloat QJniObject::getFloatField(const char * field_name) const
 {
-	VERBOSE(qWarning("int QJniObject::getFloatField(const char* field_name) %p \"%s\"",
+	VERBOSE(qWarning("int QJniObject::getFloatField(const char * field_name) %p \"%s\"",
 		reinterpret_cast<void*>(this), field_name));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
@@ -2526,7 +2496,7 @@ jfloat QJniObject::getFloatField(const char * field_name) const
 
 jdouble QJniObject::getDoubleField(const char * field_name) const
 {
-	VERBOSE(qWarning("int QJniObject::getDoubleField(const char* field_name) %p \"%s\"",
+	VERBOSE(qWarning("int QJniObject::getDoubleField(const char * field_name) %p \"%s\"",
 		reinterpret_cast<void*>(this), field_name));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
@@ -2546,7 +2516,7 @@ jdouble QJniObject::getDoubleField(const char * field_name) const
 
 jboolean QJniObject::getBooleanField(const char * field_name) const
 {
-	VERBOSE(qWarning("int QJniObject::getBooleanField(const char* field_name) %p \"%s\"",
+	VERBOSE(qWarning("int QJniObject::getBooleanField(const char * field_name) %p \"%s\"",
 		reinterpret_cast<void*>(this), field_name));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
@@ -2621,7 +2591,7 @@ QStringList QJniObject::getStringArrayField(const char * name) const
 
 void QJniObject::setIntField(const char * field_name, jint value)
 {
-	VERBOSE(qWarning("int QJniObject::setIntField(const char* field_name) %p \"%s\"",
+	VERBOSE(qWarning("int QJniObject::setIntField(const char * field_name) %p \"%s\"",
 		reinterpret_cast<void*>(this), field_name));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
@@ -2640,7 +2610,7 @@ void QJniObject::setIntField(const char * field_name, jint value)
 
 void QJniObject::setBooleanField(const char * field_name, jboolean value)
 {
-	VERBOSE(qWarning("int QJniObject::setBooleanField(const char* field_name) %p \"%s\"",
+	VERBOSE(qWarning("int QJniObject::setBooleanField(const char * field_name) %p \"%s\"",
 		reinterpret_cast<void*>(this) ,field_name));
 	QJniEnvPtr jep;
 	JNIEnv* env = jep.env();
@@ -2658,7 +2628,7 @@ void QJniObject::setBooleanField(const char * field_name, jboolean value)
 
 
 #if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
-QJniObject * QJniObject::getObjectField(const char* field_name, const char * objname) const
+QJniObject * QJniObject::getObjectField(const char * field_name, const char * objname) const
 {
 	return legacyWrapToHeap(getObjField(field_name, objname));
 }

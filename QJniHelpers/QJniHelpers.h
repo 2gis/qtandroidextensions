@@ -163,8 +163,8 @@ public:
 	 */
 	bool preloadClasses(const char * const * class_list);
 	bool preloadClasses(const char * const * class_list, size_t count);
-	bool preloadClasses(const std::initializer_list<const char*> & class_list);
-	bool preloadClasses(const std::vector<const char*> & class_list);
+	bool preloadClasses(const std::initializer_list<const char *> & class_list);
+	bool preloadClasses(const std::vector<const char *> & class_list);
 
 	/*!
 	 * \brief Check if the class has been pre-loaded (see PreloadClass()).
@@ -462,7 +462,7 @@ public:
 	jfloat callFloat(const char * method_name);
 
 	//! Call float method of the wrapped Java object with int parameter
-	jfloat callFloat(const char * method_name, int param);
+	jfloat callFloat(const char * method_name, jint param);
 
 	//! Call double method of the wrapped Java object
 	jdouble callDouble(const char * method_name);
@@ -563,15 +563,15 @@ public:
 	 * Call jstring method of the wrapped Java object and
 	 * return the result as a QString.
 	 */
-	QString callString(const char* method_name);
+	QString callString(const char * method_name);
 
-	QString callParamString(const char *method_name, const char* param_signature, ...);
+	QString callParamString(const char *method_name, const char * param_signature, ...);
 
 	/*!
 	 * Get value of jstring field of the wrapped Java object and
 	 * return the result as a QString.
 	 */
-	QString getString(const char* field_name);
+	QString getString(const char * field_name);
 
 	//! Get JNI reference to the wrapped Java object
 	jobject jObject() const { return instance_; }
