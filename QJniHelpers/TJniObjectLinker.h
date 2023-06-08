@@ -176,7 +176,8 @@ QByteArray TJniObjectLinker<TNative>::preloadJavaClasses()
 
 			QJniClass ov(javaFullClassName);
 
-			if (!ov.registerNativeMethods(methods_list, sizeof_methods_list))
+			if (!ov.registerNativeMethodsN(
+				methods_list, sizeof_methods_list / sizeof(JNINativeMethod)))
 			{
 				qCritical() << "Failed to register native methods";
 			}

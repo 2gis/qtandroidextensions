@@ -569,7 +569,7 @@ void QJniEnvPtr::setJavaVM(JNIEnv * env)
 }
 
 
-jstring QJniEnvPtr::toJString(const QString & str)
+jstring QJniEnvPtr::toJString(const QString & str) noexcept
 {
 	checkEnv();
 	jstring ret = env_->NewString(str.utf16(), str.length());
@@ -582,7 +582,7 @@ jstring QJniEnvPtr::toJString(const QString & str)
 }
 
 
-QString QJniEnvPtr::toQString(jstring str)
+QString QJniEnvPtr::toQString(jstring str) noexcept
 {
 	checkEnv();
 	if (str == 0)
@@ -1568,17 +1568,19 @@ QJniObject QJniClass::callStaticParamObj(
 
 bool QJniClass::registerNativeMethod(const char * name, const char * signature, void * ptr)
 {
-	JNINativeMethod jnm = {name, signature, ptr};
-	return registerNativeMethods(&jnm, sizeof(jnm));
+	const JNINativeMethod jnm = {name, signature, ptr};
+	return registerNativeMethodsN(&jnm, 1);
 }
 
 
+#if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
 bool QJniClass::registerNativeMethods(
 	const JNINativeMethod * methods_list,
 	size_t sizeof_methods_list)
 {
 	return registerNativeMethodsN(methods_list, sizeof_methods_list / sizeof(JNINativeMethod));
 }
+#endif
 
 
 bool QJniClass::registerNativeMethodsN(const JNINativeMethod * methods_list, size_t count)
@@ -1697,7 +1699,7 @@ QJniObject::QJniObject()
 
 QJniObject::QJniObject(
 		jobject instance,
-		bool take_ownership,
+		bool take_ownership_over_local_ref,
 		const char * known_class_name,
 		bool known_can_have_null_class)
 	: QJniClass(instance)
@@ -1709,7 +1711,7 @@ QJniObject::QJniObject(
 		jep.env(),
 		instance,
 		known_can_have_null_class || classObjectMayHaveNullClass(known_class_name));
-	if (take_ownership)
+	if (take_ownership_over_local_ref)
 	{
 		jep.env()->DeleteLocalRef(instance);
 	}
@@ -2413,24 +2415,6 @@ QString QJniObject::callParamString(const char *method_name, const char * param_
 		throw QJniJavaCallException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
 
-	return ret;
-}
-
-
-QString QJniObject::getString(const char *field_name)
-{
-	QJniEnvPtr jep;
-	JNIEnv* env = jep.env();
-	jfieldID fid = env->GetFieldID(checkedClass(__FUNCTION__), field_name, "Ljava/lang/String;");
-	if (!fid)
-	{
-		throw QJniFieldNotFoundException(debugClassName().constData(), field_name, __FUNCTION__);
-	}
-	QString ret = QJniLocalRef(env, env->GetObjectField(checkedInstance(__FUNCTION__), fid));
-	if (jep.clearException())
-	{
-		throw QJniJavaCallException(debugClassName().constData(), field_name, __FUNCTION__);
-	}
 	return ret;
 }
 

@@ -116,22 +116,15 @@ public:
 class QJniObject;
 
 
-
-/*!
- * Basic functionality to get JNIEnv valid for current thread and scope.
- * Using this object across threads is UB.
- */
+// Basic functionality to get JNIEnv valid for current thread and scope.
+// Using this object across threads is UB.
 class QJniEnvPtr
 {
 public:
-	/*!
-	 * \param env can be 0, then the constructor gets env for current thread,
-	 *  and attaches current thread to JNI if necessary.
-	 *  QJniEnvPtr always contains a valid JNIEnv pointer or exception is thrown.
-	 *  If attaching the thread has been made, it is correctly detached when
-	 *  it exits.
-	 * \throw Throws QJniThreadAttachException if attaching to thread failed.
-	 */
+	// env can be 0, then the constructor gets env for current thread,
+	// and attaches current thread to JNI if necessary.
+	// QJniEnvPtr either gets a valid JNIEnv pointer or exception is thrown.
+	// If attaching the thread has been made, it is automatically detached on finish.
 	explicit QJniEnvPtr(JNIEnv * env = 0);
 
 	// Note: copying / moving across threads is UB!
@@ -140,64 +133,40 @@ public:
 	QJniEnvPtr & operator=(const QJniEnvPtr & other);
 	QJniEnvPtr & operator=(QJniEnvPtr && other);
 
-	//! \brief Get current Java environment.
+	// Get current Java environment.
 	JNIEnv * env() const;
 
-	//! \brief Get current JavaVM. Note: QJniHelpers supports only one JVM per process.
+	// Get current JavaVM. Note: QJniHelpers supports only one JVM per process.
 	static JavaVM * getJavaVM();
 
-	//! \brief Check if current thread looks properly attached to JNI.
+	// Check if current thread looks properly attached to JNI.
 	static bool isCurrentThreadAttached();
 
-	/*!
-	 * \brief Preload class by name, e.g.: "ru/dublgis/offscreenview/OffscreenWebView".
-	 * Required as Android's JNIEnv->FindClass doesn't work in threads created in native code.
-	 * After preloading, any thread can instantiate classes via QJniEnvPtr::findClass().
-	 */
+	// Preload a class by its name, e.g.: "ru/dublgis/offscreenview/OffscreenWebView".
+	// Required as Android's JNIEnv->FindClass doesn't work in threads created in native code.
+	// After preloading, any thread can instantiate class via QJniEnvPtr::findClass().
 	bool preloadClass(const char * class_name);
 
-	/*!
-	 * \brief Preload mutliple classes.
-	 * \param class_list - 0-terminated array of pointers to class names.
-	 * \return True, if all classes preloaded successfully.
-	 */
+	// Preload mutliple classes.
+	// class_list must be nullptr-terminated:
 	bool preloadClasses(const char * const * class_list);
 	bool preloadClasses(const char * const * class_list, size_t count);
 	bool preloadClasses(const std::initializer_list<const char *> & class_list);
 	bool preloadClasses(const std::vector<const char *> & class_list);
 
-	/*!
-	 * \brief Check if the class has been pre-loaded (see PreloadClass()).
-	 * \param class_name
-	 * \return
-	 */
 	bool isClassPreloaded(const char * class_name);
 
-	/*!
-	 * \brief Get a global reference to a Java class.
-	 * \param name - full name of the class, e.g.: "ru/dublgis/offscreenview/OffscreenWebView".
-	 * \return jclass or 0 if class not found.
-	 */
+	// Get a global reference to a Java class.
+	// param name - is a full name of the class, e.g.: "ru/dublgis/offscreenview/OffscreenWebView".
+	// May return 0 if FindClass() fails.
 	jclass findClass(const char * name);
 
-	/*!
-	 * \brief Unload all preloaded classes to free Java objects.
-	 */
+	// Unload all preloaded classes to free Java objects (usually not necessary to call).
 	void unloadAllClasses();
 
-	/*!
-	 * \brief Convert QString into jstring.
-	 * \return Java String reference or 0. Don't forget to call DeleteLocalRef
-	 * on the returned reference.
-	 */
-	jstring toJString(const QString & qstring);
-
-	/*!
-	 * \brief Convert jstring to QString.
-	 * \param javastring - Java reference to String object.
-	 * \return QString.
-	 */
-	QString toQString(jstring javastring);
+	// These helpers are noexcept and in case of any errors just return empty string or null.
+	jstring toJString(const QString & qstring) noexcept;
+	QString toQString(jstring javastring) noexcept;
 
 	std::vector<bool> convert(jbooleanArray jarray);
 	std::vector<jint> convert(jintArray jarray);
@@ -207,12 +176,10 @@ public:
 	std::vector<QJniObject> convert(jobjectArray jarray);
 	QStringList convertToStringList(jobjectArray jarray);
 
-	/*!
-	 * \brief Clear Java exception without taking any specific actions.
-	 * \param describe - if true, will call ExceptionDescribe() to print the exception
-	 * description into stderr.
-	 * \return Returns false if there was no exceptions.
-	 */
+	// Clears Java exception without taking any specific actions.
+	// If describe == true it will call ExceptionDescribe() to print the exception
+	// description into stderr.
+	// Returns false if there was no exception.
 	bool clearException(bool describe = true);
 
 #if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
@@ -241,28 +208,20 @@ private:
 class QJniObject;
 
 
-/*!
- * Convenience wrapper for Java classes to provide cleaner and more object-oriented access to them.
- */
-class QJniClass
+// Convenience wrapper for Java classes to provide cleaner and more object-oriented access to them.
+ class QJniClass
 {
 public:
-	/*!
-	 * Create null class
-	 */
+	// Empty (null) class
 	QJniClass();
 
-	/*!
-	 * Create a wrapper for class 'clazz'.
-	 */
+	// Create a wrapper for class 'clazz'.
 	explicit QJniClass(jclass clazz);
 
-	/*!
-	 * Create a wrapper for class 'full_class_name'.
-	 */
+	// Create an instance of the specified class.
 	explicit QJniClass(const char * full_class_name);
 
-	//! Create QJniClass for the jobject.
+	// Create QJniClass for the object.
 	explicit QJniClass(jobject object);
 
 	QJniClass(const QJniClass & other);
@@ -274,7 +233,6 @@ public:
 
 	static bool classAvailable(const char * full_class_name);
 
-	//! Call void static method of the wrapped Java class
 	void callStaticVoid(const char * method_name);
 	jint callStaticInt(const char * method_name);
 	jlong callStaticLong(const char * method_name);
@@ -286,24 +244,10 @@ public:
 	jfloat callStaticParamFloat(const char * method_name, const char * param_signature, ...);
 	QString callStaticParamString(const char * method_name, const char * param_signature, ...);
 	void callStaticVoid(const char * method_name, const QString & string);
-
-	/*!
-	 * Call object static method of the wrapped Java class.
-	 * \param method_name - name of a static method which returns Java object.
-	 * \param
-	 * \return Pointer to a wrapper for the object returned by the call.
-	 * The wrapper should be deleted after use via 'delete'.
-	 */
-
 	QJniObject callStaticObj(const char * method_name, const char * objname);
 	QJniObject callStaticParamObj(const char * method_name, const char * objname, const char * param_signature, ...);
-
-
-	/*!
-	 * Call static jstring method of the wrapped Java class and
-	 * return the result as a QString.
-	 */
 	QString callStaticString(const char * method_name);
+
 	QJniObject getStaticObjField(const char * field_name, const char * objname) const;
 	QString getStaticStringField(const char * field_name) const;
 	jint getStaticIntField(const char * field_name) const;
@@ -319,34 +263,23 @@ public:
 	std::vector<QJniObject> getStaticObjectArrayField(const char * name, const char * objname) const;
 	QStringList getStaticStringArrayField(const char * name) const;
 
-	//! Register native method in the wrapped class
+	// Register native method in the wrapped class
 	bool registerNativeMethod(const char * name, const char * signature, void * ptr);
-
-	/*!
-	 * Register native methods in the wrapped class.
-	 * \param sizeof_methods_list is the size of the whole array pointed by methods_list,
-	 * not count of the methods to register!
-	 */
-	bool registerNativeMethods(const JNINativeMethod * methods_list, size_t sizeof_methods_list);
 	bool registerNativeMethodsN(const JNINativeMethod * methods_list, size_t count);
 	bool registerNativeMethods(const std::initializer_list<JNINativeMethod> & list);
 	bool registerNativeMethods(const std::vector<JNINativeMethod> & list);
 
-	/*!
-	 * Unregister native methods in the wrapped class.
-	 */
+	// Unregister native methods in the wrapped class.
 	bool unregisterNativeMethods();
 
 	virtual bool isNull() const { return !class_; }
 	operator bool() const { return !isNull(); }
 
-	//! Get JNI reference to the wrapped Java class.
+	// Get JNI reference to the wrapped Java class.
 	jclass jClass() const { return class_; }
 
-	/*!
-	 * Retrieve class name (via JNI). If \a simple is true then only the class name is returned
-	 * (e.g.: "String"), if it's false then full name with class path (e.g.: "java/lang/String").
-	 */
+	// Retrieve class name (via JNI). If 'simple' is true then only the class name is returned
+	// (e.g.: "String"), if it's false then full name with class path (e.g.: "java/lang/String").
 	QString getClassName(bool simple = false) const;
 
 	const QByteArray & constructionClassName() const { return construction_class_name_; }
@@ -364,6 +297,10 @@ public:
 	[[nodiscard, deprecated("Use getStaticObjField()")]] QJniObject * getStaticObjectField(
 		const char * field_name,
 		const char * objname) const;
+	// sizeof_methods_list is the size of the whole array pointed by methods_list,
+	// not count of the methods to register!
+	[[deprecated("Use registerNativeMethodsN() or other version of registerNativeMethods()")]]
+	bool registerNativeMethods(const JNINativeMethod * methods_list, size_t sizeof_methods_list);
 #endif
 
 protected:
@@ -383,37 +320,26 @@ private:
 class QJniObject: public QJniClass
 {
 public:
-	/*!
-	 * Create null object
-	 */
+	// Creates null object
 	QJniObject();
 
-	/*!
-	 * Create QJniObject wrapper around specified jobject.
-	 * \param take_ownership means "delete local ref of this object
-	 * and only keep the global one here"
-	 * Note that this implies the instance is a valid local ref,
-	 * not global one or whatever.
-	 * \param known_class_name shoule be set to 0 or class of name of instance,
-	 * It is used to check if the object must have a non-zero class reference.
-	 * For example, Java arrays don't have a class instance.
-	 */
+	// Create QJniObject wrapper around specified jobject.
+	// take_ownership_over_local_ref == true means that 'instance' is a local ref and it will be
+	// deleted after creating QJniObject(). It it's false the 'instance' can be either global
+	// or local ref and will stay valid after creation of the QJniObject.
+	// known_class_name should be set to nullptr or class of name of instance,
+	// (It is used to check if the object must have a non-zero class reference.
+	// For example, Java arrays don't have a class instance.)
 	QJniObject(
 		jobject instance,
-		bool take_ownership,
-		const char * known_class_name = 0,
+		bool take_ownership_over_local_ref,
+		const char * known_class_name = nullptr,
 		bool known_can_have_null_class = false);
 
-	/*!
-	 * Create a wrapper for a new instance of class 'clazz'.
-	 * \param param_signature - signature for parameter of constructor.
-	 */
+	// Create an object of the given class with a parametrized constructor.
 	QJniObject(const QJniClass & clazz, const char * param_signature = 0, ...);
 
-	/*!
-	 * Create a wrapper for a new instance of class 'class name'.
-	 * \param param_signature - signature for parameter of constructor.
-	 */
+	// Create an object of the given class with a parametrized constructor.
 	QJniObject(const char * class_name, const char * param_signature = 0, ...);
 
 	QJniObject(const QJniObject & other);
@@ -434,11 +360,8 @@ public:
 	void dispose();
 	~QJniObject() noexcept override;
 
-
-	/*!
-	 * Detach the QJniObject from jobject and return the jobject casted to the
-	 * template-specified type.
-	 */
+	// Detach the QJniObject from jobject and return the jobject casted to the
+	// template-specified type.
 	template<class RESULT_TYPE> RESULT_TYPE detach()
 	{
 		RESULT_TYPE saved = static_cast<RESULT_TYPE>(instance_);
@@ -446,41 +369,16 @@ public:
 		return saved;
 	}
 
-	//! Call void method of the wrapped Java object
 	void callVoid(const char * method_name);
-
-	//! Call boolean method of the wrapped Java object
 	bool callBool(const char * method_name);
-
 	bool callBool(const char * method_name, bool param);
-
-	//! Call int method of the wrapped Java object
 	jint callInt(const char * method_name);
-
-	//! Call long method of the wrapped Java object
 	jlong callLong(const char * method_name);
-
-	//! Call float method of the wrapped Java object
 	jfloat callFloat(const char * method_name);
-
-	//! Call float method of the wrapped Java object with int parameter
 	jfloat callFloat(const char * method_name, jint param);
-
-	//! Call double method of the wrapped Java object
 	jdouble callDouble(const char * method_name);
-
-	/*!
-	 * Call object method of the wrapped Java object.
-	 * \return Pointer to a wrapper for the object returned by the call.
-	 * The wrapper should be deleted after use via 'delete'.
-	 */
 	QJniObject callObj(const char * method_name, const char * objname);
 	QJniObject callParamObj(const char * method_name, const char * objname, const char * param_signature, ...);
-
-	/*!
-	 * Call void method of the wrapped Java object with specified
-	 * Java method signature and parameters.
-	 */
 	void callParamVoid(const char * method_name, const char * param_signature, ...);
 	void callVoid(const char * method_name, jint x);
 	void callVoid(const char * method_name, jlong x);
@@ -516,32 +414,20 @@ public:
 		const QString & string4,
 		const QString & string5,
 		const QString & string6);
-
 	jint callParamInt(const char * method_name, const char * param_signature, ...);
 	jlong callParamLong(const char * method_name, const char * param_signature, ...);
 	jfloat callParamFloat(const char * method_name, const char * param_signature, ...);
 	jdouble callParamDouble(const char * method_name, const char * param_signature, ...);
 	jboolean callParamBoolean(const char * method_name, const char * param_signature, ...);
+	QString callString(const char * method_name);
+	QString callParamString(const char *method_name, const char * param_signature, ...);
 
-	//! Get value of int field of the wrapped Java object
 	jint getIntField(const char * field_name) const;
-
-	//! Get value of long field of the wrapped Java object
 	jlong getLongField(const char * field_name) const;
-
-	//! Get value of float field of the wrapped Java object
 	jfloat getFloatField(const char * field_name) const;
-
 	jdouble getDoubleField(const char * field_name) const;
-
 	jboolean getBooleanField(const char * field_name) const;
-
-	void setIntField(const char * field_name, jint value);
-	void setBooleanField(const char * field_name, jboolean value);
-
-	//! Get value of float field of the wrapped Java object
 	QJniObject getObjField(const char * field_name, const char * objname) const;
-
 	QString getStringField(const char * field_name) const;
 
 	std::vector<bool> getBooleanArrayField(const char * name) const;
@@ -552,21 +438,9 @@ public:
 	std::vector<QJniObject> getObjectArrayField(const char * name, const char * objname) const;
 	QStringList getStringArrayField(const char * name) const;
 
-	/*!
-	 * Call jstring method of the wrapped Java object and
-	 * return the result as a QString.
-	 */
-	QString callString(const char * method_name);
+	void setIntField(const char * field_name, jint value);
+	void setBooleanField(const char * field_name, jboolean value);
 
-	QString callParamString(const char *method_name, const char * param_signature, ...);
-
-	/*!
-	 * Get value of jstring field of the wrapped Java object and
-	 * return the result as a QString.
-	 */
-	QString getString(const char * field_name);
-
-	//! Get JNI reference to the wrapped Java object
 	jobject jObject() const { return instance_; }
 
 	// No need to check for class_: sometimes it is valid to have null class;
@@ -574,7 +448,6 @@ public:
 	bool isNull() const override { return !instance_; }
 
 #if !defined(QTANDROIDEXTENSIONS_NO_DEPRECATES)
-	//! Backward compatibility wrapper for detach<jobject>().
 	[[deprecated("Use detach<jobject>()")]] jobject takeJobjectOver()
 	{ return detach<jobject>(); }
 	[[nodiscard, deprecated("Use callObj()")]] QJniObject * callObject(
@@ -587,6 +460,8 @@ public:
 	[[nodiscard, deprecated("Use getObjField()")]] QJniObject * getObjectField(
 		const char * field_name,
 		const char * objname) const;
+	[[deprecated("Use getStringField()")]] QString getString(const char * field_name)
+	{ return getStringField(field_name); }
 #endif
 
 protected:
@@ -598,32 +473,27 @@ protected:
 };
 
 
-/*!
- * A helper class that keeps and automatically deletes local JNI references.
- * Global references are handled by QJniObject or inside of QJniEnvPtr, but we also
- * need a cleaner way to handle local ones.
- * Also this class can handle QString <=> jstring conversion in a shorter manner
- * than QJniEnvPtr.
- */
-class QJniLocalRef
+// A helper class that keeps and automatically deletes local JNI references.
+// It is tad more effective than QJniObject.
+// Most popular use is converting C strings for JNI to pass a JNI call parameter:
+// QJniLocalRef("SomeString").jstring()
+ class QJniLocalRef
 {
 public:
-	/*!
-	 * Create without JNIEnv pointer. The object will use QJniEnvPtr to find it.
-	 * The object takes ownership over the existing local reference.
-	 */
+	// Create without JNIEnv pointer. The object will use QJniEnvPtr to get it.
+	// The object takes ownership over the existing local reference.
 	explicit QJniLocalRef(jobject local): local_(local), env_(nullptr) {}
 
-	//! The object takes ownership over the existing local reference.
+	// The object takes ownership over the existing local reference.
 	explicit QJniLocalRef(JNIEnv * env, jobject local): local_(local), env_(env) {}
 
-	//! The object takes ownership over the existing local reference.
+	// The object takes ownership over the existing local reference.
 	explicit QJniLocalRef(QJniEnvPtr & env, jobject local): local_(local), env_(env.env()) {}
 
-	//! Converts QString to jstring and keeps the reference.
+	// Converts QString to jstring and keeps the reference.
 	explicit QJniLocalRef(const QString & string);
 
-	//! Converts QString to jstring and keeps the reference.
+	// Converts QString to jstring and keeps the reference.
 	explicit QJniLocalRef(QJniEnvPtr & env, const QString & string);
 
 	QJniLocalRef();
@@ -635,12 +505,10 @@ public:
 	void dispose();
 	~QJniLocalRef() noexcept;
 
-	/*!
-	 * Detach the QJniLocalRef from jobject and return the jobject casted to the
-	 * template-specified type.
-	 * Use to return the object from a JNI function, e.g.:
-	 * JNICALL jstring .... foo() { return QJniLocalRef("Hello World!").detach<jstring>(); }
-	 */
+	// Detach the QJniLocalRef from jobject and return the jobject casted to the
+	// template-specified type.
+	// Use to return an object from a JNICALL function, e.g.:
+	// JNICALL jstring .... foo() { return QJniLocalRef("Hello World!").detach<jstring>(); }
 	template<class RESULT_TYPE> RESULT_TYPE detach()
 	{
 		RESULT_TYPE saved = static_cast<RESULT_TYPE>(local_);
