@@ -2034,7 +2034,7 @@ bool QJniObject::callBool(const char* method_name, bool param)
 }
 
 
-int QJniObject::callInt(const char* method_name)
+jint QJniObject::callInt(const char* method_name)
 {
 	VERBOSE(qWarning("int QJniObject::CallInt(const char* method_name) %p \"%s\"",
 		reinterpret_cast<void*>(this), method_name));
@@ -2045,7 +2045,7 @@ int QJniObject::callInt(const char* method_name)
 	{
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
-	int result = static_cast<int>(env->CallIntMethod(checkedInstance(__FUNCTION__), mid));
+	jint result = static_cast<int>(env->CallIntMethod(checkedInstance(__FUNCTION__), mid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), method_name, __FUNCTION__);
@@ -2054,7 +2054,7 @@ int QJniObject::callInt(const char* method_name)
 }
 
 
-long long QJniObject::callLong(const char* method_name)
+jlong QJniObject::callLong(const char* method_name)
 {
 	VERBOSE(qWarning("int QJniObject::CallLong(const char* method_name) %p \"%s\"",
 		reinterpret_cast<void*>(this), method_name));
@@ -2065,7 +2065,7 @@ long long QJniObject::callLong(const char* method_name)
 	{
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
-	long long result = static_cast<long long>(env->CallLongMethod(checkedInstance(__FUNCTION__), mid));
+	jlong result = static_cast<long long>(env->CallLongMethod(checkedInstance(__FUNCTION__), mid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), method_name, __FUNCTION__);
@@ -2074,7 +2074,7 @@ long long QJniObject::callLong(const char* method_name)
 }
 
 
-float QJniObject::callFloat(const char* method_name)
+jfloat QJniObject::callFloat(const char* method_name)
 {
 	VERBOSE(qWarning("float QJniObject::CallFloat(const char* method_name) %p \"%s\"",
 		reinterpret_cast<void*>(this), method_name));
@@ -2085,7 +2085,7 @@ float QJniObject::callFloat(const char* method_name)
 	{
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
-	float result = static_cast<float>(env->CallFloatMethod(checkedInstance(__FUNCTION__), mid));
+	jfloat result = static_cast<float>(env->CallFloatMethod(checkedInstance(__FUNCTION__), mid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), method_name, __FUNCTION__);
@@ -2094,7 +2094,7 @@ float QJniObject::callFloat(const char* method_name)
 }
 
 
-float QJniObject::callFloat(const char* method_name, int param)
+jfloat QJniObject::callFloat(const char* method_name, int param)
 {
 	VERBOSE(qWarning("float QJniObject::CallFloat(const char* method_name) %p \"%s\" (%d)",
 		reinterpret_cast<void*>(this), method_name, param));
@@ -2105,7 +2105,7 @@ float QJniObject::callFloat(const char* method_name, int param)
 	{
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
-	float result =
+	jfloat result =
 		static_cast<float>(env->CallFloatMethod(checkedInstance(__FUNCTION__), mid, jint(param)));
 	if (jep.clearException())
 	{
@@ -2115,7 +2115,7 @@ float QJniObject::callFloat(const char* method_name, int param)
 }
 
 
-double QJniObject::callDouble(const char* method_name)
+jdouble QJniObject::callDouble(const char* method_name)
 {
 	VERBOSE(qWarning("float QJniObject::CallDouble(const char* method_name) %p \"%s\"",
 		reinterpret_cast<void*>(this), method_name));
@@ -2126,7 +2126,7 @@ double QJniObject::callDouble(const char* method_name)
 	{
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
-	double result = static_cast<double>(env->CallDoubleMethod(checkedInstance(__FUNCTION__), mid));
+	jdouble result = static_cast<double>(env->CallDoubleMethod(checkedInstance(__FUNCTION__), mid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), method_name, __FUNCTION__);
@@ -2465,7 +2465,7 @@ QString QJniObject::getString(const char *field_name)
 }
 
 
-int QJniObject::getIntField(const char * field_name) const
+jint QJniObject::getIntField(const char * field_name) const
 {
 	VERBOSE(qWarning("int QJniObject::getIntField(const char* fieldd_name) %p \"%s\"",this,field_name));
 	QJniEnvPtr jep;
@@ -2475,7 +2475,7 @@ int QJniObject::getIntField(const char * field_name) const
 	{
 		throw QJniFieldNotFoundException(debugClassName().constData(), field_name, __FUNCTION__);
 	}
-	int result = static_cast<int>(env->GetIntField(checkedInstance(__FUNCTION__), fid));
+	jint result = static_cast<int>(env->GetIntField(checkedInstance(__FUNCTION__), fid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), field_name, __FUNCTION__);
@@ -2504,7 +2504,7 @@ jlong QJniObject::getLongField(const char * field_name) const
 }
 
 
-float QJniObject::getFloatField(const char * field_name) const
+jfloat QJniObject::getFloatField(const char * field_name) const
 {
 	VERBOSE(qWarning("int QJniObject::getFloatField(const char* field_name) %p \"%s\"",
 		reinterpret_cast<void*>(this), field_name));
@@ -2515,7 +2515,7 @@ float QJniObject::getFloatField(const char * field_name) const
 	{
 		throw QJniFieldNotFoundException(debugClassName().constData(), field_name, __FUNCTION__);
 	}
-	float result = static_cast<float>(env->GetFloatField(checkedInstance(__FUNCTION__), fid));
+	jfloat result = static_cast<float>(env->GetFloatField(checkedInstance(__FUNCTION__), fid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), field_name, __FUNCTION__);
@@ -2524,7 +2524,7 @@ float QJniObject::getFloatField(const char * field_name) const
 }
 
 
-double QJniObject::getDoubleField(const char * field_name) const
+jdouble QJniObject::getDoubleField(const char * field_name) const
 {
 	VERBOSE(qWarning("int QJniObject::getDoubleField(const char* field_name) %p \"%s\"",
 		reinterpret_cast<void*>(this), field_name));
@@ -2535,7 +2535,7 @@ double QJniObject::getDoubleField(const char * field_name) const
 	{
 		throw QJniFieldNotFoundException(debugClassName().constData(), field_name, __FUNCTION__);
 	}
-	double result = static_cast<double>(env->GetDoubleField(checkedInstance(__FUNCTION__), fid));
+	jdouble result = static_cast<double>(env->GetDoubleField(checkedInstance(__FUNCTION__), fid));
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), field_name, __FUNCTION__);

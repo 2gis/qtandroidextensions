@@ -453,19 +453,19 @@ public:
 	bool callBool(const char * method_name, bool param);
 
 	//! Call int method of the wrapped Java object
-	int callInt(const char * method_name);
+	jint callInt(const char * method_name);
 
 	//! Call long method of the wrapped Java object
-	long long callLong(const char * method_name);
+	jlong callLong(const char * method_name);
 
 	//! Call float method of the wrapped Java object
-	float callFloat(const char * method_name);
+	jfloat callFloat(const char * method_name);
 
 	//! Call float method of the wrapped Java object with int parameter
-	float callFloat(const char * method_name, int param);
+	jfloat callFloat(const char * method_name, int param);
 
 	//! Call double method of the wrapped Java object
-	double callDouble(const char * method_name);
+	jdouble callDouble(const char * method_name);
 
 	/*!
 	 * Call object method of the wrapped Java object.
@@ -528,15 +528,15 @@ public:
 	jboolean callParamBoolean(const char * method_name, const char * param_signature, ...);
 
 	//! Get value of int field of the wrapped Java object
-	int getIntField(const char * field_name) const;
+	jint getIntField(const char * field_name) const;
 
 	//! Get value of long field of the wrapped Java object
 	jlong getLongField(const char * field_name) const;
 
 	//! Get value of float field of the wrapped Java object
-	float getFloatField(const char * field_name) const;
+	jfloat getFloatField(const char * field_name) const;
 
-	double getDoubleField(const char * field_name) const;
+	jdouble getDoubleField(const char * field_name) const;
 
 	jboolean getBooleanField(const char * field_name) const;
 
