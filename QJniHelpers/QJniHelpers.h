@@ -85,21 +85,30 @@ public:
 class QJniMethodNotFoundException: public QJniBaseException
 {
 public:
-	QJniMethodNotFoundException(const char * class_name, const char * method_name, const char * call_point_info);
+	QJniMethodNotFoundException(
+		const char * class_name,
+		const char * method_name,
+		const char * call_point_info);
 };
 
 
 class QJniFieldNotFoundException: public QJniBaseException
 {
 public:
-	QJniFieldNotFoundException(const char * class_name, const char * field_name, const char * call_point_info);
+	QJniFieldNotFoundException(
+		const char * class_name,
+		const char * field_name,
+		const char * call_point_info);
 };
 
 
 class QJniJavaCallException: public QJniBaseException
 {
 public:
-	QJniJavaCallException(const char * class_name, const char * method_name, const char * call_point_info);
+	QJniJavaCallException(
+		const char * class_name,
+		const char * method_name,
+		const char * call_point_info);
 };
 
 
@@ -178,7 +187,8 @@ public:
 
 	/*!
 	 * \brief Convert QString into jstring.
-	 * \return Java String reference or 0. Don't forget to call DeleteLocalRef on the returned reference.
+	 * \return Java String reference or 0. Don't forget to call DeleteLocalRef
+	 * on the returned reference.
 	 */
 	jstring toJString(const QString & qstring);
 
@@ -208,7 +218,8 @@ public:
 
 	/*!
 	 * \brief Clear Java exception without taking any specific actions.
-	 * \param describe - if true, will call ExceptionDescribe() to print the exception description into stderr.
+	 * \param describe - if true, will call ExceptionDescribe() to print the exception
+	 * description into stderr.
 	 * \return Returns false if there was no exceptions.
 	 */
 	bool clearException(bool describe = true);
@@ -483,10 +494,32 @@ public:
 	void callVoid(const char * method_name, jdouble x);
 	void callVoid(const char * method_name, const QString & string);
 	void callVoid(const char * method_name, const QString & string1, const QString & string2);
-	void callVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3);
-	void callVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3, const QString & string4);
-	void callVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3, const QString & string4, const QString & string5);
-	void callVoid(const char * method_name, const QString & string1, const QString & string2, const QString & string3, const QString & string4, const QString & string5, const QString & string6);
+	void callVoid(
+		const char * method_name,
+		const QString & string1,
+		const QString & string2,
+		const QString & string3);
+	void callVoid(
+		const char * method_name,
+		const QString & string1,
+		const QString & string2,
+		const QString & string3,
+		const QString & string4);
+	void callVoid(
+		const char * method_name,
+		const QString & string1,
+		const QString & string2,
+		const QString & string3,
+		const QString & string4,
+		const QString & string5);
+	void callVoid(
+		const char * method_name,
+		const QString & string1,
+		const QString & string2,
+		const QString & string3,
+		const QString & string4,
+		const QString & string5,
+		const QString & string6);
 
 	jint callParamInt(const char * method_name, const char * param_signature, ...);
 	jlong callParamLong(const char * method_name, const char * param_signature, ...);
