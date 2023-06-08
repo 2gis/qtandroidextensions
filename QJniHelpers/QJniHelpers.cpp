@@ -569,7 +569,7 @@ void QJniEnvPtr::setJavaVM(JNIEnv * env)
 }
 
 
-jstring QJniEnvPtr::toJString(const QString & str) noexcept
+jstring QJniEnvPtr::toJString(const QString & str)
 {
 	checkEnv();
 	jstring ret = env_->NewString(str.utf16(), str.length());
@@ -582,7 +582,7 @@ jstring QJniEnvPtr::toJString(const QString & str) noexcept
 }
 
 
-QString QJniEnvPtr::toQString(jstring str) noexcept
+QString QJniEnvPtr::toQString(jstring str)
 {
 	checkEnv();
 	if (str == 0)

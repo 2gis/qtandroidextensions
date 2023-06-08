@@ -164,9 +164,8 @@ public:
 	// Unload all preloaded classes to free Java objects (usually not necessary to call).
 	void unloadAllClasses();
 
-	// These helpers are noexcept and in case of any errors just return empty string or null.
-	jstring toJString(const QString & qstring) noexcept;
-	QString toQString(jstring javastring) noexcept;
+	jstring toJString(const QString & qstring);
+	QString toQString(jstring javastring);
 
 	std::vector<bool> convert(jbooleanArray jarray);
 	std::vector<jint> convert(jintArray jarray);
