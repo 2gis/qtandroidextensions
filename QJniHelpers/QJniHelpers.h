@@ -36,6 +36,7 @@
 
 #pragma once
 #include <initializer_list>
+#include <string>
 #include <jni.h>
 #include <QtCore/QString>
 #include <QtCore/QByteArray>
@@ -164,10 +165,19 @@ public:
 	// Unload all preloaded classes to free Java objects (usually not necessary to call).
 	void unloadAllClasses();
 
+	// Returns local ref that must be deleted after use
 	jstring toJString(const QString & qstring);
 	QString toQString(jstring javastring);
 
+	// WIP: These UTF8 functions are work in progress and future signature may change.
+	// Warning: these functions are relatievly slow as they use JVM-side UTF-8 conversion
+	// to provide real UTF 8 (not "modified UTF-8" used by JVM).
+	QJniObject utf8toJString(const std::string & stdstring);
+	std::string toUtf8StdString(jstring javastring);
+
 	std::vector<bool> convert(jbooleanArray jarray);
+	std::vector<char> convert(jbyteArray jarray);
+	std::string convertToString(jbyteArray jarray);
 	std::vector<jint> convert(jintArray jarray);
 	std::vector<jlong> convert(jlongArray jarray);
 	std::vector<jfloat> convert(jfloatArray jarray);
@@ -240,8 +250,10 @@ public:
 	jint callStaticInt(const char * method_name);
 	jlong callStaticLong(const char * method_name);
 	bool callStaticBoolean(const char * method_name);
+	char callStaticByte(const char * method_name);
 	void callStaticParamVoid(const char * method_name, const char * param_signature, ...);
 	bool callStaticParamBoolean(const char * method_name, const char * param_signature, ...);
+	char callStaticParamByte(const char * method_name, const char * param_signature, ...);
 	jint callStaticParamInt(const char * method_name, const char * param_signature, ...);
 	jlong callStaticParamLong(const char * method_name, const char * param_signature, ...);
 	jfloat callStaticParamFloat(const char * method_name, const char * param_signature, ...);
@@ -255,10 +267,12 @@ public:
 	QString getStaticStringField(const char * field_name) const;
 	jint getStaticIntField(const char * field_name) const;
 	bool getStaticBooleanField(const char * field_name) const;
+	char getStaticByteField(const char * field_name) const;
 	jfloat getStaticFloatField(const char * field_name) const;
 	jfloat getStaticDoubleField(const char * field_name) const;
 
 	std::vector<bool> getStaticBooleanArrayField(const char * name) const;
+	std::vector<char> getStaticByteArrayField(const char * name) const;
 	std::vector<jint> getStaticIntArrayField(const char * name) const;
 	std::vector<jlong> getStaticLongArrayField(const char * name) const;
 	std::vector<jfloat> getStaticFloatArrayField(const char * name) const;
@@ -371,6 +385,7 @@ public:
 	void callVoid(const char * method_name);
 	bool callBool(const char * method_name);
 	bool callBool(const char * method_name, bool param);
+	char callByte(const char * method_name);
 	jint callInt(const char * method_name);
 	jlong callLong(const char * method_name);
 	jfloat callFloat(const char * method_name);
@@ -417,7 +432,8 @@ public:
 	jlong callParamLong(const char * method_name, const char * param_signature, ...);
 	jfloat callParamFloat(const char * method_name, const char * param_signature, ...);
 	jdouble callParamDouble(const char * method_name, const char * param_signature, ...);
-	jboolean callParamBoolean(const char * method_name, const char * param_signature, ...);
+	bool callParamBoolean(const char * method_name, const char * param_signature, ...);
+	char callParamByte(const char * method_name, const char * param_signature, ...);
 	QString callString(const char * method_name);
 	QString callParamString(const char *method_name, const char * param_signature, ...);
 
@@ -430,6 +446,7 @@ public:
 	QString getStringField(const char * field_name) const;
 
 	std::vector<bool> getBooleanArrayField(const char * name) const;
+	std::vector<char> getByteArrayField(const char * name) const;
 	std::vector<jint> getIntArrayField(const char * name) const;
 	std::vector<jlong> getLongArrayField(const char * name) const;
 	std::vector<jfloat> getFloatArrayField(const char * name) const;
