@@ -2040,7 +2040,7 @@ jint QJniObject::callInt(const char * method_name)
 	{
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
-	jint result = static_cast<int>(env->CallIntMethod(checkedInstance(__FUNCTION__), mid));
+	jint result = env->CallIntMethod(checkedInstance(__FUNCTION__), mid);
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), method_name, __FUNCTION__);
@@ -2060,7 +2060,7 @@ jlong QJniObject::callLong(const char * method_name)
 	{
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
-	jlong result = static_cast<long long>(env->CallLongMethod(checkedInstance(__FUNCTION__), mid));
+	jlong result = env->CallLongMethod(checkedInstance(__FUNCTION__), mid);
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), method_name, __FUNCTION__);
@@ -2080,7 +2080,7 @@ jfloat QJniObject::callFloat(const char * method_name)
 	{
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
-	jfloat result = static_cast<float>(env->CallFloatMethod(checkedInstance(__FUNCTION__), mid));
+	jfloat result = env->CallFloatMethod(checkedInstance(__FUNCTION__), mid);
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), method_name, __FUNCTION__);
@@ -2106,7 +2106,7 @@ jdouble QJniObject::callDouble(const char * method_name)
 	{
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
-	jdouble result = static_cast<double>(env->CallDoubleMethod(checkedInstance(__FUNCTION__), mid));
+	jdouble result = env->CallDoubleMethod(checkedInstance(__FUNCTION__), mid);
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), method_name, __FUNCTION__);
@@ -2437,7 +2437,7 @@ jint QJniObject::getIntField(const char * field_name) const
 	{
 		throw QJniFieldNotFoundException(debugClassName().constData(), field_name, __FUNCTION__);
 	}
-	jint result = static_cast<int>(env->GetIntField(checkedInstance(__FUNCTION__), fid));
+	jint result = env->GetIntField(checkedInstance(__FUNCTION__), fid);
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), field_name, __FUNCTION__);
@@ -2477,7 +2477,7 @@ jfloat QJniObject::getFloatField(const char * field_name) const
 	{
 		throw QJniFieldNotFoundException(debugClassName().constData(), field_name, __FUNCTION__);
 	}
-	jfloat result = static_cast<float>(env->GetFloatField(checkedInstance(__FUNCTION__), fid));
+	jfloat result = env->GetFloatField(checkedInstance(__FUNCTION__), fid);
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), field_name, __FUNCTION__);
@@ -2497,7 +2497,7 @@ jdouble QJniObject::getDoubleField(const char * field_name) const
 	{
 		throw QJniFieldNotFoundException(debugClassName().constData(), field_name, __FUNCTION__);
 	}
-	jdouble result = static_cast<double>(env->GetDoubleField(checkedInstance(__FUNCTION__), fid));
+	jdouble result = env->GetDoubleField(checkedInstance(__FUNCTION__), fid);
 	if (jep.clearException())
 	{
 		throw QJniJavaCallException(debugClassName().constData(), field_name, __FUNCTION__);
