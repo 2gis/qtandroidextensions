@@ -48,7 +48,7 @@ static inline QAndroidOffscreenWebView * AOWW(jlong nativeptr)
 			return ret;
 		}
 	}
-	qWarning()<<"QAndroidOffscreenWebView: Zero native ptr received.";
+	qWarning() << "QAndroidOffscreenWebView: Zero native ptr received.";
 	return 0;
 }
 
@@ -230,52 +230,62 @@ Q_DECL_EXPORT void JNICALL Java_onCanGoBackOrForwardReceived(JNIEnv *, jobject, 
 	}
 }
 
-QAndroidOffscreenWebView::QAndroidOffscreenWebView(const QString & object_name, const QSize & def_size, QObject * parent)
+QAndroidOffscreenWebView::QAndroidOffscreenWebView(
+		const QString & object_name,
+		const QSize & def_size,
+		QObject * parent)
 	: QAndroidOffscreenView(QLatin1String("OffscreenWebView"), object_name, def_size, parent)
 	, ignore_ssl_errors_(false)
 {
-	if (QJniObject & ov = offscreenView())
+	try
 	{
-		qDebug() << __PRETTY_FUNCTION__ << "Registering JNI methods for WebView";
-		const bool ok = ov.registerNativeMethods({
-			// WebViewClient Methods
-			{"doUpdateVisitedHistory", "(JLjava/lang/String;Z)V", reinterpret_cast<void*>(Java_doUpdateVisitedHistory)},
-			{"onFormResubmission", "(JLandroid/os/Message;Landroid/os/Message;)V", reinterpret_cast<void*>(Java_onFormResubmission)},
-			{"onLoadResource", "(JLjava/lang/String;)V", reinterpret_cast<void*>(Java_onLoadResource)},
-			{"onPageFinished", "(JLjava/lang/String;)V", reinterpret_cast<void*>(Java_onPageFinished)},
-			{"onPageStarted", "(JLjava/lang/String;Landroid/graphics/Bitmap;)V", reinterpret_cast<void*>(Java_onPageStarted)},
-			{"onReceivedError", "(JILjava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void*>(Java_onReceivedError)},
-			{"onReceivedHttpAuthRequest", "(JLandroid/webkit/HttpAuthHandler;Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void*>(Java_onReceivedHttpAuthRequest)},
-			{"onReceivedLoginRequest", "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void*>(Java_onReceivedLoginRequest)},
-			{"onReceivedSslError", "(JLandroid/webkit/SslErrorHandler;Landroid/net/http/SslError;)V", reinterpret_cast<void*>(Java_onReceivedSslError)},
-			{"onScaleChanged", "(JFF)V", reinterpret_cast<void*>(Java_onScaleChanged)},
-			{"onTooManyRedirects", "(JLandroid/os/Message;Landroid/os/Message;)V", reinterpret_cast<void*>(Java_onTooManyRedirects)},
-			{"onUnhandledKeyEvent", "(JLandroid/view/KeyEvent;)V", reinterpret_cast<void*>(Java_onUnhandledKeyEvent)},
-			{"shouldInterceptRequest", "(JLjava/lang/String;)Landroid/webkit/WebResourceResponse;", reinterpret_cast<void*>(Java_shouldInterceptRequest)},
-			{"shouldOverrideKeyEvent", "(JLandroid/view/KeyEvent;)Z", reinterpret_cast<void*>(Java_shouldOverrideKeyEvent)},
-			{"shouldOverrideUrlLoading", "(JLjava/lang/String;)Z", reinterpret_cast<void*>(Java_shouldOverrideUrlLoading)},
-
-			// WebChromiumClient Methods
-			{"onProgressChanged", "(JLandroid/webkit/WebView;I)V", reinterpret_cast<void*>(Java_onProgressChanged)},
-
-			// Own callbacks
-			{"onContentHeightReceived", "(JI)V", reinterpret_cast<void*>(Java_onContentHeightReceived)},
-			{"onCanGoBackReceived", "(JZ)V", reinterpret_cast<void*>(Java_onCanGoBackReceived)},
-			{"onCanGoForwardReceived", "(JZ)V", reinterpret_cast<void*>(Java_onCanGoForwardReceived)},
-			{"onCanGoBackOrForwardReceived", "(JZI)V", reinterpret_cast<void*>(Java_onCanGoBackOrForwardReceived)}
-		});
-		if (!ok)
+		if (QJniObject & ov = offscreenView())
 		{
-			qCritical()<<"Failed to register native methods!";
+			qDebug() << __PRETTY_FUNCTION__ << "Registering JNI methods for WebView";
+			const bool ok = ov.registerNativeMethods({
+				// WebViewClient Methods
+				{"doUpdateVisitedHistory", "(JLjava/lang/String;Z)V", reinterpret_cast<void*>(Java_doUpdateVisitedHistory)},
+				{"onFormResubmission", "(JLandroid/os/Message;Landroid/os/Message;)V", reinterpret_cast<void*>(Java_onFormResubmission)},
+				{"onLoadResource", "(JLjava/lang/String;)V", reinterpret_cast<void*>(Java_onLoadResource)},
+				{"onPageFinished", "(JLjava/lang/String;)V", reinterpret_cast<void*>(Java_onPageFinished)},
+				{"onPageStarted", "(JLjava/lang/String;Landroid/graphics/Bitmap;)V", reinterpret_cast<void*>(Java_onPageStarted)},
+				{"onReceivedError", "(JILjava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void*>(Java_onReceivedError)},
+				{"onReceivedHttpAuthRequest", "(JLandroid/webkit/HttpAuthHandler;Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void*>(Java_onReceivedHttpAuthRequest)},
+				{"onReceivedLoginRequest", "(JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void*>(Java_onReceivedLoginRequest)},
+				{"onReceivedSslError", "(JLandroid/webkit/SslErrorHandler;Landroid/net/http/SslError;)V", reinterpret_cast<void*>(Java_onReceivedSslError)},
+				{"onScaleChanged", "(JFF)V", reinterpret_cast<void*>(Java_onScaleChanged)},
+				{"onTooManyRedirects", "(JLandroid/os/Message;Landroid/os/Message;)V", reinterpret_cast<void*>(Java_onTooManyRedirects)},
+				{"onUnhandledKeyEvent", "(JLandroid/view/KeyEvent;)V", reinterpret_cast<void*>(Java_onUnhandledKeyEvent)},
+				{"shouldInterceptRequest", "(JLjava/lang/String;)Landroid/webkit/WebResourceResponse;", reinterpret_cast<void*>(Java_shouldInterceptRequest)},
+				{"shouldOverrideKeyEvent", "(JLandroid/view/KeyEvent;)Z", reinterpret_cast<void*>(Java_shouldOverrideKeyEvent)},
+				{"shouldOverrideUrlLoading", "(JLjava/lang/String;)Z", reinterpret_cast<void*>(Java_shouldOverrideUrlLoading)},
+
+				// WebChromiumClient Methods
+				{"onProgressChanged", "(JLandroid/webkit/WebView;I)V", reinterpret_cast<void*>(Java_onProgressChanged)},
+
+				// Own callbacks
+				{"onContentHeightReceived", "(JI)V", reinterpret_cast<void*>(Java_onContentHeightReceived)},
+				{"onCanGoBackReceived", "(JZ)V", reinterpret_cast<void*>(Java_onCanGoBackReceived)},
+				{"onCanGoForwardReceived", "(JZ)V", reinterpret_cast<void*>(Java_onCanGoForwardReceived)},
+				{"onCanGoBackOrForwardReceived", "(JZI)V", reinterpret_cast<void*>(Java_onCanGoBackOrForwardReceived)}
+			});
+			if (!ok)
+			{
+				qCritical()<<"Failed to register native methods!";
+			}
+			else
+			{
+				qDebug()<<"QAndroidOffscreenWebView successfully registered native methods.";
+			}
 		}
 		else
 		{
-			qDebug()<<"QAndroidOffscreenWebView successfully registered native methods.";
+			qCritical("Failed to register native methods of QAndroidOffscreenWebView because Java object pointer is null.");
 		}
 	}
-	else
+	catch (const std::exception & e)
 	{
-		qCritical("Failed to register native methods of QAndroidOffscreenWebView because Java object pointer is null.");
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
@@ -285,143 +295,234 @@ QAndroidOffscreenWebView::~QAndroidOffscreenWebView()
 
 void QAndroidOffscreenWebView::preloadJavaClasses()
 {
-	QAndroidOffscreenView::preloadJavaClasses();
-	QString path = getDefaultJavaClassPath() + QLatin1String("OffscreenWebView");
-	QAndroidQPAPluginGap::preloadJavaClass(path.toLatin1());
+	try
+	{
+		QAndroidOffscreenView::preloadJavaClasses();
+		QString path = getDefaultJavaClassPath() + QLatin1String("OffscreenWebView");
+		QAndroidQPAPluginGap::preloadJavaClass(path.toLatin1());
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+	}
 }
 
 bool QAndroidOffscreenWebView::loadUrl(const QString & url)
 {
-	QJniObject & view = offscreenView();
-	if (view)
+	try
 	{
-		view.callVoid("loadUrl", url);
-		return true;
+		QJniObject & view = offscreenView();
+		if (view)
+		{
+			view.callVoid("loadUrl", url);
+			return true;
+		}
+		qWarning("QAndroidOffscreenWebView: Attempt to load URL when View is null.");
 	}
-	qWarning("QAndroidOffscreenWebView: Attempt to load URL when View is null.");
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+	}
 	return false;
 }
 
 bool QAndroidOffscreenWebView::loadUrl(const QString & url, const QMap<QString, QString> & additionalHttpHeaders)
 {
-	QJniObject & view = offscreenView();
-	if (view)
+	try
 	{
-		QString strheaders;
-		for(QMap<QString, QString>::const_iterator it = additionalHttpHeaders.begin(); it != additionalHttpHeaders.end(); ++it)
+		QJniObject & view = offscreenView();
+		if (view)
 		{
-			strheaders += it.key();
-			strheaders += QChar('\n');
-			strheaders += it.value();
-			strheaders += QChar('\n');
+			QString strheaders;
+			for(QMap<QString, QString>::const_iterator it = additionalHttpHeaders.begin(); it != additionalHttpHeaders.end(); ++it)
+			{
+				strheaders += it.key();
+				strheaders += QChar('\n');
+				strheaders += it.value();
+				strheaders += QChar('\n');
+			}
+			view.callVoid("loadUrl", url, strheaders);
+			return true;
 		}
-		view.callVoid("loadUrl", url, strheaders);
-		return true;
+		qWarning("QAndroidOffscreenWebView: Attempt to load URL when View is null.");
 	}
-	qWarning("QAndroidOffscreenWebView: Attempt to load URL when View is null.");
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+	}
 	return false;
 }
 
 bool QAndroidOffscreenWebView::loadData(const QString & text, const QString & mime, const QString & encoding)
 {
-	QJniObject & view = offscreenView();
-	if (view)
+	try
 	{
-		view.callVoid("loadData", text, mime, encoding);
-		return true;
+		QJniObject & view = offscreenView();
+		if (view)
+		{
+			view.callVoid("loadData", text, mime, encoding);
+			return true;
+		}
+		qWarning("QAndroidOffscreenWebView: Attempt to insert URL when View is null.");
 	}
-	qWarning("QAndroidOffscreenWebView: Attempt to insert URL when View is null.");
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+	}
 	return false;
 }
 
 bool QAndroidOffscreenWebView::loadDataWithBaseURL(const QString & baseUrl, const QString & data, const QString & mimeType, const QString & encoding, const QString & historyUrl)
 {
-	QJniObject & view = offscreenView();
-	if (view)
+	try
 	{
-		view.callVoid("loadDataWithBaseURL", baseUrl, data, mimeType, encoding, historyUrl);
-		return true;
+		QJniObject & view = offscreenView();
+		if (view)
+		{
+			view.callVoid("loadDataWithBaseURL", baseUrl, data, mimeType, encoding, historyUrl);
+			return true;
+		}
+		qWarning("QAndroidOffscreenWebView: Attempt to loadDataWithBaseURL when View is null.");
 	}
-	qWarning("QAndroidOffscreenWebView: Attempt to loadDataWithBaseURL when View is null.");
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+	}
 	return false;
 }
 
 bool QAndroidOffscreenWebView::requestContentHeight()
 {
-	QJniObject & view = offscreenView();
-	if (view)
+	try
 	{
-		return view.callBool("requestContentHeight");
+		QJniObject & view = offscreenView();
+		if (view)
+		{
+			return view.callBool("requestContentHeight");
+		}
+		qWarning("QAndroidOffscreenWebView: Attempt to requestContentHeight when View is null.");
 	}
-	qWarning("QAndroidOffscreenWebView: Attempt to requestContentHeight when View is null.");
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+	}
 	return false;
 }
 
 void QAndroidOffscreenWebView::requestCanGoBack()
 {
-	QJniObject & view = offscreenView();
-	if (view)
+	try
 	{
-		view.callVoid("requestCanGoBack");
-		return;
+		QJniObject & view = offscreenView();
+		if (view)
+		{
+			view.callVoid("requestCanGoBack");
+			return;
+		}
+		qWarning("QAndroidOffscreenWebView: Attempt to requestCanGoBack when View is null.");
 	}
-	qWarning("QAndroidOffscreenWebView: Attempt to requestCanGoBack when View is null.");
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+	}
 	emit canGoBackReceived(false);
 }
 
 void QAndroidOffscreenWebView::goBack()
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("goBack");
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("goBack");
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenWebView::requestCanGoForward()
 {
-	QJniObject & view = offscreenView();
-	if (view)
+	try
 	{
-		view.callVoid("requestCanGoForward");
-		return;
+		QJniObject & view = offscreenView();
+		if (view)
+		{
+			view.callVoid("requestCanGoForward");
+			return;
+		}
+		qWarning("QAndroidOffscreenWebView: Attempt to requestCanGoForward when View is null.");
+		emit canGoForwardReceived(false);
 	}
-	qWarning("QAndroidOffscreenWebView: Attempt to requestCanGoForward when View is null.");
-	emit canGoForwardReceived(false);
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+	}
 }
 
 void QAndroidOffscreenWebView::goForward()
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("goForward");
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("goForward");
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenWebView::setWebContentsDebuggingEnabled(bool enabled)
 {
-    if (QJniObject & view = offscreenView())
-    {
-        view.callVoid("setWebContentsDebuggingEnabled", static_cast<jboolean>(enabled));
-    }
+	try
+	{
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setWebContentsDebuggingEnabled", static_cast<jboolean>(enabled));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+	}
 }
 
 void QAndroidOffscreenWebView::requestCanGoBackOrForward(int steps)
 {
-	QJniObject & view = offscreenView();
-	if (view)
+	try
 	{
-		view.callVoid("requestCanGoBackOrForward", static_cast<jint>(steps));
-		return;
+		QJniObject & view = offscreenView();
+		if (view)
+		{
+			view.callVoid("requestCanGoBackOrForward", static_cast<jint>(steps));
+			return;
+		}
+		qWarning("QAndroidOffscreenWebView: Attempt to requestCanGoBackOrForward when View is null.");
+		emit canGoBackOrForwardReceived(false, steps);
 	}
-	qWarning("QAndroidOffscreenWebView: Attempt to requestCanGoBackOrForward when View is null.");
-	emit canGoBackOrForwardReceived(false, steps);
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+	}
 }
 
 void QAndroidOffscreenWebView::goBackOrForward(int steps)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("goForward", static_cast<jint>(steps));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("goForward", static_cast<jint>(steps));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
@@ -468,9 +569,9 @@ void QAndroidOffscreenWebView::onReceivedError(JNIEnv * env, jobject, int errorC
 		QJniEnvPtr e(env);
 		emit receivedError(errorCode, e.toQString(static_cast<jstring>(description)), e.toQString(static_cast<jstring>(failingUrl)));
 	}
-	catch(const std::exception & e)
+	catch (const std::exception & e)
 	{
-		qWarning() << "QAndroidOffscreenWebView::onReceivedError exception: " << e.what();
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
@@ -495,19 +596,19 @@ void QAndroidOffscreenWebView::onReceivedSslError(JNIEnv *, jobject, jobject han
 		QJniObject err(error, false);
 		// qDebug() << "QAndroidOffscreenWebView::onReceivedSslError" << err.callString("toString");
 		emit receivedSslError(err.callInt("getPrimaryError"), err.callString("getUrl"));
-	}
-	catch(const std::exception & e)
-	{
-		qWarning() << "QAndroidOffscreenWebView::onReceivedSslError exception: " << e.what();
-	}
 
-	if (ignore_ssl_errors_)
-	{
-		QJniObject(handler, false).callVoid("proceed");
+		if (ignore_ssl_errors_)
+		{
+			QJniObject(handler, false).callVoid("proceed");
+		}
+		else
+		{
+			QJniObject(handler, false).callVoid("cancel");
+		}
 	}
-	else
+	catch (const std::exception & e)
 	{
-		QJniObject(handler, false).callVoid("cancel");
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
@@ -521,7 +622,14 @@ void QAndroidOffscreenWebView::onTooManyRedirects(JNIEnv *, jobject, jobject can
 {
 	Q_UNUSED(continueMsg);
 	qDebug() << "QAndroidOffscreenWebView::onTooManyRedirects";
-	QJniObject(cancelMsg, false).callVoid("sendToTarget");
+	try
+	{
+		QJniObject(cancelMsg, false).callVoid("sendToTarget");
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+	}
 }
 
 void QAndroidOffscreenWebView::onUnhandledKeyEvent(JNIEnv *, jobject, jobject event)
@@ -547,9 +655,16 @@ jboolean QAndroidOffscreenWebView::shouldOverrideUrlLoading(JNIEnv *, jobject, j
 	// Doing OffscreenWebView.loadUrl(url).
 	// This should always be done for Chrome to avoid opening links in external browser.
 	// qDebug() << "QAndroidOffscreenWebView::shouldOverrideUrlLoading" << QJniEnvPtr(env).JStringToQString(static_cast<jstring>(url));
-	if (QJniObject aview = QAndroidOffscreenView::getView())
+	try
 	{
-		aview.callParamVoid("loadUrl", "Ljava/lang/String;", url);
+		if (QJniObject aview = QAndroidOffscreenView::getView())
+		{
+			aview.callParamVoid("loadUrl", "Ljava/lang/String;", url);
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 	return 0;
 }

@@ -47,11 +47,18 @@ Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnTextChanged(JNI
 		QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(reinterpret_cast<QAndroidOffscreenView*>(vp));
 		if (edit)
 		{
-			edit->javaOnTextChanged(QJniEnvPtr().toQString(str), start, before, count);
+			try
+			{
+				edit->javaOnTextChanged(QJniEnvPtr().toQString(str), start, before, count);
+			}
+			catch (const std::exception & e)
+			{
+				qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+			}
 			return;
 		}
 	}
-	qWarning()<<__FUNCTION__<<"Zero param!";
+	qWarning() << __PRETTY_FUNCTION__ << "Zero param!";
 }
 
 Q_DECL_EXPORT jboolean JNICALL Java_AndroidOffscreenEditText_nativeOnKey(JNIEnv *, jobject, jlong param, jboolean down, jint keycode)
@@ -65,7 +72,7 @@ Q_DECL_EXPORT jboolean JNICALL Java_AndroidOffscreenEditText_nativeOnKey(JNIEnv 
 			return jboolean(edit->javaOnKey(down? true: false, keycode));
 		}
 	}
-	qWarning()<<__FUNCTION__<<"Zero param!";
+	qWarning() << __PRETTY_FUNCTION__ << "Zero param!";
 	return JNI_FALSE;
 }
 
@@ -81,7 +88,7 @@ Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnEditorAction(JN
 			return;
 		}
 	}
-	qWarning()<<__FUNCTION__<<"Zero param!";
+	qWarning() << __PRETTY_FUNCTION__ << "Zero param!";
 }
 
 Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeSetSelectionInfo(JNIEnv *, jobject, jlong param, jint top, jint bottom)
@@ -96,7 +103,7 @@ Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeSetSelectionInfo(
 			return;
 		}
 	}
-	qWarning()<<__FUNCTION__<<"Zero param!";
+	qWarning() << __PRETTY_FUNCTION__ << "Zero param!";
 }
 
 Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnContentHeightChanged(JNIEnv *, jobject, jlong param, jint height)
@@ -111,7 +118,7 @@ Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnContentHeightCh
 			return;
 		}
 	}
-	qWarning()<<__FUNCTION__<<"Zero param!";
+	qWarning() << __PRETTY_FUNCTION__ << "Zero param!";
 }
 
 Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnHasAcceptableInputChanged(JNIEnv *, jobject, jlong param, jboolean hasAcceptableInput)
@@ -126,24 +133,34 @@ Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnHasAcceptableIn
 			return;
 		}
 	}
-	qWarning()<<__FUNCTION__<<"Zero param!";
+	qWarning() << __PRETTY_FUNCTION__ << "Zero param!";
 }
 
-QAndroidOffscreenEditText::QAndroidOffscreenEditText(const QString & object_name, const QSize & def_size, QObject * parent)
+QAndroidOffscreenEditText::QAndroidOffscreenEditText(
+		const QString & object_name,
+		const QSize & def_size,
+		QObject * parent)
 	: QAndroidOffscreenView(QLatin1String("OffscreenEditText"), object_name, def_size, parent)
 	, paint_flags_(ANDROID_PAINT_DEV_KERN_TEXT_FLAG | ANDROID_PAINT_ANTI_ALIAS_FLAG)
 {
 	setAttachingMode(true);
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.registerNativeMethods({
-			{"nativeOnTextChanged", "(JLjava/lang/String;III)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnTextChanged)},
-			{"nativeOnKey", "(JZI)Z", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnKey)},
-			{"nativeOnEditorAction", "(JI)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnEditorAction)},
-			{"nativeSetSelectionInfo", "(JII)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeSetSelectionInfo)},
-			{"nativeOnContentHeightChanged", "(JI)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnContentHeightChanged)},
-			{"nativeOnHasAcceptableInputChanged", "(JZ)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnHasAcceptableInputChanged)},
-		});
+		if (QJniObject & view = offscreenView())
+		{
+			view.registerNativeMethods({
+				{"nativeOnTextChanged", "(JLjava/lang/String;III)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnTextChanged)},
+				{"nativeOnKey", "(JZI)Z", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnKey)},
+				{"nativeOnEditorAction", "(JI)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnEditorAction)},
+				{"nativeSetSelectionInfo", "(JII)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeSetSelectionInfo)},
+				{"nativeOnContentHeightChanged", "(JI)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnContentHeightChanged)},
+				{"nativeOnHasAcceptableInputChanged", "(JZ)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnHasAcceptableInputChanged)},
+			});
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
@@ -153,8 +170,16 @@ QAndroidOffscreenEditText::~QAndroidOffscreenEditText()
 
 void QAndroidOffscreenEditText::preloadJavaClasses()
 {
-	QAndroidOffscreenView::preloadJavaClasses();
-	QAndroidQPAPluginGap::preloadJavaClass((getDefaultJavaClassPath() + QLatin1String("OffscreenEditText")).toLatin1());
+	try
+	{
+		QAndroidOffscreenView::preloadJavaClasses();
+		QAndroidQPAPluginGap::preloadJavaClass(
+			(getDefaultJavaClassPath() + QLatin1String("OffscreenEditText")).toLatin1());
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+	}
 }
 
 void QAndroidOffscreenEditText::javaOnTextChanged(const QString & str, int start, int before, int count)
@@ -210,122 +235,227 @@ void QAndroidOffscreenEditText::javaSetSelectionInfo(int top, int bottom)
 
 void QAndroidOffscreenEditText::setText(const QString & text)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setText", text);
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setText", text);
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 QString QAndroidOffscreenEditText::getText() const
 {
-	if (QJniObject & view = const_cast<QAndroidOffscreenEditText*>(this)->offscreenView())
+	try
 	{
-		return view.callString("getText");
+		if (QJniObject & view = const_cast<QAndroidOffscreenEditText*>(this)->offscreenView())
+		{
+			return view.callString("getText");
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 	return QString();
 }
 
 void QAndroidOffscreenEditText::setTextSize(float size, int unit)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callParamVoid("setTextSize", "FI", jfloat(size), jint(unit));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callParamVoid("setTextSize", "FI", jfloat(size), jint(unit));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setTypeface(const QString & name, int style)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callParamVoid("setTypeface", "Ljava/lang/String;I", QJniLocalRef(name).jObject(), jint(style));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callParamVoid("setTypeface", "Ljava/lang/String;I", QJniLocalRef(name).jObject(), jint(style));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setTypefaceFromFile(const QString & filename, int style)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callParamVoid("setTypefaceFromFile", "Ljava/lang/String;I", QJniLocalRef(filename).jObject(), style);
+		if (QJniObject & view = offscreenView())
+		{
+			view.callParamVoid("setTypefaceFromFile", "Ljava/lang/String;I", QJniLocalRef(filename).jObject(), style);
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setTypefaceFromAsset(const QString & filename, int style)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callParamVoid("setTypefaceFromAsset", "Ljava/lang/String;I", QJniLocalRef(filename).jObject(), style);
+		if (QJniObject & view = offscreenView())
+		{
+			view.callParamVoid("setTypefaceFromAsset", "Ljava/lang/String;I", QJniLocalRef(filename).jObject(), style);
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setCursorVisible(bool visible)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setCursorVisible", jboolean(visible));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setCursorVisible", jboolean(visible));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setAutofillType(int type)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setAutofillType", type);
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setAutofillType", type);
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setHintType(const QString & type)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setHintType", type);
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setHintType", type);
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setInputType(int type)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setInputType", jint(type));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setInputType", jint(type));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setInputType(int type_and, int type_or)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callParamVoid("setInputType", "II", jint(type_and), jint(type_or));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callParamVoid("setInputType", "II", jint(type_and), jint(type_or));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setMarqueeRepeatLimit(int marqueeLimit)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setMarqueeRepeatLimit", jint(marqueeLimit));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setMarqueeRepeatLimit", jint(marqueeLimit));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setMaxEms(int maxems)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setMaxEms", jint(maxems));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setMaxEms", jint(maxems));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setMinEms(int minems)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setMinEms", jint(minems));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setMinEms", jint(minems));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setMaxHeight(int maxHeight)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setMaxHeight", jint(maxHeight));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setMaxHeight", jint(maxHeight));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
@@ -339,58 +469,107 @@ void QAndroidOffscreenEditText::setMinHeight(int minHeight)
 
 void QAndroidOffscreenEditText::setMaxLines(int maxlines)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setMaxLines", jint(maxlines));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setMaxLines", jint(maxlines));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setMinLines(int minlines)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setMinLines", jint(minlines));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setMinLines", jint(minlines));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setMaxWidth(int maxpixels)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setMaxWidth", jint(maxpixels));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setMaxWidth", jint(maxpixels));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setMinWidth(int minpixels)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setMinWidth", jint(minpixels));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setMinWidth", jint(minpixels));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setPadding(int left, int top, int right, int bottom)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callParamVoid("setPadding", "IIII", jint(left), jint(top), jint(right), jint(bottom));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callParamVoid("setPadding", "IIII", jint(left), jint(top), jint(right), jint(bottom));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setIncludeFontPadding(bool enabled)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setIncludeFontPadding", jboolean(enabled));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setIncludeFontPadding", jboolean(enabled));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setPaintFlags(int flags)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		paint_flags_ = flags;
-		view.callVoid("setPaintFlags", jint(flags));
+		if (QJniObject & view = offscreenView())
+		{
+			paint_flags_ = flags;
+			view.callVoid("setPaintFlags", jint(flags));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
@@ -401,218 +580,407 @@ int QAndroidOffscreenEditText::getPaintFlags()
 
 void QAndroidOffscreenEditText::setSelectAllOnFocus(bool selectAllOnFocus)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setSelectAllOnFocus", jint(selectAllOnFocus));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setSelectAllOnFocus", jint(selectAllOnFocus));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setSingleLine(bool singleLine)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setSingleLine", jboolean(singleLine));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setSingleLine", jboolean(singleLine));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setTextColor(int color)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setTextColor", jint(color));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setTextColor", jint(color));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setTextScaleX(float size)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setTextScaleX", jfloat(size));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setTextScaleX", jfloat(size));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setTextIsSelectable(bool selectable)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setTextIsSelectable", jboolean(selectable));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setTextIsSelectable", jboolean(selectable));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setGravity(int gravity)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setGravity", jint(gravity));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setGravity", jint(gravity));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setHeight(int pixels)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setHeight", jint(pixels));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setHeight", jint(pixels));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setHighlightColor(int color)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setHighlightColor", jint(color));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setHighlightColor", jint(color));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setHint(const QString & hint)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setHint", hint);
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setHint", hint);
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setHintTextColor(int color)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setHintTextColor", jint(color));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setHintTextColor", jint(color));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setWidth(int pixels)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setWidth", jint(pixels));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setWidth", jint(pixels));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setLineSpacing(float add, float mult)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callParamVoid("setLineSpacing", "FF", jfloat(add), jfloat(mult));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callParamVoid("setLineSpacing", "FF", jfloat(add), jfloat(mult));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setLines(int lines)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setLines", jint(lines));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setLines", jint(lines));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setHorizontallyScrolling(bool whether)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setHorizontallyScrolling", jboolean(whether));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setHorizontallyScrolling", jboolean(whether));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setVerticallyScrolling(bool whether)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setVerticallyScrolling", jboolean(whether));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setVerticallyScrolling", jboolean(whether));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setAllCaps(bool allCaps)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setAllCaps", jboolean(allCaps));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setAllCaps", jboolean(allCaps));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setPasswordMode(bool enable)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setPasswordMode", jboolean(enable));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setPasswordMode", jboolean(enable));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setPasswordModeWithDefaultTypeface(bool enable)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setPasswordModeWithDefaultTypeface", jboolean(enable));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setPasswordModeWithDefaultTypeface", jboolean(enable));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setImeOptions(int and_mask, int or_mask)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callParamVoid("setImeOptions", "II", static_cast<jint>(and_mask), static_cast<jint>(or_mask));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callParamVoid("setImeOptions", "II", static_cast<jint>(and_mask), static_cast<jint>(or_mask));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setEllipsize(AndroidTruncateAt ellipsis)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setEllipsize", jint(ellipsis));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setEllipsize", jint(ellipsis));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::selectAll()
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("selectAll");
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("selectAll");
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setSelection(int index)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setSelection", jint(index));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setSelection", jint(index));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setSelection(int start, int stop)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callParamVoid("setSelection", "II", jint(start), jint(stop));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callParamVoid("setSelection", "II", jint(start), jint(stop));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 int QAndroidOffscreenEditText::getSelectionStart()
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		return view.callInt("getSelectionStart");
+		if (QJniObject & view = offscreenView())
+		{
+			return view.callInt("getSelectionStart");
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 	return 0; // No selection start
 }
 
 void QAndroidOffscreenEditText::setHorizontalScrollBarEnabled(bool horizontalScrollBarEnabled)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setHorizontalScrollBarEnabled", jboolean(horizontalScrollBarEnabled));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setHorizontalScrollBarEnabled", jboolean(horizontalScrollBarEnabled));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setVerticalScrollBarEnabled(bool verticalScrollBarEnabled)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setVerticalScrollBarEnabled", jboolean(verticalScrollBarEnabled));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setVerticalScrollBarEnabled", jboolean(verticalScrollBarEnabled));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 int QAndroidOffscreenEditText::getSelectionEnd()
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		return view.callInt("getSelectionEnd");
+		if (QJniObject & view = offscreenView())
+		{
+			return view.callInt("getSelectionEnd");
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 	return 0; // No selection end
 }
@@ -644,58 +1012,107 @@ void QAndroidOffscreenEditText::setHintTextColor(const QColor & color)
 
 void QAndroidOffscreenEditText::setAllowFullscreenKeyboard(bool allow)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setAllowFullscreenKeyboard", jboolean(allow));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setAllowFullscreenKeyboard", jboolean(allow));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setCursorColorToTextColor()
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setCursorColorToTextColor");
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setCursorColorToTextColor");
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setCursorByDrawableName(const QString & name)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setCursorByDrawableName", name);
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setCursorByDrawableName", name);
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setMaxLength(int length)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setMaxLength", jint(length));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setMaxLength", jint(length));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenEditText::setRichTextMode(bool enabled)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setRichTextMode", jboolean(enabled));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setRichTextMode", jboolean(enabled));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 int QAndroidOffscreenEditText::getSystemDrawMode()
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		return static_cast<int>(view.callInt("getSystemDrawMode"));
+		if (QJniObject & view = offscreenView())
+		{
+			return static_cast<int>(view.callInt("getSystemDrawMode"));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 	return 0;
 }
 
 void QAndroidOffscreenEditText::setSystemDrawMode(int mode)
 {
-	if (QJniObject & view = offscreenView())
+	try
 	{
-		view.callVoid("setSystemDrawMode", static_cast<jint>(mode));
+		if (QJniObject & view = offscreenView())
+		{
+			view.callVoid("setSystemDrawMode", static_cast<jint>(mode));
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
@@ -708,7 +1125,6 @@ void QAndroidOffscreenEditText::javaOnContentHeightChanged(int height)
 	}
 }
 
-
 void QAndroidOffscreenEditText::setInputMask(const QString & inputMask)
 {
 	if (QJniObject & view = offscreenView())
@@ -719,7 +1135,7 @@ void QAndroidOffscreenEditText::setInputMask(const QString & inputMask)
 		}
 		catch (const std::exception & e)
 		{
-			qWarning() << "Exception in JNI call to setInputMask: " << e.what();
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 		}
 	}
 }

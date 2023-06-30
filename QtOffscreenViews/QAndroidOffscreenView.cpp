@@ -131,10 +131,10 @@ Q_DECL_EXPORT void JNICALL Java_OffscreenView_onVisibleRect(JNIEnv *, jobject, j
 
 
 QAndroidOffscreenView::QAndroidOffscreenView(
-	const QString & classname
-	, const QString & objectname
-	, const QSize & defsize
-	, QObject * parent)
+		const QString & classname,
+		const QString & objectname,
+		const QSize & defsize,
+		QObject * parent)
 	: QObject(parent)
 	, view_class_name_(classname)
 	, view_object_name_(objectname)
@@ -167,57 +167,72 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 
 	setObjectName(objectname);
 
-	// Expand like: OffscreenWebView => ru/dublgis/offscreenview/OffscreenWebView
-	if (!view_class_name_.contains('/'))
+	try
 	{
-		view_class_name_.prepend(c_class_path_);
-		qDebug()<<__PRETTY_FUNCTION__<<"Class name"<<classname<<"expanded to"<<view_class_name_;
+		// Expand like: OffscreenWebView => ru/dublgis/offscreenview/OffscreenWebView
+		if (!view_class_name_.contains('/'))
+		{
+			view_class_name_.prepend(c_class_path_);
+			qDebug() << __PRETTY_FUNCTION__ << "Class name" << classname << "expanded to" << view_class_name_;
+		}
+
+		// qDebug() << __PRETTY_FUNCTION__ << "Connecting to java.lang.System...";
+		// system_class_.reset(new QJniObject("java/lang/System", false));
+
+		qDebug() << __PRETTY_FUNCTION__ << "Creating object of" << view_class_name_ << "tid" << gettid();
+		offscreen_view_ = QJniObject(view_class_name_.toLatin1().data(), "");
+
+		if (offscreen_view_)
+		{
+			offscreen_view_.callVoid("SetObjectName", view_object_name_);
+			offscreen_view_.callParamVoid("SetNativePtr", "J", jlong(reinterpret_cast<void*>(this)));
+			offscreen_view_.callParamVoid("setFillColor", "IIII",
+				jint(fill_color_.alpha()), jint(fill_color_.red()), jint(fill_color_.green()), jint(fill_color_.blue()));
+
+			// Our descendant constructors may want to register natives before createView is actually
+			// called, so let's invoke it through the message queue rather than calling directly.
+			QMetaObject::invokeMethod(this, "createView", Qt::QueuedConnection);
+		}
+		else
+		{
+			qCritical()<<"Failed to create View:"<<view_class_name_<<"/"<<view_object_name_
+				<<"Please make sure that all Java classes are present in the project, and also that the Java class is pre-loaded.";
+			offscreen_view_ = {};
+			return;
+		}
 	}
-
-	// qDebug()<<__PRETTY_FUNCTION__<<"Connecting to java.lang.System...";
-	// system_class_.reset(new QJniObject("java/lang/System", false));
-
-	qDebug()<<__PRETTY_FUNCTION__<<"Creating object of"<<view_class_name_<<"tid"<<gettid();
-	offscreen_view_ = QJniObject(view_class_name_.toLatin1().data(), "");
-
-	if (offscreen_view_)
+	catch (const std::exception & e)
 	{
-		offscreen_view_.callVoid("SetObjectName", view_object_name_);
-		offscreen_view_.callParamVoid("SetNativePtr", "J", jlong(reinterpret_cast<void*>(this)));
-		offscreen_view_.callParamVoid("setFillColor", "IIII",
-			jint(fill_color_.alpha()), jint(fill_color_.red()), jint(fill_color_.green()), jint(fill_color_.blue()));
-
-		// Our descendant constructors may want to register natives before createView is actually
-		// called, so let's invoke it through the message queue rather than calling directly.
-		QMetaObject::invokeMethod(this, "createView", Qt::QueuedConnection);
-	}
-	else
-	{
-		qCritical()<<"Failed to create View:"<<view_class_name_<<"/"<<view_object_name_
-			<<"Please make sure that all Java classes are present in the project, and also that the Java class is pre-loaded.";
-		offscreen_view_ = {};
-		return;
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
 void QAndroidOffscreenView::createView()
 {
-	if (offscreen_view_ && !view_creation_requested_)
+	try
 	{
-		bool result = offscreen_view_.callBool("createView");
-		if (result)
+		if (offscreen_view_ && !view_creation_requested_)
 		{
-			view_creation_requested_ = true;
+			bool result = offscreen_view_.callBool("createView");
+			if (result)
+			{
+				view_creation_requested_ = true;
+			}
+			else
+			{
+				qCritical()<<"Call to createView failed!";
+			}
 		}
 		else
 		{
-			qCritical()<<"Call to createView failed!";
+			qWarning() << "Attempted to call QAndroidOffscreenView::createView() with offscreen view:"
+				<< ((offscreen_view_) ?	"not null" : "null") << "and creation_requested ="
+				<< view_creation_requested_;
 		}
 	}
-	else
+	catch (const std::exception & e)
 	{
-		qWarning()<<"Attempted to call QAndroidOffscreenView::createView() with offscreen view:"
-			<<((offscreen_view_)?"not null":"null")<<"and creation_requested ="<<view_creation_requested_;
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
 }
 
@@ -235,18 +250,25 @@ void QAndroidOffscreenView::preloadJavaClasses()
 {
 	static std::once_flag s_once;
 	std::call_once(s_once, []() {
-		QApplicationActivityObserver::instance();
+		try
+		{
+			QApplicationActivityObserver::instance();
 
-		QAndroidQPAPluginGap::preloadJavaClasses();
-		QAndroidQPAPluginGap::preloadJavaClass("ru/dublgis/offscreenview/OffscreenView");
-		QAndroidJniImagePair::preloadJavaClasses();
+			QAndroidQPAPluginGap::preloadJavaClasses();
+			QAndroidQPAPluginGap::preloadJavaClass("ru/dublgis/offscreenview/OffscreenView");
+			QAndroidJniImagePair::preloadJavaClasses();
 
-		QJniClass("ru/dublgis/offscreenview/OffscreenView").registerNativeMethods({
-			{"nativeUpdate", "(J)V", reinterpret_cast<void*>(Java_OffscreenView_nativeUpdate)},
-			{"nativeViewCreated", "(J)V", reinterpret_cast<void*>(Java_OffscreenView_nativeViewCreated)},
-			{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getActivityNoThrow)},
-			{"nativeOnVisibleRect", "(JIIII)V", reinterpret_cast<void*>(Java_OffscreenView_onVisibleRect)},
-		});
+			QJniClass("ru/dublgis/offscreenview/OffscreenView").registerNativeMethods({
+				{"nativeUpdate", "(J)V", reinterpret_cast<void*>(Java_OffscreenView_nativeUpdate)},
+				{"nativeViewCreated", "(J)V", reinterpret_cast<void*>(Java_OffscreenView_nativeViewCreated)},
+				{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getActivityNoThrow)},
+				{"nativeOnVisibleRect", "(JIIII)V", reinterpret_cast<void*>(Java_OffscreenView_onVisibleRect)},
+			});
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	});
 }
 
@@ -256,10 +278,10 @@ static int getApiLevel()
 	{
 		return QJniClass("ru/dublgis/offscreenview/OffscreenView").callStaticInt("getApiLevel");
 	}
-	catch(QJniBaseException & e)
+	catch (const std::exception & e)
 	{
-		qCritical()<<"getApiLevel exception:"<<e.what();
-		return 0; // Unknown API level, app should assume the lowest possible level.
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		return 0;
 	}
 }
 
@@ -370,42 +392,63 @@ void QAndroidOffscreenView::initializeGL()
 		size_ = QSize(qMin(s_max_gl_size.width(), size_.width()), qMin(s_max_gl_size.height(), size_.height()));
 		tex_.setTextureSize(size_);
 
-		offscreen_view_.callParamVoid("SetTexture", "I", jint(tex_.getTexture()));
-		offscreen_view_.callParamVoid("SetInitialWidth", "I", jint(size_.width()));
-		offscreen_view_.callParamVoid("SetInitialHeight", "I", jint(size_.height()));
-		offscreen_view_.callVoid("initializeGL");
+		try
+		{
+			offscreen_view_.callParamVoid("SetTexture", "I", jint(tex_.getTexture()));
+			offscreen_view_.callParamVoid("SetInitialWidth", "I", jint(size_.width()));
+			offscreen_view_.callParamVoid("SetInitialHeight", "I", jint(size_.height()));
+			offscreen_view_.callVoid("initializeGL");
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 }
 
 void QAndroidOffscreenView::initializeBitmap()
 {
 	QMutexLocker locker(&bitmaps_mutex_);
-	if (tex_.isAllocated() || bitmap_a_.isAllocated())
+	try
 	{
-		return;
+		if (tex_.isAllocated() || bitmap_a_.isAllocated())
+		{
+			return;
+		}
+		if (!offscreen_view_)
+		{
+			qWarning("Cannot initialize QAndroidOffscreenView because OffscreenView object was not created!");
+			return;
+		}
+		// qDebug()<<__PRETTY_FUNCTION__;
+		QSize bitmapsize = (s_have_to_adjust_size_to_pot)? potSize(size_, s_max_gl_size): size_;
+		bitmap_a_.resize(bitmapsize);
+		bitmap_b_.resize(bitmapsize);
+		last_qt_buffer_ = -1;
+		offscreen_view_.callParamVoid("SetInitialWidth", "I", jint(size_.width()));
+		offscreen_view_.callParamVoid("SetInitialHeight", "I", jint(size_.height()));
+		offscreen_view_.callParamVoid("initializeBitmap",
+			"Landroid/graphics/Bitmap;Landroid/graphics/Bitmap;",
+			bitmap_a_.jbitmap(), bitmap_b_.jbitmap());
 	}
-	if (!offscreen_view_)
+	catch (const std::exception & e)
 	{
-		qWarning("Cannot initialize QAndroidOffscreenView because OffscreenView object was not created!");
-		return;
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 	}
-	// qDebug()<<__PRETTY_FUNCTION__;
-	QSize bitmapsize = (s_have_to_adjust_size_to_pot)? potSize(size_, s_max_gl_size): size_;
-	bitmap_a_.resize(bitmapsize);
-	bitmap_b_.resize(bitmapsize);
-	last_qt_buffer_ = -1;
-	offscreen_view_.callParamVoid("SetInitialWidth", "I", jint(size_.width()));
-	offscreen_view_.callParamVoid("SetInitialHeight", "I", jint(size_.height()));
-	offscreen_view_.callParamVoid("initializeBitmap",
-		"Landroid/graphics/Bitmap;Landroid/graphics/Bitmap;",
-		bitmap_a_.jbitmap(), bitmap_b_.jbitmap());
 }
 
 void QAndroidOffscreenView::deleteAndroidView()
 {
 	if (offscreen_view_)
 	{
-		offscreen_view_.callVoid("cppDestroyed");
+		try
+		{
+			offscreen_view_.callVoid("cppDestroyed");
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 		offscreen_view_ = {};
 	}
 }
@@ -413,12 +456,19 @@ void QAndroidOffscreenView::deleteAndroidView()
 void QAndroidOffscreenView::deinitialize()
 {
 	QMutexLocker locker(&bitmaps_mutex_);
-	deleteAndroidView();
-	tex_.deallocateTexture();
-	bitmap_a_.dispose();
-	bitmap_b_.dispose();
-	last_qt_buffer_ = -1;
-	android_to_qt_buffer_ = QImage();
+	try
+	{
+		deleteAndroidView();
+		tex_.deallocateTexture();
+		bitmap_a_.dispose();
+		bitmap_b_.dispose();
+		last_qt_buffer_ = -1;
+		android_to_qt_buffer_ = QImage();
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+	}
 }
 
 static inline void clearGlRect(int l, int b, int w, int h, const QColor & fill_color_)
@@ -531,7 +581,9 @@ const QImage * QAndroidOffscreenView::getPreviousBitmapBuffer(bool convert_from_
 }
 
 // Protected version with some low-level functionality
-const QImage * QAndroidOffscreenView::getBitmapBuffer(bool * out_texture_updated, bool convert_from_android_format)
+const QImage * QAndroidOffscreenView::getBitmapBuffer(
+	bool * out_texture_updated,
+	bool convert_from_android_format)
 {
 	QMutexLocker locker(&bitmaps_mutex_);
 	if (out_texture_updated)
@@ -541,45 +593,54 @@ const QImage * QAndroidOffscreenView::getBitmapBuffer(bool * out_texture_updated
 	if (bitmap_a_.isAllocated() && bitmap_b_.isAllocated()
 		&& view_painted_ && offscreen_view_ && offscreen_view_.jObject())
 	{
-		if (need_update_texture_ ||
-			(convert_from_android_format && (android_to_qt_buffer_.isNull() || android_to_qt_buffer_.size() != size())) ||
-			(!convert_from_android_format && last_qt_buffer_ < 0))
+		try
 		{
-			need_update_texture_ = false;
-			int buffer_index = offscreen_view_.callInt("getQtPaintingTexture");
-			if (buffer_index < 0)
+			if (need_update_texture_ ||
+				(convert_from_android_format &&
+					(android_to_qt_buffer_.isNull() || android_to_qt_buffer_.size() != size())) ||
+				(!convert_from_android_format && last_qt_buffer_ < 0))
 			{
-				return getPreviousBitmapBuffer(convert_from_android_format);
-			}
-			if (out_texture_updated)
-			{
-				*out_texture_updated = true;
-			}
-			last_texture_width_ = offscreen_view_.callInt("getLastTextureWidth");
-			last_texture_height_ = offscreen_view_.callInt("getLastTextureHeight");
+				need_update_texture_ = false;
+				int buffer_index = offscreen_view_.callInt("getQtPaintingTexture");
+				if (buffer_index < 0)
+				{
+					return getPreviousBitmapBuffer(convert_from_android_format);
+				}
+				if (out_texture_updated)
+				{
+					*out_texture_updated = true;
+				}
+				last_texture_width_ = offscreen_view_.callInt("getLastTextureWidth");
+				last_texture_height_ = offscreen_view_.callInt("getLastTextureHeight");
 
-			// Updating texture
-			if (convert_from_android_format)
-			{
-				const QAndroidJniImagePair & pair = (buffer_index == 0)? bitmap_a_: bitmap_b_;
-				pair.convert32BitImageFromAndroidToQt(android_to_qt_buffer_);
-				return &android_to_qt_buffer_;
+				// Updating texture
+				if (convert_from_android_format)
+				{
+					const QAndroidJniImagePair & pair = (buffer_index == 0)? bitmap_a_: bitmap_b_;
+					pair.convert32BitImageFromAndroidToQt(android_to_qt_buffer_);
+					return &android_to_qt_buffer_;
+				}
+				else
+				{
+					last_qt_buffer_ = buffer_index;
+					return (buffer_index == 0)? &bitmap_a_.qImage(): &bitmap_b_.qImage();
+				}
 			}
 			else
 			{
-				last_qt_buffer_ = buffer_index;
-				return (buffer_index == 0)? &bitmap_a_.qImage(): &bitmap_b_.qImage();
+				return getPreviousBitmapBuffer(convert_from_android_format);
 			}
 		}
-		else
+		catch (const std::exception & e)
 		{
-			return getPreviousBitmapBuffer(convert_from_android_format);
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+			return nullptr;
 		}
 	}
 	else
 	{
 		// qDebug()<<__PRETTY_FUNCTION__<<"Returning 0!";
-		return 0;  // No buffer created
+		return nullptr;  // No buffer created
 	}
 }
 
@@ -609,12 +670,19 @@ bool QAndroidOffscreenView::isCreated() const
 	}
 	if (offscreen_view_)
 	{
-		bool result = const_cast<QAndroidOffscreenView*>(this)->offscreen_view_.callBool("isViewCreated");
-		if (result)
+		try
 		{
-			view_created_ = true;
+			bool result = const_cast<QAndroidOffscreenView*>(this)->offscreen_view_.callBool("isViewCreated");
+			if (result)
+			{
+				view_created_ = true;
+			}
+			return result;
 		}
-		return result;
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 	return false;
 }
@@ -628,7 +696,14 @@ void QAndroidOffscreenView::invalidate()
 {
 	if (offscreen_view_)
 	{
-		offscreen_view_.callVoid("invalidateOffscreenView");
+		try
+		{
+			offscreen_view_.callVoid("invalidateOffscreenView");
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 }
 
@@ -641,9 +716,16 @@ void QAndroidOffscreenView::updateAndroidViewVisibility()
 {
 	if (offscreen_view_)
 	{
-		bool vis = is_visible_ && QApplicationActivityObserver::instance()->isApplicationActive();
-		// qDebug()<<__FUNCTION__<<viewObjectName()<<"Visible:"<<is_visible_<<"AppActive:"<<QApplicationActivityObserver::instance()->isApplicationActive()<<"Set:"<<vis;
-		offscreen_view_.callVoid("setVisible", jboolean(vis));
+		try
+		{
+			bool vis = is_visible_ && QApplicationActivityObserver::instance()->isApplicationActive();
+			// qDebug()<<__FUNCTION__<<viewObjectName()<<"Visible:"<<is_visible_<<"AppActive:"<<QApplicationActivityObserver::instance()->isApplicationActive()<<"Set:"<<vis;
+			offscreen_view_.callVoid("setVisible", jboolean(vis));
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 }
 
@@ -652,27 +734,34 @@ void QAndroidOffscreenView::setFillColor(const QColor & color)
 	if (color != fill_color_)
 	{
 		fill_color_ = color;
-		if (offscreen_view_)
+		try
 		{
-			offscreen_view_.callParamVoid("setFillColor", "IIII",
-				jint(fill_color_.alpha()),
-				jint(fill_color_.red()),
-				jint(fill_color_.green()),
-				jint(fill_color_.blue()));
-		}
-		{
-			QMutexLocker locker(&bitmaps_mutex_);
-			if (bitmap_a_.isAllocated() && bitmap_b_.isAllocated())
+			if (offscreen_view_)
 			{
-				bitmap_a_.fill(fill_color_, true);
-				bitmap_b_.fill(fill_color_, true);
-				need_update_texture_ = true;
-				invalidate();
+				offscreen_view_.callParamVoid("setFillColor", "IIII",
+					jint(fill_color_.alpha()),
+					jint(fill_color_.red()),
+					jint(fill_color_.green()),
+					jint(fill_color_.blue()));
+			}
+			{
+				QMutexLocker locker(&bitmaps_mutex_);
+				if (bitmap_a_.isAllocated() && bitmap_b_.isAllocated())
+				{
+					bitmap_a_.fill(fill_color_, true);
+					bitmap_b_.fill(fill_color_, true);
+					need_update_texture_ = true;
+					invalidate();
+				}
+			}
+			if (!hasValidImage())
+			{
+				emit updated();
 			}
 		}
-		if (!hasValidImage())
+		catch (const std::exception & e)
 		{
-			emit updated();
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 		}
 	}
 }
@@ -689,7 +778,14 @@ void QAndroidOffscreenView::setEnabled(bool enabled)
 	is_enabled_ = enabled;
 	if (offscreen_view_)
 	{
-		offscreen_view_.callVoid("setEnabled", jboolean(is_enabled_));
+		try
+		{
+			offscreen_view_.callVoid("setEnabled", jboolean(is_enabled_));
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 }
 
@@ -702,7 +798,14 @@ void QAndroidOffscreenView::setAttachingMode(bool attaching)
 	}
 	if (offscreen_view_)
 	{
-		offscreen_view_.callVoid("setAttachingMode", jboolean(attaching));
+		try
+		{
+			offscreen_view_.callVoid("setAttachingMode", jboolean(attaching));
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 }
 
@@ -710,7 +813,14 @@ void QAndroidOffscreenView::reattachView()
 {
 	if (offscreen_view_)
 	{
-		offscreen_view_.callVoid("reattachView");
+		try
+		{
+			offscreen_view_.callVoid("reattachView");
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 		setVisible(visible());
 		setEnabled(enabled());
 		invalidate();
@@ -721,7 +831,14 @@ void QAndroidOffscreenView::reattachView()
 {
 	if (offscreen_view_)
 	{
-		return offscreen_view_.callBool("isFocused");
+		try
+		{
+			return offscreen_view_.callBool("isFocused");
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 	return false;
 }*/
@@ -730,7 +847,14 @@ void QAndroidOffscreenView::setFocused(bool focused)
 {
 	if (offscreen_view_)
 	{
-		offscreen_view_.callVoid("setFocused", jboolean(focused));
+		try
+		{
+			offscreen_view_.callVoid("setFocused", jboolean(focused));
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 }
 
@@ -738,7 +862,14 @@ void QAndroidOffscreenView::setPosition(int left, int top)
 {
 	if (offscreen_view_)
 	{
-		offscreen_view_.callParamVoid("setPosition", "II", jint(left), jint(top));
+		try
+		{
+			offscreen_view_.callParamVoid("setPosition", "II", jint(left), jint(top));
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 }
 
@@ -746,7 +877,14 @@ void QAndroidOffscreenView::hideKeyboard()
 {
 	if (offscreen_view_)
 	{
-		offscreen_view_.callVoid("hideKeyboard");
+		try
+		{
+			offscreen_view_.callVoid("hideKeyboard");
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 }
 
@@ -754,7 +892,14 @@ void QAndroidOffscreenView::showKeyboard()
 {
 	if (offscreen_view_)
 	{
-		offscreen_view_.callVoid("showKeyboard");
+		try
+		{
+			offscreen_view_.callVoid("showKeyboard");
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 }
 
@@ -762,7 +907,14 @@ void QAndroidOffscreenView::setHideKeyboardOnFocusLoss(bool hide)
 {
 	if (offscreen_view_)
 	{
-		offscreen_view_.callVoid("setHideKeyboardOnFocusLoss", jboolean(hide));
+		try
+		{
+			offscreen_view_.callVoid("setHideKeyboardOnFocusLoss", jboolean(hide));
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 }
 
@@ -770,7 +922,14 @@ void QAndroidOffscreenView::setShowKeyboardOnFocusIn(bool show)
 {
 	if (offscreen_view_)
 	{
-		offscreen_view_.callVoid("setShowKeyboardOnFocusIn", jboolean(show));
+		try
+		{
+			offscreen_view_.callVoid("setShowKeyboardOnFocusIn", jboolean(show));
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 }
 void QAndroidOffscreenView::javaUpdate()
@@ -798,34 +957,42 @@ bool QAndroidOffscreenView::updateGlTexture()
 {
 	if (offscreen_view_)
 	{
-		// Get last View image into the texture.
-		if (!offscreen_view_.callBool("updateTexture"))
+		try
 		{
+			// Get last View image into the texture.
+			if (!offscreen_view_.callBool("updateTexture"))
+			{
+				return false;
+			}
+
+			// Transform matrix
+			float a11 = offscreen_view_.callFloat("getTextureTransformMatrix", 0);
+			float a21 = offscreen_view_.callFloat("getTextureTransformMatrix", 1);
+			float a12 = offscreen_view_.callFloat("getTextureTransformMatrix", 4);
+			float a22 = offscreen_view_.callFloat("getTextureTransformMatrix", 5);
+			float b1 = offscreen_view_.callFloat("getTextureTransformMatrix", 12);
+			float b2 = offscreen_view_.callFloat("getTextureTransformMatrix", 13);
+			tex_.setTransformation(a11, a12, a21, a22, b1, b2);
+
+			// Last texture size
+			last_texture_width_ = offscreen_view_.callInt("getLastTextureWidth");
+			last_texture_height_ = offscreen_view_.callInt("getLastTextureHeight");
+
+			/*
+			qDebug()<<__PRETTY_FUNCTION__<<"Transform Matrix:\n"<<
+					  __PRETTY_FUNCTION__<<"("<<a11<<a12<<") +"<<b1<<"\n"<<
+					  __PRETTY_FUNCTION__<<"("<<a21<<a22<<") +"<<b2;
+			*/
+
+			need_update_texture_ = false;
+			texture_received_ = true;
+			return true;
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 			return false;
 		}
-
-		// Transform matrix
-		float a11 = offscreen_view_.callFloat("getTextureTransformMatrix", 0);
-		float a21 = offscreen_view_.callFloat("getTextureTransformMatrix", 1);
-		float a12 = offscreen_view_.callFloat("getTextureTransformMatrix", 4);
-		float a22 = offscreen_view_.callFloat("getTextureTransformMatrix", 5);
-		float b1 = offscreen_view_.callFloat("getTextureTransformMatrix", 12);
-		float b2 = offscreen_view_.callFloat("getTextureTransformMatrix", 13);
-		tex_.setTransformation(a11, a12, a21, a22, b1, b2);
-
-		// Last texture size
-		last_texture_width_ = offscreen_view_.callInt("getLastTextureWidth");
-		last_texture_height_ = offscreen_view_.callInt("getLastTextureHeight");
-
-		/*
-		qDebug()<<__PRETTY_FUNCTION__<<"Transform Matrix:\n"<<
-				  __PRETTY_FUNCTION__<<"("<<a11<<a12<<") +"<<b1<<"\n"<<
-				  __PRETTY_FUNCTION__<<"("<<a21<<a22<<") +"<<b2;
-		*/
-
-		need_update_texture_ = false;
-		texture_received_ = true;
-		return true;
 	}
 	else
 	{
@@ -838,7 +1005,14 @@ QJniObject QAndroidOffscreenView::getView()
 {
 	if (offscreen_view_)
 	{
-		return offscreen_view_.callObj("getView", "android/view/View");
+		try
+		{
+			return offscreen_view_.callObj("getView", "android/view/View");
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 	return {}; // View not created yet
 }
@@ -847,7 +1021,20 @@ void QAndroidOffscreenView::mouse(int android_action, int x, int y, long long ti
 {
 	if (offscreen_view_)
 	{
-		offscreen_view_.callParamVoid("ProcessMouseEvent", "IIIJ", jint(android_action), jint(x), jint(y), jlong(timestamp_uptime_millis));
+		try
+		{
+			offscreen_view_.callParamVoid(
+				"ProcessMouseEvent",
+				"IIIJ",
+				jint(android_action),
+				jint(x),
+				jint(y),
+				jlong(timestamp_uptime_millis));
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 }
 
@@ -855,7 +1042,14 @@ void QAndroidOffscreenView::requestVisibleRect()
 {
 	if (offscreen_view_)
 	{
-		offscreen_view_.callVoid("queryVisibleRect");
+		try
+		{
+			offscreen_view_.callVoid("queryVisibleRect");
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 }
 
@@ -863,7 +1057,14 @@ int QAndroidOffscreenView::getScrollX()
 {
 	if (offscreen_view_)
 	{
-		return offscreen_view_.callInt("getScrollX");
+		try
+		{
+			return offscreen_view_.callInt("getScrollX");
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 	return 0; // No scroll yet
 }
@@ -872,7 +1073,14 @@ int QAndroidOffscreenView::getScrollY()
 {
 	if (offscreen_view_)
 	{
-		return offscreen_view_.callInt("getScrollY");
+		try
+		{
+			return offscreen_view_.callInt("getScrollY");
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 	return 0; // No scroll yet
 }
@@ -881,7 +1089,14 @@ void QAndroidOffscreenView::setScrollX(int x)
 {
 	if (offscreen_view_)
 	{
-		offscreen_view_.callVoid("setScrollX", static_cast<jint>(x));
+		try
+		{
+			offscreen_view_.callVoid("setScrollX", static_cast<jint>(x));
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 }
 
@@ -889,7 +1104,14 @@ void QAndroidOffscreenView::setScrollY(int y)
 {
 	if (offscreen_view_)
 	{
-		offscreen_view_.callVoid("setScrollY", static_cast<jint>(y));
+		try
+		{
+			offscreen_view_.callVoid("setScrollY", static_cast<jint>(y));
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 }
 
@@ -897,7 +1119,14 @@ int QAndroidOffscreenView::getMeasuredWidth()
 {
 	if (offscreen_view_)
 	{
-		return offscreen_view_.callInt("getMeasuredWidth");
+		try
+		{
+			return offscreen_view_.callInt("getMeasuredWidth");
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 	return -1;
 }
@@ -906,7 +1135,14 @@ int QAndroidOffscreenView::getMeasuredHeight()
 {
 	if (offscreen_view_)
 	{
-		return offscreen_view_.callInt("getMeasuredHeight");
+		try
+		{
+			return offscreen_view_.callInt("getMeasuredHeight");
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 	return -1;
 }
@@ -921,35 +1157,48 @@ void QAndroidOffscreenView::resize(const QSize & newsize)
 
 	if (size_ != size)
 	{
-		qDebug()<<__PRETTY_FUNCTION__<<"Old size:"<<size_<<"New size:"<<size;
-		size_ = size;
+		try
 		{
-			QMutexLocker locker(&bitmaps_mutex_);
-			if (bitmap_a_.isAllocated())
+			qDebug() << __PRETTY_FUNCTION__ << "Old size:" << size_ << "New size:" << size;
+			size_ = size;
 			{
-				QSize bitmapsize = (s_have_to_adjust_size_to_pot)? potSize(size_, s_max_gl_size): size_;
-				bitmap_a_.resize(bitmapsize);
-				bitmap_b_.resize(bitmapsize);
-				bitmap_a_.fill(fill_color_, true);
-				bitmap_b_.fill(fill_color_, true);
-				last_qt_buffer_ = -1;
-				if (offscreen_view_)
+				QMutexLocker locker(&bitmaps_mutex_);
+				if (bitmap_a_.isAllocated())
 				{
-					offscreen_view_.callParamVoid("setBitmaps",
-						"Landroid/graphics/Bitmap;Landroid/graphics/Bitmap;",
-						bitmap_a_.jbitmap(), bitmap_b_.jbitmap());
-					//QMetaObject::invokeMethod(this, "invalidate", Qt::QueuedConnection);
+					QSize bitmapsize = (s_have_to_adjust_size_to_pot)
+						? potSize(size_, s_max_gl_size)
+						: size_;
+					bitmap_a_.resize(bitmapsize);
+					bitmap_b_.resize(bitmapsize);
+					bitmap_a_.fill(fill_color_, true);
+					bitmap_b_.fill(fill_color_, true);
+					last_qt_buffer_ = -1;
+					if (offscreen_view_)
+					{
+						offscreen_view_.callParamVoid("setBitmaps",
+							"Landroid/graphics/Bitmap;Landroid/graphics/Bitmap;",
+							bitmap_a_.jbitmap(), bitmap_b_.jbitmap());
+						//QMetaObject::invokeMethod(this, "invalidate", Qt::QueuedConnection);
+					}
 				}
 			}
+			if (offscreen_view_)
+			{
+				// The view texture is now contains wrongly sized image and should not be used
+				// until the view is painted again because it will look distorted.
+				view_painted_ = false;
+				offscreen_view_.callParamVoid(
+					"resizeOffscreenView",
+					"II",
+					jint(size.width()),
+					jint(size.height()));
+			}
+			tex_.setTextureSize(size);
 		}
-		if (offscreen_view_)
+		catch (const std::exception & e)
 		{
-			// The view texture is now contains wrongly sized image and should not be used
-			// until the view is painted again because it will look distorted.
-			view_painted_ = false;
-			offscreen_view_.callParamVoid("resizeOffscreenView", "II", jint(size.width()), jint(size.height()));
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 		}
-		tex_.setTextureSize(size);
 	}
 }
 
@@ -957,7 +1206,14 @@ void QAndroidOffscreenView::setSoftInputModeResize()
 {
 	if (offscreen_view_)
 	{
-		offscreen_view_.callVoid("setSoftInputModeResize");
+		try
+		{
+			offscreen_view_.callVoid("setSoftInputModeResize");
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 }
 
@@ -965,7 +1221,14 @@ void QAndroidOffscreenView::setSoftInputModeAdjustPan()
 {
 	if (offscreen_view_)
 	{
-		offscreen_view_.callVoid("setSoftInputModeAdjustPan");
+		try
+		{
+			offscreen_view_.callVoid("setSoftInputModeAdjustPan");
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 }
 
@@ -973,7 +1236,14 @@ void QAndroidOffscreenView::setSoftInputModeAdjustNothing()
 {
 	if (offscreen_view_)
 	{
-		offscreen_view_.callVoid("setSoftInputModeAdjustNothing");
+		try
+		{
+			offscreen_view_.callVoid("setSoftInputModeAdjustNothing");
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 }
 
@@ -981,7 +1251,14 @@ void QAndroidOffscreenView::testFunction()
 {
 	if (offscreen_view_)
 	{
-		offscreen_view_.callVoid("testFunction");
+		try
+		{
+			offscreen_view_.callVoid("testFunction");
+		}
+		catch (const std::exception & e)
+		{
+			qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
+		}
 	}
 }
 
