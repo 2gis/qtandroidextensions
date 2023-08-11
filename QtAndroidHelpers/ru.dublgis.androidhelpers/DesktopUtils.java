@@ -61,6 +61,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
+import android.telephony.SubscriptionManager;
 import android.provider.Settings.Secure;
 import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
@@ -663,6 +664,38 @@ public class DesktopUtils
         {
             Log.e(TAG, "isVoiceTelephonyAvailable exception (will return 'false'): ", e);
             return false;
+        }
+    }
+
+    public static int activeSimCount(final Context ctx)
+    {
+        try
+        {
+            final TelephonyManager manager = (TelephonyManager)ctx.getSystemService(Context.TELEPHONY_SERVICE);
+            final SubscriptionManager subManager = (SubscriptionManager)ctx.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+            int activeSimCount = 0;
+            if (subManager == null || manager == null)
+            {
+                return 0;
+            }
+            else
+            {
+                int maxSimCount = subManager.getActiveSubscriptionInfoCountMax();
+                for (int i = 0; i < maxSimCount; ++i)
+                {
+                    if (manager.getSimState(i) == TelephonyManager.SIM_STATE_READY)
+                    {
+                        ++activeSimCount;
+                    }
+                }
+            }
+
+            return activeSimCount;
+        }
+        catch (final Throwable e)
+        {
+            Log.e(TAG, "activeSimCount exception (will return '0'): ", e);
+            return 0;
         }
     }
 

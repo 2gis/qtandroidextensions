@@ -292,6 +292,15 @@ bool isVoiceTelephonyAvailable()
 		, QAndroidQPAPluginGap::Context().jObject());
 }
 
+int activeSimCount()
+{
+	return static_cast<int>(
+		QJniClass(c_desktoputils_class_name_).callStaticParamInt(
+			"activeSimCount"
+			, "Landroid/content/Context;"
+			, QAndroidQPAPluginGap::Context().jObject()));
+}
+
 
 bool callPhoneNumber(const QString & number)
 {

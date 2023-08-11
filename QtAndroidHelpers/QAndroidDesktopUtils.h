@@ -108,6 +108,7 @@ bool showPhoneNumber(const QString & number);
 
 // Check if the device has a telephony capable of making voice calls.
 bool isVoiceTelephonyAvailable();
+int activeSimCount();
 
 // Opens the number with DIAL action, which usually does the same as showPhoneNumber() but may
 // have a different effect if non-standard handler for tel: is used. Does not require any special
