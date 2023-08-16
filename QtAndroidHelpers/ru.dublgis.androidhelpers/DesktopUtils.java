@@ -671,6 +671,11 @@ public class DesktopUtils
     {
         try
         {
+            if (Build.VERSION.SDK_INT < 22)
+            {
+                return 0;
+            }
+
             final TelephonyManager manager = (TelephonyManager)ctx.getSystemService(Context.TELEPHONY_SERVICE);
             final SubscriptionManager subManager = (SubscriptionManager)ctx.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
             int activeSimCount = 0;

@@ -294,11 +294,17 @@ bool isVoiceTelephonyAvailable()
 
 int activeSimCount()
 {
-	return static_cast<int>(
-		QJniClass(c_desktoputils_class_name_).callStaticParamInt(
-			"activeSimCount"
-			, "Landroid/content/Context;"
-			, QAndroidQPAPluginGap::Context().jObject()));
+	try
+	{
+		return static_cast<int>(QJniClass(c_desktoputils_class_name_).callStaticParamInt(
+			"activeSimCount",
+			"Landroid/content/Context;",
+			QAndroidQPAPluginGap::Context().jObject()));
+	}
+	catch (const std::exception & e) {
+		qCritical() << "JNI exception in get activeSimCount:" << e.what();
+	}
+	return 0;
 }
 
 
