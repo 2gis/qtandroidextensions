@@ -57,12 +57,16 @@ final public class SharedPreferencesHelper
 	{
 	}
 
+	static public SharedPreferences getQAndroidSharedPreference(Context ctx) {
+		String name = ctx.getPackageName() + ".SharedPreferencesHelper";
+		return ctx.getSharedPreferences(name, Context.MODE_PRIVATE);
+	}
+
 
 	private SharedPreferences getPreferences()
 	{
 		Context ctx = getContext();
-		String name = ctx.getPackageName() + ".SharedPreferencesHelper";
-		return ctx.getSharedPreferences(name, Context.MODE_PRIVATE);
+		return getQAndroidSharedPreference(ctx);
 	}
 
 
