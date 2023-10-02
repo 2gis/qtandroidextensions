@@ -143,6 +143,28 @@ final public class SharedPreferencesHelper
 		}
 	}
 
+	public void WriteBoolean(String key, boolean value)
+	{
+		try {
+			SharedPreferences sharedPref = getPreferences();
+			SharedPreferences.Editor editor = sharedPref.edit();
+			editor.putBoolean(key, value);
+			editor.apply();
+		} catch (final Throwable e) {
+			Log.e(TAG, "WriteBoolean exception: ", e);
+		}
+	}
+
+	public boolean ReadBoolean(String key, boolean valueDefault)
+	{
+		try {
+			SharedPreferences sharedPref = getPreferences();
+			return sharedPref.getBoolean(key, valueDefault);
+		} catch (final Throwable e) {
+			Log.e(TAG, "ReadBoolean exception: ",  e);
+			return valueDefault;
+		}
+	}
 
 	public native Context getContext();
 }

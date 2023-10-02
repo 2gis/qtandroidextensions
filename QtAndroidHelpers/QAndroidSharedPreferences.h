@@ -59,5 +59,8 @@ public:
 
 	void writeInt(const QString & key, int32_t value);
 	int32_t readInt(const QString & key, int32_t valueDefault);
+	
+	void writeBool(const QString & key, bool value);
+	bool readBool(const QString & key, bool valueDefault);
 };
 

@@ -145,3 +145,25 @@ int32_t QAndroidSharedPreferences::readInt(const QString & key, int32_t valueDef
 	return valueDefault;
 }
 
+void QAndroidSharedPreferences::writeBool(const QString &key, bool value)
+{
+	if (isJniReady())
+	{
+		QJniEnvPtr jep;
+		jni()->callParamVoid("WriteBoolean", "Ljava/lang/String;Z", 
+										QJniLocalRef(jep, key).jObject(), value);
+	}
+}
+
+bool QAndroidSharedPreferences::readBool(const QString &key, bool valueDefault)
+{
+	if (isJniReady())
+	{
+		QJniEnvPtr jep;
+		return jni()->callParamBoolean("ReadBoolean", "Ljava/lang/String;Z", 
+										QJniLocalRef(jep, key).jObject(), valueDefault);
+	}
+
+	return valueDefault;
+}
+
