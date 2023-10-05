@@ -348,18 +348,18 @@ QString QAndroidDisplayMetrics::themeDirectoryName(Theme theme)
 {
 	switch(theme)
 	{
-	case ThemeLDPI:   return QLatin1String("ldpi");
-	case ThemeMDPI:   return QLatin1String("mdpi");
-	case ThemeTVDPI:  return QLatin1String("tvdpi");
-	case ThemeHDPI:   return QLatin1String("hdpi");
-	case Theme280DPI: return QLatin1String("280dpi");
-	case ThemeXHDPI:  return QLatin1String("xhdpi");
-	case Theme360DPI: return QLatin1String("360dpi");
-	case Theme400DPI: return QLatin1String("400dpi");
-	case Theme420DPI: return QLatin1String("420dpi");
-	case ThemeXXDPI:  return QLatin1String("xxdpi");
-	case Theme560DPI: return QLatin1String("560dpi");
-	case ThemeXXXDPI: return QLatin1String("xxxdpi");
+	case ThemeLDPI:   return QStringLiteral("ldpi");
+	case ThemeMDPI:   return QStringLiteral("mdpi");
+	case ThemeTVDPI:  return QStringLiteral("tvdpi");
+	case ThemeHDPI:   return QStringLiteral("hdpi");
+	case Theme280DPI: return QStringLiteral("280dpi");
+	case ThemeXHDPI:  return QStringLiteral("xhdpi");
+	case Theme360DPI: return QStringLiteral("360dpi");
+	case Theme400DPI: return QStringLiteral("400dpi");
+	case Theme420DPI: return QStringLiteral("420dpi");
+	case ThemeXXDPI:  return QStringLiteral("xxdpi");
+	case Theme560DPI: return QStringLiteral("560dpi");
+	case ThemeXXXDPI: return QStringLiteral("xxxdpi");
 	default:
 		qWarning() << "Unknown theme value:" << theme;
 		return QString();
