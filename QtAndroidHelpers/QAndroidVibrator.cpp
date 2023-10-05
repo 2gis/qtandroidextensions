@@ -64,6 +64,22 @@ void QAndroidVibrator::vibrate(Timings_t::value_type duration)
 }
 
 
+void QAndroidVibrator::vibrate(Effect effect)
+{
+	if (isJniReady())
+	{
+		try
+		{
+			jni()->callParamVoid("vibrate", "I", static_cast<jint>(effect));
+		}
+		catch (const std::exception & ex)
+		{
+			qCritical() << "JNI exception in vibrate: " << ex.what();
+		}
+	}
+}
+
+
 void QAndroidVibrator::vibrate(Timings_t timings)
 {
 	const Timings_t::size_type size = timings.size();
@@ -89,10 +105,6 @@ void QAndroidVibrator::vibrate(Timings_t timings)
 		catch(const std::exception & ex)
 		{
 			qCritical() << "JNI exception in vibrate: " << ex.what();
-		}
-		catch(...)
-		{
-			qCritical() << "Unknown exception";
 		}
 	}
 }

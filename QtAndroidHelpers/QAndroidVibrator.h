@@ -47,12 +47,24 @@ class QAndroidVibrator : public QObject
 	JNI_LINKER_DECL(QAndroidVibrator)
 
 public:
+	enum class Effect
+	{
+		Click = 0,       // VibrationEffect.EFFECT_CLICK,
+		DoubleClick = 1, // VibrationEffect.EFFECT_DOUBLE_CLICK,
+		HeavyClick = 5,  // VibrationEffect.EFFECT_HEAVY_CLICK,
+		Tick = 2,        // VibrationEffect.EFFECT_TICK,
+	};
+
+public:
 	QAndroidVibrator(QObject * parent = 0);
-	virtual ~QAndroidVibrator();
+	~QAndroidVibrator();
 
 	typedef std::vector<int64_t> Timings_t;
 
 public slots:
+	// Predefined vibration effects available on Android 8+.
+	// On Android < 8 always starts 50ms vibration, regardless of effect value.
+	void vibrate(Effect effect);
 	void vibrate(Timings_t::value_type duration);
 	void vibrate(Timings_t timings);
 };

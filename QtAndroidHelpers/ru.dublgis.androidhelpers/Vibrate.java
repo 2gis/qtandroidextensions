@@ -43,6 +43,8 @@ import android.os.VibrationEffect;
 public class Vibrate {
 	public static final String TAG = "Grym/Vibrator";
 
+	private static final long DEFAULT_VIBRATION_DURATION_MS = 50;
+
 
 	public Vibrate(final long native_ptr)
 	{
@@ -56,28 +58,53 @@ public class Vibrate {
 	}
 
 
-	public void vibrate(final long[] timings)
+	public void vibrate(final int effectId)
 	{
 		try
 		{
-			Context context = getContext();
+			final Context context = getContext();
 			final Vibrator vibrator = (Vibrator)context.getSystemService(Context.VIBRATOR_SERVICE);
 			if (null == vibrator)
 			{
 				Log.w(TAG, "Vibrator service not found.");
 				return;
 			}
-			// Android 6+
+			// Android 8+
+			if (Build.VERSION.SDK_INT >= 26)
+			{
+				VibrationEffect effect = VibrationEffect.createPredefined(effectId);
+				vibrator.vibrate(effect);
+			}
+			else
+			{
+				vibrator.vibrate(DEFAULT_VIBRATION_DURATION_MS);
+			}
+		}
+		catch (final Throwable e)
+		{
+			Log.e(TAG, "Vibrator exception: ", e);
+		}
+	}
+
+
+	public void vibrate(final long[] timings)
+	{
+		try
+		{
+			final Context context = getContext();
+			final Vibrator vibrator = (Vibrator)context.getSystemService(Context.VIBRATOR_SERVICE);
+			if (null == vibrator)
+			{
+				Log.w(TAG, "Vibrator service not found.");
+				return;
+			}
+			// Android 8+
 			if (Build.VERSION.SDK_INT >= 26) {
 				VibrationEffect effect = VibrationEffect.createWaveform(timings, -1);
 				vibrator.vibrate(effect);
 			} else {
 				vibrator.vibrate(timings, -1);
 			}
-		}
-		catch (final LinkageError e)
-		{
-			Log.e(TAG, "Vibrator linkage error: " + e);
 		}
 		catch (final Throwable e)
 		{
