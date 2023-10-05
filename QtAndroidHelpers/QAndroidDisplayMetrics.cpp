@@ -189,6 +189,8 @@ QJniObject QAndroidDisplayMetrics::getWindowManager(QJniObject custom_context)
 	try
 	{
 		// Not in Service and no custom context -> we're in QtActivity.
+		// TODO: Check if custom context can be cast to Activity, and if so,
+		// use the same method as for QtActivity.
 		if (!QAndroidQPAPluginGap::customContextSet() && !custom_context)
 		{
 			//  Works only in Activity, gets its local window manager.
