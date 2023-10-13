@@ -43,15 +43,15 @@
 namespace Mobility {
 
 // Используется в bool WifiDataList::SameAs()
-class WifiDataEq : public std::unary_function<const WifiData&, bool>
+class WifiDataEq
 {
 private:
-	const WifiData::MacAddr &mac_;
+	const WifiData::MacAddr & mac_;
 public:
-	WifiDataEq(const WifiData::MacAddr &mac)
+	WifiDataEq(const WifiData::MacAddr & mac)
 		: mac_(mac)
 	{}
-	result_type operator()(argument_type d) const
+	bool operator()(const WifiData & d) const
 	{
 		return !memcmp(d.macAddr, mac_, sizeof(WifiData::MacAddr));
 	}
