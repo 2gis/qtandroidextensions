@@ -10,7 +10,7 @@ set(SRC_LIST
 )
 
 if (ANDROID)
-    qt5_wrap_cpp(QtAndroidAssets_hdr_moc AndroidAssetsFileEngineHandler_p.h)
+    qt6_wrap_cpp(QtAndroidAssets_hdr_moc AndroidAssetsFileEngineHandler_p.h)
 
     find_library(ANDROID_LOG_LIB log)
     find_library(ANDROID_LIB android)
@@ -21,9 +21,9 @@ if (ANDROID)
         PUBLIC
             qtandroidextensions::QtJniHelpers
         PRIVATE
-            Qt5::Core
-            Qt5::Network
-            Qt5::AndroidExtras
+            Qt6::Core
+            Qt6::Network
+            Qt6::CorePrivate
             ${ANDROID_LOG_LIB}
             ${ANDROID_LIB}
     )
@@ -36,7 +36,7 @@ if (ANDROID)
     # Это нужно для инклуда приватного хедера qabstractfileengine_p.h
     target_include_directories(${MODULE_NAME}
         PRIVATE
-            ${Qt5Core_PRIVATE_INCLUDE_DIRS}
+            ${Qt6Core_PRIVATE_INCLUDE_DIRS}
     )
 
     target_compile_definitions(${MODULE_NAME}

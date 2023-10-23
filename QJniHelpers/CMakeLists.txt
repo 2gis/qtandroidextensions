@@ -25,9 +25,9 @@ if (ANDROID)
 
     target_link_libraries(${MODULE_NAME}
         PUBLIC
-            Qt5::Core
+            Qt6::Core
         PRIVATE
-            Qt5::AndroidExtras
+            Qt6::CorePrivate
     )
 
     target_include_directories(${MODULE_NAME}
