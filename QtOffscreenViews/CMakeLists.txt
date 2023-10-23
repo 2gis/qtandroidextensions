@@ -18,7 +18,7 @@ set(SRC_LIST
 )
 
 if (ANDROID)
-    qt5_wrap_cpp(
+    qt6_wrap_cpp(
         QtOffscreenViews_hdr_moc
         QAndroidJniImagePair.h
         QAndroidOffscreenEditText.h
@@ -33,11 +33,11 @@ if (ANDROID)
 
     target_link_libraries(${MODULE_NAME}
         PUBLIC
-            Qt5::Core
-            Qt5::Gui
+            Qt6::Core
+            Qt6::Gui
             qtandroidextensions::QtJniHelpers
         PRIVATE
-            Qt5::OpenGL
+            Qt6::OpenGL
             ${ANDROID_JNIGRAPHICS}
     )
 

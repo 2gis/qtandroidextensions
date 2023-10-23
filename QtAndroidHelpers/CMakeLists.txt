@@ -66,7 +66,7 @@ set(SRC_LIST
 )
 
 if (ANDROID)
-    qt5_wrap_cpp(
+    qt6_wrap_cpp(
         QtAndroidHelpers_hdr_moc
         QAndroidAction.h
         QAndroidContacts.h
@@ -90,7 +90,7 @@ if (ANDROID)
 
     target_link_libraries(${MODULE_NAME}
         PUBLIC
-            Qt5::Core
+            Qt6::Core
             qtandroidextensions::QtJniHelpers
     )
 

@@ -24,7 +24,7 @@ set(SRC_LIST
 )
 
 if (ANDROID)
-    qt5_wrap_cpp(
+    qt6_wrap_cpp(
         QtAndroidLocation_hdr_moc
         QAndroidGmsLocationProvider.h
         QAndroidGmsLocationProvider.h
@@ -41,7 +41,7 @@ if (ANDROID)
 
     target_link_libraries(${MODULE_NAME}
         PUBLIC
-            Qt5::Positioning
+            Qt6::Positioning
             qtandroidextensions::QtJniHelpers
     )
 

@@ -12,7 +12,7 @@ set(SRC_LIST
 )
 
 if (ANDROID)
-    qt5_wrap_cpp(
+    qt6_wrap_cpp(
         QtOffscreenViewsQuick_hdr_moc
         QQuickAndroidOffscreenView.h
         QQuickOffscreenEditText.h
@@ -26,8 +26,8 @@ if (ANDROID)
         PUBLIC
             qtandroidextensions::QtOffscreenViews
         PRIVATE
-            Qt5::Qml
-            Qt5::Quick
+            Qt6::Qml
+            Qt6::Quick
     )
 
     target_include_directories(${MODULE_NAME}

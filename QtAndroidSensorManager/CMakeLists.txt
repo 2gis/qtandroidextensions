@@ -8,13 +8,13 @@ set(SRC_LIST
 )
 
 if (ANDROID)
-    qt5_wrap_cpp(QtAndroidSensorManager_hdr_moc QAndroidSensorManager.h)
+    qt6_wrap_cpp(QtAndroidSensorManager_hdr_moc QAndroidSensorManager.h)
     add_library(${MODULE_NAME} STATIC ${SRC_LIST} ${QtAndroidSensorManager_hdr_moc})
     add_library(${PROJECT_NAME}::${MODULE_NAME} ALIAS ${MODULE_NAME})
 
     target_link_libraries(${MODULE_NAME}
         PUBLIC
-            Qt5::Core
+            Qt6::Core
             qtandroidextensions::QtJniHelpers
     )
 
