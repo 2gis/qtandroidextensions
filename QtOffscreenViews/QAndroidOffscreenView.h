@@ -371,7 +371,7 @@ private:
 	QAndroidJniImagePair bitmap_a_, bitmap_b_;
 
 	//! Used to lock bitmap_a_/bitmap_b_ access.
-	QMutex bitmaps_mutex_;
+	QRecursiveMutex bitmaps_mutex_;
 
 	QJniObject offscreen_view_;
 	QSize size_;

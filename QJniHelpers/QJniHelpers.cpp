@@ -110,7 +110,7 @@ public:
 };
 
 
-QMutex g_PreloadedClassesMutex(QMutex::Recursive);
+QRecursiveMutex g_PreloadedClassesMutex;
 PreloadedClasses g_PreloadedClasses;
 QThreadStorage<QJniEnvPtrThreadDetacher*> g_JavaThreadDetacher;
 QJniClassUnloader g_ClassUnloader;

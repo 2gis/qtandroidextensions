@@ -94,7 +94,7 @@ namespace QAndroidQPAPluginGap
 namespace
 {
 
-QMutex s_global_context_mutex { QMutex::Recursive };
+QRecursiveMutex s_global_context_mutex;
 std::optional<QJniObject> s_activity;
 QJniObject s_custom_context;
 
