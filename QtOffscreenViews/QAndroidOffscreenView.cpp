@@ -143,7 +143,6 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 	, last_qt_buffer_(-1)
 	, bitmap_a_(32)
 	, bitmap_b_(32)
-	, bitmaps_mutex_(QMutex::Recursive)
 	, size_(defsize)
 	, fill_color_(Qt::white)
 	, need_update_texture_(false)

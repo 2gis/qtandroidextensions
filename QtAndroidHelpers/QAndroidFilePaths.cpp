@@ -46,7 +46,7 @@
 #include "QAndroidFilePaths.h"
 
 
-static QMutex paths_mutex_(QMutex::Recursive);
+static QRecursiveMutex paths_mutex_;
 static const char * const c_directorieshelper_class_ = "ru/dublgis/androidhelpers/DirectoriesHelper";
 
 const QLatin1String
