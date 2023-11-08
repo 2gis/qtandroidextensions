@@ -160,5 +160,7 @@ QString getVulkanLevel();
 
 QString getVulkanVersion();
 
+bool notificationChannelDisabled(const QString & channelId);
+
 } // namespace QAndroidDesktopUtils
 

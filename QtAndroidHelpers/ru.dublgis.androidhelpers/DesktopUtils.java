@@ -39,6 +39,9 @@ package ru.dublgis.androidhelpers;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.os.LocaleList;
 import android.os.Parcelable;
 import java.io.File;
@@ -64,9 +67,11 @@ import android.telephony.TelephonyManager;
 import android.telephony.SubscriptionManager;
 import android.provider.Settings.Secure;
 import androidx.annotation.NonNull;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.FileProvider;
 import android.media.RingtoneManager;
 import android.media.Ringtone;
+import android.text.TextUtils;
 
 
 public class DesktopUtils
@@ -985,6 +990,27 @@ public class DesktopUtils
             Log.e(TAG, "Can't get Vulkan version: ", e);
         }
         return "";
+    }
+
+    public static boolean notificationChannelDisabled(final Context ctx, final String channelId) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if(!TextUtils.isEmpty(channelId)) {
+                NotificationManager manager = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+                if (manager == null) {
+                    Log.e(TAG, "Can't get NotificationManager");
+                    return false;
+                }
+                NotificationChannel channel = manager.getNotificationChannel(channelId);
+                if (channel == null) {
+                    Log.e(TAG, "Can't get channel " + channelId);
+                    return false;
+                }
+                return !(manager.areNotificationsEnabled() && (channel.getImportance() != NotificationManager.IMPORTANCE_NONE));
+            }
+            return false;
+        } else {
+            return !NotificationManagerCompat.from(ctx).areNotificationsEnabled();
+        }
     }
 
 

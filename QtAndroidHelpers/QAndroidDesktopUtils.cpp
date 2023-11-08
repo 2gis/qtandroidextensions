@@ -662,6 +662,31 @@ QString getVulkanVersion()
 	return {};
 }
 
+bool notificationChannelDisabled(const QString & channelId)
+{
+	if (QAndroidQPAPluginGap::apiLevel() < 26) // before Android 8 (O)
+	{
+		return false;
+	}
+	else
+	{
+		QJniClass du(c_desktoputils_class_name_);
+		if (du.jClass())
+		{
+			return du.callStaticParamBoolean(
+				"notificationChannelDisabled",
+				"Landroid/content/Context;Ljava/lang/String;",
+				QAndroidQPAPluginGap::Context().jObject(),
+				QJniLocalRef(channelId).jObject());
+		}
+		else
+		{
+			qCritical() << "Null class:" << c_desktoputils_class_name_;
+		}
+	}
+	return false;
+}
+
 } // namespace QAndroidDesktopUtils
 
 
