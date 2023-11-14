@@ -687,6 +687,22 @@ bool notificationChannelDisabled(const QString & channelId)
 	return false;
 }
 
+bool notificationsEnabled()
+{
+	try
+	{
+		return QJniClass(c_desktoputils_class_name_).callStaticParamBoolean(
+			"notificationsEnabled",
+			"Landroid/content/Context;",
+			QAndroidQPAPluginGap::Context().jObject());
+	}
+	catch (const std::exception & e) {
+		qCritical() << "JNI exception in notificationsEnabled:" << e.what();
+	}
+	return {};
+	
+}
+
 } // namespace QAndroidDesktopUtils
 
 

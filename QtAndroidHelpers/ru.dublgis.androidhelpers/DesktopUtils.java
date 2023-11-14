@@ -1013,6 +1013,9 @@ public class DesktopUtils
         }
     }
 
+    public static boolean notificationsEnabled(final Context ctx) {
+        return NotificationManagerCompat.from(ctx).areNotificationsEnabled();
+    }
 
     private static class ActivityInfo implements Comparable<ActivityInfo> {
         private @NonNull String mPackageName = "";
