@@ -36,9 +36,55 @@
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
-#include <QtOpenGL/QGLWidget>
 #include <QtCore/QCoreApplication>
 #include "QOpenGLTextureHolder.h"
+
+namespace
+{
+
+QImage convertToGLFormat(const QImage & image)
+{
+	Q_ASSERT(image.depth() == 32);
+
+	switch (image.format())
+	{
+	case QImage::Format_ARGB32:
+	case QImage::Format_ARGB32_Premultiplied:
+	case QImage::Format_RGB32:
+		// expected image format
+		break;
+
+	default:
+		qCritical("Image format %d is unexpected", image.format());
+		return {};
+	}
+
+	QImage result(image.size(), image.format());
+
+	Q_ASSERT(result.depth() == 32);
+	Q_ASSERT(image.size() == result.size());
+	Q_ASSERT(image.format() == result.format());
+
+	const int width = image.width();
+	const int height = image.height();
+	uint32_t * out_data = (uint32_t *)result.scanLine(0);
+
+	for (int i = 0; i < height; ++i)
+	{
+		const uint32_t * in_data = (const uint32_t *)image.scanLine(image.height() - 1 - i);
+
+		for (const uint32_t * end = in_data + width; in_data < end; in_data++, out_data++)
+		{
+			*out_data =
+				((*in_data << 16) & 0xff0000) | ((*in_data >> 16) & 0xff) | (*in_data & 0xff00ff00);
+		}
+	}
+
+	return result;
+}
+
+} // anonymous namespace
+
 
 static const GLuint c_vertex_coordinates_attr  = 0;
 static const GLuint c_texture_coordinates_attr = 1;
@@ -419,7 +465,7 @@ void QOpenGLTextureHolder::allocateTexture(const QImage & qimage, GLenum texture
 	}
 	else
 	{
-		gl_image = QGLWidget::convertToGLFormat(qimage);
+		gl_image = convertToGLFormat(qimage);
 		if (gl_image.isNull())
 		{
 			qCritical()<<"Failed to convert QImage to GL format!";
