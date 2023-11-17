@@ -27,7 +27,7 @@ if (ANDROID)
         PUBLIC
             Qt6::Core
         PRIVATE
-            Qt6::AndroidExtras
+            Qt6::CorePrivate
     )
 
     target_include_directories(${MODULE_NAME}

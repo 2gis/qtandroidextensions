@@ -9,7 +9,7 @@ set(SRC_LIST
 )
 
 if (ANDROID)
-    qt5_wrap_cpp(
+    qt6_wrap_cpp(
         QtAndroidRuStoreHelper_hdr_moc
         QAndroidRuStoreInAppUpdate.h
     )

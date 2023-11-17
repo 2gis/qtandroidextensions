@@ -23,7 +23,7 @@ if (ANDROID)
         PRIVATE
             Qt6::Core
             Qt6::Network
-            Qt6::AndroidExtras
+            Qt6::CorePrivate
             ${ANDROID_LOG_LIB}
             ${ANDROID_LIB}
     )
