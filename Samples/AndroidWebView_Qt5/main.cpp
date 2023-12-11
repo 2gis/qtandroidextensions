@@ -6,7 +6,7 @@
 int main(int argc, char **argv)
 {
 	// Preload Java classes, so they can be instantiated in other threads.
-	QAndroidQPAPluginGap::preloadJavaClasses();
+	QJniHelpers::QAndroidQPAPluginGap::preloadJavaClasses();
 	QAndroidOffscreenWebView::preloadJavaClasses();
 	QAndroidOffscreenEditText::preloadJavaClasses();
 

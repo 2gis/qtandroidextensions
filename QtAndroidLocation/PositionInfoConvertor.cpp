@@ -44,13 +44,13 @@
 static void setPositionAttributeFloat(
 	QGeoPositionInfo & info,
 	QGeoPositionInfo::Attribute attr,
-	QJniObject & location,
+	QJniHelpers::QJniObject & location,
 	const char * szCheck,
 	const char * szGet,
 	const int apiLevel,
 	std::optional<jfloat> invalid_value = std::optional<jfloat>())
 {
-	if (QAndroidQPAPluginGap::apiLevel() >= apiLevel)
+	if (QJniHelpers::QAndroidQPAPluginGap::apiLevel() >= apiLevel)
 	{
 		if (location.callBool(szCheck))
 		{
@@ -70,7 +70,7 @@ static void setPositionAttributeFloat(
 QGeoPositionInfo positionInfoFromJavaLocation(const jobject jlocation)
 {
 	QGeoPositionInfo info;
-	QJniObject location(jlocation, false);
+	QJniHelpers::QJniObject location(jlocation, false);
 
 	if (!location)
 	{

@@ -53,12 +53,12 @@ void QAndroidExecutor::preloadJavaClasses()
 	std::call_once(s_once, []() {
 		try
 		{
-			QAndroidQPAPluginGap::preloadJavaClasses({
+			QJniHelpers::QAndroidQPAPluginGap::preloadJavaClasses({
 				"android/os/Handler",
 				"android/os/Looper",
 				c_helper_class_name
 			});
-			QJniClass(c_helper_class_name).registerNativeMethods({
+			QJniHelpers::QJniClass(c_helper_class_name).registerNativeMethods({
 				{"nativeCallback", "(J)V", reinterpret_cast<void*>(QAndroidExecutor::jcallback)},
 			});
 		}
@@ -78,7 +78,7 @@ QAndroidExecutor::QAndroidExecutor(int exitWaitTimeMs)
 }
 
 
-QAndroidExecutor::QAndroidExecutor(const QJniObject & handler, int exitWaitTimeMs)
+QAndroidExecutor::QAndroidExecutor(const QJniHelpers::QJniObject & handler, int exitWaitTimeMs)
 	: exitWaitTimeMs_(exitWaitTimeMs)
 {
 	preloadJavaClasses();
@@ -248,7 +248,7 @@ bool QAndroidExecutor::finish(int waitTimeMs)
 
 
 // static
-QJniObject QAndroidExecutor::getMainThreadLooper()
+QJniHelpers::QJniObject QAndroidExecutor::getMainThreadLooper()
 {
 	try
 	{
@@ -264,7 +264,7 @@ QJniObject QAndroidExecutor::getMainThreadLooper()
 
 
 // public static
-QJniObject QAndroidExecutor::createHandler(const QJniObject & looper)
+QJniHelpers::QJniObject QAndroidExecutor::createHandler(const QJniHelpers::QJniObject & looper)
 {
 	try
 	{
@@ -274,7 +274,7 @@ QJniObject QAndroidExecutor::createHandler(const QJniObject & looper)
 			return {};
 		}
 		// Java: new Handler(looper)
-		return QJniObject("android/os/Handler",	"Landroid/os/Looper;", looper.jObject());
+		return QJniHelpers::QJniObject("android/os/Handler",	"Landroid/os/Looper;", looper.jObject());
 	}
 	catch (const std::exception & e)
 	{
@@ -285,7 +285,7 @@ QJniObject QAndroidExecutor::createHandler(const QJniObject & looper)
 
 
 // private
-QJniObject QAndroidExecutor::createExecutor(const QJniObject & handler)
+QJniHelpers::QJniObject QAndroidExecutor::createExecutor(const QJniHelpers::QJniObject & handler)
 {
 	try
 	{
@@ -295,7 +295,7 @@ QJniObject QAndroidExecutor::createExecutor(const QJniObject & handler)
 			return {};
 		}
 		// Java: new HandlerExecutor(ptr, handler)
-		return QJniObject(
+		return QJniHelpers::QJniObject(
 			c_helper_class_name,
 			"JLandroid/os/Handler;",
 			reinterpret_cast<jlong>(this),

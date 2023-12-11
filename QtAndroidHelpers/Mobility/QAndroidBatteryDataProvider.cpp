@@ -49,7 +49,7 @@ Q_DECL_EXPORT void JNICALL Java_BatteryListener_batteryInfoUpdate(JNIEnv *, jobj
 
 
 static const JNINativeMethod methods[] = {
-	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
+	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QJniHelpers::QAndroidQPAPluginGap::getCurrentContextNoThrow)},
 	{"batteryInfoUpdate", "(JZI)V", reinterpret_cast<void*>(Java_BatteryListener_batteryInfoUpdate)},
 };
 

@@ -148,7 +148,7 @@ protected:
 	 * Create Java-side bitmap of the given size for current bitness_.
 	 * \return Returns JNI object or 0.
 	 */
-	QJniObject createBitmap(const QSize & size);
+	QJniHelpers::QJniObject createBitmap(const QSize & size);
 
 	/*!
 	 * After a call to  this function, imageOnBitmap and bitmap have "size" size
@@ -159,7 +159,7 @@ protected:
 	bool doResize(const QSize & size);
 
 private:
-	QJniObject mBitmap;
+	QJniHelpers::QJniObject mBitmap;
 	QImage mImageOnBitmap;
 	int bitness_;
 };

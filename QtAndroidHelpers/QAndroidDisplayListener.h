@@ -60,6 +60,6 @@ private:
 	static void javaDisplayChanged(JNIEnv *, jobject, jlong ptr, jint id);
 
 private:
-	QJniObject mJavaListener;
+	QJniHelpers::QJniObject mJavaListener;
 };
 

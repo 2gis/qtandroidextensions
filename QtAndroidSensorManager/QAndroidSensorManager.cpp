@@ -51,14 +51,14 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSensorManager_onUpdate(
 	jlong timestamp_ns,
 	jfloatArray jdata)
 {
-	std::vector<float> data = QJniEnvPtr(env).convert(jdata);
+	std::vector<float> data = QJniHelpers::QJniEnvPtr(env).convert(jdata);
 	JNI_LINKER_OBJECT(QAndroidSensorManager, inst, proxy)
 	proxy->onUpdate(sensor_type, timestamp_ns, data);
 }
 
 
 static const JNINativeMethod methods[] = {
-	{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getActivityNoThrow)},
+	{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QJniHelpers::QAndroidQPAPluginGap::getActivityNoThrow)},
 	{"onUpdate", "(JIJ[F)V", reinterpret_cast<void*>(Java_QAndroidSensorManager_onUpdate)},
 };
 
@@ -145,7 +145,7 @@ void QAndroidSensorManager::onUpdate(int32_t sensor_type, int64_t timestamp_ns, 
 // "TYPE_ROTATION_VECTOR"
 int32_t QAndroidSensorManager::getSensorType(const char * sensorTypeName)
 {
-	const jint type = QJniClass("android/hardware/Sensor").getStaticIntField(sensorTypeName);
+	const jint type = QJniHelpers::QJniClass("android/hardware/Sensor").getStaticIntField(sensorTypeName);
 	return type;
 }
 

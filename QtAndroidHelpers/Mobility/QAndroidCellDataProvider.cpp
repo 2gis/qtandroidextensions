@@ -63,7 +63,7 @@ Q_DECL_EXPORT void JNICALL Java_CellListener_onSignalChanged(JNIEnv *, jobject, 
 
 
 static const JNINativeMethod methods[] = {
-	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
+	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QJniHelpers::QAndroidQPAPluginGap::getCurrentContextNoThrow)},
 	{"onSignalChanged", "(J)V", reinterpret_cast<void*>(Java_CellListener_onSignalChanged)},
 	{"cellUpdate", "(JLjava/lang/String;IIIIIIJ)V", reinterpret_cast<void*>(Java_CellListener_cellUpdate)},
 };
@@ -158,7 +158,7 @@ void QAndroidCellDataProvider::cellUpdate(jstring type, jint cid, jint lac, jint
 
 		if (isJniReady())
 		{
-			current_data_->data_.back().radio_type_ = QJniEnvPtr().toQString(type);
+			current_data_->data_.back().radio_type_ = QJniHelpers::QJniEnvPtr().toQString(type);
 		}
 
 		current_data_->data_.back().location_area_code_ = lac;
@@ -180,8 +180,8 @@ QStringList QAndroidCellDataProvider::getSimCountryIso()
 		QByteArray javaFullClassName;
 		getJavaClassName(javaFullClassName);
 
-		QJniClass du(javaFullClassName);
-		QAndroidQPAPluginGap::Context activity;
+		QJniHelpers::QJniClass du(javaFullClassName);
+		QJniHelpers::QAndroidQPAPluginGap::Context activity;
 		list = du.callStaticParamString("getSimCountryIso", "Landroid/content/Context;", activity.jObject());
 	}
 	catch (const std::exception & ex)
@@ -200,11 +200,11 @@ QList<Mobility::QAndroidCellDataProvider::SimInfo> Mobility::QAndroidCellDataPro
 		QByteArray javaFullClassName;
 		getJavaClassName(javaFullClassName);
 
-		QJniClass du(javaFullClassName);
-		QAndroidQPAPluginGap::Context activity;
+		QJniHelpers::QJniClass du(javaFullClassName);
+		QJniHelpers::QAndroidQPAPluginGap::Context activity;
 
 		javaFullClassName.append("$SimInfo");
-		QJniObject simInfo(du.callStaticParamObj("getSimInfo", javaFullClassName, "Landroid/content/Context;", activity.jObject()));
+		QJniHelpers::QJniObject simInfo(du.callStaticParamObj("getSimInfo", javaFullClassName, "Landroid/content/Context;", activity.jObject()));
 
 		if (simInfo)
 		{

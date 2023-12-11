@@ -176,10 +176,10 @@ QAndroidOffscreenView::QAndroidOffscreenView(
 		}
 
 		// qDebug() << __PRETTY_FUNCTION__ << "Connecting to java.lang.System...";
-		// system_class_.reset(new QJniObject("java/lang/System", false));
+		// system_class_.reset(new QJniHelpers::QJniObject("java/lang/System", false));
 
 		qDebug() << __PRETTY_FUNCTION__ << "Creating object of" << view_class_name_ << "tid" << gettid();
-		offscreen_view_ = QJniObject(view_class_name_.toLatin1().data(), "");
+		offscreen_view_ = QJniHelpers::QJniObject(view_class_name_.toLatin1().data(), "");
 
 		if (offscreen_view_)
 		{
@@ -253,14 +253,14 @@ void QAndroidOffscreenView::preloadJavaClasses()
 		{
 			QApplicationActivityObserver::instance();
 
-			QAndroidQPAPluginGap::preloadJavaClasses();
-			QAndroidQPAPluginGap::preloadJavaClass("ru/dublgis/offscreenview/OffscreenView");
+			QJniHelpers::QAndroidQPAPluginGap::preloadJavaClasses();
+			QJniHelpers::QAndroidQPAPluginGap::preloadJavaClass("ru/dublgis/offscreenview/OffscreenView");
 			QAndroidJniImagePair::preloadJavaClasses();
 
-			QJniClass("ru/dublgis/offscreenview/OffscreenView").registerNativeMethods({
+			QJniHelpers::QJniClass("ru/dublgis/offscreenview/OffscreenView").registerNativeMethods({
 				{"nativeUpdate", "(J)V", reinterpret_cast<void*>(Java_OffscreenView_nativeUpdate)},
 				{"nativeViewCreated", "(J)V", reinterpret_cast<void*>(Java_OffscreenView_nativeViewCreated)},
-				{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getActivityNoThrow)},
+				{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QJniHelpers::QAndroidQPAPluginGap::getActivityNoThrow)},
 				{"nativeOnVisibleRect", "(JIIII)V", reinterpret_cast<void*>(Java_OffscreenView_onVisibleRect)},
 			});
 		}
@@ -275,7 +275,7 @@ static int getApiLevel()
 {
 	try
 	{
-		return QJniClass("ru/dublgis/offscreenview/OffscreenView").callStaticInt("getApiLevel");
+		return QJniHelpers::QJniClass("ru/dublgis/offscreenview/OffscreenView").callStaticInt("getApiLevel");
 	}
 	catch (const std::exception & e)
 	{
@@ -1000,7 +1000,7 @@ bool QAndroidOffscreenView::updateGlTexture()
 	}
 }
 
-QJniObject QAndroidOffscreenView::getView()
+QJniHelpers::QJniObject QAndroidOffscreenView::getView()
 {
 	if (offscreen_view_)
 	{

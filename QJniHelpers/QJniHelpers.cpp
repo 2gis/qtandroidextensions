@@ -96,7 +96,7 @@ public:
 		{
 			try
 			{
-				QJniEnvPtr().unloadAllClasses();
+				QJniHelpers::QJniEnvPtr().unloadAllClasses();
 			}
 			catch (const std::exception & e)
 			{
@@ -1614,7 +1614,7 @@ QJniObject QJniClass::callStaticObj(const char * method_name, const char * objna
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
 
-	VERBOSE(qWarning("new QJniClass(env->CallStaticObjectMethod(jClass(),mid), true);"));
+	VERBOSE(qWarning("new QJniHelpers::QJniClass(env->CallStaticObjectMethod(jClass(),mid), true);"));
 	jobject jret = env->CallStaticObjectMethod(jClass(), mid);
 	if (jep.clearException())
 	{

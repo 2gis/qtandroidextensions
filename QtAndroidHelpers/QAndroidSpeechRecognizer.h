@@ -233,7 +233,7 @@ private:
 	QMap<QString, QString> string_extras_;
 	QMap<QString, bool> bool_extras_;
 	QMap<QString, int> int_extras_;
-	QScopedPointer<QJniObject> listener_;
+	QScopedPointer<QJniHelpers::QJniObject> listener_;
 
 	QTimer timeout_timer_;
 	bool enable_timeout_timer_;

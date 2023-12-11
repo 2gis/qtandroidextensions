@@ -65,7 +65,7 @@ Q_DECL_EXPORT void JNICALL Java_WifiListener_setScanResult(JNIEnv *, jobject, jl
 
 
 static const JNINativeMethod methods[] = {
-	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
+	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QJniHelpers::QAndroidQPAPluginGap::getCurrentContextNoThrow)},
 	{"scanUpdate", "(J)V", reinterpret_cast<void*>(Java_WifiListener_scanUpdate)},
 	{"setScanResult", "(JLandroid/net/wifi/ScanResult;)V", reinterpret_cast<void*>(Java_WifiListener_setScanResult)},
 };

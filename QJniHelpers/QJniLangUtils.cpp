@@ -47,7 +47,7 @@ void exit(int code)
     try
     {
         qWarning() << "Calling System.exit(" << code << ")";
-        QJniClass("java/lang/System").callStaticParamVoid("exit", "I", static_cast<jint>(code));
+        QJniHelpers::QJniClass("java/lang/System").callStaticParamVoid("exit", "I", static_cast<jint>(code));
     }
     catch (const std::exception & e)
     {

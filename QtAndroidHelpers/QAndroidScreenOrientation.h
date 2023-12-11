@@ -80,7 +80,7 @@ namespace QAndroidScreenOrientation
 	int getCurrentFixedOrientation();
 
 
-	using LockerInfoPtr = QSharedPointer<QJniObject>;
+	using LockerInfoPtr = QSharedPointer<QJniHelpers::QJniObject>;
 	class QAndroidScreenOrientationHelper
 	{
 		JNI_LINKER_DECL(QAndroidScreenOrientationHelper)

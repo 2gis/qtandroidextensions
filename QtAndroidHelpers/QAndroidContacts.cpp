@@ -44,7 +44,7 @@
 
 namespace {
 
-QVector<Email> toEmailList(QJniObject & jniEmailList)
+QVector<Email> toEmailList(QJniHelpers::QJniObject & jniEmailList)
 {
 	QVector<Email> emailList;
 
@@ -58,7 +58,7 @@ QVector<Email> toEmailList(QJniObject & jniEmailList)
 
 	for (int emailIdx = 0; emailIdx < emailListSize; ++emailIdx)
 	{
-		QJniObject jniEmail(jniEmailList.callParamObj(
+		QJniHelpers::QJniObject jniEmail(jniEmailList.callParamObj(
 			"get",
 			"java/lang/Object",
 			"I",
@@ -78,7 +78,7 @@ QVector<Email> toEmailList(QJniObject & jniEmailList)
 	return emailList;
 }
 
-QVector<Phone> toPhoneList(QJniObject & jniPhoneList)
+QVector<Phone> toPhoneList(QJniHelpers::QJniObject & jniPhoneList)
 {
 	QVector<Phone> phoneList;
 
@@ -92,7 +92,7 @@ QVector<Phone> toPhoneList(QJniObject & jniPhoneList)
 
 	for (int phoneIdx = 0; phoneIdx < phoneListSize; ++phoneIdx)
 	{
-		QJniObject jniPhone(jniPhoneList.callParamObj(
+		QJniHelpers::QJniObject jniPhone(jniPhoneList.callParamObj(
 			"get",
 			"java/lang/Object",
 			"I",
@@ -123,7 +123,7 @@ Q_DECL_EXPORT void JNICALL Java_ContactsHelper_contactsReceived(JNIEnv * env, jo
 
 	try
 	{
-		QJniObject jniContactList{contacts, false};
+		QJniHelpers::QJniObject jniContactList{contacts, false};
 		const int contactListSize = jniContactList.callParamInt("size", "");
 		contactList.reserve(contactListSize);
 
@@ -131,7 +131,7 @@ Q_DECL_EXPORT void JNICALL Java_ContactsHelper_contactsReceived(JNIEnv * env, jo
 		{
 			try
 			{
-				QJniObject jniContact{
+				QJniHelpers::QJniObject jniContact{
 					jniContactList.callParamObj("get", "java/lang/Object", "I", contactIdx)};
 
 				if (!jniContact)
@@ -139,10 +139,10 @@ Q_DECL_EXPORT void JNICALL Java_ContactsHelper_contactsReceived(JNIEnv * env, jo
 					continue;
 				}
 
-				QJniObject jniEmailList{
+				QJniHelpers::QJniObject jniEmailList{
 					jniContact.callObj("getEmails", "java/util/List")};
 
-				QJniObject jniPhoneList{
+				QJniHelpers::QJniObject jniPhoneList{
 					jniContact.callObj("getPhones", "java/util/List")};
 
 				contactList.append(Contact{
@@ -176,7 +176,7 @@ Q_DECL_EXPORT void JNICALL Java_ContactsHelper_contactsReceived(JNIEnv * env, jo
 }
 
 static const JNINativeMethod methods[] = {
-	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
+	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QJniHelpers::QAndroidQPAPluginGap::getCurrentContextNoThrow)},
 	{"nativeContactsReceived", "(JLjava/lang/Object;)V", reinterpret_cast<void*>(Java_ContactsHelper_contactsReceived)},
 };
 

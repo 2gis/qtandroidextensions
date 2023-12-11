@@ -95,8 +95,8 @@ namespace
 {
 
 QRecursiveMutex s_global_context_mutex;
-std::optional<QJniObject> s_activity;
-QJniObject s_custom_context;
+std::optional<QJniHelpers::QJniObject> s_activity;
+QJniHelpers::QJniObject s_custom_context;
 
 
 void initActivity() noexcept
@@ -108,10 +108,10 @@ void initActivity() noexcept
 	}
 	try
 	{
-		QJniClass activityGetterClass(c_activity_getter_class_name);
+		QJniHelpers::QJniClass activityGetterClass(c_activity_getter_class_name);
 		if (!activityGetterClass)
 		{
-			s_activity = QJniObject {};
+			s_activity = QJniHelpers::QJniObject {};
 			qWarning() << "initActivity: QtActivity retriever class could not be accessed.";
 			return;
 		}
@@ -128,7 +128,7 @@ void initActivity() noexcept
 		qWarning() << "JNI exception in initActivity: " << e.what();
 		if (!s_activity)
 		{
-			s_activity = QJniObject {};
+			s_activity = QJniHelpers::QJniObject {};
 		}
 	}
 	catch (...)
@@ -136,7 +136,7 @@ void initActivity() noexcept
 		qWarning() << "Unknwon exception in initActivity";
 		if (!s_activity)
 		{
-			s_activity = QJniObject {};
+			s_activity = QJniHelpers::QJniObject {};
 		}
 	}
 }
@@ -271,7 +271,7 @@ void setCustomContext(jobject context)
 	QMutexLocker locker(&s_global_context_mutex);
 	if (context)
 	{
-		s_custom_context = QJniObject(context, true);
+		s_custom_context = QJniHelpers::QJniObject(context, true);
 	}
 	else
 	{
@@ -432,7 +432,7 @@ JNIEXPORT void JNICALL Java_ru_dublgis_qjnihelpers_ClassLoader_nativeJNIPreloadC
 {
 	try
 	{
-		QJniEnvPtr jep(env);
+		QJniHelpers::QJniEnvPtr jep(env);
 		const QString qclassname = jep.toQString(classname);
 		if (!jep.preloadClass(qclassname.toLatin1()))
 		{

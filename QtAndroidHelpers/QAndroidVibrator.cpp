@@ -41,7 +41,7 @@
 
 
 static const JNINativeMethod methods[] = {
-	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
+	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QJniHelpers::QAndroidQPAPluginGap::getCurrentContextNoThrow)},
 };
 
 
@@ -90,7 +90,7 @@ void QAndroidVibrator::vibrate(Timings_t timings)
 
 		try
 		{
-			QJniEnvPtr jep;
+			QJniHelpers::QJniEnvPtr jep;
 			jlongArray array = jep.env()->NewLongArray(size);
 
 			for (int i = 0; i < size; i++)

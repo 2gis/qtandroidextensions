@@ -65,8 +65,8 @@ QAndroidDialog::~QAndroidDialog()
 
 
 static const JNINativeMethod methods[] = {
-	{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getActivityNoThrow)},
-	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
+	{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QJniHelpers::QAndroidQPAPluginGap::getActivityNoThrow)},
+	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QJniHelpers::QAndroidQPAPluginGap::getCurrentContextNoThrow)},
 	{"showMessageCallback", "(JI)V", reinterpret_cast<void*>(Java_DialogHelper_DialogHelper_showMessageCallback)},
 };
 
@@ -120,11 +120,11 @@ void QAndroidDialog::showMessage(
 		{
 			jni()->callParamVoid("showMessage",
 				"Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZIZ",
-				QJniLocalRef(title).jObject(),
-				QJniLocalRef(explanation).jObject(),
-				QJniLocalRef(positive_button_text).jObject(),
-				QJniLocalRef(negative_button_text).jObject(),
-				QJniLocalRef(neutral_button_text).jObject(),
+				QJniHelpers::QJniLocalRef(title).jObject(),
+				QJniHelpers::QJniLocalRef(explanation).jObject(),
+				QJniHelpers::QJniLocalRef(positive_button_text).jObject(),
+				QJniHelpers::QJniLocalRef(negative_button_text).jObject(),
+				QJniHelpers::QJniLocalRef(neutral_button_text).jObject(),
 				jboolean(pause),
 				jint(orientation),
 				jboolean(in_activity)
