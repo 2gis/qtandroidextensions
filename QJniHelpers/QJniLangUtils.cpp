@@ -39,6 +39,7 @@
 #include "QJniHelpers.h"
 
 
+namespace QJniHelpers {
 namespace QJniLangUtils {
 
 void exit(int code)
@@ -46,7 +47,7 @@ void exit(int code)
     try
     {
         qWarning() << "Calling System.exit(" << code << ")";
-        QJniClass("java/lang/System").callStaticParamVoid("exit", "I", static_cast<jint>(code));
+        QJniHelpers::QJniClass("java/lang/System").callStaticParamVoid("exit", "I", static_cast<jint>(code));
     }
     catch (const std::exception & e)
     {
@@ -55,3 +56,4 @@ void exit(int code)
 }
 
 } // namespace JniSystemUtils
+} // namespace QJniHelpers

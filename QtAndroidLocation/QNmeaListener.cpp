@@ -39,6 +39,8 @@
 #include <QJniHelpers/TJniObjectLinker.h>
 #include "QNmeaListener.h"
 
+using namespace QJniHelpers;
+
 
 static const char c_full_class_name[] = "ru/dublgis/androidlocation/NmeaListener";
 
@@ -48,7 +50,7 @@ Q_DECL_EXPORT void JNICALL Java_NmeaListener_OnNmeaReceivedNative(JNIEnv * env, 
 
 	try
 	{
-		emit proxy->nmeaMessage(static_cast<qint64>(timestamp), QJniEnvPtr().toQString(str));
+		emit proxy->nmeaMessage(static_cast<qint64>(timestamp), QJniHelpers::QJniEnvPtr().toQString(str));
 	}
 	catch (std::exception & e)
 	{
@@ -58,8 +60,8 @@ Q_DECL_EXPORT void JNICALL Java_NmeaListener_OnNmeaReceivedNative(JNIEnv * env, 
 
 
 static const JNINativeMethod methods[] = {
-	{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getActivityNoThrow)},
-	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
+	{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QJniHelpers::QAndroidQPAPluginGap::getActivityNoThrow)},
+	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QJniHelpers::QAndroidQPAPluginGap::getCurrentContextNoThrow)},
 	{"OnNmeaReceivedNative", "(JJLjava/lang/String;)V", reinterpret_cast<void*>(Java_NmeaListener_OnNmeaReceivedNative)},
 };
 

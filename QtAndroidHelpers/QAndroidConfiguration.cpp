@@ -39,17 +39,19 @@
 #include <QJniHelpers/QJniHelpers.h>
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 
+using namespace QJniHelpers;
+
 
 QAndroidConfiguration::QAndroidConfiguration(QObject * parent)
 	: QObject(parent)
 	, screen_size_(ScreenSizeUndefined)
 {
-	QAndroidQPAPluginGap::Context activity;
+	QJniHelpers::QAndroidQPAPluginGap::Context activity;
 	int screenLayout = ANDROID_SCREENLAYOUT_SIZE_NORMAL;
-	QJniObject resources(activity.callObj("getResources", "android/content/res/Resources"));
+	QJniHelpers::QJniObject resources(activity.callObj("getResources", "android/content/res/Resources"));
 	if (resources)
 	{
-		QJniObject configuration(resources.callObj("getConfiguration", "android/content/res/Configuration"));
+		QJniHelpers::QJniObject configuration(resources.callObj("getConfiguration", "android/content/res/Configuration"));
 		if (configuration)
 		{
 			screenLayout = configuration.getIntField("screenLayout") & ANDROID_SCREENLAYOUT_SIZE_MASK;
@@ -64,9 +66,9 @@ QAndroidConfiguration::QAndroidConfiguration(QObject * parent)
 			jint statusBarId = resources.callParamInt(
 				"getIdentifier",
 				"Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;",
-				QJniLocalRef("status_bar_height").jObject(),
-				QJniLocalRef("dimen").jObject(),
-				QJniLocalRef("android").jObject());
+				QJniHelpers::QJniLocalRef("status_bar_height").jObject(),
+				QJniHelpers::QJniLocalRef("dimen").jObject(),
+				QJniHelpers::QJniLocalRef("android").jObject());
 			if (statusBarId > 0)
 			{
 				status_bar_height_ = resources.callParamInt(
@@ -114,7 +116,7 @@ QAndroidConfiguration::QAndroidConfiguration(QObject * parent)
 
 void QAndroidConfiguration::preloadJavaClasses()
 {
-	QAndroidQPAPluginGap::preloadJavaClasses();
+	QJniHelpers::QAndroidQPAPluginGap::preloadJavaClasses();
 	// QAndroidQPAPluginGap::preloadJavaClass("android/util/DisplayMetrics");
 }
 

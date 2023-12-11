@@ -52,6 +52,7 @@ Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnReadyForSpeech(
 Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeOnRmsChanged(JNIEnv *, jobject, jlong param, jfloat rmsdB);
 Q_DECL_EXPORT void JNICALL Java_QAndroidSpeechRecognizer_nativeSupportedLanguagesReceived(JNIEnv *, jobject, jlong param, jobject languages);
 
+using namespace QJniHelpers;
 
 const QString
 	QAndroidSpeechRecognizer::ANDROID_RECOGNIZERINTENT_ACTION_GET_LANGUAGE_DETAILS = QLatin1String("android.speech.action.GET_LANGUAGE_DETAILS"),

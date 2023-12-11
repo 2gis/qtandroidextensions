@@ -43,6 +43,8 @@
 #include <QJniHelpers/TJniObjectLinker.h>
 #include "PositionInfoConvertor.h"
 
+using namespace QJniHelpers;
+
 
 static const char * const c_full_class_name_ = "ru/dublgis/androidlocation/GmsLocationProvider";
 
@@ -77,8 +79,8 @@ Q_DECL_EXPORT void JNICALL Java_GooglePlayServiceLocationProvider_locationReciev
 
 
 static const JNINativeMethod methods[] = {
-	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
-	{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getActivityNoThrow)},
+	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QJniHelpers::QAndroidQPAPluginGap::getCurrentContextNoThrow)},
+	{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QJniHelpers::QAndroidQPAPluginGap::getActivityNoThrow)},
 	{"googleApiClientStatus", "(JI)V", reinterpret_cast<void*>(Java_GooglePlayServiceLocationProvider_locationStatus)},
 	{"googleApiClientLocationAvailable", "(JZ)V", reinterpret_cast<void*>(Java_GooglePlayServiceLocationProvider_locationAvailable)},
 	{"googleApiClientLocation", "(JLandroid/location/Location;ZJ)V", reinterpret_cast<void*>(Java_GooglePlayServiceLocationProvider_locationRecieved)},
@@ -367,7 +369,7 @@ int QAndroidGmsLocationProvider::getGmsVersion()
 
 	try
 	{
-		QJniClass clazz(c_full_class_name_);
+		QJniHelpers::QJniClass clazz(c_full_class_name_);
 
 		if (!clazz.jClass())
 		{
@@ -378,7 +380,7 @@ int QAndroidGmsLocationProvider::getGmsVersion()
 		return clazz.callStaticParamInt(
 			"getGmsVersion",
 			"Landroid/content/Context;",
-			QAndroidQPAPluginGap::Context().jObject());
+			QJniHelpers::QAndroidQPAPluginGap::Context().jObject());
 	}
 	catch (const std::exception & e)
 	{
@@ -411,7 +413,7 @@ bool QAndroidGmsLocationProvider::isAvailable(jboolean allowDialog)
 	try
 	{
 		qDebug() << "Checking for Google Play Services positioning availability...";
-		QJniClass clazz(c_full_class_name_);
+		QJniHelpers::QJniClass clazz(c_full_class_name_);
 
 		if (!clazz.jClass())
 		{
@@ -421,7 +423,7 @@ bool QAndroidGmsLocationProvider::isAvailable(jboolean allowDialog)
 		jboolean result = clazz.callStaticParamBoolean(
 			"isAvailable",
 			"Landroid/content/Context;Z",
-			QAndroidQPAPluginGap::Context().jObject(),
+			QJniHelpers::QAndroidQPAPluginGap::Context().jObject(),
 			allowDialog);
 		qDebug() << "....GP positioning availability result:" << result;
 		return result;

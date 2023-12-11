@@ -39,6 +39,8 @@
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 #include <QJniHelpers/TJniObjectLinker.h>
 
+using namespace QJniHelpers;
+
 
 Q_DECL_EXPORT void JNICALL Java_Provider_onInteractiveChanged(JNIEnv * env, jobject, jlong inst)
 {
@@ -50,7 +52,7 @@ Q_DECL_EXPORT void JNICALL Java_Provider_onInteractiveChanged(JNIEnv * env, jobj
 
 
 static const JNINativeMethod methods[] = {
-    {"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
+    {"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QJniHelpers::QAndroidQPAPluginGap::getCurrentContextNoThrow)},
     {"onInteractiveChanged", "(J)V", reinterpret_cast<void *>(Java_Provider_onInteractiveChanged)},
 };
 

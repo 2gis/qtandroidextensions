@@ -38,6 +38,9 @@
 #include <QtCore/QDebug>
 #include <QtCore/QLocale>
 
+using namespace QJniHelpers;
+
+
 namespace QAndroidDesktopUtils {
 
 static const char * const c_desktoputils_class_name_ = "ru/dublgis/androidhelpers/DesktopUtils";
@@ -381,7 +384,7 @@ bool callPhoneNumber(const QString & number)
 {
 	if (checkSelfPermission("android.permission.CALL_PHONE"))
 	{
-		if (!callNumber(number, QLatin1String("android.intent.action.CALL")))
+		if (!callNumber(number, QString("android.intent.action.CALL")))
 		{
 			qWarning() << "callPhoneNumber: failed, falling back to dialPhoneNumber.";
 			return dialPhoneNumber(number);

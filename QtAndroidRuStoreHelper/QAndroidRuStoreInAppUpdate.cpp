@@ -25,7 +25,7 @@ Q_DECL_EXPORT void JNICALL Java_RuStoreInAppUpdate_nativeSetDownloadProgress(JNI
 
 
 static const JNINativeMethod methods[] = {
-	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
+	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QJniHelpers::QAndroidQPAPluginGap::getCurrentContextNoThrow)},
 	{"nativeSetUpdateAvailability", "(JIJ)V", reinterpret_cast<void*>(Java_RuStoreInAppUpdate_nativeSetUpdateAvailability)},
 	{"nativeSetInstallStatus", "(JI)V", reinterpret_cast<void*>(Java_RuStoreInAppUpdate_nativeSetInstallStatus)},
 	{"nativeSetDownloadProgress", "(JJJ)V", reinterpret_cast<void*>(Java_RuStoreInAppUpdate_nativeSetDownloadProgress)},

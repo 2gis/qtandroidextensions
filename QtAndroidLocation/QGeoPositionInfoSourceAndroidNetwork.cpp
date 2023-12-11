@@ -67,7 +67,7 @@ Q_DECL_EXPORT void JNICALL Java_GeoPositionInfoSourceAndroidNetwork_onLocation(J
 
 
 static const JNINativeMethod methods[] = {
-	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
+	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QJniHelpers::QAndroidQPAPluginGap::getCurrentContextNoThrow)},
 	{"onLocationRecieved", "(JLandroid/location/Location;)V", reinterpret_cast<void*>(Java_GeoPositionInfoSourceAndroidNetwork_onLocation)},
 };
 
@@ -143,7 +143,7 @@ QGeoPositionInfo QGeoPositionInfoSourceAndroidNetwork::lastKnownPosition(bool fr
 	{
 		if (isJniReady())
 		{
-			QJniObject jlocation(
+			QJniHelpers::QJniObject jlocation(
 				jni()->callParamObj(
 					"lastKnownPosition",
 					"Landroid/location/Location;",

@@ -38,6 +38,8 @@
 #include "QJniHelpers.h"
 
 
+namespace QJniHelpers {
+
 /*!
  * This namespace contains some vital Android JNI functions
  * that are compatible to different QPA plugins.
@@ -51,7 +53,7 @@ using QAndroidSpecificJniException = QJniBaseException;
 
 
 //! A lightweight object to access QtActivity.
-class Activity: public QJniObject
+class Activity: public QJniHelpers::QJniObject
 {
 public:
 	Activity();
@@ -59,7 +61,7 @@ public:
 
 
 //! A lightweight object to access Context (either custom context or QtActivity).
-class Context: public QJniObject
+class Context: public QJniHelpers::QJniObject
 {
 public:
 	Context();
@@ -131,4 +133,5 @@ void preloadJavaClasses();
 int apiLevel();
 
 } // namespace QAndroidQPAPluginGap
+} // namespace QJniHelpers
 

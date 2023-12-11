@@ -105,7 +105,7 @@ void uninstallApk(const QString & packagename);
 bool callNumber(
 	const QString & number,
 	const QString & action = {},
-	QJniObject * customContext = nullptr);
+	QJniHelpers::QJniObject * customContext = nullptr);
 
 // Does the same as callNumber(number).
 bool showPhoneNumber(const QString & number);

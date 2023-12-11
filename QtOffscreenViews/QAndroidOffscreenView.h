@@ -353,8 +353,8 @@ protected:
 	const QImage * getBitmapBuffer(bool * out_texture_updated, bool convert_from_android_format);
 	bool updateGlTexture();
 	bool updateBitmapToGlTexture();
-	QJniObject & offscreenView() { return offscreen_view_; }
-	QJniObject getView();
+	QJniHelpers::QJniObject & offscreenView() { return offscreen_view_; }
+	QJniHelpers::QJniObject getView();
 
 private:
 	QString view_class_name_;
@@ -373,7 +373,7 @@ private:
 	//! Used to lock bitmap_a_/bitmap_b_ access.
 	QRecursiveMutex bitmaps_mutex_;
 
-	QJniObject offscreen_view_;
+	QJniHelpers::QJniObject offscreen_view_;
 	QSize size_;
 	QColor fill_color_;
 	std::atomic<bool> need_update_texture_;

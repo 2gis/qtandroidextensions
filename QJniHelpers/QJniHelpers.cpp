@@ -52,6 +52,7 @@
 	#define VERBOSE(x)
 #endif
 
+namespace QJniHelpers {
 
 /////////////////////////////////////////////////////////////////////////////
 // Private Stuff
@@ -86,7 +87,7 @@ public:
 // Static object to free Java class references upon deinitalization of the module.
 // This is not totally necessary in Android as whole Java machine is destroyed when application
 // exists and the reference leak is not an issue, but just let's be on the good side.
- class QJniClassUnloader
+class QJniClassUnloader
 {
 public:
 	~QJniClassUnloader() noexcept
@@ -95,7 +96,7 @@ public:
 		{
 			try
 			{
-				QJniEnvPtr().unloadAllClasses();
+				QJniHelpers::QJniEnvPtr().unloadAllClasses();
 			}
 			catch (const std::exception & e)
 			{
@@ -1613,7 +1614,7 @@ QJniObject QJniClass::callStaticObj(const char * method_name, const char * objna
 		throw QJniMethodNotFoundException(debugClassName().constData(), method_name, __FUNCTION__);
 	}
 
-	VERBOSE(qWarning("new QJniClass(env->CallStaticObjectMethod(jClass(),mid), true);"));
+	VERBOSE(qWarning("new QJniHelpers::QJniClass(env->CallStaticObjectMethod(jClass(),mid), true);"));
 	jobject jret = env->CallStaticObjectMethod(jClass(), mid);
 	if (jep.clearException())
 	{
@@ -3161,3 +3162,5 @@ QJniLocalRef::QJniLocalRef(QJniEnvPtr & env, const QString & string)
 	: local_(env.toJString(string)), env_(env.env())
 {
 }
+
+} // namespace QJniHelpers

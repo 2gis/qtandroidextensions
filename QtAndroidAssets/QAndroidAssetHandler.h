@@ -28,4 +28,4 @@
     #define QTANDROIDASSETS_IMPORT Q_DECL_IMPORT
 #endif
 
-QTANDROIDASSETS_IMPORT void installQAndroidAssetHandler(QJniObject & context);
+QTANDROIDASSETS_IMPORT void installQAndroidAssetHandler(QJniHelpers::QJniObject & context);

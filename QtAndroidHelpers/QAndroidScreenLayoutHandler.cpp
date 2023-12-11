@@ -38,6 +38,8 @@
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 #include <QJniHelpers/TJniObjectLinker.h>
 
+using namespace QJniHelpers;
+
 
 Q_DECL_EXPORT void JNICALL Java_ScreenLayoutHandler_globalLayoutChanged(JNIEnv *, jobject, jlong param)
 {
@@ -61,7 +63,7 @@ Q_DECL_EXPORT void JNICALL Java_ScreenLayoutHandler_keyboardHeightChanged(JNIEnv
 static const char * const c_full_class_name_ = "ru/dublgis/androidhelpers/ScreenLayoutHandler";
 
 static const JNINativeMethod methods[] = {
-	{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getActivityNoThrow)},
+	{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QJniHelpers::QAndroidQPAPluginGap::getActivityNoThrow)},
 	{"nativeGlobalLayoutChanged", "(J)V", reinterpret_cast<void*>(Java_ScreenLayoutHandler_globalLayoutChanged)},
 	{"nativeScrollChanged", "(J)V", reinterpret_cast<void*>(Java_ScreenLayoutHandler_scrollChanged)},
 	{"nativeKeyboardHeightChanged", "(JI)V", reinterpret_cast<void*>(Java_ScreenLayoutHandler_keyboardHeightChanged)},

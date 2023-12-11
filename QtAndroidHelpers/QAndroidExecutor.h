@@ -53,11 +53,11 @@ public:
 	QAndroidExecutor(int exitWaitTimeMs = 0);
 
 	// Create executor for custom handler.
-	QAndroidExecutor(const QJniObject & handler, int exitWaitTimeMs = 0);
+	QAndroidExecutor(const QJniHelpers::QJniObject & handler, int exitWaitTimeMs = 0);
 
 	// Use QAndroidExecutor(QAndroidExecutor::createHandler(looper)) to create
 	// for custom looper.
-	static QJniObject createHandler(const QJniObject & looper);
+	static QJniHelpers::QJniObject createHandler(const QJniHelpers::QJniObject & looper);
 
 	~QAndroidExecutor();
 
@@ -91,8 +91,8 @@ public:
 
 private:
 	void dropQueue();
-	static QJniObject getMainThreadLooper();
-	QJniObject createExecutor(const QJniObject & handler);
+	static QJniHelpers::QJniObject getMainThreadLooper();
+	QJniHelpers::QJniObject createExecutor(const QJniHelpers::QJniObject & handler);
 
 	static void jcallback(JNIEnv *, jobject, jlong ptr);
 	void callback();
@@ -100,7 +100,7 @@ private:
 private:
 	int exitWaitTimeMs_;
 	std::atomic<bool> finished_ { false };
-	QJniObject executor_;
+	QJniHelpers::QJniObject executor_;
 	mutable QRecursiveMutex mainMutex_;
 	// Locked if there are pending tasks and unlocked otherwise.
 	mutable QMutex hasPendingTasksMutex_;

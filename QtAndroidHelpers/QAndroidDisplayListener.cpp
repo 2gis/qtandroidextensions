@@ -38,6 +38,7 @@
 #include <QtCore/QDebug>
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 
+using namespace QJniHelpers;
 
 namespace {
 
@@ -52,13 +53,13 @@ QAndroidDisplayListener::QAndroidDisplayListener(QObject * parent)
 	try
 	{
 		preloadJavaClasses();
-		mJavaListener = QJniObject(c_listener_class_name);
+		mJavaListener = QJniHelpers::QJniObject(c_listener_class_name);
 		if (mJavaListener)
 		{
 			mJavaListener.callParamVoid(
 				"register",
 				"Landroid/content/Context;J",
-				QAndroidQPAPluginGap::Context().jObject(),
+				QJniHelpers::QAndroidQPAPluginGap::Context().jObject(),
 				reinterpret_cast<jlong>(this));
 		}
 		else
@@ -96,7 +97,7 @@ void QAndroidDisplayListener::preloadJavaClasses()
 	{
 		try
 		{
-			QAndroidQPAPluginGap::preloadJavaClass(c_listener_class_name);
+			QJniHelpers::QAndroidQPAPluginGap::preloadJavaClass(c_listener_class_name);
 			QJniClass(c_listener_class_name).registerNativeMethods({
 				{"nativeDisplayAdded", "(JI)V", reinterpret_cast<void*>(QAndroidDisplayListener::javaDisplayAdded)},
 				{"nativeDisplayRemoved", "(JI)V", reinterpret_cast<void*>(QAndroidDisplayListener::javaDisplayRemoved)},

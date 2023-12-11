@@ -40,6 +40,8 @@
 #include <QJniHelpers/QJniHelpers.h>
 #include <QJniHelpers/TJniObjectLinker.h>
 
+using namespace QJniHelpers;
+
 
 namespace QAndroidScreenOrientation {
 
@@ -47,7 +49,7 @@ namespace QAndroidScreenOrientation {
 static const char * const c_locker_helper_class = "ru/dublgis/androidhelpers/AndroidScreenOrientationHelper$LockerOrientationInfo";
 
 static const JNINativeMethod methods[] = {
-	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
+	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QJniHelpers::QAndroidQPAPluginGap::getCurrentContextNoThrow)},
 };
 
 JNI_LINKER_IMPL(QAndroidScreenOrientationHelper, "ru/dublgis/androidhelpers/AndroidScreenOrientationHelper", methods)
@@ -56,7 +58,7 @@ int getRequestedOrientation()
 {
 	try
 	{
-		QAndroidQPAPluginGap::Context activity;
+		QJniHelpers::QAndroidQPAPluginGap::Context activity;
 		jint result = activity.callInt("getRequestedOrientation");
 		// qDebug()<<"QAndroidScreenOrientation::getRequestedOrientation"<<result;
 		return int(result);
@@ -75,21 +77,21 @@ int getSurfaceRotation()
 	try
 	{
 		static QMutex s_mutex;
-		static QJniObject s_display;
+		static QJniHelpers::QJniObject s_display;
 		QMutexLocker locker(&s_mutex);
 		if (!s_display)
 		{
-			QJniObject wm(QAndroidQPAPluginGap::Context().callObj(
+			QJniHelpers::QJniObject wm(QJniHelpers::QAndroidQPAPluginGap::Context().callObj(
 				"getWindowManager"
 				, "android/view/WindowManager"));
 			if (!wm)
 			{
-				throw QJniBaseException("No WindowManager.");
+				throw QJniHelpers::QJniBaseException("No WindowManager.");
 			}
 			s_display = wm.callObj("getDefaultDisplay", "android/view/Display");
 			if (!s_display)
 			{
-				throw QJniBaseException("No default Display.");
+				throw QJniHelpers::QJniBaseException("No default Display.");
 			}
 		}
 		rotation = s_display.callInt("getRotation");

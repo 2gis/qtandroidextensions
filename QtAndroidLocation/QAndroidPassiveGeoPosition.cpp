@@ -41,6 +41,7 @@
 
 
 namespace QAndroidPassiveGeoPosition {
+using namespace QJniHelpers;
 
 QGeoPositionInfo get()
 {
@@ -50,27 +51,27 @@ QGeoPositionInfo get()
 		if (QAndroidDesktopUtils::checkSelfPermission("android.permission.ACCESS_COARSE_LOCATION")
 			|| QAndroidDesktopUtils::checkSelfPermission("android.permission.ACCESS_FINE_LOCATION"))
 		{
-			QAndroidQPAPluginGap::Context jcontext;
+			QJniHelpers::QAndroidQPAPluginGap::Context jcontext;
 			if (!jcontext.jObject())
 			{
 				qCritical() << "No Android Context!";
 				return result;
 			}
-			QJniObject location_manager(jcontext.callParamObj(
+			QJniHelpers::QJniObject location_manager(jcontext.callParamObj(
 				"getSystemService"
 				, "java/lang/Object" // "android/location/LocationManager"
 				, "Ljava/lang/String;"
-				, QJniLocalRef(QStringLiteral("location")).jObject()));
+				, QJniHelpers::QJniLocalRef(QStringLiteral("location")).jObject()));
 			if (!location_manager)
 			{
 				qWarning() << "No LocationManager!";
 				return result;
 			}
-			QJniObject location(location_manager.callParamObj(
+			QJniHelpers::QJniObject location(location_manager.callParamObj(
 				"getLastKnownLocation"
 				, "android/location/Location"
 				, "Ljava/lang/String;"
-				, QJniLocalRef(QStringLiteral("passive")).jObject()));
+				, QJniHelpers::QJniLocalRef(QStringLiteral("passive")).jObject()));
 			if (location)
 			{
 				const jdouble lon = location.callDouble("getLongitude");

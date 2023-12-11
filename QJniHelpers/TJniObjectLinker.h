@@ -49,6 +49,7 @@
 #include "QAndroidQPAPluginGap.h"
 
 
+namespace QJniHelpers {
 
 template <typename TNative>
 class TJniObjectLinker
@@ -63,10 +64,10 @@ public:
 	static bool isPreloaded();
 
 protected:
-	QJniObject & handler() const;
+	QJniHelpers::QJniObject & handler() const;
 
 private:
-	mutable QJniObject handler_;
+	mutable QJniHelpers::QJniObject handler_;
 	jlong nativePtr_;
 
 	static bool preloaded_;
@@ -94,7 +95,7 @@ TJniObjectLinker<TNative>::TJniObjectLinker(TNative * nativePtr)
 	{
 		QByteArray javaFullClassName = preloadJavaClasses();
 		qDebug() << "Ready to create jni object" << javaFullClassName;
-		handler_ = QJniObject(javaFullClassName, "J", nativePtr_);
+		handler_ = QJniHelpers::QJniObject(javaFullClassName, "J", nativePtr_);
 		if (!handler_)
 		{
 			qCritical() << "Failed to create " << javaFullClassName << " instance!";
@@ -171,10 +172,10 @@ QByteArray TJniObjectLinker<TNative>::preloadJavaClasses()
 			preloaded_ = true;
 
 			qInfo() << "Preloading jni for" << javaFullClassName;
-			QAndroidQPAPluginGap::preloadJavaClasses();
-			QAndroidQPAPluginGap::preloadJavaClass(javaFullClassName);
+			QJniHelpers::QAndroidQPAPluginGap::preloadJavaClasses();
+			QJniHelpers::QAndroidQPAPluginGap::preloadJavaClass(javaFullClassName);
 
-			QJniClass ov(javaFullClassName);
+			QJniHelpers::QJniClass ov(javaFullClassName);
 
 			if (!ov.registerNativeMethodsN(
 				methods_list, sizeof_methods_list / sizeof(JNINativeMethod)))
@@ -195,7 +196,7 @@ QByteArray TJniObjectLinker<TNative>::preloadJavaClasses()
 
 
 template <typename TNative>
-QJniObject & TJniObjectLinker<TNative>::handler() const
+QJniHelpers::QJniObject & TJniObjectLinker<TNative>::handler() const
 {
 	return handler_;
 }
@@ -236,7 +237,7 @@ bool nativeClass::isJniReady() const                                            
 	return jniLinker_ && jniLinker_->handler();                                                 \
 }                                                                                               \
                                                                                                 \
-QJniObject * nativeClass::jni() const                                                           \
+QJniHelpers::QJniObject * nativeClass::jni() const                                                           \
 {                                                                                               \
 	Q_ASSERT(isJniReady());                                                                     \
 	auto & handler = jniLinker_->handler();                                                     \
@@ -256,3 +257,5 @@ void nativeClass::getJavaClassName(QByteArray & outJavaFullClassName)           
 	outJavaFullClassName = java_class_name;                                                     \
 }                                                                                               \
 
+
+} // namespace QJniHelpers

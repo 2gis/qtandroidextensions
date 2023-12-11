@@ -38,6 +38,7 @@
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 #include <QJniHelpers/TJniObjectLinker.h>
 
+using namespace QJniHelpers;
 
 
 static const char * const c_full_class_name_ = "ru/dublgis/androidlocation/LocationManagerProvidersListener";
@@ -51,7 +52,7 @@ Q_DECL_EXPORT void JNICALL Java_onProvidersChange(JNIEnv *, jobject, jlong param
 
 
 static const JNINativeMethod methods[] = {
-	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
+	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QJniHelpers::QAndroidQPAPluginGap::getCurrentContextNoThrow)},
 	{"onProvidersChange", "(J)V", reinterpret_cast<void*>(Java_onProvidersChange)},
 };
 

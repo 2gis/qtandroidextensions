@@ -43,6 +43,8 @@
 #include <QJniHelpers/TJniObjectLinker.h>
 #include "PositionInfoConvertor.h"
 
+using namespace QJniHelpers;
+
 
 #if QTCORE_VERSION < 0x050C00
 	Q_DECLARE_METATYPE(QGeoPositionInfo)
@@ -67,7 +69,7 @@ Q_DECL_EXPORT void JNICALL Java_GeoPositionInfoSourceAndroidSatellite_onLocation
 
 
 static const JNINativeMethod methods[] = {
-	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
+	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QJniHelpers::QAndroidQPAPluginGap::getCurrentContextNoThrow)},
 	{"onLocationRecieved", "(JLandroid/location/Location;)V", reinterpret_cast<void*>(Java_GeoPositionInfoSourceAndroidSatellite_onLocation)},
 };
 
@@ -143,7 +145,7 @@ QGeoPositionInfo QGeoPositionInfoSourceAndroidSatellite::lastKnownPosition(bool 
 	{
 		if (isJniReady())
 		{
-			QJniObject jlocation(
+			QJniHelpers::QJniObject jlocation(
 				jni()->callParamObj(
 					"lastKnownPosition",
 					"Landroid/location/Location;",

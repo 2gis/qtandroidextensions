@@ -36,9 +36,11 @@
 
 #pragma once
 
+namespace QJniHelpers {
 // This namespace contains wrappers for useful functions from java.lang classes.
 namespace QJniLangUtils {
 
 void exit(int code = 0);
 
 } // namespace JniSystemUtils
+} // namespace QJniHelpers

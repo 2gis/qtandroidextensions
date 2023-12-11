@@ -38,6 +38,8 @@
 #include <QtCore/QDebug>
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 
+using namespace QJniHelpers;
+
 
 static const char * const c_full_class_name_ = "ru/dublgis/androidhelpers/ToastHelper";
 
@@ -47,11 +49,11 @@ void showToast(const QString & text, bool length_long)
 {
 	try
 	{
-		QJniClass(c_full_class_name_).callStaticParamVoid(
+		QJniHelpers::QJniClass(c_full_class_name_).callStaticParamVoid(
 			"showToast",
 			"Landroid/content/Context;Ljava/lang/String;I",
-			QAndroidQPAPluginGap::Context().jObject(),
-			QJniLocalRef(text).jObject(),
+			QJniHelpers::QAndroidQPAPluginGap::Context().jObject(),
+			QJniHelpers::QJniLocalRef(text).jObject(),
 			jint((length_long)? ANDROID_TOAST_LENGTH_LONG: ANDROID_TOAST_LENGTH_SHORT));
 	}
 	catch (const std::exception & e)
@@ -67,7 +69,7 @@ void preloadJavaClasses()
 	{
 		try
 		{
-			QAndroidQPAPluginGap::preloadJavaClass(c_full_class_name_);
+			QJniHelpers::QAndroidQPAPluginGap::preloadJavaClass(c_full_class_name_);
 		}
 		catch (const std::exception & e)
 		{

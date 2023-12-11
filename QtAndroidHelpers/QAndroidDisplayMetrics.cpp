@@ -38,6 +38,8 @@
 #include <QtCore/QDebug>
 #include "QAndroidDisplayMetrics.h"
 
+using namespace QJniHelpers;
+
 
 namespace {
 
@@ -489,7 +491,7 @@ std::vector<float> QAndroidDisplayMetrics::getSupportedRefreshRates(QJniObject c
 			if (auto array = display.callObj("getSupportedRefreshRates", "[F"))
 			{
 				for (const auto r:
-					 QJniEnvPtr().convert(static_cast<jfloatArray>(array.jObject())))
+					QJniEnvPtr().convert(static_cast<jfloatArray>(array.jObject())))
 				{
 					result.push_back(static_cast<float>(r));
 				}

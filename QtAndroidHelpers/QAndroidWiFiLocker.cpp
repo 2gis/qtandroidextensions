@@ -39,13 +39,15 @@
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 #include <QJniHelpers/TJniObjectLinker.h>
 
+using namespace QJniHelpers;
+
 
 static const char * const c_full_class_name_ = "ru/dublgis/androidhelpers/WifiLocker";
 
 
 static const JNINativeMethod methods[] =
 {
-	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getCurrentContextNoThrow)},
+	{"getContext", "()Landroid/content/Context;", reinterpret_cast<void*>(QJniHelpers::QAndroidQPAPluginGap::getCurrentContextNoThrow)},
 };
 
 
