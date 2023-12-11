@@ -46,8 +46,9 @@
 
 #if QT_VERSION < 0x050000 && defined(QJNIHELPERS_GRYM)
 	#define QPA_QT4GRYM
+#elif QT_VERSION >= 0x060000
+	#define QPA_QT6
 #elif QT_VERSION >= 0x050000
-	// Should work for Qt 6 as well ;)
 	#define QPA_QT5
 #else
 	#error "Unimplemented QPA case"
@@ -55,6 +56,9 @@
 
 #if defined(QPA_QT5)
 	#include <QtAndroidExtras/QtAndroidExtras>
+#elif defined(QPA_QT6)
+	#include <QtCore/QJniObject>
+	#include <QtCore/private/qandroidextras_p.h>
 #endif
 
 #if defined(Q_OS_ANDROID)
@@ -62,8 +66,9 @@
 #if defined(QPA_QT4GRYM)
 	// Exported from QtAndroidCore
 	extern JavaVM * qt_android_get_java_vm();
-#elif QT_VERSION >= 0x050000
+#elif defined(QPA_QT5)
 	#include <QtAndroidExtras/QAndroidJniEnvironment>
+#elif defined(QPA_QT6)
 #else
 	#error "Unimplemented QPA case"
 #endif
@@ -78,6 +83,10 @@ namespace
 	const char * const c_activity_getter_result_name = "org/qt/core/QtActivityBase";
 #elif defined(QPA_QT5)
 	const char * const c_activity_getter_class_name = "org/qtproject/qt5/android/QtNative";
+	const char * const c_activity_getter_method_name = "activity";
+	const char * const c_activity_getter_result_name = "android/app/Activity";
+#elif defined(QPA_QT6)
+	const char * const c_activity_getter_class_name = "org/qtproject/qt/android/QtNative";
 	const char * const c_activity_getter_method_name = "activity";
 	const char * const c_activity_getter_result_name = "android/app/Activity";
 #else
@@ -167,6 +176,8 @@ JavaVM * getJavaVM() noexcept
 			return qt_android_get_java_vm();
 		#elif defined(QPA_QT5)
 			return QAndroidJniEnvironment::javaVM();
+		#elif defined(QPA_QT6)
+			return QJniEnvironment::javaVM();
 		#else
 			#error "Unimplemented QPA case"
 			return nullptr;
@@ -363,6 +374,12 @@ void preloadJavaClass(const char * class_name)
 			QJniClass(c_class_name).callStaticVoid(c_method_name, class_name);
 		#elif defined(QPA_QT5)
 			QAndroidJniObject::callStaticMethod<void>(c_class_name, c_method_name, "(Ljava/lang/String;)V",
+				QJniLocalRef(jep, class_name).jObject());
+		#elif defined(QPA_QT6)
+			::QJniObject::callStaticMethod<void>(
+				c_class_name,
+				c_method_name,
+				"(Ljava/lang/String;)V",
 				QJniLocalRef(jep, class_name).jObject());
 		#endif
 	}
