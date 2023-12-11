@@ -39,12 +39,13 @@
 
 #include "QJniHelpers.h"
 
+namespace QJniHelpers {
 
 class IJniObjectLinker
 {
 public:
 	virtual ~IJniObjectLinker() {};
-	virtual QJniObject & handler() const = 0;
+	virtual QJniHelpers::QJniObject & handler() const = 0;
 };
 
 
@@ -56,10 +57,11 @@ public:                                                                         
 	static void preloadJavaClasses();                                                                                                    \
 private:                                                                                                                                 \
 	bool isJniReady() const;                                                                                                             \
-	QJniObject * jni() const;                                                                                                            \
+	QJniHelpers::QJniObject * jni() const;                                                                                                            \
 	static void getNativeMethods(const JNINativeMethod ** methods_list, size_t & sizeof_methods_list);                                   \
 	static void getJavaClassName(QByteArray & javaFullClassName);                                                                        \
-	friend class TJniObjectLinker<nativeClass>;                                                                                          \
-	typedef TJniObjectLinker<nativeClass> JniObjectLinker;                                                                               \
-	QScopedPointer<IJniObjectLinker> jniLinker_;                                                                                         \
+	friend class QJniHelpers::TJniObjectLinker<nativeClass>;                                                                                          \
+	typedef QJniHelpers::TJniObjectLinker<nativeClass> JniObjectLinker;                                                                               \
+	QScopedPointer<QJniHelpers::IJniObjectLinker> jniLinker_;                                                                                         \
 
+} // namespace QJniHelpers

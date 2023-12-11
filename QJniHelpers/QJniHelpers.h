@@ -41,6 +41,7 @@
 #include <QtCore/QString>
 #include <QtCore/QByteArray>
 
+namespace QJniHelpers {
 
 class QJniBaseException: public std::exception
 {
@@ -546,3 +547,4 @@ private:
 	JNIEnv * env_ = nullptr;
 };
 
+} // namespace QJniHelpers

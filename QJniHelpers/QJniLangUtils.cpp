@@ -39,6 +39,7 @@
 #include "QJniHelpers.h"
 
 
+namespace QJniHelpers {
 namespace QJniLangUtils {
 
 void exit(int code)
@@ -55,3 +56,4 @@ void exit(int code)
 }
 
 } // namespace JniSystemUtils
+} // namespace QJniHelpers

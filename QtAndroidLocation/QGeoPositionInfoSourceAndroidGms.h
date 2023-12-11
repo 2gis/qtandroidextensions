@@ -93,9 +93,13 @@ private:
 };
 
 
+namespace QJniHelpers {
+
 template <>
 class TJniObjectLinker<QGeoPositionInfoSourceAndroidGms>
 {
 public:
 	static bool isPreloaded() { return TJniObjectLinker<QAndroidGmsLocationProvider>::isPreloaded(); }
 };
+
+} // namespace QJniHelpers

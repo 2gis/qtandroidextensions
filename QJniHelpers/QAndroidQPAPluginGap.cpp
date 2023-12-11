@@ -87,7 +87,7 @@ namespace
 } // anonymous namespace
 
 
-
+namespace QJniHelpers {
 namespace QAndroidQPAPluginGap
 {
 
@@ -418,6 +418,7 @@ int apiLevel()
 }
 
 } // namespace QAndroidQPAPluginGap
+} // namespace QJniHelpers
 
 
 // JNI entry points. Must be "C" because the function names should not be mangled.

@@ -38,6 +38,8 @@
 #include "QJniHelpers.h"
 
 
+namespace QJniHelpers {
+
 /*!
  * This namespace contains some vital Android JNI functions
  * that are compatible to different QPA plugins.
@@ -131,4 +133,5 @@ void preloadJavaClasses();
 int apiLevel();
 
 } // namespace QAndroidQPAPluginGap
+} // namespace QJniHelpers
 

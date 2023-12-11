@@ -52,6 +52,7 @@
 	#define VERBOSE(x)
 #endif
 
+namespace QJniHelpers {
 
 /////////////////////////////////////////////////////////////////////////////
 // Private Stuff
@@ -3161,3 +3162,5 @@ QJniLocalRef::QJniLocalRef(QJniEnvPtr & env, const QString & string)
 	: local_(env.toJString(string)), env_(env.env())
 {
 }
+
+} // namespace QJniHelpers

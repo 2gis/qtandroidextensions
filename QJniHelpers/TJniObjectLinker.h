@@ -49,6 +49,7 @@
 #include "QAndroidQPAPluginGap.h"
 
 
+namespace QJniHelpers {
 
 template <typename TNative>
 class TJniObjectLinker
@@ -256,3 +257,5 @@ void nativeClass::getJavaClassName(QByteArray & outJavaFullClassName)           
 	outJavaFullClassName = java_class_name;                                                     \
 }                                                                                               \
 
+
+} // namespace QJniHelpers
