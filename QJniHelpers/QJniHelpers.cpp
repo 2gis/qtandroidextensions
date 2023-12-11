@@ -87,7 +87,7 @@ public:
 // Static object to free Java class references upon deinitalization of the module.
 // This is not totally necessary in Android as whole Java machine is destroyed when application
 // exists and the reference leak is not an issue, but just let's be on the good side.
- class QJniClassUnloader
+class QJniClassUnloader
 {
 public:
 	~QJniClassUnloader() noexcept

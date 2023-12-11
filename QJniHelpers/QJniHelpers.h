@@ -219,7 +219,7 @@ class QJniObject;
 
 
 // Convenience wrapper for Java classes to provide cleaner and more object-oriented access to them.
- class QJniClass
+class QJniClass
 {
 public:
 	// Empty (null) class
@@ -494,7 +494,7 @@ protected:
 // It is tad more effective than QJniObject.
 // Most popular use is converting C strings for JNI to pass a JNI call parameter:
 // QJniLocalRef("SomeString").jstring()
- class QJniLocalRef
+class QJniLocalRef
 {
 public:
 	// Create without JNIEnv pointer. The object will use QJniEnvPtr to get it.
