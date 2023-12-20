@@ -39,6 +39,7 @@
 #include "QAndroidWifiDataProvider.h"
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 #include <QJniHelpers/TJniObjectLinker.h>
+#include <QJniHelpers/QJniHelpers.h>
 
 
 namespace Mobility {
@@ -142,8 +143,7 @@ void QAndroidWifiDataProvider::setScanResult(jobject scan_result)
 	}
 	else
 	{
-		QScopedPointer<QJniObject> wifi_ssid(result.callObject("getWifiSsid", "android/net/wifi/WifiSsid"));
-		wd.name = wifi_ssid->callString("toString");
+		wd.name = wifi_ssid(result.callObj("getWifiSsid", "android/net/wifi/WifiSsid")).callString("toString");
 	}
 
 	if (QAndroidQPAPluginGap::apiLevel() >= 17)
