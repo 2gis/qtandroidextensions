@@ -131,34 +131,41 @@ bool QAndroidWifiDataProvider::getSignalsData()
 
 void QAndroidWifiDataProvider::setScanResult(jobject scan_result)
 {
-	WifiData wd;
-	QJniObject result(scan_result, false);
+	try
+	{
+		WifiData wd;
+		QJniObject result(scan_result, false);
 
-	wd.StringAsMac(result.getStringField("BSSID"));
-	wd.signalStrength =result.getIntField("level");
-	
-	if (QAndroidQPAPluginGap::apiLevel() < 33)
-	{
-		wd.name = result.getStringField("SSID");
-	}
-	else
-	{
-		wd.name = wifi_ssid(result.callObj("getWifiSsid", "android/net/wifi/WifiSsid")).callString("toString");
-	}
+		wd.StringAsMac(result.getStringField("BSSID"));
+		wd.signalStrength =result.getIntField("level");
+		
+		if (QAndroidQPAPluginGap::apiLevel() < 33)
+		{
+			wd.name = result.getStringField("SSID");
+		}
+		else
+		{
+			wd.name = result.callObj("getWifiSsid", "android/net/wifi/WifiSsid").callString("toString");
+		}
 
-	if (QAndroidQPAPluginGap::apiLevel() >= 17)
-	{
-		wd.timestamp_mks = result.getLongField("timestamp");
-		qint64 elapsed_realtime_ms = QJniClass("android/os/SystemClock").callStaticLong("elapsedRealtime");
-		wd.since_signal_ms = elapsed_realtime_ms - wd.timestamp_mks / 1000;
-	}
-	else
-	{
-		wd.timestamp_mks = 0;
-		wd.since_signal_ms = 0;
-	}
+		if (QAndroidQPAPluginGap::apiLevel() >= 17)
+		{
+			wd.timestamp_mks = result.getLongField("timestamp");
+			qint64 elapsed_realtime_ms = QJniClass("android/os/SystemClock").callStaticLong("elapsedRealtime");
+			wd.since_signal_ms = elapsed_realtime_ms - wd.timestamp_mks / 1000;
+		}
+		else
+		{
+			wd.timestamp_mks = 0;
+			wd.since_signal_ms = 0;
+		}
 
-	data_buf_.push_back(wd);
+		data_buf_.push_back(wd);
+	}
+	catch (const std::exception & e)
+	{
+		qWarning() << "Exception: " << e.what();
+	}
 }
 
 
