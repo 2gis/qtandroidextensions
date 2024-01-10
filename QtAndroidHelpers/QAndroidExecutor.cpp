@@ -38,6 +38,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/QScopedPointer>
 
+using namespace QJniHelpers;
 
 namespace
 {
