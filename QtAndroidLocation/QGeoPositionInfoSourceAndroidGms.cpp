@@ -225,7 +225,7 @@ void QGeoPositionInfoSourceAndroidGms::setError(Error errval)
 	if (m_error != errval)
 	{
 		m_error = errval;
-		emit QGeoPositionInfoSource::error(error());
+		emit errorOccurred(error());
 	}
 }
 
@@ -263,7 +263,7 @@ void QGeoPositionInfoSourceAndroidGms::locationProviderDisabled()
 void QGeoPositionInfoSourceAndroidGms::onProvidersChange(bool status)
 {
 	activeProvidersDisabled_ = !status;
-	emit QGeoPositionInfoSource::error(error());
+	emit errorOccurred(error());
 }
 
 
