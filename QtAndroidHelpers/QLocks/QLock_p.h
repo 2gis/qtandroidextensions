@@ -39,6 +39,8 @@
 #include "QLockedObjectBase_p.h"
 #include "QLockBase.h"
 
+#include <QtCore/QObject>
+
 
 namespace QLocks
 {
