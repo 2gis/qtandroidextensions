@@ -45,6 +45,8 @@
 #include "QAndroidStorages.h"
 #include "QAndroidFilePaths.h"
 
+using namespace QJniHelpers;
+
 
 static QRecursiveMutex paths_mutex_;
 static const char * const c_directorieshelper_class_ = "ru/dublgis/androidhelpers/DirectoriesHelper";
