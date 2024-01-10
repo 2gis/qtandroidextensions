@@ -43,6 +43,8 @@
 #include <QJniHelpers/TJniObjectLinker.h>
 #include "PositionInfoConvertor.h"
 
+using namespace QJniHelpers;
+
 
 #if QTCORE_VERSION < 0x050C00
 	Q_DECLARE_METATYPE(QGeoPositionInfo)

@@ -40,6 +40,8 @@
 #include <QJniHelpers/QJniHelpers.h>
 #include <QJniHelpers/TJniObjectLinker.h>
 
+using namespace QJniHelpers;
+
 
 namespace QAndroidScreenOrientation {
 

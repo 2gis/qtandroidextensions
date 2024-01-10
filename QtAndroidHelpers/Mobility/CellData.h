@@ -40,6 +40,7 @@
 
 #include "DataOperation.h"
 #include <QtCore/QSharedPointer>
+#include <QtCore/QList>
 
 
 namespace Mobility {

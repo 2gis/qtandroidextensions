@@ -37,6 +37,9 @@
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 #include "QAndroidOffscreenWebView.h"
 
+using namespace QJniHelpers;
+
+
 //! Convert nativeptr from Java to AndroidOffscreenWebView.
 static inline QAndroidOffscreenWebView * AOWW(jlong nativeptr)
 {

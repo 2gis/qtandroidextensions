@@ -38,6 +38,8 @@
 #include <QtCore/QDebug>
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 
+using namespace QJniHelpers;
+
 
 static const char * const c_full_class_name_ = "ru/dublgis/androidhelpers/ToastHelper";
 

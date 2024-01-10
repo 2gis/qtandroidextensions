@@ -39,6 +39,7 @@
 #include <QtCore/QDebug>
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 
+using namespace QJniHelpers;
 
 
 static void setPositionAttributeFloat(

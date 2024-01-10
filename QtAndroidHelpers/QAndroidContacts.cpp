@@ -41,6 +41,8 @@
 #include <QJniHelpers/TJniObjectLinker.h>
 #include <QtCore/QDebug>
 
+using namespace QJniHelpers;
+
 
 namespace {
 

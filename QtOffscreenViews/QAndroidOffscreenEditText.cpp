@@ -38,6 +38,8 @@
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 #include "QAndroidOffscreenEditText.h"
 
+using namespace QJniHelpers;
+
 
 Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnTextChanged(
 	JNIEnv * env,

@@ -47,6 +47,9 @@
 #include "QAndroidJniImagePair.h"
 #include "QAndroidOffscreenView.h"
 
+using namespace QJniHelpers;
+
+
 // Set in QAndroidOffsceenView::initializeGL.
 static bool s_have_to_adjust_size_to_pot = true;
 static QSize s_max_gl_size;

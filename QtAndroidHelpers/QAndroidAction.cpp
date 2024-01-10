@@ -40,6 +40,7 @@
 #include <QJniHelpers/TJniObjectLinker.h>
 
 
+using namespace QJniHelpers;
 
 
 static const JNINativeMethod methods[] = {

@@ -39,6 +39,8 @@
 #include <QJniHelpers/QJniHelpers.h>
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 
+using namespace QJniHelpers;
+
 
 QAndroidConfiguration::QAndroidConfiguration(QObject * parent)
 	: QObject(parent)

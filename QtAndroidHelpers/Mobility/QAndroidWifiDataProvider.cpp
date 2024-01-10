@@ -41,6 +41,8 @@
 #include <QJniHelpers/TJniObjectLinker.h>
 #include <QJniHelpers/QJniHelpers.h>
 
+using namespace QJniHelpers;
+
 
 namespace Mobility {
 

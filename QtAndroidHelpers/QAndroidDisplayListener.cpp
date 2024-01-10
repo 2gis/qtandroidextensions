@@ -38,6 +38,7 @@
 #include <QtCore/QDebug>
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 
+using namespace QJniHelpers;
 
 namespace {
 

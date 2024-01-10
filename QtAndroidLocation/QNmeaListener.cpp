@@ -39,6 +39,8 @@
 #include <QJniHelpers/TJniObjectLinker.h>
 #include "QNmeaListener.h"
 
+using namespace QJniHelpers;
+
 
 static const char c_full_class_name[] = "ru/dublgis/androidlocation/NmeaListener";
 

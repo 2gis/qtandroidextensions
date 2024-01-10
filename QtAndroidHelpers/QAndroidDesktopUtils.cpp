@@ -38,6 +38,9 @@
 #include <QtCore/QDebug>
 #include <QtCore/QLocale>
 
+using namespace QJniHelpers;
+
+
 namespace QAndroidDesktopUtils {
 
 static const char * const c_desktoputils_class_name_ = "ru/dublgis/androidhelpers/DesktopUtils";

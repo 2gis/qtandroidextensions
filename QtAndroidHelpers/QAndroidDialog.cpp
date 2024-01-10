@@ -40,6 +40,8 @@
 #include <QJniHelpers/TJniObjectLinker.h>
 #include "QAndroidScreenOrientation.h"
 
+using namespace QJniHelpers;
+
 
 static const char * const c_full_class_name_ = "ru/dublgis/androidhelpers/DialogHelper";
 bool QAndroidDialog::interactive_ = true;
