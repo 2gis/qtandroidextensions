@@ -42,6 +42,7 @@
 #include <QtGui/QImage>
 #include <QtGui/QPainter>
 #include <QtCore/QSize>
+#include <QtCore/QObject>
 #include <QtCore/QScopedPointer>
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 #include <QJniHelpers/QJniHelpers.h>

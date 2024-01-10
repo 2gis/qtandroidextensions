@@ -43,6 +43,8 @@
 #include <QtGui/QColor>
 #include "QAndroidJniImagePair.h"
 
+using namespace QJniHelpers;
+
 
 static QImage::Format AndroidBitmapFormat_to_QImageFormat(uint32_t abf)
 {

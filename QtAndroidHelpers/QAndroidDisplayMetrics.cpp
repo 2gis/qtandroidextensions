@@ -38,6 +38,8 @@
 #include <QtCore/QDebug>
 #include "QAndroidDisplayMetrics.h"
 
+using namespace QJniHelpers;
+
 
 namespace {
 
