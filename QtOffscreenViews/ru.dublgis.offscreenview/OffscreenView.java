@@ -1152,6 +1152,20 @@ public abstract class OffscreenView
         return mNativePtr;
     }
 
+
+    private void releaseSurface() {
+        try {
+            synchronized (texture_mutex_) {
+                if (rendering_surface_ != null) {
+                    rendering_surface_.release();
+                }
+            }
+        } catch (final Throwable e) {
+            Log.e(TAG, "releaseSurface exception: ", e);
+        }
+    }
+
+
     //! Called from C++ to notify us that the associated C++ object is being destroyed.
     public void cppDestroyed()
     {
@@ -1166,6 +1180,7 @@ public abstract class OffscreenView
                     Log.v(TAG, "cppDestroyed while view is still attached, detaching it now for " + object_name_);
                     uiDetachViewFromQtScreen();
                 }
+                releaseSurface();
             }
         });
     }
@@ -1234,6 +1249,8 @@ public abstract class OffscreenView
         //
         abstract public void setBitmaps(final Bitmap bitmap_a, final Bitmap bitmap_b);
         abstract public int getQtPaintingTexture();
+
+        abstract public void release();
     }
 
     protected class OffscreenBitmapRenderingSurface implements OffscreenRenderingSurface
@@ -1341,6 +1358,11 @@ public abstract class OffscreenView
                     last_drawn_bitmap_ = -1;
                 }
             }
+        }
+
+        @Override
+        public void release()
+        {
         }
     }
 
@@ -1467,6 +1489,23 @@ public abstract class OffscreenView
         public int getQtPaintingTexture()
         {
             return -1;
+        }
+
+        @Override
+        public void release()
+        {
+            if (Build.VERSION.SDK_INT >= 11) { // Android >= 3.0x / HONEYCOMB
+                try {
+                    if (surface_ != null) {
+                        // "Release the local reference to the server-side surface.
+                        // Always call release() when you're done with a Surface.
+                        // This will make the surface invalid."
+                        surface_.release();
+                    }
+                } catch (final Throwable e) {
+                    Log.e(TAG, "Exception while releasing surface: ", e);
+                }
+            }
         }
     }
 
