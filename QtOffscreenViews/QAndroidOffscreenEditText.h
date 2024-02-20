@@ -426,6 +426,9 @@ signals:
 	//! Emitted when Enter pressed or editor action required.
 	void onEnterOrPositiveAction();
 
+	//! Emitted when Enter pressed or editor action required.
+	void onPositiveAction();
+
 
 /*	void onKeyMultiple(int keyCode, int repeatCount, KeyEvent event)	//	Default implementation of KeyEvent.Callback.onKeyMultiple(): always returns false (doesn't handle the event).
 	void onKeyPreIme(int keyCode, KeyEvent event)	//	Handle a key event before it is processed by any input method associated with the view hierarchy.

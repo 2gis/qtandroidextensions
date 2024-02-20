@@ -43,6 +43,7 @@ QQuickAndroidOffscreenEditText::QQuickAndroidOffscreenEditText()
 	connect(androidEditText(), SIGNAL(selectionChanged()), this, SIGNAL(selectionChanged()));
 	connect(androidEditText(), SIGNAL(onKeyBack(bool)), this, SLOT(etKeyBack(bool)));
 	connect(androidEditText(), SIGNAL(onEnterOrPositiveAction()), this, SLOT(etEnter()));
+	connect(androidEditText(), SIGNAL(onPositiveAction()), this, SLOT(etPositiveAction()));
 	connect(androidEditText(), SIGNAL(contentHeightChanged(int)), this, SIGNAL(contentHeightChanged(int)));
 	connect(androidEditText(), SIGNAL(hasAcceptableInputChanged(bool)), this, SIGNAL(hasAcceptableInputChanged(bool)));
 }
@@ -58,6 +59,11 @@ void QQuickAndroidOffscreenEditText::etTextChanged(QString text, int start, int 
 void QQuickAndroidOffscreenEditText::etEnter()
 {
 	emit returnPressed();
+}
+
+void QQuickAndroidOffscreenEditText::etPositiveAction()
+{
+	emit positiveActionPressed();
 }
 
 void QQuickAndroidOffscreenEditText::etKeyBack(bool down)

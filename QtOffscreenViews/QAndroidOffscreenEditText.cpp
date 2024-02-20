@@ -223,6 +223,7 @@ void QAndroidOffscreenEditText::javaOnEditorAction(int action)
 	case ANDROID_EDITORINFO_IME_ACTION_UNSPECIFIED:
 	default:
 		emit onEnterOrPositiveAction();
+		emit onPositiveAction();
 	}
 }
 

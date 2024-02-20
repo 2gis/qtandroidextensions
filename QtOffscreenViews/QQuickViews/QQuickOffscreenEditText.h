@@ -245,6 +245,9 @@ signals:
 	//! Wraps QAndroidOffscreenEditText::onEnterOrPositiveAction().
 	void returnPressed();
 
+	//! Wraps QAndroidOffscreenEditText::onPositiveAction().
+	void positiveActionPressed();
+
 	void backPressed();
 	void backReleased();
 
@@ -252,5 +255,6 @@ protected slots:
 	virtual void etTextChanged(QString text, int start, int before, int count);
 	virtual void etKeyBack(bool down);
 	virtual void etEnter();
+	virtual void etPositiveAction();
 };
 
