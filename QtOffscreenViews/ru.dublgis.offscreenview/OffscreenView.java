@@ -1041,7 +1041,18 @@ public abstract class OffscreenView
                 return;
             }
             Log.v(TAG, "uiShowKeyboard: do showSoftInput");
-            imm.showSoftInput(v, InputMethodManager.SHOW_IMPLICIT);
+            if (!imm.showSoftInput(v, InputMethodManager.SHOW_IMPLICIT)) 
+            {
+                // Failed to show soft input.
+                // This may be due to the activity being suspended and resumed, resulting in a loss of focus.
+                // Let's restore focus and attempt to show the input again.                
+                Log.v(TAG, "uiShowKeyboard: do showSoftInput restore focus");
+                v.restoreDefaultFocus();
+                if (!imm.showSoftInput(v, InputMethodManager.SHOW_IMPLICIT)) 
+                {
+                    Log.w(TAG, "uiShowKeyboard: was unable to show keyboard and restore focus");
+                }
+            }
         }
         catch (final Throwable e)
         {
