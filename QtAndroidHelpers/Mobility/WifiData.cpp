@@ -71,6 +71,19 @@ QString WifiData::MacAsString(const QString& delim) const
 }
 
 
+void WifiData::accept(DataOperation & operation) const
+{
+	operation.execute(QStringLiteral("mac_address"), MacAsString(QStringLiteral("-")));
+	operation.execute(QStringLiteral("signal_strength"), signalStrength);
+	operation.execute(QStringLiteral("last_seen_ms"), since_signal_ms);
+
+	if (!name.isEmpty())
+	{
+		operation.execute(QStringLiteral("name"), name);
+	}
+}
+
+
 void WifiData::StringAsMac(const QString& str, const QString& delim)
 {
 	if (str.length() < 17)

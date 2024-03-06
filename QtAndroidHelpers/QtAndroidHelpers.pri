@@ -10,6 +10,7 @@ HEADERS += \
     $$PWD/Mobility/QAndroidCellDataProvider.h \
     $$PWD/Mobility/QAndroidWifiDataProvider.h \
     $$PWD/Mobility/QAndroidBatteryDataProvider.h \
+    $$PWD/Mobility/DataOperation.h \
     $$PWD/Mobility/CellData.h \
     $$PWD/Mobility/WifiData.h \
     $$PWD/QLocks/QLockBase.h  \

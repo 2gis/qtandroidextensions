@@ -46,6 +46,7 @@ set(SRC_LIST
     QAndroidWiFiLocker.h
     Mobility/CellData.cpp
     Mobility/CellData.h
+    Mobility/DataOperation.h
     Mobility/QAndroidBatteryDataProvider.cpp
     Mobility/QAndroidBatteryDataProvider.h
     Mobility/QAndroidCellDataProvider.cpp

@@ -38,6 +38,7 @@
 
 #pragma once
 
+#include "DataOperation.h"
 #include <vector>
 #include <QtCore/QString>
 
@@ -59,6 +60,7 @@ struct WifiData
 
 	QString MacAsString(const QString& delim = QLatin1String("-")) const;
 	void StringAsMac(const QString& str, const QString& delim = QLatin1String(":"));
+	void accept(DataOperation & operation) const;
 };
 
 
