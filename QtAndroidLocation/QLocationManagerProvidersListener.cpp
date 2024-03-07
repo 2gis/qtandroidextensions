@@ -105,17 +105,24 @@ QGeoPositionInfoSource::PositioningMethods QLocationManagerProvidersListener::ge
 {
 	QGeoPositionInfoSource::PositioningMethods res = QGeoPositionInfoSource::NoPositioningMethods;
 
-	if (isJniReady())
+	try 
 	{
-		if (jni()->callBool("isGpsProviderEnabled"))
+		if (isJniReady())
 		{
-			res |= QGeoPositionInfoSource::SatellitePositioningMethods;
-		}
+			if (jni()->callBool("isGpsProviderEnabled"))
+			{
+				res |= QGeoPositionInfoSource::SatellitePositioningMethods;
+			}
 
-		if (jni()->callBool("isNetworkProviderEnabled"))
-		{
-			res |= QGeoPositionInfoSource::NonSatellitePositioningMethods;
+			if (jni()->callBool("isNetworkProviderEnabled"))
+			{
+				res |= QGeoPositionInfoSource::NonSatellitePositioningMethods;
+			}
 		}
+	}
+	catch (const std::exception & e)
+	{
+		qWarning() << "Exception: " << e.what();
 	}
 
 	return res;
@@ -126,12 +133,19 @@ bool QLocationManagerProvidersListener::isActiveProvidersEnabled()
 {
 	bool ret = false;
 
-	if (isJniReady())
+	try
 	{
-		ret = jni()->callBool("isActiveProvidersEnabled");
+		if (isJniReady())
+		{
+			ret = jni()->callBool("isActiveProvidersEnabled");
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qWarning() << "Exception: " << e.what();
 	}
 
-	qDebug() << __FUNCTION__ << ": ret = " << ret;
+	// qDebug() << __FUNCTION__ << ": ret = " << ret;
 	return ret;
 }
 
