@@ -120,9 +120,16 @@ void QAndroidWifiDataProvider::scanUpdate()
 
 bool QAndroidWifiDataProvider::getSignalsData()
 {
-	if (isJniReady())
+	try
 	{
-		return jni()->callBool("getLastWifiScanResultsTable");
+		if (isJniReady())
+		{
+			return jni()->callBool("getLastWifiScanResultsTable");
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qWarning() << "Exception: " << e.what();
 	}
 
 	return false;
