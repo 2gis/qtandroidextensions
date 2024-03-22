@@ -55,6 +55,8 @@
  * For 32 bit, it is necessary to call convert32BitImageFromQtToAndroid() /
  * convert32BitImageFromAndroidToQt() to fix color plane order.
  */
+
+
 class QAndroidJniImagePair
 	: public QObject
 {
