@@ -36,8 +36,17 @@
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#include <QtOpenGL/QOpenGLShader>
+#include <QtOpenGL/QOpenGLFunctions_ES2>
+#include <QtOpenGL/QOpenGLTexture>
 #include <QtCore/QCoreApplication>
+#include <QtGui/QImage>
+
 #include "QOpenGLTextureHolder.h"
+
+
+#define QT_OPENGL_ES_2
+
 
 namespace
 {
@@ -89,7 +98,7 @@ QImage convertToGLFormat(const QImage & image)
 static const GLuint c_vertex_coordinates_attr  = 0;
 static const GLuint c_texture_coordinates_attr = 1;
 
-QMap<GLenum, QSharedPointer<QGLShaderProgram> > QOpenGLTextureHolder::blit_programs_;
+QMap<GLenum, QSharedPointer<QOpenGLShaderProgram> > QOpenGLTextureHolder::blit_programs_;
 
 QOpenGLTextureHolder::QOpenGLTextureHolder(GLenum type, const QSize & size)
 	: texture_id_(0)
@@ -145,7 +154,7 @@ static inline void QRectFToVertexArray(const QRectF & r, GLfloat * array)
 	array[7] = bottom;
 }
 
-QGLShaderProgram * QOpenGLTextureHolder::GetBlitProgram(GLenum target)
+QOpenGLShaderProgram * QOpenGLTextureHolder::GetBlitProgram(GLenum target)
 {
 	#if !defined(QT_OPENGL_ES_2)
 		qFatal("GetBlitProgram should not be called if not using OpenGL ES 2.");
@@ -159,7 +168,7 @@ QGLShaderProgram * QOpenGLTextureHolder::GetBlitProgram(GLenum target)
 			});
 		}
 
-		QSharedPointer<QGLShaderProgram> & blit_program_ptr = blit_programs_[target];
+		QSharedPointer<QOpenGLShaderProgram> & blit_program_ptr = blit_programs_[target];
 		if (!blit_program_ptr.isNull())
 		{
 			return blit_program_ptr.data();
@@ -215,13 +224,13 @@ QGLShaderProgram * QOpenGLTextureHolder::GetBlitProgram(GLenum target)
 				"}\n");
 		}
 
-		blit_program_ptr = QSharedPointer<QGLShaderProgram>(new QGLShaderProgram());
+		blit_program_ptr = QSharedPointer<QOpenGLShaderProgram>(new QOpenGLShaderProgram());
 		{
 			QString source;
 			source.append(qglslMainWithTexCoordsVertexShader);
 			source.append(qglslUntransformedPositionVertexShader);
 
-			QGLShader * vertexShader = new QGLShader(QGLShader::Vertex, blit_program_ptr.data());
+			QOpenGLShader * vertexShader = new QOpenGLShader(QOpenGLShader::Vertex, blit_program_ptr.data());
 			vertexShader->compileSourceCode(source);
 
 			blit_program_ptr->addShader(vertexShader);
@@ -234,7 +243,7 @@ QGLShaderProgram * QOpenGLTextureHolder::GetBlitProgram(GLenum target)
 			source.append(qglslImageSrcFragmentShader);
 			source.append(qglslMainFragmentShader);
 
-			QGLShader * fragmentShader = new QGLShader(QGLShader::Fragment, blit_program_ptr.data());
+			QOpenGLShader * fragmentShader = new QOpenGLShader(QOpenGLShader::Fragment, blit_program_ptr.data());
 			fragmentShader->compileSourceCode(source);
 
 			blit_program_ptr->addShader(fragmentShader);
@@ -268,7 +277,7 @@ void QOpenGLTextureHolder::blitTexture(const QRect & targetRect, const QRect & s
 		// glDisable(GL_SCISSOR_TEST);
 		glDisable(GL_BLEND);
 
-		QGLShaderProgram * blitProgram = GetBlitProgram(texture_type_);
+		QOpenGLShaderProgram * blitProgram = GetBlitProgram(texture_type_);
 		if (!blitProgram || !blitProgram->isLinked())
 		{
 			qWarning()<<"Shader program is not linked, can't blit the texture.";

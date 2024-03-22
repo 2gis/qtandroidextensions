@@ -39,8 +39,8 @@
 #include <QtCore/QRect>
 #include <QtCore/QRectF>
 #include <QtCore/QSharedPointer>
-#include <QtOpenGL/QGLShaderProgram>
 
+#include <QtOpenGL/QOpenGLShaderProgram>
 /*!
  * This class:
  * 1. Holds OpenGL texture id, allocates and deallocates it when needed.
@@ -141,7 +141,7 @@ private:
 	void drawTexture(const QRectF & rect, const QRectF & bitmap_rect, bool reverse_y);
 
 	//! Shader programs for drawTexture().
-	static QGLShaderProgram * GetBlitProgram(GLenum target);
+	static QOpenGLShaderProgram * GetBlitProgram(GLenum target);
 
 protected:
 	GLuint texture_id_;
@@ -149,7 +149,7 @@ protected:
 	QSize texture_size_;
 	// Texture transformation: (v) = (A)*(b).
 	GLfloat a11_, a12_, a21_, a22_, b1_, b2_;
-	static QMap<GLenum, QSharedPointer<QGLShaderProgram> > blit_programs_;
+	static QMap<GLenum, QSharedPointer<QOpenGLShaderProgram> > blit_programs_;
 private:
 	Q_DISABLE_COPY(QOpenGLTextureHolder)
 };

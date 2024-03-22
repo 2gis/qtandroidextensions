@@ -38,6 +38,7 @@ if (ANDROID)
             qtandroidextensions::QtJniHelpers
         PRIVATE
             Qt6::OpenGL
+            Qt6::OpenGLWidgets
             ${ANDROID_JNIGRAPHICS}
     )
 
