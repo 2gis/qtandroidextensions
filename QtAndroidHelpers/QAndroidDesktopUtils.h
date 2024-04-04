@@ -92,6 +92,7 @@ bool sendEmail(
 
 bool openURL(const QString & url);
 bool openFile(const QString & fileName, const QString & mimeType);
+void sendData(const QByteArray & data, const QString & mimeType);
 bool installApk(const QString & apk);
 void uninstallApk(const QString & packagename);
 

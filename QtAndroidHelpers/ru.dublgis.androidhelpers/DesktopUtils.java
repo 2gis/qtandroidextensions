@@ -45,6 +45,7 @@ import android.app.NotificationManager;
 import android.os.LocaleList;
 import android.os.Parcelable;
 import java.io.File;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.TreeSet;
@@ -596,6 +597,38 @@ public class DesktopUtils
         {
             Log.e(TAG, "Exception while opening a file: ", e);
             return false;
+        }
+    }
+
+    public static void sendData(final Context ctx, final byte[] data, final String mimeType)
+    {
+        Log.d(TAG, "Will sendData of type: " + mimeType);
+        try
+        {
+            final String authority = ctx.getPackageName() + ".sharefileprovider";
+            final File tempFile = File.createTempFile("share_", null, ctx.getExternalCacheDir());
+            tempFile.deleteOnExit();
+
+            final Uri uri = FileProvider.getUriForFile(ctx, authority, tempFile);
+
+            OutputStream outputStream = ctx.getContentResolver().openOutputStream(uri);
+            outputStream.write(data);
+            outputStream.flush();
+            outputStream.close();
+
+            final Intent sendIntent = new Intent(Intent.ACTION_SEND);
+            sendIntent.setType(mimeType);
+            sendIntent.putExtra(Intent.EXTRA_STREAM, uri);
+            sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            final Intent chooser = Intent.createChooser(sendIntent, "");
+            chooser.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            ctx.startActivity(chooser);
+        }
+        catch (final Throwable e)
+        {
+            Log.e(TAG, "Exception while sendData: ", e);
+            return;
         }
     }
 

@@ -230,6 +230,25 @@ bool openFile(const QString & fileName, const QString & mimeType)
 }
 
 
+void sendData(const QByteArray & data, const QString & mimeType)
+{
+	QJniClass du(c_desktoputils_class_name_);
+	QAndroidQPAPluginGap::Context activity;
+	QJniEnvPtr jep;
+
+	const jbyte * const jbytes = reinterpret_cast<const jbyte*>(data.data());
+	jbyteArray jba = jep.env()->NewByteArray(data.size());
+	jep.env()->SetByteArrayRegion(jba, 0, data.size(), jbytes);
+
+	du.callStaticParamVoid("sendData", "Landroid/content/Context;[BLjava/lang/String;",
+		activity.jObject(),
+		jba,
+		QJniLocalRef(mimeType).jObject());
+
+	jep.env()->DeleteLocalRef(jba);
+}
+
+
 bool installApk(const QString & apk)
 {
 	QJniClass du(c_desktoputils_class_name_);
