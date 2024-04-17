@@ -55,7 +55,7 @@ struct WifiData
 	// google expects this to be in dBm
 	int signalStrength;
 	QString name;
-	int timestamp_mks;
+	qint64 timestamp_mks;
 	qint64 since_signal_ms;
 
 	QString MacAsString(const QString& delim = QLatin1String("-")) const;
