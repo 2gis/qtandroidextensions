@@ -726,7 +726,7 @@ public abstract class OffscreenView
             // C++ part is not set or already lost (may happen during init/deinit).
             if (getNativePtr() == 0)
             {
-                Log.i(TAG, "doDrawViewOnTexture: native ptr is null: " + object_name_);
+                Log.v(TAG, "doDrawViewOnTexture: native ptr is null: " + object_name_);
                 return false;
             }
 
