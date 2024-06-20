@@ -69,6 +69,7 @@ public abstract class OffscreenView
     public static final String TAG = "Grym/OffscreenView";
 
     private volatile long mNativePtr = 0;
+    private Object mNativePtrMutex = new Object();
 
     final private Object texture_mutex_ = new Object();
     private int gl_texture_id_ = 0;
@@ -207,7 +208,9 @@ public abstract class OffscreenView
 
     public void SetNativePtr(long ptr)
     {
-        mNativePtr = ptr;
+        synchronized(nativePtrMutex()) {
+            mNativePtr = ptr;
+        }
     }
 
     // This is a convenience wrapper for Activity.runOnUiThread(Runnable).
@@ -338,7 +341,9 @@ public abstract class OffscreenView
                 precreation_actions_.clear();
 
                 // Notify the C++ that the view construction has been completed.
-                nativeViewCreated(getNativePtr());
+                synchronized(nativePtrMutex()) {
+                    nativeViewCreated(getNativePtr());
+                }
             }
         });
         Log.i(TAG, "createView result="+result);
@@ -799,7 +804,9 @@ public abstract class OffscreenView
                     rendering_surface_.unlockCanvas(canvas);
                     // t = System.nanoTime() - t;
                     // Tell C++ part that we have a new image
-                    nativeUpdate(getNativePtr());
+                    synchronized(nativePtrMutex()) {
+                        nativeUpdate(getNativePtr());
+                    }
 
                     // Log.i(TAG, "doDrawViewOnTexture: success, t="+t/1000000.0+"ms");
                 }
@@ -1157,12 +1164,18 @@ public abstract class OffscreenView
     {
         return getView() != null;
     }
+    
 
     public final long getNativePtr()
     {
-        return mNativePtr;
+        synchronized(nativePtrMutex()) {
+            return mNativePtr;
+        }
     }
 
+    protected Object nativePtrMutex() { 
+        return mNativePtrMutex;
+    }
 
     private void releaseSurface() {
         try {
@@ -1180,20 +1193,22 @@ public abstract class OffscreenView
     //! Called from C++ to notify us that the associated C++ object is being destroyed.
     public void cppDestroyed()
     {
-        mNativePtr = 0;
+        synchronized(nativePtrMutex()) {
+            mNativePtr = 0L;
 
-        runOnUiThread(new Runnable(){
-            @Override
-            public void run()
-            {
-                if (is_attached_)
+            runOnUiThread(new Runnable(){
+                @Override
+                public void run()
                 {
-                    Log.v(TAG, "cppDestroyed while view is still attached, detaching it now for " + object_name_);
-                    uiDetachViewFromQtScreen();
+                    if (is_attached_)
+                    {
+                        Log.v(TAG, "cppDestroyed while view is still attached, detaching it now for " + object_name_);
+                        uiDetachViewFromQtScreen();
+                    }
+                    releaseSurface();
                 }
-                releaseSurface();
-            }
-        });
+            });
+        }
     }
 
     public void setFillColor(int a, int r, int g, int b)
@@ -1538,7 +1553,9 @@ public abstract class OffscreenView
                 {
                     Rect rect = new Rect();
                     v.getWindowVisibleDisplayFrame(rect);
-                    nativeOnVisibleRect(getNativePtr(), rect.left, rect.top, rect.right, rect.bottom);
+                    synchronized(nativePtrMutex()) {
+                        nativeOnVisibleRect(getNativePtr(), rect.left, rect.top, rect.right, rect.bottom);
+                    }
                 }
             }
         });

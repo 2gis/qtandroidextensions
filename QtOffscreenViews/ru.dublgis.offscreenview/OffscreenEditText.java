@@ -118,7 +118,9 @@ class OffscreenEditText extends OffscreenView
                 {
                     text_ = str;
                 }
-                nativeOnTextChanged(getNativePtr(), str, start, before, count);
+                synchronized(nativePtrMutex()) {
+                    nativeOnTextChanged(getNativePtr(), str, start, before, count);
+                }
                 updateContentHeight();
             }
         }
@@ -365,7 +367,9 @@ class OffscreenEditText extends OffscreenView
             }
             selection_top_ = top;
             selection_bottom_ = bottom;
-            nativeSetSelectionInfo(getNativePtr(), top, bottom);
+            synchronized(nativePtrMutex()) {
+                nativeSetSelectionInfo(getNativePtr(), top, bottom);
+            }
         }
 
         protected void reflowWorkaround()
@@ -411,33 +415,39 @@ class OffscreenEditText extends OffscreenView
         @Override
         public boolean onKeyDown(int keyCode, KeyEvent event)
         {
-            if (!nativeOnKey(getNativePtr(), true, keyCode))
-            {
-                return super.onKeyDown(keyCode, event);
-            }
-            else
-            {
-                return true;
+            synchronized(nativePtrMutex()) {
+                if (!nativeOnKey(getNativePtr(), true, keyCode))
+                {
+                    return super.onKeyDown(keyCode, event);
+                }
+                else
+                {
+                    return true;
+                }
             }
         }
 
         @Override
         public boolean onKeyUp(int keyCode, KeyEvent event)
         {
-            if (!nativeOnKey(getNativePtr(), false, keyCode))
-            {
-                return super.onKeyUp(keyCode, event);
-            }
-            else
-            {
-                return true;
+            synchronized(nativePtrMutex()) {
+                if (!nativeOnKey(getNativePtr(), false, keyCode))
+                {
+                    return super.onKeyUp(keyCode, event);
+                }
+                else
+                {
+                    return true;
+                }
             }
         }
 
         @Override
         public void onEditorAction(int actionCode)
         {
-            nativeOnEditorAction(getNativePtr(), actionCode);
+            synchronized(nativePtrMutex()) {
+                nativeOnEditorAction(getNativePtr(), actionCode);
+            }
         }
 
         @Override
@@ -534,7 +544,9 @@ class OffscreenEditText extends OffscreenView
                     runViewAction(new Runnable() {
                         @Override
                         public void run() {
-                            nativeOnContentHeightChanged(getNativePtr(), content_height_);
+                            synchronized(nativePtrMutex()) {
+                                nativeOnContentHeightChanged(getNativePtr(), content_height_);
+                            }
                         }
                     });
                 }
@@ -1345,7 +1357,9 @@ class OffscreenEditText extends OffscreenView
             if (hasAcceptableInput_ != hasAcceptableInput) 
             {
                 hasAcceptableInput_ = hasAcceptableInput;
-                nativeOnHasAcceptableInputChanged(getNativePtr(), hasAcceptableInput_);
+                synchronized(nativePtrMutex()) {
+                    nativeOnHasAcceptableInputChanged(getNativePtr(), hasAcceptableInput_);
+                }
             }
         }
     }
@@ -1369,7 +1383,9 @@ class OffscreenEditText extends OffscreenView
                     }
                     else
                     {
-                        nativeOnHasAcceptableInputChanged(getNativePtr(), true);
+                        synchronized(nativePtrMutex()) {
+                            nativeOnHasAcceptableInputChanged(getNativePtr(), true);
+                        }
                     }
                 } 
                 catch (final Throwable e) 
