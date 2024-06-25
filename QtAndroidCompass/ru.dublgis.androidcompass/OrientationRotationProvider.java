@@ -58,8 +58,8 @@ public class OrientationRotationProvider implements SensorEventListener {
 	private SensorManager mSensorManager;
 	private Sensor mOrientation;
 
-	private final float[] mRotationVector = new float[9];
 	private final float[] mOrientationVector = new float[3];
+	private final float[] mRotationMatrix = new float[9];
 
 	OrientationRotationProvider(long native_ptr) {
 		mNativePtr = native_ptr;
@@ -149,7 +149,7 @@ public class OrientationRotationProvider implements SensorEventListener {
 
 	public int getAzimuth(boolean applyDisplayRotation) {
 
-		int value = (int)Math.toDegrees(SensorManager.getOrientation(mRotationVector, mOrientationVector)[0]);
+		int value = (int)Math.toDegrees(SensorManager.getOrientation(mRotationMatrix, mOrientationVector)[0]);
 
 		int angleShift = 0;
 
@@ -193,7 +193,7 @@ public class OrientationRotationProvider implements SensorEventListener {
 		synchronized(this) {
 			if(event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR)
 			{
-				SensorManager.getRotationMatrixFromVector(mRotationVector, event.values);
+				SensorManager.getRotationMatrixFromVector(mRotationMatrix, event.values);
 
 			}
 			onUpdate(mNativePtr);
