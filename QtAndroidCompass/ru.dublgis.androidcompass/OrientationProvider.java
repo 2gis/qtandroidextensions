@@ -62,7 +62,7 @@ public class OrientationProvider implements SensorEventListener {
 	private final float[] mMagnetometerReading = new float[3];
 
 	private final float[] mRotationMatrix = new float[9];
-	private final float[] mOrientationAngles = new float[3];
+	private final float[] mOrientationVector = new float[3];
 
 	OrientationProvider(long native_ptr) {
 		mNativePtr = native_ptr;
@@ -178,7 +178,7 @@ public class OrientationProvider implements SensorEventListener {
 			}
 		}
 
-		return angleShift + (int)Math.toDegrees(mOrientationAngles[0]);
+		return angleShift + (int)Math.toDegrees(mOrientationVector[0]);
 	}
 
 
@@ -216,8 +216,8 @@ public class OrientationProvider implements SensorEventListener {
 			// "mRotationMatrix" now has up-to-date information.
 		}
 
-		SensorManager.getOrientation(mRotationMatrix, mOrientationAngles);
-		// "mOrientationAngles" now has up-to-date information.
+		SensorManager.getOrientation(mRotationMatrix, mOrientationVector);
+		// "mOrientationVector" now has up-to-date information.
 	}
 
 
