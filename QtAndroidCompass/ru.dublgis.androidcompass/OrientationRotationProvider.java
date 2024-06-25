@@ -58,8 +58,8 @@ public class OrientationRotationProvider implements SensorEventListener {
 	private SensorManager mSensorManager;
 	private Sensor mOrientation;
 
-	private final float[] mOrientationVector = new float[9];
 	private final float[] mRotationVector = new float[9];
+	private final float[] mOrientationVector = new float[3];
 
 	OrientationRotationProvider(long native_ptr) {
 		mNativePtr = native_ptr;
