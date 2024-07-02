@@ -65,7 +65,7 @@ private:
 	void onUpdate();
 
 private:
-	friend void JNICALL Java_onUpdate(JNIEnv * env, jobject, jlong inst);
+	friend void JNICALL Java_QAndroidCompass_onUpdate(JNIEnv * env, jobject, jlong inst);
 
 private:
 	bool started_;

@@ -44,7 +44,7 @@
 
 
 
-Q_DECL_EXPORT void JNICALL Java_onUpdate(JNIEnv * env, jobject, jlong inst)
+Q_DECL_EXPORT void JNICALL Java_QAndroidCompass_onUpdate(JNIEnv * env, jobject, jlong inst)
 {
 	Q_UNUSED(env);
 
@@ -55,7 +55,7 @@ Q_DECL_EXPORT void JNICALL Java_onUpdate(JNIEnv * env, jobject, jlong inst)
 
 static const JNINativeMethod methods[] = {
 	{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getActivityNoThrow)},
-	{"onUpdate", "(J)V", reinterpret_cast<void*>(Java_onUpdate)},
+	{"onUpdate", "(J)V", reinterpret_cast<void*>(Java_QAndroidCompass_onUpdate)},
 };
 
 
@@ -70,7 +70,6 @@ namespace {
 				"java/lang/Object",
 				"Ljava/lang/String;",
 				QJniLocalRef(QStringLiteral("sensor")).jObject()));
-
 
 			if (sensorManager)
 			{
