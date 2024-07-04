@@ -36,76 +36,22 @@
 
 
 #include "QAndroidCompass.h"
-
-#include <QtCore/QSharedPointer>
-#include <QtCore/QMutexLocker>
-#include <QJniHelpers/QAndroidQPAPluginGap.h>
-#include <QJniHelpers/TJniObjectLinker.h>
-
-
-
-Q_DECL_EXPORT void JNICALL Java_QAndroidCompass_onUpdate(JNIEnv * env, jobject, jlong inst)
-{
-	Q_UNUSED(env);
-
-	JNI_LINKER_OBJECT(QAndroidCompass, inst, proxy)
-	proxy->onUpdate();
-}
-
-
-static const JNINativeMethod methods[] = {
-	{"getActivity", "()Landroid/app/Activity;", reinterpret_cast<void*>(QAndroidQPAPluginGap::getActivityNoThrow)},
-	{"onUpdate", "(J)V", reinterpret_cast<void*>(Java_QAndroidCompass_onUpdate)},
-};
-
-
-namespace {
-	const char * compassJavaClassDetector()
-	{
-		try 
-		{
-			QAndroidQPAPluginGap::Context context;
-			QJniObject sensorManager(context.callParamObj(
-				"getSystemService",
-				"java/lang/Object",
-				"Ljava/lang/String;",
-				QJniLocalRef(QStringLiteral("sensor")).jObject()));
-
-			if (sensorManager)
-			{
-				const jint TYPE_ROTATION_VECTOR = QJniClass("android/hardware/Sensor").getStaticIntField("TYPE_ROTATION_VECTOR");
-
-				const QJniObject sensor(sensorManager.callParamObj(
-					"getDefaultSensor", 
-					"Landroid/hardware/Sensor;",
-					"I",
-					TYPE_ROTATION_VECTOR));
-
-				if (sensor)
-				{
-					qInfo() << "OrientationRotationProvider selected";
-					return "ru/dublgis/androidcompass/OrientationRotationProvider";
-				}
-			}
-		}
-		catch (const std::exception & e)
-		{
-			qCritical() << "JNI exception on orientation provider detection: " << e.what();
-		}
-
-		qInfo() << "OrientationProvider selected";
-		return "ru/dublgis/androidcompass/OrientationProvider";
-	}
-}
-
-JNI_LINKER_IMPL(QAndroidCompass, compassJavaClassDetector(), methods)
+#include <QtAndroidSensorManager/QAndroidSensorManager.h>
 
 
 QAndroidCompass::QAndroidCompass(QObject * parent)
 	: QObject(parent)
-	, jniLinker_(new JniObjectLinker(this))
 	, started_(false)
+	, mode_(MODE_UNKNOWN)
 {
+	sensor_manager_ = new QAndroidSensorManager(this);
+
+	QObject::connect(
+		sensor_manager_.data(),
+		&QAndroidSensorManager::dataUpdated,
+		this,
+		&QAndroidCompass::onUpdate
+	);
 }
 
 
@@ -117,20 +63,37 @@ QAndroidCompass::~QAndroidCompass()
 
 void QAndroidCompass::start(int32_t delayUs /*= -1*/, int32_t latencyUs /*= -1*/)
 {
-	if (!started_ && isJniReady())
+	const static int32_t type_rotation_vector = sensor_manager_->getSensorType("TYPE_ROTATION_VECTOR");
+	if (MODE_UNKNOWN == mode_ || MODE_ROTATION == mode_)
 	{
-		started_ = jni()->callParamBoolean("start", "II", static_cast<jint>(delayUs), static_cast<jint>(latencyUs));
+		started_ = sensor_manager_->start(type_rotation_vector, delayUs, latencyUs);
+	}
+
+	if (started_)
+	{
+		mode_ = MODE_ROTATION;
+	}
+	else
+	{
+		const static int32_t type_accelerometer = sensor_manager_->getSensorType("TYPE_ACCELEROMETER");
+		const static int32_t type_magnetic_field = sensor_manager_->getSensorType("TYPE_MAGNETIC_FIELD");
+
+		started_ =
+			sensor_manager_->start(type_accelerometer, delayUs, latencyUs) &&
+			sensor_manager_->start(type_magnetic_field, delayUs, latencyUs);
+
+		if (started_)
+		{
+			mode_ = MODE_MAGNETIC;
+		}
 	}
 }
 
 
 void QAndroidCompass::stop()
 {
-	if (isJniReady())
-	{
-		jni()->callVoid("stop");
-		started_ = false;
-	}
+	sensor_manager_->stop();
+	started_ = false;
 }
 
 
@@ -142,18 +105,20 @@ bool QAndroidCompass::isStarted() const
 
 float QAndroidCompass::getAzimuth()
 {
-	float data = 0.f;
 
-	if (isJniReady())
+	if (MODE_ROTATION == mode_)
 	{
-		data = jni()->callParamInt("getAzimuth", "Z", jboolean(true));
+		return sensor_manager_->getAzimuthByRotationVector(true);
+	}
+	else
+	{
+		return sensor_manager_->getAzimuthByMagneticField(true);
 	}
 
-	return data;
 }
 
 
-void QAndroidCompass::onUpdate()
+void QAndroidCompass::onUpdate(int32_t sensor_type, int64_t timestamp_ns, std::vector<float> data)
 {
 	emit azimuthUpdated();
 }

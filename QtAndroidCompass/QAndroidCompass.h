@@ -36,17 +36,24 @@
 
 #pragma once
 
-#include <QtCore/QScopedPointer>
-#include <QtCore/QWeakPointer>
-#include <QtCore/QMutex>
-#include <QJniHelpers/QJniHelpers.h>
-#include <QJniHelpers/IJniObjectLinker.h>
+#include <QtCore/QObject>
+#include <QtCore/QPointer>
+#include <set>
+
+
+class QAndroidSensorManager;
 
 
 class QAndroidCompass : public QObject
 {
 	Q_OBJECT
-	JNI_LINKER_DECL(QAndroidCompass)
+
+	enum Mode
+	{
+		MODE_UNKNOWN,
+		MODE_ROTATION,
+		MODE_MAGNETIC,
+	};
 
 public:
 	QAndroidCompass(QObject * parent);
@@ -61,13 +68,13 @@ public:
 signals:
 	void azimuthUpdated();
 
-private:
-	void onUpdate();
+private slots:
+	void onUpdate(int32_t sensor_type, int64_t timestamp_ns, std::vector<float> data);
 
-private:
-	friend void JNICALL Java_QAndroidCompass_onUpdate(JNIEnv * env, jobject, jlong inst);
 
 private:
 	bool started_;
+	QPointer<QAndroidSensorManager> sensor_manager_;
+	Mode mode_;
 };
 
