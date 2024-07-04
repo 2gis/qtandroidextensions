@@ -36,39 +36,24 @@
 
 
 #include "QAndroidAccelerometer.h"
-
-#include <QtCore/QSharedPointer>
+#include <QtAndroidSensorManager/QAndroidSensorManager.h>
 #include <QtCore/QMutexLocker>
-#include <QJniHelpers/QAndroidQPAPluginGap.h>
-#include <QJniHelpers/TJniObjectLinker.h>
+#include <cmath>
 
-
-Q_DECL_EXPORT void JNICALL Java_AccelerometerProvider_onUpdate(JNIEnv * env, jobject, jlong inst)
-{
-	Q_UNUSED(env);
-
-	JNI_LINKER_OBJECT(QAndroidAccelerometer, inst, proxy)
-	proxy->onUpdate();
-}
-
-
-static const JNINativeMethod methods[] = {
-	{"getActivity",
-	 "()Landroid/app/Activity;",
-	 reinterpret_cast<void *>(QAndroidQPAPluginGap::getActivityNoThrow)},
-	{"onUpdate", "(J)V", reinterpret_cast<void *>(Java_AccelerometerProvider_onUpdate)},
-};
-
-
-JNI_LINKER_IMPL(
-	QAndroidAccelerometer, "ru/dublgis/androidaccelerometer/AccelerometerProvider", methods)
 
 
 QAndroidAccelerometer::QAndroidAccelerometer(QObject * parent)
 	: QObject(parent)
-	, jniLinker_(new JniObjectLinker(this))
 	, started_(false)
 {
+	sensor_manager_ = new QAndroidSensorManager(this);
+
+	QObject::connect(
+		sensor_manager_.data(),
+		&QAndroidSensorManager::dataUpdated,
+		this,
+		&QAndroidAccelerometer::onUpdate
+	);
 }
 
 
@@ -78,23 +63,23 @@ QAndroidAccelerometer::~QAndroidAccelerometer()
 }
 
 
+void QAndroidAccelerometer::preloadJavaClasses()
+{
+	QAndroidSensorManager::preloadJavaClasses();
+}
+
+
 void QAndroidAccelerometer::start(int32_t delayMicroSeconds /*= -1*/, int32_t latencyMicroSeconds /*= -1*/)
 {
-	if (!started_ && isJniReady())
-	{
-		started_ = jni()->callParamBoolean(
-			"start", "II", static_cast<jint>(delayMicroSeconds), static_cast<jint>(latencyMicroSeconds));
-	}
+	const static int32_t type = sensor_manager_->getSensorType("TYPE_ACCELEROMETER");
+	started_ = sensor_manager_->start(type, delayMicroSeconds, latencyMicroSeconds);
 }
 
 
 void QAndroidAccelerometer::stop()
 {
-	if (isJniReady())
-	{
-		jni()->callVoid("stop");
-		started_ = false;
-	}
+	sensor_manager_->stop();
+	started_ = false;
 }
 
 
@@ -106,18 +91,26 @@ bool QAndroidAccelerometer::isStarted() const
 
 float QAndroidAccelerometer::getAcceleration()
 {
-	jfloat data;
+	float square = 0.f;
 
-	if (isJniReady())
-	{
-		data = jni()->callFloat("getAccelerationModule");
-	}
+	assert(3 == data_.size());
 
-	return data;
+	std::for_each(
+		data_.cbegin(),
+		data_.cend(),
+		[&square](const float val)
+		{
+			square += val * val;
+		}
+	);
+
+
+	return std::sqrtf(square);
 }
 
 
-void QAndroidAccelerometer::onUpdate()
+void QAndroidAccelerometer::onUpdate(int32_t sensor_type, int64_t timestamp_ns, std::vector<float> data)
 {
+	data_ = data;
 	emit accelerationUpdated();
 }

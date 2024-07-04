@@ -15,8 +15,7 @@ if (ANDROID)
     target_link_libraries(${MODULE_NAME}
         PUBLIC
             Qt5::Core
-        PRIVATE
-            qtandroidextensions::QtJniHelpers
+            qtandroidextensions::QtAndroidSensorManager
     )
 
     target_include_directories(${MODULE_NAME}

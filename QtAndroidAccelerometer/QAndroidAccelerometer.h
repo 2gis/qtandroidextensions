@@ -36,22 +36,24 @@
 
 #pragma once
 
-#include <QtCore/QScopedPointer>
-#include <QtCore/QWeakPointer>
 #include <QtCore/QMutex>
-#include <QJniHelpers/QJniHelpers.h>
-#include <QJniHelpers/IJniObjectLinker.h>
+#include <QtCore/QObject>
+#include <QtCore/QPointer>
+#include <vector>
+
+
+class QAndroidSensorManager;
 
 
 class QAndroidAccelerometer : public QObject
 {
 	Q_OBJECT
-	JNI_LINKER_DECL(QAndroidAccelerometer)
 
 public:
 	QAndroidAccelerometer(QObject * parent);
 	virtual ~QAndroidAccelerometer();
 
+	static void preloadJavaClasses();
 	void start(int32_t delayMicroSeconds = -1, int32_t latencyMicroSeconds = -1);
 	void stop();
 	bool isStarted() const;
@@ -62,9 +64,10 @@ signals:
 	void accelerationUpdated();
 
 private:
-	friend void JNICALL Java_AccelerometerProvider_onUpdate(JNIEnv * env, jobject, jlong inst);
-	void onUpdate();
+	void onUpdate(int32_t sensor_type, int64_t timestamp_ns, std::vector<float> data);
 
 private:
 	bool started_;
+	QPointer<QAndroidSensorManager> sensor_manager_;
+	std::vector<float> data_;
 };
