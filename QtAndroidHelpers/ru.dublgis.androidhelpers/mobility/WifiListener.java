@@ -54,41 +54,32 @@ import ru.dublgis.androidhelpers.Log;
 // Listens for wifi scan results. Passes them.
 public class WifiListener extends BroadcastReceiver
 {
-	final static String LOG_TAG = "Grym/WifiListener";
+	final static String TAG = "Grym/WifiListener";
 	final private static boolean verbose = false;
 	private long mNativePtr = 0;
 	private WifiManager mWifiMan = null;
 
 
-	public WifiListener(long native_ptr)
-	{
+	public WifiListener(long native_ptr) {
 		mNativePtr = native_ptr;
 	}
 
 
 	//! Called from C++ to notify us that the associated C++ object is being destroyed.
-	public synchronized void cppDestroyed()
-	{
+	public synchronized void cppDestroyed() {
 		mNativePtr = 0;
 	}
 
 
 	// start listening for scan results and report them
-	public synchronized boolean start()
-	{
-		try
-		{
-			Log.d(LOG_TAG, "WifiListener start ");
-
-			if (mWifiMan != null)
-			{
-				return false;
-			}
+	public synchronized boolean start() {
+		try {
+			Log.d(TAG, "WifiListener start ");
 
 			mWifiMan = (WifiManager)getContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
-			if (mWifiMan == null)
-			{
+			if (null == mWifiMan) {
+				Log.e(TAG, "No WifiManager available");
 				return false;
 			}
 
@@ -107,42 +98,31 @@ public class WifiListener extends BroadcastReceiver
 			}*/
 
 			return true;
-		}
-		catch( Exception e )
-		{
-			Log.e(LOG_TAG, "Exception while starting WifiListener: "+e);
+		} catch( Exception e ) {
+			Log.e(TAG, "Exception while starting WifiListener ", e);
 			return false;
 		}
 	}
 
 
-	public synchronized void stop()
-	{
-		Log.d(LOG_TAG, "WifiListener stop");
+	public synchronized void stop() {
+		Log.d(TAG, "WifiListener stop");
 		
-		try
-		{
-			if (mWifiMan != null)
-			{
+		try {
+			if (mWifiMan != null) {
 				getContext().unregisterReceiver(this);
 			}
-		}
-		catch (Exception e)
-		{
-			Log.e(LOG_TAG, "Exception while stopping: "+e);
-		}
-		finally
-		{
+		} catch (Exception e) {
+			Log.e(TAG, "Exception while stopping: ", e);
+		} finally {
 			mWifiMan = null;
 		}
 	}
 
 	// on new scan results
-	public synchronized void onReceive(Context c, Intent intent)
-	{
-		if (verbose)
-		{
-			Log.d(LOG_TAG, "WifiListener onReceive");
+	public synchronized void onReceive(Context c, Intent intent) {
+		if (verbose) {
+			Log.d(TAG, "WifiListener onReceive");
 		}
 
 		scanUpdate(mNativePtr);
@@ -157,42 +137,32 @@ public class WifiListener extends BroadcastReceiver
 	// So just a string with a table of all Wi Fi spots seen pass us let;
 	// and on C++ side will better and without oveflowing JNI reference
 	// table it parsed be.
-	public boolean getLastWifiScanResultsTable()
-	{
-		try
-		{
-			if (verbose)
-			{
-				Log.i(LOG_TAG, "getLastWifiScanResultsTable()");
+	public boolean getLastWifiScanResultsTable() {
+		try {
+			if (verbose) {
+				Log.i(TAG, "getLastWifiScanResultsTable()");
 			}
 
-			WifiManager wm = (WifiManager)getContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-
-			if (wm == null)
-			{
+			if (null == mWifiMan) {
+				Log.e(TAG, "No WifiManager available");
 				return false;
 			}
 
-			List<ScanResult> srlist = wm.getScanResults();
+			List<ScanResult> srlist = mWifiMan.getScanResults();
 
-			if (srlist==null || srlist.size()==0)
-			{
+			if (srlist==null || srlist.size()==0) {
 				return false;
 			}
 
-			for (Iterator<ScanResult> it = srlist.iterator(); it.hasNext(); )
-			{
+			for (Iterator<ScanResult> it = srlist.iterator(); it.hasNext(); ) {
 				ScanResult sr = it.next();
-
 				setScanResult(mNativePtr, sr);
-
 			}
 
 			return true;
 		}
-		catch (Exception e)
-		{
-			Log.e(LOG_TAG, "getLastWifiScanResultsTable exception: "+e);
+		catch (Exception e) {
+			Log.e(TAG, "getLastWifiScanResultsTable exception: ", e);
 			return false;
 		}
 	}
