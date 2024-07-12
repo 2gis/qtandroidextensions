@@ -68,6 +68,7 @@ private:
 public slots:
 	void start();
 	void stop();
+	bool startScan();
 
 signals:
 	void signalsUpdated();

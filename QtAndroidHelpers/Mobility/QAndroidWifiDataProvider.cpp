@@ -101,6 +101,17 @@ void QAndroidWifiDataProvider::start()
 }
 
 
+bool QAndroidWifiDataProvider::startScan()
+{
+	if (started_ && isJniReady())
+	{
+		return jni()->callBool("startScan");
+	}
+
+	return false;
+}
+
+
 void QAndroidWifiDataProvider::stop()
 {
 	if (isJniReady())

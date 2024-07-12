@@ -44,11 +44,20 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.net.wifi.ScanResult;
+import android.os.Build;
 import android.os.SystemClock;
+import android.provider.Settings;
+import androidx.core.content.ContextCompat;
 
 import ru.dublgis.androidhelpers.Log;
+
+import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static android.Manifest.permission.CHANGE_WIFI_STATE;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 
 // Listens for wifi scan results. Passes them.
@@ -74,34 +83,53 @@ public class WifiListener extends BroadcastReceiver
 	// start listening for scan results and report them
 	public synchronized boolean start() {
 		try {
-			Log.d(TAG, "WifiListener start ");
+			Log.d(TAG, "WifiListener start");
 
 			mWifiMan = (WifiManager)getContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
 			if (null == mWifiMan) {
-				Log.e(TAG, "No WifiManager available");
+				Log.e(TAG, "No WifiManager available on start");
 				return false;
 			}
 
 			getContext().registerReceiver(this,
 				new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
 
-			/* this is not needed -- we will get networks anyway when they are available
-			if (mWifiMan.isWifiEnabled())
-			{
-			boolean s = mWifiMan.startScan();
-			if (!s)
-			{
-			mWifiMan = null;
-			return false;
-			}
-			}*/
-
-			return true;
-		} catch( Exception e ) {
+			return startScan();
+		} catch(Throwable e) {
 			Log.e(TAG, "Exception while starting WifiListener ", e);
 			return false;
 		}
+	}
+
+
+	public synchronized boolean startScan() {
+		Log.w(TAG, "WifiListener startScan");
+		if (null == mWifiMan) {
+			Log.w(TAG, "No WifiManager available on startScan");
+			return false;
+		}
+
+		try {
+			final Context ctx = getContext();
+			final boolean fine_loc_granted = (PERMISSION_GRANTED == ContextCompat.checkSelfPermission(ctx, ACCESS_FINE_LOCATION));
+			final boolean coarse_loc_granted = (PERMISSION_GRANTED == ContextCompat.checkSelfPermission(ctx, ACCESS_COARSE_LOCATION));
+			final boolean wifi_state_granted = (PERMISSION_GRANTED == ContextCompat.checkSelfPermission(ctx, CHANGE_WIFI_STATE));
+			final boolean settings_loc_enabled = isLocationEnabled(ctx);
+			final int targetSdkVersion = ctx.getApplicationInfo().targetSdkVersion;
+
+			// see https://developer.android.com/develop/connectivity/wifi/wifi-scan#wifi-scan-permissions
+			if ((Build.VERSION.SDK_INT < 28 && (fine_loc_granted || coarse_loc_granted || wifi_state_granted))
+				|| (Build.VERSION.SDK_INT == 28 && wifi_state_granted && settings_loc_enabled && (fine_loc_granted || coarse_loc_granted))
+				|| (Build.VERSION.SDK_INT >= 29 && wifi_state_granted && settings_loc_enabled && targetSdkVersion >= 29 && fine_loc_granted)
+				|| (Build.VERSION.SDK_INT >= 29 && wifi_state_granted && settings_loc_enabled && targetSdkVersion < 29 && (fine_loc_granted || coarse_loc_granted))
+			) {
+				return mWifiMan.startScan();
+			}
+		} catch(Throwable e) {
+			Log.e(TAG, "Exception while starting WifiListener ", e);
+		}
+		return false;
 	}
 
 
@@ -112,10 +140,8 @@ public class WifiListener extends BroadcastReceiver
 			if (mWifiMan != null) {
 				getContext().unregisterReceiver(this);
 			}
-		} catch (Exception e) {
+		} catch(Throwable e) {
 			Log.e(TAG, "Exception while stopping: ", e);
-		} finally {
-			mWifiMan = null;
 		}
 	}
 
@@ -144,7 +170,7 @@ public class WifiListener extends BroadcastReceiver
 			}
 
 			if (null == mWifiMan) {
-				Log.e(TAG, "No WifiManager available");
+				Log.e(TAG, "No WifiManager available on getLastWifiScanResultsTable");
 				return false;
 			}
 
@@ -161,12 +187,31 @@ public class WifiListener extends BroadcastReceiver
 
 			return true;
 		}
-		catch (Exception e) {
+		catch(Throwable e) {
 			Log.e(TAG, "getLastWifiScanResultsTable exception: ", e);
 			return false;
 		}
 	}
 
+
+	@SuppressWarnings("deprecation")
+	public static Boolean isLocationEnabled(Context context) {
+		try {
+			if (Build.VERSION.SDK_INT >= 28) { // Android 9
+				// This is a new method provided in API 28
+				LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+				return null != lm && lm.isLocationEnabled();
+			} else {
+				// This was deprecated in API 28
+				int mode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE,
+						Settings.Secure.LOCATION_MODE_OFF);
+				return (mode != Settings.Secure.LOCATION_MODE_OFF);
+			}
+		} catch(Throwable e) {
+			Log.e(TAG, "isLocationEnabled exception: ", e);
+			return false;
+		}
+	}
 
 	// Will call getLastWifiScanResultsTable() to update WiFi status
 	private native void scanUpdate(long native_ptr);
