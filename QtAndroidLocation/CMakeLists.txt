@@ -13,6 +13,8 @@ set(SRC_LIST
     QGeoPositionInfoSourceAndroidGms.h
     QGeoPositionInfoSourceAndroidPassive.cpp
     QGeoPositionInfoSourceAndroidPassive.h
+    QGeoPositionInfoSourceAndroidNetwork.cpp
+    QGeoPositionInfoSourceAndroidNetwork.h
     QGeoPositionInfoSourceAndroidSatellite.cpp
     QGeoPositionInfoSourceAndroidSatellite.h
     QLocationManagerProvidersListener.cpp
@@ -28,6 +30,7 @@ if (ANDROID)
         QAndroidGmsLocationProvider.h
         QGeoPositionInfoSourceAndroidGms.h
         QGeoPositionInfoSourceAndroidPassive.h
+        QGeoPositionInfoSourceAndroidNetwork.h
         QGeoPositionInfoSourceAndroidSatellite.h
         QLocationManagerProvidersListener.h
         QNmeaListener.h
