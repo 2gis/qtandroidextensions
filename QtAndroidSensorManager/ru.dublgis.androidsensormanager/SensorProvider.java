@@ -186,11 +186,16 @@ public class SensorProvider implements SensorEventListener {
 
 
 	public boolean isStarted(int sensorType) {
-		if (mSensorData.containsKey(sensorType)) {
+		try {
+			if (mSensorData.containsKey(sensorType)) {
+				return false;
+			}
+			Data data = mSensorData.get(sensorType);
+			return data.mRegistered;
+		} catch(final Throwable e) {
+			Log.e(TAG, "Exception in isStarted(" + sensorType + "): ", e);
 			return false;
 		}
-		Data data = mSensorData.get(sensorType);
-		return data.mRegistered;
 	}
 
 
@@ -204,7 +209,6 @@ public class SensorProvider implements SensorEventListener {
 		try {
 			synchronized(this) {
 				int sensorType = event.sensor.getType();
-
 
 				if (mSensorData.containsKey(sensorType)) {
 
@@ -260,52 +264,57 @@ public class SensorProvider implements SensorEventListener {
 
 	public float getAzimuthByRotationVector(boolean applyDisplayRotation) {
 		double ret = 360.0;
-
-		if (applyDisplayRotation) {
-			ret += displayRatation();
-		}
-
-		synchronized(this) {
-			if (mSensorData.containsKey(Sensor.TYPE_ROTATION_VECTOR)) {
-				float[] rotationMatrix = new float[9];
-				float[] orientationVector = new float[3];
-
-				final Data data = mSensorData.get(Sensor.TYPE_ROTATION_VECTOR);
-
-				SensorManager.getRotationMatrixFromVector(rotationMatrix, data.mData);
-				ret = Math.toDegrees(SensorManager.getOrientation(rotationMatrix, orientationVector)[0]);
+		try {
+			if (applyDisplayRotation) {
+				ret += displayRatation();
 			}
-		}
 
-		ret = ret % 360.0;
+			synchronized(this) {
+				if (mSensorData.containsKey(Sensor.TYPE_ROTATION_VECTOR)) {
+					float[] rotationMatrix = new float[9];
+					float[] orientationVector = new float[3];
+
+					final Data data = mSensorData.get(Sensor.TYPE_ROTATION_VECTOR);
+
+					SensorManager.getRotationMatrixFromVector(rotationMatrix, data.mData);
+					ret = Math.toDegrees(SensorManager.getOrientation(rotationMatrix, orientationVector)[0]);
+				}
+			}
+
+			ret = ret % 360.0;
+		} catch (final Throwable e) {
+			Log.e(TAG, "getAzimuthByRotationVector exception: ", e);
+		}
 		return (float)ret;
 	}
 
 
 	public float getAzimuthByMagneticField(boolean applyDisplayRotation) {
 		double ret = 360.0;
-
-		if (applyDisplayRotation) {
-			ret += displayRatation();
-		}
-
-		synchronized(this) {
-			if (mSensorData.containsKey(Sensor.TYPE_ACCELEROMETER) && mSensorData.containsKey(Sensor.TYPE_MAGNETIC_FIELD)) {
-				float[] rotationMatrix = new float[9];
-				float[] orientationVector = new float[3];
-
-				final Data dataAccelerometer = mSensorData.get(Sensor.TYPE_ACCELEROMETER);
-				final Data dataMagnetic = mSensorData.get(Sensor.TYPE_MAGNETIC_FIELD);
-
-				SensorManager.getRotationMatrix(rotationMatrix, null, dataAccelerometer.mData, dataMagnetic.mData);
-				ret += Math.toDegrees(SensorManager.getOrientation(rotationMatrix, orientationVector)[0]);
+		try {
+			if (applyDisplayRotation) {
+				ret += displayRatation();
 			}
-		}
 
-		while (ret > 360) {
-			ret -= 360;
-		}
+			synchronized(this) {
+				if (mSensorData.containsKey(Sensor.TYPE_ACCELEROMETER) && mSensorData.containsKey(Sensor.TYPE_MAGNETIC_FIELD)) {
+					float[] rotationMatrix = new float[9];
+					float[] orientationVector = new float[3];
 
+					final Data dataAccelerometer = mSensorData.get(Sensor.TYPE_ACCELEROMETER);
+					final Data dataMagnetic = mSensorData.get(Sensor.TYPE_MAGNETIC_FIELD);
+
+					SensorManager.getRotationMatrix(rotationMatrix, null, dataAccelerometer.mData, dataMagnetic.mData);
+					ret += Math.toDegrees(SensorManager.getOrientation(rotationMatrix, orientationVector)[0]);
+				}
+			}
+
+			while (ret > 360) {
+				ret -= 360;
+			}
+		} catch (final Throwable e) {
+			Log.e(TAG, "getAzimuthByMagneticField exception: ", e);
+		}
 		return (float)ret;
 	}
 
