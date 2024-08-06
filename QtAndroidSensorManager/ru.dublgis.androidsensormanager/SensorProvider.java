@@ -47,6 +47,8 @@ import android.hardware.SensorEvent;
 import android.view.Surface;
 import android.os.Build;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -145,12 +147,17 @@ public class SensorProvider implements SensorEventListener {
 	public void stopAll() {
 		Log.i(TAG, "stopAll");
 		try {
+			// stop() removes items from mSensorData, so we can't just iterate over it
+			// and call stop(), that would case ConcurrentModificationException.
+			final List<Integer> sensorTypes = new ArrayList<Integer>(mSensorData.size());
 			for (Data data : mSensorData.values()) {
-				final int typ = data.mSensor.getType();
+				sensorTypes.add(data.mSensor.getType());
+			}
+			for (Integer sensorType : sensorTypes) {
 				try {
-					stop(typ);
+					stop(sensorType);
 				} catch (final Throwable e) {
-					Log.e(TAG, "Exception stopping sensor type " + typ, e);
+					Log.e(TAG, "Exception stopping sensor type=" + sensorType, e);
 				}
 			}
 		} catch (final Throwable e) {
