@@ -239,7 +239,7 @@ public class SensorProvider implements SensorEventListener {
 	}
 
 
-	public float displayRatation() {
+	public float displayRotation() {
 		try {
 			int rotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
 
@@ -266,7 +266,7 @@ public class SensorProvider implements SensorEventListener {
 		double ret = 360.0;
 		try {
 			if (applyDisplayRotation) {
-				ret += displayRatation();
+				ret += displayRotation();
 			}
 
 			synchronized(this) {
@@ -293,7 +293,7 @@ public class SensorProvider implements SensorEventListener {
 		double ret = 360.0;
 		try {
 			if (applyDisplayRotation) {
-				ret += displayRatation();
+				ret += displayRotation();
 			}
 
 			synchronized(this) {
@@ -305,7 +305,14 @@ public class SensorProvider implements SensorEventListener {
 					final Data dataMagnetic = mSensorData.get(Sensor.TYPE_MAGNETIC_FIELD);
 
 					SensorManager.getRotationMatrix(rotationMatrix, null, dataAccelerometer.mData, dataMagnetic.mData);
-					ret += Math.toDegrees(SensorManager.getOrientation(rotationMatrix, orientationVector)[0]);
+					float[] orientation = SensorManager.getOrientation(rotationMatrix, orientationVector);
+					if (orientation == null) {
+						Log.w(TAG, "Null orientation returned for compass");
+					} else if (orientation.length < 1) {
+						Log.w(TAG, "Empty orientation returned for compass");
+					} else {
+						ret += Math.toDegrees(orientation[0]);
+					}
 				}
 			}
 
