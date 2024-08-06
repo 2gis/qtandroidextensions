@@ -144,9 +144,17 @@ public class SensorProvider implements SensorEventListener {
 
 	public void stopAll() {
 		Log.i(TAG, "stopAll");
-
-		for (Data data : mSensorData.values()) {
-			stop(data.mSensor.getType());
+		try {
+			for (Data data : mSensorData.values()) {
+				final int typ = data.mSensor.getType();
+				try {
+					stop(typ);
+				} catch (final Throwable e) {
+					Log.e(TAG, "Exception stopping sensor type " + typ, e);
+				}
+			}
+		} catch (final Throwable e) {
+			Log.e(TAG, "Exception in stopAll: ", e);
 		}
 	}
 
