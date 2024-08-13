@@ -45,7 +45,6 @@ class QAndroidOffscreenEditText
 	Q_ENUMS(AndroidAutofillType)
 public:
 	QAndroidOffscreenEditText(const QString & object_name, const QSize & def_size, QObject * parent = 0);
-	virtual ~QAndroidOffscreenEditText();
 
 	/*!
 	 * This function should be called from main() to make sure that it all will work from QML threads.
@@ -199,11 +198,11 @@ public:
 	static const int
 		ANDROID_PAINT_ANTI_ALIAS_FLAG			= 0x00000001,
 		ANDROID_PAINT_DEV_KERN_TEXT_FLAG		= 0x00000100,
-		ANDROID_PAINT_DITHER_FLAG			= 0x00000004,
+		ANDROID_PAINT_DITHER_FLAG				= 0x00000004,
 		ANDROID_PAINT_EMBEDDED_BITMAP_TEXT_FLAG	= 0x00000400,
 		ANDROID_PAINT_FAKE_BOLD_TEXT_FLAG		= 0x00000020,
 		ANDROID_PAINT_FILTER_BITMAP_FLAG		= 0x00000002,
-		ANDROID_PAINT_LINEAR_TEXT_FLAG		= 0x00000040,
+		ANDROID_PAINT_LINEAR_TEXT_FLAG			= 0x00000040,
 		ANDROID_PAINT_STRIKE_THRU_TEXT_FLAG		= 0x00000010,
 		ANDROID_PAINT_SUBPIXEL_TEXT_FLAG		= 0x00000080,
 		ANDROID_PAINT_UNDERLINE_TEXT_FLAG		= 0x00000008;

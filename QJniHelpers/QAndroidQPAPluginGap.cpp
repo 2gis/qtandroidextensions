@@ -374,6 +374,18 @@ void preloadJavaClass(const char * class_name)
 }
 
 
+void preloadJavaClass(const QByteArray & class_name)
+{
+	preloadJavaClass(class_name.constData());
+}
+
+
+void preloadJavaClass(const QString & class_name)
+{
+	preloadJavaClass(class_name.toLatin1().constData());
+}
+
+
 void preloadJavaClasses(const std::initializer_list<const char *> & list)
 {
 	for (const char * const class_name: list)
