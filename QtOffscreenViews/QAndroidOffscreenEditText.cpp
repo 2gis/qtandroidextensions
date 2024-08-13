@@ -39,108 +39,144 @@
 #include "QAndroidOffscreenEditText.h"
 
 
-Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnTextChanged(JNIEnv *, jobject, jlong param, jstring str, jint start, jint before, jint count)
+Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnTextChanged(
+	JNIEnv * env,
+	jobject,
+	jlong param,
+	jstring str,
+	jint start,
+	jint before,
+	jint count)
 {
 	if (param)
 	{
-		void * vp = reinterpret_cast<void*>(param);
-		QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(reinterpret_cast<QAndroidOffscreenView*>(vp));
-		if (edit)
+		if (QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(
+			reinterpret_cast<QAndroidOffscreenView*>(reinterpret_cast<void*>(param))))
 		{
 			try
 			{
-				edit->javaOnTextChanged(QJniEnvPtr().toQString(str), start, before, count);
+				edit->javaOnTextChanged(QJniEnvPtr(env).toQString(str), start, before, count);
 			}
 			catch (const std::exception & e)
 			{
 				qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
 			}
-			return;
 		}
 	}
-	qWarning() << __PRETTY_FUNCTION__ << "Zero param!";
+	else
+	{
+		qWarning() << __PRETTY_FUNCTION__ << "Zero param!";
+	}
 }
 
-Q_DECL_EXPORT jboolean JNICALL Java_AndroidOffscreenEditText_nativeOnKey(JNIEnv *, jobject, jlong param, jboolean down, jint keycode)
+Q_DECL_EXPORT jboolean JNICALL Java_AndroidOffscreenEditText_nativeOnKey(
+	JNIEnv *,
+	jobject,
+	jlong param,
+	jboolean down,
+	jint keycode)
 {
 	if (param)
 	{
-		void * vp = reinterpret_cast<void*>(param);
-		QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(reinterpret_cast<QAndroidOffscreenView*>(vp));
-		if (edit)
+		if (QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(
+			reinterpret_cast<QAndroidOffscreenView*>(reinterpret_cast<void*>(param))))
 		{
-			return jboolean(edit->javaOnKey(down? true: false, keycode));
+			return static_cast<jboolean>(edit->javaOnKey((down)? true : false, keycode));
 		}
 	}
-	qWarning() << __PRETTY_FUNCTION__ << "Zero param!";
+	else
+	{
+		qWarning() << __PRETTY_FUNCTION__ << "Zero param!";
+	}
 	return JNI_FALSE;
 }
 
-Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnEditorAction(JNIEnv *, jobject, jlong param, jint action)
+Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnEditorAction(
+	JNIEnv *,
+	jobject,
+	jlong param,
+	jint action)
 {
 	if (param)
 	{
-		void * vp = reinterpret_cast<void*>(param);
-		QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(reinterpret_cast<QAndroidOffscreenView*>(vp));
-		if (edit)
+		if (QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(
+			reinterpret_cast<QAndroidOffscreenView*>(reinterpret_cast<void*>(param))))
 		{
 			edit->javaOnEditorAction(action);
-			return;
 		}
 	}
-	qWarning() << __PRETTY_FUNCTION__ << "Zero param!";
+	else
+	{
+		qWarning() << __PRETTY_FUNCTION__ << "Zero param!";
+	}
 }
 
-Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeSetSelectionInfo(JNIEnv *, jobject, jlong param, jint top, jint bottom)
+Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeSetSelectionInfo(
+	JNIEnv *,
+	jobject,
+	jlong param,
+	jint top,
+	jint bottom)
 {
 	if (param)
 	{
-		void * vp = reinterpret_cast<void*>(param);
-		QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(reinterpret_cast<QAndroidOffscreenView*>(vp));
-		if (edit)
+		if (QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(
+			reinterpret_cast<QAndroidOffscreenView*>(reinterpret_cast<void*>(param))))
 		{
 			QMetaObject::invokeMethod(edit, "javaSetSelectionInfo", Q_ARG(int, top),  Q_ARG(int, bottom));
-			return;
 		}
 	}
-	qWarning() << __PRETTY_FUNCTION__ << "Zero param!";
+	else
+	{
+		qWarning() << __PRETTY_FUNCTION__ << "Zero param!";
+	}
 }
 
-Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnContentHeightChanged(JNIEnv *, jobject, jlong param, jint height)
+Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnContentHeightChanged(
+	JNIEnv *,
+	jobject,
+	jlong param,
+	jint height)
 {
 	if (param)
 	{
-		void * vp = reinterpret_cast<void*>(param);
-		QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(reinterpret_cast<QAndroidOffscreenView*>(vp));
-		if (edit)
+		if (QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(
+			reinterpret_cast<QAndroidOffscreenView*>(reinterpret_cast<void*>(param))))
 		{
 			QMetaObject::invokeMethod(edit, "javaOnContentHeightChanged", Q_ARG(int, height));
-			return;
 		}
 	}
-	qWarning() << __PRETTY_FUNCTION__ << "Zero param!";
+	else
+	{
+		qWarning() << __PRETTY_FUNCTION__ << "Zero param!";
+	}
 }
 
-Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnHasAcceptableInputChanged(JNIEnv *, jobject, jlong param, jboolean hasAcceptableInput)
+Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnHasAcceptableInputChanged(
+	JNIEnv *,
+	jobject,
+	jlong param,
+	jboolean hasAcceptableInput)
 {
 	if (param)
 	{
-		void * vp = reinterpret_cast<void*>(param);
-		QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(reinterpret_cast<QAndroidOffscreenView*>(vp));
-		if (edit)
+		if (QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(
+			reinterpret_cast<QAndroidOffscreenView*>(reinterpret_cast<void*>(param))))
 		{
 			QMetaObject::invokeMethod(edit, "javaOnHasAcceptableInputChanged", Q_ARG(bool, hasAcceptableInput ? true : false));
-			return;
 		}
 	}
-	qWarning() << __PRETTY_FUNCTION__ << "Zero param!";
+	else
+	{
+		qWarning() << __PRETTY_FUNCTION__ << "Zero param!";
+	}
 }
 
 QAndroidOffscreenEditText::QAndroidOffscreenEditText(
 		const QString & object_name,
 		const QSize & def_size,
 		QObject * parent)
-	: QAndroidOffscreenView(QLatin1String("OffscreenEditText"), object_name, def_size, parent)
+	: QAndroidOffscreenView(QStringLiteral("OffscreenEditText"), object_name, def_size, parent)
 	, paint_flags_(ANDROID_PAINT_DEV_KERN_TEXT_FLAG | ANDROID_PAINT_ANTI_ALIAS_FLAG)
 {
 	setAttachingMode(true);
@@ -149,12 +185,12 @@ QAndroidOffscreenEditText::QAndroidOffscreenEditText(
 		if (QJniObject & view = offscreenView())
 		{
 			view.registerNativeMethods({
-				{"nativeOnTextChanged", "(JLjava/lang/String;III)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnTextChanged)},
-				{"nativeOnKey", "(JZI)Z", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnKey)},
-				{"nativeOnEditorAction", "(JI)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnEditorAction)},
-				{"nativeSetSelectionInfo", "(JII)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeSetSelectionInfo)},
-				{"nativeOnContentHeightChanged", "(JI)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnContentHeightChanged)},
-				{"nativeOnHasAcceptableInputChanged", "(JZ)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnHasAcceptableInputChanged)},
+				{ "nativeOnTextChanged", "(JLjava/lang/String;III)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnTextChanged) },
+				{ "nativeOnKey", "(JZI)Z", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnKey) },
+				{ "nativeOnEditorAction", "(JI)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnEditorAction) },
+				{ "nativeSetSelectionInfo", "(JII)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeSetSelectionInfo) },
+				{ "nativeOnContentHeightChanged", "(JI)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnContentHeightChanged) },
+				{ "nativeOnHasAcceptableInputChanged", "(JZ)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnHasAcceptableInputChanged) },
 			});
 		}
 	}
@@ -164,17 +200,13 @@ QAndroidOffscreenEditText::QAndroidOffscreenEditText(
 	}
 }
 
-QAndroidOffscreenEditText::~QAndroidOffscreenEditText()
-{
-}
-
 void QAndroidOffscreenEditText::preloadJavaClasses()
 {
 	try
 	{
 		QAndroidOffscreenView::preloadJavaClasses();
 		QAndroidQPAPluginGap::preloadJavaClass(
-			(getDefaultJavaClassPath() + QLatin1String("OffscreenEditText")).toLatin1());
+			getDefaultJavaClassPath() + QStringLiteral("OffscreenEditText"));
 	}
 	catch (const std::exception & e)
 	{

@@ -120,6 +120,8 @@ jobject JNICALL getCurrentContextNoThrow(JNIEnv * env = nullptr, jobject jo = nu
  * objects of the class could later be instantiated from threads not created in Java.
  */
 void preloadJavaClass(const char * class_name);
+void preloadJavaClass(const QByteArray & class_name);
+void preloadJavaClass(const QString & class_name);
 void preloadJavaClasses(const std::initializer_list<const char *> & list);
 
 //! Preload classes used by QAndroidQPAPluginGap itself.
