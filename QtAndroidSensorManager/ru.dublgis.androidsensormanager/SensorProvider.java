@@ -276,6 +276,15 @@ public class SensorProvider implements SensorEventListener {
 
 					final Data data = mSensorData.get(Sensor.TYPE_ROTATION_VECTOR);
 
+					if (null == data) {
+						Log.e(TAG, "data is null");
+						return 0.0f;
+					}
+					if (null == data.mData) {
+						Log.e(TAG, "data.mData is null");
+						return 0.0f;
+					}
+
 					SensorManager.getRotationMatrixFromVector(rotationMatrix, data.mData);
 					ret = Math.toDegrees(SensorManager.getOrientation(rotationMatrix, orientationVector)[0]);
 				}
@@ -303,6 +312,23 @@ public class SensorProvider implements SensorEventListener {
 
 					final Data dataAccelerometer = mSensorData.get(Sensor.TYPE_ACCELEROMETER);
 					final Data dataMagnetic = mSensorData.get(Sensor.TYPE_MAGNETIC_FIELD);
+
+					if (null == dataAccelerometer) {
+						Log.e(TAG, "dataAccelerometer is null");
+						return 0.0f;
+					}
+					if (null == dataMagnetic) {
+						Log.e(TAG, "dataMagnetic is null");
+						return 0.0f;
+					}
+					if (null == dataAccelerometer.mData) {
+						Log.e(TAG, "dataAccelerometer.mData is null");
+						return 0.0f;
+					}
+					if (null == dataMagnetic.mData) {
+						Log.e(TAG, "dataMagnetic.mData is null");
+						return 0.0f;
+					}
 
 					SensorManager.getRotationMatrix(rotationMatrix, null, dataAccelerometer.mData, dataMagnetic.mData);
 					float[] orientation = SensorManager.getOrientation(rotationMatrix, orientationVector);
