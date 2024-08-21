@@ -177,7 +177,9 @@ public class SensorProvider implements SensorEventListener {
 		try {
 			Log.i(TAG, "Unregistering listener for sensorType " + sensorType);
 			Data data = mSensorData.get(sensorType);
-			mSensorManager.unregisterListener(this, data.mSensor);
+			if (null != data) {
+				mSensorManager.unregisterListener(this, data.mSensor);
+			}
 			mSensorData.remove(sensorType);
 		} catch(final Throwable e) {
 			Log.e(TAG, "Failed to stop sensor listener: ", e);
