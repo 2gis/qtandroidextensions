@@ -93,6 +93,21 @@ void showApplicationSettings()
 }
 
 
+void showGeneralDeviceSettings()
+{
+	try
+	{
+		QJniClass du(c_desktoputils_class_name_);
+		QAndroidQPAPluginGap::Context activity;
+		du.callStaticParamVoid("showGeneralDeviceSettings", "Landroid/content/Context;", activity.jObject());
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in showGeneralDeviceSettings:" << e.what();
+	}
+}
+
+
 bool sendTo(
 	const QString & chooser_caption,
 	const QString & text,
@@ -720,6 +735,35 @@ bool notificationsEnabled()
 	}
 	return {};
 	
+}
+
+bool isWiFiScanThrottleEnabled()
+{
+	try
+	{
+		QAndroidQPAPluginGap::Context jcontext;
+		if (!jcontext.jObject())
+		{
+			qCritical() << "No Android Context!";
+			return false;
+		}
+		QJniObject wifiManager(jcontext.callParamObj(
+			"getSystemService"
+			, "java/lang/Object" // "android.net.wifi.WifiManager"
+			, "Ljava/lang/String;"
+			, QJniLocalRef(QStringLiteral("wifi")).jObject()));
+		if (!wifiManager)
+		{
+			qWarning() << "No WifiManager!";
+			return false;
+		}
+		return static_cast<bool>(wifiManager.callBool("isScanThrottleEnabled"));
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in isScanThrottleEnabled: " << e.what();
+	}
+	return false;
 }
 
 } // namespace QAndroidDesktopUtils

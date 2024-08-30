@@ -55,6 +55,8 @@ int getNetworkType();
 
 void showApplicationSettings();
 
+void showGeneralDeviceSettings();
+
 // Send a text to any application in the system.
 bool sendTo(
 	const QString & chooser_caption,
@@ -163,6 +165,8 @@ QString getVulkanVersion();
 
 bool notificationChannelDisabled(const QString & channelId);
 bool notificationsEnabled();
+
+bool isWiFiScanThrottleEnabled();
 
 } // namespace QAndroidDesktopUtils
 

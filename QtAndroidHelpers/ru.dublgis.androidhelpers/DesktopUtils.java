@@ -126,6 +126,21 @@ public class DesktopUtils
         return -1;
     }
 
+    // Open general settings
+    public static void showGeneralDeviceSettings(final Context ctx) {
+        try {
+            final Intent intent = new Intent();
+
+            intent.setAction(Settings.ACTION_SETTINGS);
+            intent.addCategory(Intent.CATEGORY_DEFAULT);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+            ctx.startActivity(intent);
+        } catch (final Throwable e) {
+            Log.e(TAG, "showGeneralDeviceSettings exception: ", e);
+        }
+    }
+
     // Open application settings
     public static void showApplicationSettings(final Context ctx) {
         try {
