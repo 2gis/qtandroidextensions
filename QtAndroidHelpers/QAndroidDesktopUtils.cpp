@@ -741,6 +741,21 @@ bool isWiFiScanThrottleEnabled()
 {
 	try
 	{
+		// Before Android 8 we had no restriction on scan wi-fi networks
+		if (QAndroidQPAPluginGap::apiLevel() <= 27)
+		{
+			return false;
+		}
+
+		// Android 8, 9, 10 has restriction on scan wi-fi networks, but in A10 supports toggle setting
+		if (QAndroidQPAPluginGap::apiLevel() == 28 || QAndroidQPAPluginGap::apiLevel() == 29)
+		{
+			return true;
+		}
+
+		// Android 11 starts support read state toggle WiFiManager
+		// https://developer.android.com/develop/connectivity/wifi/wifi-scan
+
 		QAndroidQPAPluginGap::Context jcontext;
 		if (!jcontext.jObject())
 		{
