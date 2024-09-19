@@ -67,6 +67,7 @@ public class WifiListener extends BroadcastReceiver
 	final private static boolean verbose = false;
 	private long mNativePtr = 0;
 	private WifiManager mWifiMan = null;
+	private boolean mRegistered = false;
 
 
 	public WifiListener(long native_ptr) {
@@ -94,6 +95,7 @@ public class WifiListener extends BroadcastReceiver
 
 			getContext().registerReceiver(this,
 				new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+			mRegistered = true;
 
 			return startScan();
 		} catch(Throwable e) {
@@ -137,7 +139,7 @@ public class WifiListener extends BroadcastReceiver
 		Log.d(TAG, "WifiListener stop");
 		
 		try {
-			if (mWifiMan != null) {
+			if (mWifiMan != null && mRegistered) {
 				getContext().unregisterReceiver(this);
 			}
 		} catch(Throwable e) {
