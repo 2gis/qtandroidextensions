@@ -111,54 +111,67 @@ class OffscreenEditText extends OffscreenView
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count)
             {
-                need_to_reflow_text_ = false;
-                need_to_reflow_hint_ = false;
-                String str = s.toString();
-                synchronized(text_)
-                {
-                    text_ = str;
+                try {
+                    need_to_reflow_text_ = false;
+                    need_to_reflow_hint_ = false;
+                    String str = s.toString();
+                    synchronized(text_)
+                    {
+                        text_ = str;
+                    }
+                    synchronized(nativePtrMutex()) {
+                        nativeOnTextChanged(getNativePtr(), str, start, before, count);
+                    }
+                    updateContentHeight();
+                } catch (final Throwable e) {
+                    Log.e(TAG, "Exception in onTextChanged:", e);
                 }
-                synchronized(nativePtrMutex()) {
-                    nativeOnTextChanged(getNativePtr(), str, start, before, count);
-                }
-                updateContentHeight();
             }
         }
 
         public MyEditText(Context context)
         {
             super(context);
-            Log.i(TAG, "MyEditText constructor");
-            addTextChangedListener(new MyTextWatcher());
+            try {
+                Log.i(TAG, "MyEditText constructor");
+                addTextChangedListener(new MyTextWatcher());
 
-            // Eliminate any system background by setting null background drawable.
-            // Any borders should be drawn on Qt side, because we simply cannot deal with
-            // all these custom vendors backrounds.
-            if (getApiLevel() >= 16)
-            {
-                Log.i(TAG, "MyEditText constructor: using API >= 16 method (setBackground)");
-                setBackground(null);
-            }
-            else
-            {
-                Log.i(TAG, "MyEditText constructor: using API < 16 method (setBackgroundDrawable)");
-                setBackgroundDrawable(null);
+                // Eliminate any system background by setting null background drawable.
+                // Any borders should be drawn on Qt side, because we simply cannot deal with
+                // all these custom vendors backrounds.
+                if (getApiLevel() >= 16)
+                {
+                    Log.i(TAG, "MyEditText constructor: using API >= 16 method (setBackground)");
+                    setBackground(null);
+                }
+                else
+                {
+                    Log.i(TAG, "MyEditText constructor: using API < 16 method (setBackgroundDrawable)");
+                    setBackgroundDrawable(null);
+                }
+            } catch (final Throwable e) {
+                Log.e(TAG, "Exception in MyEditText ctor:", e);
             }
         }
 
         @Override
         public boolean onTextContextMenuItem(int id)
         {
-            if (id == android.R.id.paste && !allow_rich_text_)
-            {
-                if (getApiLevel() >= 23) // Android 6.0
+            try {
+                if (id == android.R.id.paste && !allow_rich_text_)
                 {
-                    id = android.R.id.pasteAsPlainText;
+                    if (getApiLevel() >= 23) // Android 6.0
+                    {
+                        id = android.R.id.pasteAsPlainText;
+                    }
+                    else
+                    {
+                        onInterceptClipDataToPlainText();
+                    }
+                                onInterceptClipDataToPlainText();
                 }
-                else
-                {
-                    onInterceptClipDataToPlainText();
-                }
+            } catch (final Throwable e) {
+                Log.e(TAG, "Exception in onTextContextMenuItem:", e);
             }
             return super.onTextContextMenuItem(id);
         }
@@ -188,7 +201,7 @@ class OffscreenEditText extends OffscreenView
             }
             catch (final Throwable e)
             {
-                Log.e(TAG, "Exception in onInterceptClipDataToPlainText: " + e);
+                Log.e(TAG, "Exception in onInterceptClipDataToPlainText:", e);
             }
         }
 
@@ -218,7 +231,7 @@ class OffscreenEditText extends OffscreenView
             }
             catch (final Throwable e)
             {
-                Log.e(TAG, "Exception in setCursorByDrawableId: " + e);
+                Log.e(TAG, "Exception in setCursorByDrawableId:", e);
             }
         }
 
@@ -232,7 +245,7 @@ class OffscreenEditText extends OffscreenView
             }
             catch (final Throwable e)
             {
-                Log.e(TAG, "Exception in setCursorByDrawableName: " + e);
+                Log.e(TAG, "Exception in setCursorByDrawableName:", e);
             }
         }
 
@@ -265,7 +278,7 @@ class OffscreenEditText extends OffscreenView
                             // paint. We should ignore it as the window painting is handled by Qt.
                             ||  (mainlayout == null || mainlayout.getWidth() <= canvas.getWidth());
                         /*Log.d(TAG, "onDraw: my size is " +
-                            edittext.getWidth() + "x" + edittext.getHeight() +
+                            edittext.getWidth() + "x", edittext.getHeight() +
                             ", canvas: " + canvas.getWidth() + "x" + canvas.getHeight() +
                             ", hwa: " + canvas.isHardwareAccelerated() +
                             ", mainlayout: " + ((mainlayout==null)?"null": "" + mainlayout.getWidth() + "x" + mainlayout.getHeight()) +
@@ -280,55 +293,72 @@ class OffscreenEditText extends OffscreenView
             }
             catch (final Throwable e)
             {
-                Log.e(TAG, "Exception in onDraw: " + e);
+                Log.e(TAG, "Exception in onDraw:", e);
             }
         }
 
         public void onDrawPublic(Canvas canvas)
         {
             // A text view has transparent background by default, which is not what we expect.
-            synchronized(view_variables_mutex_) {
-                canvas.drawColor(Color.argb(fill_a_, fill_r_, fill_g_, fill_b_), PorterDuff.Mode.SRC);
+            try {
+                synchronized(view_variables_mutex_) {
+                    canvas.drawColor(Color.argb(fill_a_, fill_r_, fill_g_, fill_b_), PorterDuff.Mode.SRC);
+                }
+                super.onDraw(canvas);
+            } catch (final Throwable e) {
+                Log.e(TAG, "Exception in onDrawPublic:", e);
             }
-            super.onDraw(canvas);
         }
 
         @Override
         public void invalidate(Rect dirty)
         {
-            super.invalidate(dirty);
-            invalidateOffscreenView();
+            try {
+                super.invalidate(dirty);
+                invalidateOffscreenView();
+            } catch (final Throwable e) {
+                Log.e(TAG, "Exception in invalidate:", e);
+            }
         }
 
         @Override
         public void invalidate(int l, int t, int r, int b)
         {
-            // Log.i(TAG, "MyEditText.invalidate(int l, int t, int r, int b) "+l+", "+t+", "+r+", "+b+
-            //    "; width="+width_+", height="+height_+"; scrollX="+getScrollX()+", scrollY="+getScrollY());
-            super.invalidate(l, t, r, b);
-            int my_r = getScrollX() + getWidth();
-            int my_b = getScrollY() + getHeight();
-            // Check that the invalidated rectangle actually visible
-            if (l > my_r || t > my_b)
-            {
-                // Log.i(TAG, "MyEditText.invalidate: ignoring invisible rectangle");
-                return;
+            try {
+                super.invalidate(l, t, r, b);
+                int my_r = getScrollX() + getWidth();
+                int my_b = getScrollY() + getHeight();
+                // Check that the invalidated rectangle actually visible
+                if (l > my_r || t > my_b)
+                {
+                    return;
+                }
+                invalidateOffscreenView();
+            } catch (final Throwable e) {
+                Log.e(TAG, "Exception in invalidate:", e);
             }
-            invalidateOffscreenView();
         }
 
         @Override
         public void invalidate()
         {
-            super.invalidate();
-            invalidateOffscreenView();
+            try {
+                super.invalidate();
+                invalidateOffscreenView();
+            } catch (final Throwable e) {
+                Log.e(TAG, "Exception in invalidate:", e);
+            }
         }
 
         @Override
         public void requestLayout()
         {
-            super.requestLayout();
-            invalidateOffscreenView();
+            try {
+                super.requestLayout();
+                invalidateOffscreenView();
+            } catch (final Throwable e) {
+                Log.e(TAG, "Exception in requestLayout:", e);
+            }
         }
 
         private int text_layout_width_ = 0;
@@ -336,80 +366,97 @@ class OffscreenEditText extends OffscreenView
         @Override
         protected void onLayout(boolean changed, int left, int top, int right, int bottom)
         {
-            super.onLayout(changed, left, top, right, bottom);
+            try {
+                super.onLayout(changed, left, top, right, bottom);
 
-            // Here's an evil workaround. TextView does not update text flow on relayout.
-            // We should avoid the workaround triggering when text edit bar appears because
-            // it causes input method to restart.
-            int w = right - left;
-            if (changed && w != text_layout_width_)
-            {
-                text_layout_width_ = w;
-                reflowWorkaround();
+                // Here's an evil workaround. TextView does not update text flow on relayout.
+                // We should avoid the workaround triggering when text edit bar appears because
+                // it causes input method to restart.
+                int w = right - left;
+                if (changed && w != text_layout_width_)
+                {
+                    text_layout_width_ = w;
+                    reflowWorkaround();
+                }
+
+                updateSelectionInfo();
+                updateContentHeight();
+            } catch (final Throwable e) {
+                Log.e(TAG, "Exception in onLayout:", e);
             }
-
-            updateSelectionInfo();
-            updateContentHeight();
         }
 
         private void updateSelectionInfo() {
-            Layout layout = getLayout();
-            if (layout == null) {
-                return;
-            }
+            try {
+                Layout layout = getLayout();
+                if (layout == null) {
+                    return;
+                }
 
-            int start = Math.max(getSelectionStart(), 0);
-            int end = Math.max(getSelectionEnd(), 0);
-            int top = layout.getLineTop(layout.getLineForOffset(start));
-            int bottom = layout.getLineBottom(layout.getLineForOffset(end));
-            if (selection_top_ == top && selection_bottom_ == bottom) {
-                return;
-            }
-            selection_top_ = top;
-            selection_bottom_ = bottom;
-            synchronized(nativePtrMutex()) {
-                nativeSetSelectionInfo(getNativePtr(), top, bottom);
+                int start = Math.max(getSelectionStart(), 0);
+                int end = Math.max(getSelectionEnd(), 0);
+                int top = layout.getLineTop(layout.getLineForOffset(start));
+                int bottom = layout.getLineBottom(layout.getLineForOffset(end));
+                if (selection_top_ == top && selection_bottom_ == bottom) {
+                    return;
+                }
+                selection_top_ = top;
+                selection_bottom_ = bottom;
+                synchronized(nativePtrMutex()) {
+                    nativeSetSelectionInfo(getNativePtr(), top, bottom);
+                }
+            } catch (final Throwable e) {
+                Log.e(TAG, "Exception in updateSelectionInfo:", e);
             }
         }
 
         protected void reflowWorkaround()
         {
-            if (!single_line_)
-            {
-                need_to_reflow_text_ = true;
-            }
-            need_to_reflow_hint_ = true;
-
-            // Can't reflow text or hint right now because it causes text selection
-            // markers to become "invincible" if they are visible. So let's post
-            // it for later.
-            (new Handler()).post(new Runnable(){
-                @Override
-                public void run(){
-                    // No need to reflow hint if it's not shown
-                    if (getText().length() > 0)
-                    {
-                        need_to_reflow_hint_ = false;
-                    }
-                    if (need_to_reflow_text_ || need_to_reflow_hint_)
-                    {
-                        // Text selection markers may obtain invicibility if we call setText()
-                        // or setHint(), so let's hide selection markers to be sure they are not there.
-                        int cursor_pos = getSelectionEnd();
-                        if (need_to_reflow_text_)
-                        {
-                            setText(getText());
-                            need_to_reflow_text_ = false;
-                        }
-                        if (need_to_reflow_hint_)
-                        {
-                            setHint(getHint());
-                            need_to_reflow_hint_ = false;
-                        }
-                        setSelection(cursor_pos);
-                    }
+            try {
+                if (!single_line_)
+                {
+                    need_to_reflow_text_ = true;
                 }
-            });
+                need_to_reflow_hint_ = true;
+
+                // Can't reflow text or hint right now because it causes text selection
+                // markers to become "invincible" if they are visible. So let's post
+                // it for later.
+                (new Handler()).post(new Runnable(){
+                    @Override
+                    public void run(){
+                        // No need to reflow hint if it's not shown
+                        try {
+                            if (getText().length() > 0)
+                            {
+                                need_to_reflow_hint_ = false;
+                            }
+                            
+                            if (need_to_reflow_text_ || need_to_reflow_hint_)
+                            {
+                                // Text selection markers may obtain invicibility if we call setText()
+                                // or setHint(), so let's hide selection markers to be sure they are not there.
+                                int cursor_pos = getSelectionEnd();
+                                if (need_to_reflow_text_)
+                                {
+                                    setText(getText());
+                                    need_to_reflow_text_ = false;
+                                }
+                                if (need_to_reflow_hint_)
+                                {
+                                    setHint(getHint());
+                                    need_to_reflow_hint_ = false;
+                                }
+                                setSelection(cursor_pos);
+                            }
+                        } catch (final Throwable e) {
+                            Log.e(TAG, "Exception in reflowWorkaround.run:", e);
+                        }
+                    }
+                });
+            } catch (final Throwable e) {
+                Log.e(TAG, "Exception in reflowWorkaround:", e);
+            }
         }
 
         @Override
@@ -445,8 +492,12 @@ class OffscreenEditText extends OffscreenView
         @Override
         public void onEditorAction(int actionCode)
         {
-            synchronized(nativePtrMutex()) {
-                nativeOnEditorAction(getNativePtr(), actionCode);
+            try {
+                synchronized(nativePtrMutex()) {
+                    nativeOnEditorAction(getNativePtr(), actionCode);
+                }
+            } catch (final Throwable e) {
+                Log.e(TAG, "Exception in onEditorAction:", e);
             }
         }
 
@@ -467,17 +518,25 @@ class OffscreenEditText extends OffscreenView
         @Override
         public void onSelectionChanged(int selStart, int selEnd)
         {
-            super.onSelectionChanged(selStart, selEnd);
-            synchronized(variables_mutex_)
-            {
-                selection_start_ = selStart;
-                selection_end_ = selEnd;
+            try {
+                super.onSelectionChanged(selStart, selEnd);
+                synchronized(variables_mutex_)
+                {
+                    selection_start_ = selStart;
+                    selection_end_ = selEnd;
+                }
+            } catch (final Throwable e) {
+                Log.e(TAG, "Exception in onSelectionChanged:", e);
             }
         }
 
         @Override
         public void scrollTo(int x, int y) {
-            super.scrollTo(x, vertically_scrolling_ ? y : 0);
+            try {
+                super.scrollTo(x, vertically_scrolling_ ? y : 0);
+            } catch (final Throwable e) {
+                Log.e(TAG, "Exception in scrollTo:", e);
+            }
         }
 
         public void setVerticallyScrolling(final boolean whether)
@@ -518,7 +577,7 @@ class OffscreenEditText extends OffscreenView
                 return textHeight > hintHeight ? textHeight : hintHeight;
 
             } catch (final Throwable e) {
-                Log.e(TAG, "getMinimalTextHeight exception: " + e);
+                Log.e(TAG, "getMinimalTextHeight exception:", e);
                 return 0;
             }
         }
@@ -544,14 +603,18 @@ class OffscreenEditText extends OffscreenView
                     runViewAction(new Runnable() {
                         @Override
                         public void run() {
-                            synchronized(nativePtrMutex()) {
-                                nativeOnContentHeightChanged(getNativePtr(), content_height_);
+                            try {
+                                synchronized(nativePtrMutex()) {
+                                    nativeOnContentHeightChanged(getNativePtr(), content_height_);
+                                }
+                            } catch (final Throwable e) {
+                                Log.e(TAG, "Exception in updateContentHeight.run:", e);
                             }
                         }
                     });
                 }
             } catch (final Throwable e) {
-                Log.e(TAG, "updateContentHeight exception: " + e);
+                Log.e(TAG, "updateContentHeight exception:", e);
             }
         }
 
@@ -569,13 +632,21 @@ class OffscreenEditText extends OffscreenView
     @Override
     public void doCreateView()
     {
-        setView(new MyEditText(getActivity()));
+        try {
+            setView(new MyEditText(getActivity()));
+        } catch (final Throwable e) {
+            Log.e(TAG, "Exception in doCreateView:", e);
+        }
     }
 
     @Override
     public void callViewPaintMethod(Canvas canvas)
     {
-        ((MyEditText)getView()).onDrawPublic(canvas);
+        try {
+            ((MyEditText)getView()).onDrawPublic(canvas);
+        } catch (final Throwable e) {
+            Log.e(TAG, "Exception in callViewPaintMethod:", e);
+        }
     }
 
 
@@ -613,7 +684,7 @@ class OffscreenEditText extends OffscreenView
                 }
                 catch (final Throwable e)
                 {
-                    Log.e(TAG, "Exception in setText: " + e);
+                    Log.e(TAG, "Exception in setText:", e);
                 }
             }
         });
@@ -633,7 +704,11 @@ class OffscreenEditText extends OffscreenView
             @Override
             public void run(){
                 //Note that the param order is different in C++ and View
-                ((MyEditText)getView()).setTextSize(unit, size);
+                try {
+                    ((MyEditText)getView()).setTextSize(unit, size);
+                } catch (final Throwable e) {
+                    Log.e(TAG, "Exception in setTextSize.run:", e);
+                }
             }
         });
     }
@@ -649,7 +724,7 @@ class OffscreenEditText extends OffscreenView
                 }
                 catch (final Throwable e)
                 {
-                    Log.e(TAG, "Failed to create Typeface with name " + name + ": " + e);
+                    Log.e(TAG, "Failed to create Typeface with name " + name + ":", e);
                 }
             }
         });
@@ -667,7 +742,7 @@ class OffscreenEditText extends OffscreenView
                 }
                 catch (final Throwable e)
                 {
-                    Log.e(TAG, "Failed to create Typeface from file:" + e);
+                    Log.e(TAG, "Failed to create Typeface from file:", e);
                 }
             }
         });
@@ -688,7 +763,7 @@ class OffscreenEditText extends OffscreenView
                     }
                     catch (final Throwable e)
                     {
-                        Log.e(TAG, "Failed to create Typeface from asset:" + e);
+                        Log.e(TAG, "Failed to create Typeface from asset:", e);
                     }
                 }
             }
@@ -700,7 +775,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setCursorVisible(visible);
+                try {
+                    ((MyEditText)getView()).setCursorVisible(visible);
+                } catch (final Throwable e) {
+                    Log.e(TAG, "Exception in setCursorVisible.run:", e);
+                }
             }
         });
     }
@@ -713,7 +792,11 @@ class OffscreenEditText extends OffscreenView
             runViewAction(new Runnable(){
                 @Override
                 public void run(){
-                    ((MyEditText)getView()).setImportantForAutofill(type);
+                    try {
+                        ((MyEditText)getView()).setImportantForAutofill(type);
+                    } catch (final Throwable e) {
+                        Log.e(TAG, "Exception in setAutofillType.run:", e);
+                    }
                 }
             });
         }
@@ -727,7 +810,11 @@ class OffscreenEditText extends OffscreenView
             runViewAction(new Runnable(){
                 @Override
                 public void run(){
-                    ((MyEditText)getView()).setAutofillHints(type);
+                    try {
+                        ((MyEditText)getView()).setAutofillHints(type);
+                    } catch (final Throwable e) {
+                        Log.e(TAG, "Exception in setHintType.run:", e);
+                    }
                 }
             });
         }
@@ -738,7 +825,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setInputType(type);
+                try {
+                    ((MyEditText)getView()).setInputType(type);
+                } catch (final Throwable e) {
+                    Log.e(TAG, "Exception in setInputType.run:", e);
+                }
             }
         });
     }
@@ -748,9 +839,13 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                MyEditText edittext = (MyEditText)getView();
-                int type = edittext.getInputType();
-                edittext.setInputType((type & type_and) | type_or);
+                try {
+                    MyEditText edittext = (MyEditText)getView();
+                    int type = edittext.getInputType();
+                    edittext.setInputType((type & type_and) | type_or);
+                } catch (final Throwable e) {
+                    Log.e(TAG, "Exception in setInputType.run:", e);
+                }
             }
         });
     }
@@ -760,7 +855,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setMarqueeRepeatLimit(marqueeLimit);
+                try {
+                    ((MyEditText)getView()).setMarqueeRepeatLimit(marqueeLimit);
+                } catch (final Throwable e) {
+                    Log.e(TAG, "Exception in setMarqueeRepeatLimit.run:", e);
+                }
             }
         });
     }
@@ -770,7 +869,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setMaxEms(maxems);
+                try {
+                    ((MyEditText)getView()).setMaxEms(maxems);
+                } catch (final Throwable e) {
+                    Log.e(TAG, "Exception in setMaxEms.run:", e);
+                }
             }
         });
     }
@@ -780,7 +883,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setMinEms(minems);
+                try {
+                    ((MyEditText)getView()).setMinEms(minems);
+                } catch (final Throwable e) {
+                    Log.e(TAG, "Exception in setMinEms.run:", e);
+                }
             }
         });
     }
@@ -790,7 +897,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setMaxHeight(maxHeight);
+                try {
+                    ((MyEditText)getView()).setMaxHeight(maxHeight);
+                } catch (final Throwable e) {
+                    Log.e(TAG, "Exception in setMaxHeight.run:", e);
+                }
             }
         });
     }
@@ -800,7 +911,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setMinHeight(minHeight);
+                try {
+                    ((MyEditText)getView()).setMinHeight(minHeight);
+                } catch (final Throwable e) {
+                    Log.e(TAG, "Exception in setMinHeight.run:", e);
+                }
             }
         });
     }
@@ -810,8 +925,12 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                single_line_ = (maxlines == 1);
-                ((MyEditText)getView()).setMaxLines(maxlines);
+                try {
+                    single_line_ = (maxlines == 1);
+                    ((MyEditText)getView()).setMaxLines(maxlines);
+                } catch (final Throwable e) {
+                    Log.e(TAG, "Exception in setMaxLines.run:", e);
+                }
             }
         });
     }
@@ -821,7 +940,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setMinLines(minlines);
+                try {
+                    ((MyEditText)getView()).setMinLines(minlines);
+                } catch (final Throwable e) {
+                    Log.e(TAG, "Exception in setMinLines.run:", e);
+                }
             }
         });
     }
@@ -831,7 +954,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setMaxWidth(maxpixels);
+                try {
+                    ((MyEditText)getView()).setMaxWidth(maxpixels);
+                } catch (final Throwable e) {
+                    Log.e(TAG, "Exception in setMaxWidth.run:", e);
+                }
             }
         });
     }
@@ -841,7 +968,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setMinWidth(minpixels);
+                try {
+                    ((MyEditText)getView()).setMinWidth(minpixels);
+                } catch (final Throwable e) {
+                    Log.e(TAG, "Exception in setMinWidth.run:", e);
+                }
             }
         });
     }
@@ -851,7 +982,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setPadding(left, top, right, bottom);
+                try {
+                    ((MyEditText)getView()).setPadding(left, top, right, bottom);
+                } catch (final Throwable e) {
+                    Log.e(TAG, "Exception in setPadding.run:", e);
+                }
             }
         });
     }
@@ -861,7 +996,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setIncludeFontPadding(enabled);
+                try {
+                    ((MyEditText)getView()).setIncludeFontPadding(enabled);
+                } catch (final Throwable e) {
+                    Log.e(TAG, "Exception in setIncludeFontPadding.run:", e);
+                }
             }
         });
     }
@@ -871,7 +1010,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setPaintFlags(flags);
+                try {
+                    ((MyEditText)getView()).setPaintFlags(flags);
+                } catch (final Throwable e) {
+                    Log.e(TAG, "Exception in setMinHeight.run:", e);
+                }
             }
         });
     }
@@ -881,7 +1024,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setSelectAllOnFocus(selectAllOnFocus);
+                try {
+                    ((MyEditText)getView()).setSelectAllOnFocus(selectAllOnFocus);
+                } catch (final Throwable e) {
+                    Log.e(TAG, "Exception in setSelectAllOnFocus.run:", e);
+                }
             }
         });
     }
@@ -891,9 +1038,13 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                single_line_ = singleLine;
-                ((MyEditText)getView()).setSingleLine(singleLine);
-                ((MyEditText)getView()).reflowWorkaround();
+                try {
+                    single_line_ = singleLine;
+                    ((MyEditText)getView()).setSingleLine(singleLine);
+                    ((MyEditText)getView()).reflowWorkaround();
+                } catch (final Throwable e) {
+                    Log.e(TAG, "Exception in setSingleLine.run:", e);
+                }
             }
         });
     }
@@ -903,8 +1054,12 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setTextColor(color);
-                invalidateOffscreenView();
+                try {
+                    ((MyEditText)getView()).setTextColor(color);
+                    invalidateOffscreenView();
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setTextColor.run:", e);
+                }
             }
         });
     }
@@ -914,7 +1069,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setTextScaleX(size);
+                try {
+                    ((MyEditText)getView()).setTextScaleX(size);
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setTextScaleX.run:", e);
+                }
             }
         });
     }
@@ -924,7 +1083,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setTextIsSelectable(selectable);
+                try {
+                    ((MyEditText)getView()).setTextIsSelectable(selectable);
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setSingleLine.run:", e);
+                }
             }
         });
     }
@@ -934,7 +1097,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setGravity(gravity);
+                try {
+                    ((MyEditText)getView()).setGravity(gravity);
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setGravity.run:", e);
+                }
             }
         });
     }
@@ -944,7 +1111,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setHeight(pixels);
+                try {
+                    ((MyEditText)getView()).setHeight(pixels);
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setHeight.run:", e);
+                }
             }
         });
     }
@@ -954,7 +1125,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setHighlightColor(color);
+                try {
+                    ((MyEditText)getView()).setHighlightColor(color);
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setHighlightColor.run:", e);
+                }
             }
         });
     }
@@ -964,12 +1139,16 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setHint(hint);
-                ((MyEditText)getView()).reflowWorkaround();
+                try {
+                    ((MyEditText)getView()).setHint(hint);
+                    ((MyEditText)getView()).reflowWorkaround();
 
-                // This should not be done here:
-                //     need_to_reflow_hint_ = false;
-                // (Occasionally causes hint to be unreflown during startup.)
+                    // This should not be done here:
+                    //     need_to_reflow_hint_ = false;
+                    // (Occasionally causes hint to be unreflown during startup.)
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setHint.run:", e);
+                }
             }
         });
     }
@@ -979,7 +1158,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setHintTextColor(color);
+                try {
+                    ((MyEditText)getView()).setHintTextColor(color);
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setHintTextColor.run:", e);
+                }
             }
         });
     }
@@ -989,7 +1172,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setWidth(pixels);
+                try {
+                    ((MyEditText)getView()).setWidth(pixels);
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setWidth.run:", e);
+                }
             }
         });
     }
@@ -999,7 +1186,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setLineSpacing(add, mult);
+                try {
+                    ((MyEditText)getView()).setLineSpacing(add, mult);
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setLineSpacing.run:", e);
+                }
             }
         });
     }
@@ -1009,7 +1200,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setLines(lines);
+                try {
+                    ((MyEditText)getView()).setLines(lines);
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setLines.run:", e);
+                }
             }
         });
     }
@@ -1019,7 +1214,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setHorizontallyScrolling(whether);
+                try {
+                    ((MyEditText)getView()).setHorizontallyScrolling(whether);
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setHorizontallyScrolling.run:", e);
+                }
             }
         });
     }
@@ -1029,7 +1228,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setVerticallyScrolling(whether);
+                try {
+                    ((MyEditText)getView()).setVerticallyScrolling(whether);
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setVerticallyScrolling.run:", e);
+                }
             }
         });
     }
@@ -1039,7 +1242,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setAllCaps(allCaps);
+                try {
+                    ((MyEditText)getView()).setAllCaps(allCaps);
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setAllCaps.run:", e);
+                }
             }
         });
     }
@@ -1049,7 +1256,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).selectAll();
+                try {
+                    ((MyEditText)getView()).selectAll();
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in selectAll.run:", e);
+                }
             }
         });
     }
@@ -1059,7 +1270,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setSelection(index);
+                try {
+                    ((MyEditText)getView()).setSelection(index);
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setSelection.run:", e);
+                }
             }
         });
     }
@@ -1072,7 +1287,7 @@ class OffscreenEditText extends OffscreenView
                 try {
                     ((MyEditText)getView()).setSelection(start, stop);
                 } catch (final Throwable e) {
-                    Log.e(TAG, "Failed to set bounds to (" + start + ", " + stop + "): " + e);
+                    Log.e(TAG, "Failed to set bounds to (" + start + ", " + stop + "):", e);
                 }
             }
         });
@@ -1083,7 +1298,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setVerticalScrollBarEnabled(verticalScrollBarEnabled);
+                try {
+                    ((MyEditText)getView()).setVerticalScrollBarEnabled(verticalScrollBarEnabled);
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setVerticalScrollBarEnabled.run:", e);
+                }
             }
         });
     }
@@ -1093,7 +1312,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setHorizontalScrollBarEnabled(horizontalScrollBarEnabled);
+                try {
+                    ((MyEditText)getView()).setHorizontalScrollBarEnabled(horizontalScrollBarEnabled);
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setHorizontalScrollBarEnabled.run:", e);
+                }
             }
         });
     }
@@ -1103,21 +1326,24 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                // Log.i(TAG, "setAllowFullscreenKeyboard "+allow);
-                MyEditText met = (MyEditText)getView();
-                int ops = met.getImeOptions();
-                int flag = (getApiLevel() >= 11)?
-                    EditorInfo.IME_FLAG_NO_FULLSCREEN | EditorInfo.IME_FLAG_NO_EXTRACT_UI
-                    : EditorInfo.IME_FLAG_NO_EXTRACT_UI;
-                if (allow)
-                {
-                    ops &= ~flag;
+                try {
+                    MyEditText met = (MyEditText)getView();
+                    int ops = met.getImeOptions();
+                    int flag = (getApiLevel() >= 11)?
+                        EditorInfo.IME_FLAG_NO_FULLSCREEN | EditorInfo.IME_FLAG_NO_EXTRACT_UI
+                        : EditorInfo.IME_FLAG_NO_EXTRACT_UI;
+                    if (allow)
+                    {
+                        ops &= ~flag;
+                    }
+                    else
+                    {
+                        ops |= flag;
+                    }
+                    met.setImeOptions(ops);
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setAllowFullscreenKeyboard.run:", e);
                 }
-                else
-                {
-                    ops |= flag;
-                }
-                met.setImeOptions(ops);
             }
         });
     }
@@ -1127,13 +1353,17 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                if (length > 0)
-                {
-                    ((MyEditText)getView()).setFilters(new InputFilter[]{new InputFilter.LengthFilter(length)});
-                }
-                else
-                {
-                    ((MyEditText)getView()).setFilters(new InputFilter[]{});
+                try {
+                    if (length > 0)
+                    {
+                        ((MyEditText)getView()).setFilters(new InputFilter[]{new InputFilter.LengthFilter(length)});
+                    }
+                    else
+                    {
+                        ((MyEditText)getView()).setFilters(new InputFilter[]{});
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setMaxLength.run:", e);
                 }
             }
         });
@@ -1144,15 +1374,19 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                final MyEditText myedittext = (MyEditText)getView();
-                final int selStart = myedittext.getSelectionStart();
-                final int selEnd = myedittext.getSelectionEnd();
-                final TransformationMethod methodInstance = enable
-                    ? PasswordTransformationMethod.getInstance() 
-                    : null;
-                    
-                myedittext.setTransformationMethod(methodInstance);
-                myedittext.setSelection(selStart, selEnd);
+                try {
+                    final MyEditText myedittext = (MyEditText)getView();
+                    final int selStart = myedittext.getSelectionStart();
+                    final int selEnd = myedittext.getSelectionEnd();
+                    final TransformationMethod methodInstance = enable
+                        ? PasswordTransformationMethod.getInstance() 
+                        : null;
+                        
+                    myedittext.setTransformationMethod(methodInstance);
+                    myedittext.setSelection(selStart, selEnd);
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setPasswordMode.run:", e);
+                }
             }
         });
     }
@@ -1162,8 +1396,12 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                final MyEditText myedittext = (MyEditText)getView();
-                myedittext.setRichTextMode(enabled);
+                try {
+                    final MyEditText myedittext = (MyEditText)getView();
+                    myedittext.setRichTextMode(enabled);
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setRichTextMode.run:", e);
+                }
             }
         });
     }
@@ -1177,53 +1415,57 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable() {
             @Override
             public void run() {
-                final MyEditText myedittext = (MyEditText)getView();
-                // Disabling the mode
-                if (!enable) {
-                    if (password_text_watcher_ != null) {
-                        myedittext.removeTextChangedListener(password_text_watcher_);
-                        password_text_watcher_ = null;
-                        myedittext.setInputType(input_type_before_password_with_custom_typeface_);
+                try {
+                    final MyEditText myedittext = (MyEditText)getView();
+                    // Disabling the mode
+                    if (!enable) {
+                        if (password_text_watcher_ != null) {
+                            myedittext.removeTextChangedListener(password_text_watcher_);
+                            password_text_watcher_ = null;
+                            myedittext.setInputType(input_type_before_password_with_custom_typeface_);
+                        } else {
+                            Log.e(TAG, "Attempting to clear password mode with default typeface when it was not set!");
+                        }
+                    // Enabling the mode
                     } else {
-                        Log.e(TAG, "Attempting to clear password mode with default typeface when it was not set!");
-                    }
-                // Enabling the mode
-                } else {
-                    if (password_text_watcher_ == null) {
-                        // Need to set only transformation method after component creation, not input type
-                        // because input type will change placeholder typeface to monospace, and we have
-                        // no way to change it back to default typeface before we start typing text
-                        // If we set TYPE_TEXT_VARIATION_PASSWORD right after component created it will change
-                        // placeholder text typeface to monospace immediately, and we can't call setTypeface
-                        // it will just have no effect, because typeface is changing to monospace not immediately:
-                        // http://stackoverflow.com/questions/24117178/android-typeface-is-changed-when-i-apply-password-type-on-edittext
-                        password_text_watcher_ = new TextWatcher()
-                            {
-                                @Override
-                                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                                    if ((myedittext.getInputType() & InputType.TYPE_TEXT_VARIATION_PASSWORD) == 0) {
-                                        input_type_before_password_with_custom_typeface_ = myedittext.getInputType();
-                                        myedittext.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                        if (password_text_watcher_ == null) {
+                            // Need to set only transformation method after component creation, not input type
+                            // because input type will change placeholder typeface to monospace, and we have
+                            // no way to change it back to default typeface before we start typing text
+                            // If we set TYPE_TEXT_VARIATION_PASSWORD right after component created it will change
+                            // placeholder text typeface to monospace immediately, and we can't call setTypeface
+                            // it will just have no effect, because typeface is changing to monospace not immediately:
+                            // http://stackoverflow.com/questions/24117178/android-typeface-is-changed-when-i-apply-password-type-on-edittext
+                            password_text_watcher_ = new TextWatcher()
+                                {
+                                    @Override
+                                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                                        if ((myedittext.getInputType() & InputType.TYPE_TEXT_VARIATION_PASSWORD) == 0) {
+                                            input_type_before_password_with_custom_typeface_ = myedittext.getInputType();
+                                            myedittext.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                                        }
+                                        myedittext.setTypeface(typeface);
                                     }
-                                    myedittext.setTypeface(typeface);
-                                }
 
-                                @Override
-                                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                                    myedittext.setTypeface(typeface);
-                                }
+                                    @Override
+                                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                                        myedittext.setTypeface(typeface);
+                                    }
 
-                                @Override
-                                public void afterTextChanged(Editable s) {
-                                    myedittext.setTypeface(typeface);
-                                }
-                            };
-                        myedittext.setTransformationMethod(PasswordTransformationMethod.getInstance());
-                        myedittext.addTextChangedListener(password_text_watcher_);
-                    } else {
-                        Log.e(TAG, "Attempting to set password mode with default typeface twice!");
-                    }
-                } // Enabling mode
+                                    @Override
+                                    public void afterTextChanged(Editable s) {
+                                        myedittext.setTypeface(typeface);
+                                    }
+                                };
+                            myedittext.setTransformationMethod(PasswordTransformationMethod.getInstance());
+                            myedittext.addTextChangedListener(password_text_watcher_);
+                        } else {
+                            Log.e(TAG, "Attempting to set password mode with default typeface twice!");
+                        }
+                    } // Enabling mode
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setPasswordModeWithCustomTypeface.run:", e);
+                }
             } // run()
         });
     }
@@ -1238,8 +1480,12 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                MyEditText et = (MyEditText)getView();
-                et.setImeOptions((et.getImeOptions() & and_mask) | or_mask);
+                try {
+                    MyEditText et = (MyEditText)getView();
+                    et.setImeOptions((et.getImeOptions() & and_mask) | or_mask);
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setImeOptions.run:", e);
+                }
             }
         });
     }
@@ -1251,7 +1497,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setEllipsize(where);
+                try {
+                    ((MyEditText)getView()).setEllipsize(where);
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setEllipsize.run:", e);
+                }
             }
         });
     }
@@ -1261,7 +1511,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setCursorColorToTextColor();
+                try {
+                    ((MyEditText)getView()).setCursorColorToTextColor();
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setCursorColorToTextColor.run:", e);
+                }
             }
         });
     }
@@ -1271,7 +1525,11 @@ class OffscreenEditText extends OffscreenView
         runViewAction(new Runnable(){
             @Override
             public void run(){
-                ((MyEditText)getView()).setCursorByDrawableName(name);
+                try {
+                    ((MyEditText)getView()).setCursorByDrawableName(name);
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setCursorByDrawableName.run:", e);
+                }
             }
         });
     }
@@ -1354,12 +1612,16 @@ class OffscreenEditText extends OffscreenView
         
         private void setHasAcceptableInput(boolean hasAcceptableInput) 
         {
-            if (hasAcceptableInput_ != hasAcceptableInput) 
-            {
-                hasAcceptableInput_ = hasAcceptableInput;
-                synchronized(nativePtrMutex()) {
-                    nativeOnHasAcceptableInputChanged(getNativePtr(), hasAcceptableInput_);
+            try {
+                if (hasAcceptableInput_ != hasAcceptableInput) 
+                {
+                    hasAcceptableInput_ = hasAcceptableInput;
+                    synchronized(nativePtrMutex()) {
+                        nativeOnHasAcceptableInputChanged(getNativePtr(), hasAcceptableInput_);
+                    }
                 }
+            } catch (Exception e) {
+                Log.e(TAG, "Exception in setHasAcceptableInput:", e);
             }
         }
     }
@@ -1390,7 +1652,7 @@ class OffscreenEditText extends OffscreenView
                 } 
                 catch (final Throwable e) 
                 {
-                    Log.w(TAG, "setInputMask: '" + mask + "' exeption: " + e);
+                    Log.w(TAG, "setInputMask: '" + mask + "' exeption:", e);
                 }
             }
         });
