@@ -84,7 +84,6 @@ class OffscreenEditText extends OffscreenView
     int selection_start_ = 0, selection_end_ = 0;
     int selection_top_ = 0, selection_bottom_ = 0;
     private Object variables_mutex_ = new Object();
-    private InputMaskTextWatcher inputMaskTextWatcher = null;
 
     static final int
         SYSTEM_DRAW_NEVER = 0,
@@ -97,12 +96,30 @@ class OffscreenEditText extends OffscreenView
         private boolean vertically_scrolling_ = false;
         private int content_height_ = 0;
         private boolean allow_rich_text_ = true;
+        private MyTextWatcher textWatcher_ = null;
 
         class MyTextWatcher implements TextWatcher
         {
-            @Override
-            public void afterTextChanged(Editable s)
-            {}
+            private InputMaskFormatter formatter_;
+            private String formattedText_;
+            private boolean hasAcceptableInput_ = true;
+
+            public void setMask(final String mask)
+            {
+                if (mask == null || mask.isEmpty()) {
+                    formatter_ = null;
+                    formattedText_ = null;
+
+                    setHasAcceptableInput(true);
+                } else {
+                    formatter_ = new InputMaskFormatter(mask);
+                    formattedText_ = formatter_.format(getText().toString());
+
+                    setText(formattedText_);
+                    setSelection(formattedText_.length());
+                    setHasAcceptableInput(formatter_.hasAcceptableInput());
+                }
+            }
 
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after)
@@ -112,19 +129,48 @@ class OffscreenEditText extends OffscreenView
             public void onTextChanged(CharSequence s, int start, int before, int count)
             {
                 try {
+                    final String text = s.toString();
+
+                    if (formatter_ != null && !text.equals(formattedText_)) {
+                        formattedText_ = formatter_.format(text);
+
+                        setText(formattedText_);
+                        setSelection(formattedText_.length());
+                        setHasAcceptableInput(formatter_.hasAcceptableInput());
+                        return;
+                    }
+
                     need_to_reflow_text_ = false;
                     need_to_reflow_hint_ = false;
-                    String str = s.toString();
-                    synchronized(text_)
-                    {
-                        text_ = str;
+
+                    synchronized(text_) {
+                        text_ = text;
                     }
                     synchronized(nativePtrMutex()) {
-                        nativeOnTextChanged(getNativePtr(), str, start, before, count);
+                        nativeOnTextChanged(getNativePtr(), text, start, before, count);
                     }
+
                     updateContentHeight();
                 } catch (final Throwable e) {
                     Log.e(TAG, "Exception in onTextChanged:", e);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s)
+            {}
+
+            private void setHasAcceptableInput(boolean hasAcceptableInput)
+            {
+                try {
+                    if (hasAcceptableInput_ != hasAcceptableInput) {
+                        hasAcceptableInput_ = hasAcceptableInput;
+                        synchronized(nativePtrMutex()) {
+                            nativeOnHasAcceptableInputChanged(getNativePtr(), hasAcceptableInput_);
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception in setHasAcceptableInput:", e);
                 }
             }
         }
@@ -134,7 +180,8 @@ class OffscreenEditText extends OffscreenView
             super(context);
             try {
                 Log.i(TAG, "MyEditText constructor");
-                addTextChangedListener(new MyTextWatcher());
+                textWatcher_ = new MyTextWatcher();
+                addTextChangedListener(textWatcher_);
 
                 // Eliminate any system background by setting null background drawable.
                 // Any borders should be drawn on Qt side, because we simply cannot deal with
@@ -203,6 +250,11 @@ class OffscreenEditText extends OffscreenView
             {
                 Log.e(TAG, "Exception in onInterceptClipDataToPlainText:", e);
             }
+        }
+
+        void setMask(final String mask)
+        {
+            textWatcher_.setMask(mask);
         }
 
         // Super evil workaround to set cursor color equal to text color.
@@ -1560,72 +1612,6 @@ class OffscreenEditText extends OffscreenView
         system_draw_ = mode;
     }
 
-    class InputMaskTextWatcher implements TextWatcher 
-    {
-        
-        protected InputMaskFormatter formatter_;
-        protected EditText editText_;
-        protected String currentText_;
-        private boolean hasAcceptableInput_;
-
-        public InputMaskTextWatcher(EditText editText, String mask)
-        {
-            this.editText_ = editText;
-            this.hasAcceptableInput_ = true;
-            this.formatter_ = new InputMaskFormatter(mask);
-            this.currentText_ = formatter_.format(editText_.getText().toString());
-
-            setHasAcceptableInput(formatter_.hasAcceptableInput());
-        }
-
-        @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) 
-        {
-        }
-
-        @Override
-        public void onTextChanged(CharSequence s, int start, int count, int after) 
-        {
-            final String text = s.toString();
-
-            if (!text.equals(currentText_)) 
-            {
-                try 
-                {
-                    currentText_ = formatter_.format(text);
-
-                    editText_.setText(currentText_);
-                    editText_.setSelection(currentText_.length());
-                    setHasAcceptableInput(formatter_.hasAcceptableInput());
-                } 
-                catch (final Throwable e) 
-                {
-                    Log.w("InputMaskTextWatcher format text: '" + text + "' exception: ", e);
-                }
-            }
-        }
-
-        @Override
-        public void afterTextChanged(Editable editable) 
-        {
-        }
-        
-        private void setHasAcceptableInput(boolean hasAcceptableInput) 
-        {
-            try {
-                if (hasAcceptableInput_ != hasAcceptableInput) 
-                {
-                    hasAcceptableInput_ = hasAcceptableInput;
-                    synchronized(nativePtrMutex()) {
-                        nativeOnHasAcceptableInputChanged(getNativePtr(), hasAcceptableInput_);
-                    }
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "Exception in setHasAcceptableInput:", e);
-            }
-        }
-    }
-
     void setInputMask(String mask) 
     {
         runViewAction(new Runnable() {
@@ -1633,22 +1619,8 @@ class OffscreenEditText extends OffscreenView
             public void run() {
                 try 
                 {
-                    final EditText editText = ((EditText) getView());
-                    if (inputMaskTextWatcher != null) 
-                    {
-                        editText.removeTextChangedListener(inputMaskTextWatcher);
-                    }
-                    if (!mask.isEmpty()) 
-                    {
-                        inputMaskTextWatcher = new InputMaskTextWatcher(editText, mask);
-                        editText.addTextChangedListener(inputMaskTextWatcher);
-                    }
-                    else
-                    {
-                        synchronized(nativePtrMutex()) {
-                            nativeOnHasAcceptableInputChanged(getNativePtr(), true);
-                        }
-                    }
+                    final MyEditText editText = ((MyEditText) getView());
+                    editText.setMask(mask);
                 } 
                 catch (final Throwable e) 
                 {
