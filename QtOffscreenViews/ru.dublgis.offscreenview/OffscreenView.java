@@ -48,6 +48,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.SystemClock;
+import android.view.InputDevice;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.MotionEvent;
@@ -916,6 +917,7 @@ public abstract class OffscreenView
             }
             // Log.i(TAG, "ProcessMouseEvent("+action+", "+x+", "+y+") time of press = "+mouse_time_of_press_+", t="+t);
             final MotionEvent event = MotionEvent.obtain(mouse_time_of_press_ /* downTime*/, t /* eventTime */, action, x, y, 0 /*metaState*/);
+            event.setSource(InputDevice.SOURCE_TOUCHSCREEN);
             runOnUiThread(new Runnable() {
                 @Override
                 public void run()
