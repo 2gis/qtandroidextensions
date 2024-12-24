@@ -67,4 +67,6 @@ public slots:
 	void vibrate(Effect effect);
 	void vibrate(Timings_t::value_type duration);
 	void vibrate(Timings_t timings);
+
+	bool hasAmplitudeControl();
 };

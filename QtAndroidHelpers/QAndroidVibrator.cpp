@@ -108,3 +108,19 @@ void QAndroidVibrator::vibrate(Timings_t timings)
 		}
 	}
 }
+
+bool QAndroidVibrator::hasAmplitudeControl()
+{
+	if (isJniReady())
+	{
+		try
+		{
+			return jni()->callBool("hasAmplitudeControl");
+		}
+		catch(const std::exception & ex)
+		{
+			qCritical() << "JNI exception in hasAmplitudeControl: " << ex.what();
+		}
+	}
+	return false;
+}
