@@ -57,6 +57,21 @@ public class Vibrate {
 	{
 	}
 
+	public boolean hasAmplitudeControl()
+	{
+		try
+		{
+			final Context context = getContext();
+			final Vibrator vibrator = (Vibrator)context.getSystemService(Context.VIBRATOR_SERVICE);
+			return Build.VERSION.SDK_INT >= 26 && vibrator != null && vibrator.hasAmplitudeControl();
+		}
+		catch (final Throwable e)
+		{
+			Log.e(TAG, "Vibrator exception: ", e);
+		}
+
+		return false;
+	}
 
 	public void vibrate(final int effectId)
 	{
@@ -64,6 +79,7 @@ public class Vibrate {
 		{
 			final Context context = getContext();
 			final Vibrator vibrator = (Vibrator)context.getSystemService(Context.VIBRATOR_SERVICE);
+
 			if (null == vibrator)
 			{
 				Log.w(TAG, "Vibrator service not found.");
