@@ -86,7 +86,7 @@ public class Vibrate {
 				Log.w(TAG, "Vibrator service not found.");
 				return;
 			}
-			// Android 8+
+			// Android 10+
 			if (Build.VERSION.SDK_INT >= 29)
 			{
 				VibrationEffect effect = VibrationEffect.createPredefined(effectId);
