@@ -87,7 +87,7 @@ public class Vibrate {
 				return;
 			}
 			// Android 8+
-			if (Build.VERSION.SDK_INT >= 26)
+			if (Build.VERSION.SDK_INT >= 29)
 			{
 				VibrationEffect effect = VibrationEffect.createPredefined(effectId);
 				vibrator.vibrate(effect);
