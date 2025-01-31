@@ -264,6 +264,41 @@ void sendData(const QByteArray & data, const QString & mimeType)
 }
 
 
+bool sendFiles(const QStringList & filePaths, const QString & mimeType)
+{
+	try
+	{
+		QJniEnvPtr jep;
+
+		QJniLocalRef filePathsArray(jep.env()->NewObjectArray(
+			filePaths.size(),
+			QJniClass("java/lang/String").jClass(),
+			nullptr));
+
+		for (QStringList::size_type i = 0; i < filePaths.size(); ++i)
+		{
+			jep.env()->SetObjectArrayElement(
+				static_cast<jobjectArray>(filePathsArray.jObject()),
+				i,
+				QJniLocalRef(filePaths[i]).jObject());
+		}
+
+		return QJniClass(c_desktoputils_class_name_)
+			.callStaticParamBoolean(
+				"sendFiles",
+				"Landroid/content/Context;[Ljava/lang/String;Ljava/lang/String;",
+				QAndroidQPAPluginGap::Context().jObject(),
+				static_cast<jobjectArray>(filePathsArray.jObject()),
+				QJniLocalRef(mimeType).jObject());
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in sendFiles:" << e.what();
+		return false;
+	}
+}
+
+
 bool installApk(const QString & apk)
 {
 	QJniClass du(c_desktoputils_class_name_);

@@ -650,6 +650,51 @@ public class DesktopUtils
         }
     }
 
+    // Send, sharing a files using some (or default) associated application
+    public static boolean sendFiles(final Context ctx, final String[] filePaths, final String mimeType)
+    {
+        try {
+            Log.i(TAG, "Will send files: " + String.join(", ", filePaths));
+            final String authority = ctx.getPackageName() + ".sharefileprovider";
+            ArrayList<Uri> uris = new ArrayList<>();
+
+            for (String filePath : filePaths) {
+                File file = new File(filePath);
+                if (!file.exists()) {
+                    Log.e(TAG, "File does not exist: " + filePath);
+                    return false;
+                }
+                uris.add(FileProvider.getUriForFile(ctx, authority, file));
+            }
+
+            if (uris.isEmpty()) {
+                Log.e(TAG, "No valid files to share");
+                return false;
+            }
+
+            final Intent sendIntent;
+            if (uris.size() == 1) {
+                sendIntent = new Intent(Intent.ACTION_SEND);
+                sendIntent.setType(mimeType);
+                sendIntent.putExtra(Intent.EXTRA_STREAM, uris.get(0));
+            } else {
+                sendIntent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+                sendIntent.setType(mimeType);
+                sendIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+            }
+            sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            final Intent chooser = Intent.createChooser(sendIntent, "");
+            chooser.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            ctx.startActivity(chooser);
+
+            return true;
+        } catch (final Throwable e) {
+            Log.e(TAG, "Exception while sending files: ", e);
+            return false;
+        }
+    }
+
     // Request system to install a local apk file. System installer application will be open.
     public static boolean installApk(final Context ctx, final String apk)
     {
