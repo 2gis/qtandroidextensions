@@ -50,6 +50,8 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.TimeZone;
+import java.util.ArrayList;
+import java.util.List;
 import java.time.ZoneId;
 
 import android.content.ComponentName;
@@ -79,6 +81,7 @@ public class DesktopUtils
 {
     private static final String TAG = "Grym/DesktopServices";
     private static final boolean verbose = false;
+    private static final List<Runnable> requestPermissionsCallbacks = new ArrayList<>();
 
     // Returns:
     // -1 - error
@@ -1138,6 +1141,25 @@ public class DesktopUtils
         @Override
         public String toString() {
             return super.toString() + "; " + mResolveInfoList.toString();
+        }
+    }
+
+
+    public static void registerRequestPermissionsCallback(Runnable callback) {
+        requestPermissionsCallbacks.add(callback);
+    }
+
+
+    public static void startRequestPermissions() {
+        try
+        {
+            for (Runnable requestPermissionsCallback : requestPermissionsCallbacks) {
+                requestPermissionsCallback.run();
+            }
+        }
+        catch (final Throwable e)
+        {
+            Log.e(TAG, "startRequestPermissions exception: ", e);
         }
     }
 }

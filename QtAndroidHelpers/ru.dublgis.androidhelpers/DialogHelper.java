@@ -51,6 +51,7 @@ import android.os.Handler;
 public class DialogHelper
 {
     public static final String TAG = "Grym/DialogHelper";
+    public static boolean visible = false;
     private Long mNativePtr = 0l;
     private Semaphore semaphore_ = new Semaphore(1);
 
@@ -91,134 +92,153 @@ public class DialogHelper
         final Context context = (a != null)? (Context)a: getContext();
         final boolean ui_thread = (a != null)? Thread.currentThread().getId() == a.getMainLooper().getThread().getId(): false;
 
+
+        Runnable runnable = null;
+
         // Creating a runnable which creates the dialog. Then we will run it on the right thread
         // and in the right context.
-        Runnable runnable = new Runnable(){
-            @Override
-            public void run()
-            {
-                int orientation = -1;
-                try
-                {
-                    if (lockOrientation != -1 && a != null)
-                    {
-                        orientation = a.getRequestedOrientation();
-                        final int newOrientation = Build.VERSION.SDK_INT >= 18 ? // Android 4.3+
-                            ActivityInfo.SCREEN_ORIENTATION_LOCKED
-                          : ActivityInfo.SCREEN_ORIENTATION_NOSENSOR;
-                        a.setRequestedOrientation(newOrientation);
-                    }
-                }
-                catch(Exception e)
-                {
-                    Log.e(TAG, "showMessage: exception (1): "+e);
-                }
-                final int restore_orientation = orientation;
 
-                // Now let's build the dialog
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setTitle(title);
-                builder.setMessage(explanation);
-
-                DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int whichButton)
-                    {
-                        try
-                        {
-                            if (lockOrientation != -1 && a != null)
-                            {
-                                a.setRequestedOrientation(restore_orientation);
-                            }
-                        }
-                        catch(Exception e)
-                        {
-                            Log.e(TAG, "showMessage: exception (2): "+e);
-                        }
-                        synchronized(mNativePtr)
-                        {
-                            showMessageCallback(mNativePtr, whichButton);
-                        }
-                        if (loop && !ui_thread)
-                        {
-                            semaphore_.release();
-                        }
-                    }
-                };
-
-                DialogInterface.OnCancelListener cancel_listener = new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialog)
-                    {
-                        try
-                        {
-                            if (lockOrientation != -1 && a != null)
-                            {
-                                a.setRequestedOrientation(restore_orientation);
-                            }
-                        }
-                        catch(Exception e)
-                        {
-                            Log.e(TAG, "showMessage: exception (2): "+e);
-                        }
-                        synchronized(mNativePtr)
-                        {
-                            showMessageCallback(mNativePtr, 0);
-                        }
-                        if (loop && !ui_thread)
-                        {
-                            semaphore_.release();
-                        }
-                    }
-                };
-
-                if (positiveButtonText != null && !positiveButtonText.isEmpty())
+        // Android >= 7
+        if (a != null && Build.VERSION.SDK_INT >= 24 && a.isInPictureInPictureMode())
+        {
+            runnable = new Runnable(){
+                @Override
+                public void run()
                 {
-                    builder.setPositiveButton(positiveButtonText, listener);
-                }
-                if (negativeButtonText != null && !negativeButtonText.isEmpty())
-                {
-                    builder.setNegativeButton(negativeButtonText, listener);
-                }
-                if (neutralButtonText != null && !neutralButtonText.isEmpty())
-                {
-                    builder.setNeutralButton(neutralButtonText, listener);
-                }
-                builder.setOnCancelListener(cancel_listener);
-
-                // Displaying the dialog.
-                try
-                {
-                    AlertDialog dlg = builder.create();
-                    if (a == null)
-                    {
-                        // Please note that this requires a permission in your AndroidManifest.xml to work:
-                        // <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-                        dlg.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
-                    }
-                    dlg.show();
-                    // If we are in the UI thread we wait for the dialog right here
-                    // while running the message loop.
-                    if (loop && ui_thread)
-                    {
-                        Log.i(TAG, "Waiting for the dialog in UI thread.");
-                        Looper.loop();
-                    }
-                }
-                catch (Exception e)
-                {
-                    Log.e(TAG, "Failed to display dialog: " + e);
-                    if (lockOrientation != -1 && a != null)
-                    {
-                        a.setRequestedOrientation(restore_orientation);
-                    }
+                    Log.w(TAG, "WARNING: DialogHelper.showMessage() called in PictureInPicture mode, the cancel callback will be called.");
+                    reply(DialogInterface.BUTTON_NEGATIVE);
                     if (loop && !ui_thread)
                     {
                         semaphore_.release();
                     }
                 }
-            }
-        };
+            };
+        }
+        else
+        {
+            runnable = new Runnable(){
+                @Override
+                public void run()
+                {
+                    int orientation = -1;
+                    try
+                    {
+                        if (lockOrientation != -1 && a != null)
+                        {
+                            orientation = a.getRequestedOrientation();
+                            final int newOrientation = Build.VERSION.SDK_INT >= 18 ? // Android 4.3+
+                                ActivityInfo.SCREEN_ORIENTATION_LOCKED
+                            : ActivityInfo.SCREEN_ORIENTATION_NOSENSOR;
+                            a.setRequestedOrientation(newOrientation);
+                        }
+                    }
+                    catch(Exception e)
+                    {
+                        Log.e(TAG, "showMessage: exception (1): "+e);
+                    }
+                    final int restore_orientation = orientation;
+
+                    // Now let's build the dialog
+                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                    builder.setTitle(title);
+                    builder.setMessage(explanation);
+
+                    DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int whichButton)
+                        {
+                            try
+                            {
+                                if (lockOrientation != -1 && a != null)
+                                {
+                                    a.setRequestedOrientation(restore_orientation);
+                                }
+                            }
+                            catch(Exception e)
+                            {
+                                Log.e(TAG, "showMessage: exception (2): "+e);
+                            }
+                            reply(whichButton);
+                            if (loop && !ui_thread)
+                            {
+                                semaphore_.release();
+                            }
+                        }
+                    };
+
+                    DialogInterface.OnCancelListener cancel_listener = new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialog)
+                        {
+                            try
+                            {
+                                if (lockOrientation != -1 && a != null)
+                                {
+                                    a.setRequestedOrientation(restore_orientation);
+                                }
+                            }
+                            catch(Exception e)
+                            {
+                                Log.e(TAG, "showMessage: exception (2): "+e);
+                            }
+                            reply(0);
+                            if (loop && !ui_thread)
+                            {
+                                semaphore_.release();
+                            }
+                        }
+                    };
+
+                    if (positiveButtonText != null && !positiveButtonText.isEmpty())
+                    {
+                        builder.setPositiveButton(positiveButtonText, listener);
+                    }
+                    if (negativeButtonText != null && !negativeButtonText.isEmpty())
+                    {
+                        builder.setNegativeButton(negativeButtonText, listener);
+                    }
+                    if (neutralButtonText != null && !neutralButtonText.isEmpty())
+                    {
+                        builder.setNeutralButton(neutralButtonText, listener);
+                    }
+                    builder.setOnCancelListener(cancel_listener);
+
+                    // Displaying the dialog.
+                    try
+                    {
+                        AlertDialog dlg = builder.create();
+                        if (a == null)
+                        {
+                            // Please note that this requires a permission in your AndroidManifest.xml to work:
+                            // <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+                            dlg.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+                        }
+                        dlg.show();
+                        // If we are in the UI thread we wait for the dialog right here
+                        // while running the message loop.
+                        if (loop && ui_thread)
+                        {
+                            Log.i(TAG, "Waiting for the dialog in UI thread.");
+                            Looper.loop();
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Log.e(TAG, "Failed to display dialog: " + e);
+                        if (lockOrientation != -1 && a != null)
+                        {
+                            a.setRequestedOrientation(restore_orientation);
+                        }
+                        if (loop && !ui_thread)
+                        {
+                            semaphore_.release();
+                        }
+                    }
+                }
+            };
+        }
+
+        visible = true;
 
         //
         // Displaying the dialog using the runnable which we just created above.
@@ -259,6 +279,14 @@ public class DialogHelper
             Log.i(TAG, "UI thread mode.");
             runnable.run();
         }
+    }
+
+    public void reply(int whichButton) {
+        synchronized(mNativePtr)
+        {
+            showMessageCallback(mNativePtr, whichButton);
+        }
+        visible = false;
     }
 
     public native Activity getActivity();

@@ -168,5 +168,7 @@ bool notificationsEnabled();
 
 bool isWiFiScanThrottleEnabled();
 
+void startRequestPermissions();
+
 } // namespace QAndroidDesktopUtils
 

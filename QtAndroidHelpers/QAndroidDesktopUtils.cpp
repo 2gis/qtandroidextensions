@@ -533,6 +533,7 @@ bool shouldShowRequestPermissionRationale(const QString & permission_name)
 	}
 	else
 	{
+		startRequestPermissions();
 		return QAndroidQPAPluginGap::Context().callParamBoolean(
 			"shouldShowRequestPermissionRationale"
 			, "Ljava/lang/String;"
@@ -560,6 +561,7 @@ void requestPermissions(const QStringList & permission_names, int permission_req
 				, i
 				, QJniLocalRef(permission_names.at(i)).jObject());
 		}
+		startRequestPermissions();
 		QAndroidQPAPluginGap::Context().callParamVoid(
 			"requestPermissions"
 			, "[Ljava/lang/String;I"
@@ -779,6 +781,22 @@ bool isWiFiScanThrottleEnabled()
 		qCritical() << "JNI exception in isScanThrottleEnabled: " << e.what();
 	}
 	return false;
+}
+
+void startRequestPermissions()
+{
+	try
+	{
+		QJniClass du(c_desktoputils_class_name_);
+		if (du.jClass())
+		{
+			du.callStaticVoid("startRequestPermissions");
+		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in startRequestPermissions:" << e.what();
+	}
 }
 
 } // namespace QAndroidDesktopUtils
