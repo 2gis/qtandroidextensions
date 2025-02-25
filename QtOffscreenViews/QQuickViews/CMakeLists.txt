@@ -28,6 +28,8 @@ if (ANDROID)
         PRIVATE
             Qt6::Qml
             Qt6::Quick
+            Qt6::Gui
+            Qt6::GuiPrivate
     )
 
     target_include_directories(${MODULE_NAME}
