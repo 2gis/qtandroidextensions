@@ -35,9 +35,11 @@
 */
 
 #include <QtGui/QtGui>
+#include <QtGui/rhi/qrhi.h>
 #include <QtQuick/QSGTransformNode>
 #include <QtQuick/QSGSimpleTextureNode>
 #include <QtQuick/QQuickWindow>
+#include <QtOpenGL/QOpenGLFramebufferObject>
 #include <QTimer>
 #include "QQuickAndroidOffscreenView.h"
 
@@ -282,13 +284,18 @@ QSGNode * QQuickAndroidOffscreenView::updatePaintNode(QSGNode * node, UpdatePain
 		format.setAttachment(QOpenGLFramebufferObject::NoAttachment); // CombinedDepthStencil
 		n->fbo_.reset(new QOpenGLFramebufferObject(fboSize, format));
 		auto textureId = n->fbo_->texture();
+
+		QRhiTexture::NativeTexture native{0, static_cast<int>(textureId)};
+
+		std::unique_ptr<QRhi> m_rhi;
+		QRhiNullInitParams params;
+		m_rhi.reset(QRhi::create(QRhi::Null, &params));
+
+		QRhiTexture * rhi_texture = m_rhi->newTexture(QRhiTexture::RGBA8, fboSize);
+		rhi_texture->createFrom(native);
+
 		n->setTexture(
-			window()->createTextureFromNativeObject(
-				QQuickWindow::NativeObjectTexture,
-				&textureId,
-				0,
-				n->fbo_->size(),
-				QQuickWindow::TextureHasAlphaChannel));
+			window()->createTextureFromRhiTexture(rhi_texture));
 		n->setOwnsTexture(true);
 		n->setFiltering(QSGTexture::Nearest);
 		n->setRect(0, 0, width(), height());
