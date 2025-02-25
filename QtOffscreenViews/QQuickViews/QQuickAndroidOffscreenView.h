@@ -106,7 +106,7 @@ protected:
 	QAndroidOffscreenView * androidView() { return aview_.data(); }
 	const QAndroidOffscreenView * androidView() const { return aview_.data(); }
 
-	void geometryChanged(const QRectF & new_geometry, const QRectF & old_geometry) override;
+	void geometryChange(const QRectF & new_geometry, const QRectF & old_geometry) override;
 	void focusInEvent(QFocusEvent * event) override;
 	void focusOutEvent(QFocusEvent * event) override;
 	void mouseMoveEvent(QMouseEvent * event) override;

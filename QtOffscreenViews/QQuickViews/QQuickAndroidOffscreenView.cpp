@@ -133,9 +133,9 @@ void QQuickAndroidOffscreenView::onVisibleRectReceived(int width, int height)
 	emit visibleRectReceived(width, height);
 }
 
-void QQuickAndroidOffscreenView::geometryChanged(const QRectF & new_geometry, const QRectF & old_geometry)
+void QQuickAndroidOffscreenView::geometryChange(const QRectF & new_geometry, const QRectF & old_geometry)
 {
-	QQuickItem::geometryChanged(new_geometry, old_geometry);
+	QQuickItem::geometryChange(new_geometry, old_geometry);
 	if (new_geometry.size() != old_geometry.size())
 	{
 		aview_->resize(new_geometry.size().toSize());
