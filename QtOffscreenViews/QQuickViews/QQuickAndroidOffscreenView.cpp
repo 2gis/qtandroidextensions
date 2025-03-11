@@ -34,13 +34,12 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <QtGui/QtGui>
-#include <QtGui/rhi/qrhi.h>
+#include <QtCore/QTimer>
+#include <QtOpenGL/QOpenGLFramebufferObject>
+#include <QtQuick/QSGTexture>
 #include <QtQuick/QSGTransformNode>
 #include <QtQuick/QSGSimpleTextureNode>
 #include <QtQuick/QQuickWindow>
-#include <QtOpenGL/QOpenGLFramebufferObject>
-#include <QTimer>
 #include "QQuickAndroidOffscreenView.h"
 
 namespace {
@@ -284,18 +283,12 @@ QSGNode * QQuickAndroidOffscreenView::updatePaintNode(QSGNode * node, UpdatePain
 		format.setAttachment(QOpenGLFramebufferObject::NoAttachment); // CombinedDepthStencil
 		n->fbo_.reset(new QOpenGLFramebufferObject(fboSize, format));
 		auto textureId = n->fbo_->texture();
-
-		QRhiTexture::NativeTexture native{0, static_cast<int>(textureId)};
-
-		std::unique_ptr<QRhi> m_rhi;
-		QRhiNullInitParams params;
-		m_rhi.reset(QRhi::create(QRhi::Null, &params));
-
-		QRhiTexture * rhi_texture = m_rhi->newTexture(QRhiTexture::RGBA8, fboSize);
-		rhi_texture->createFrom(native);
-
 		n->setTexture(
-			window()->createTextureFromRhiTexture(rhi_texture));
+			QNativeInterface::QSGOpenGLTexture::fromNative(
+				textureId,
+				window(),
+				n->fbo_->size(),
+				QQuickWindow::TextureHasAlphaChannel));
 		n->setOwnsTexture(true);
 		n->setFiltering(QSGTexture::Nearest);
 		n->setRect(0, 0, width(), height());
@@ -305,6 +298,8 @@ QSGNode * QQuickAndroidOffscreenView::updatePaintNode(QSGNode * node, UpdatePain
 	if (redraw_texture_needed_)
 	{
 		redraw_texture_needed_ = false;
+
+		window()->beginExternalCommands();
 		n->fbo_->bind();
 		{
 			glViewport(0, 0, n->fbo_->width(), n->fbo_->height());
@@ -320,6 +315,8 @@ QSGNode * QQuickAndroidOffscreenView::updatePaintNode(QSGNode * node, UpdatePain
 			}
 		}
 		n->fbo_->bindDefault();
+		window()->endExternalCommands();
+
 		n->markDirty(QSGNode::DirtyMaterial);
 	}
 
