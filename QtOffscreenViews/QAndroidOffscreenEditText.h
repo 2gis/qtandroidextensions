@@ -349,8 +349,8 @@ public:
 	void selectAll();
 	void setSelection(int index);
 	void setSelection(int start, int stop);
-	int getSelectionStart();
-	int getSelectionEnd();
+	int getSelectionStart() const;
+	int getSelectionEnd() const;
 	int getSelectionTop() const;
 	int getSelectionBottom() const;
 	void setHorizontalScrollBarEnabled(bool horizontalScrollBarEnabled);
@@ -392,6 +392,9 @@ signals:
 	void onEnter();
 
 	void selectionChanged();
+
+	//! Emitted when selection of text or cursor position has been changed.
+	void textSelectionChanged();
 
 	//! Emitted when content height changed
 	void contentHeightChanged(int height);
@@ -606,6 +609,7 @@ protected:
 
 private slots:
 	void javaSetSelectionInfo(int top, int bottom);
+	void javaSetTextSelection(int start, int end);
 	void javaOnContentHeightChanged(int height);
 	void javaOnHasAcceptableInputChanged(bool hasAcceptableInput);
 
@@ -619,6 +623,8 @@ private:
 
 private:
 	int paint_flags_;
+	int selection_start_ = 0;
+	int selection_end_ = 0;
 	int selection_top_ = 0;
 	int selection_bottom_ = 0;
 	int content_height_ = 0;

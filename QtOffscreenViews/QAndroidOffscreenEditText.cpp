@@ -132,6 +132,27 @@ Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeSetSelectionInfo(
 	}
 }
 
+Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeTextSelectionChanged(
+	JNIEnv *,
+	jobject,
+	jlong param,
+	jint start,
+	jint end)
+{
+	if (param)
+	{
+		if (QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(
+				reinterpret_cast<QAndroidOffscreenView*>(reinterpret_cast<void*>(param))))
+		{
+			QMetaObject::invokeMethod(edit, "javaSetTextSelection", Q_ARG(int, start),  Q_ARG(int, end));
+		}
+	}
+	else
+	{
+		qWarning() << __PRETTY_FUNCTION__ << "Zero param!";
+	}
+}
+
 Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnContentHeightChanged(
 	JNIEnv *,
 	jobject,
@@ -189,6 +210,7 @@ QAndroidOffscreenEditText::QAndroidOffscreenEditText(
 				{ "nativeOnKey", "(JZI)Z", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnKey) },
 				{ "nativeOnEditorAction", "(JI)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnEditorAction) },
 				{ "nativeSetSelectionInfo", "(JII)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeSetSelectionInfo) },
+				{ "nativeTextSelectionChanged", "(JII)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeTextSelectionChanged) },
 				{ "nativeOnContentHeightChanged", "(JI)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnContentHeightChanged) },
 				{ "nativeOnHasAcceptableInputChanged", "(JZ)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnHasAcceptableInputChanged) },
 			});
@@ -264,6 +286,13 @@ void QAndroidOffscreenEditText::javaSetSelectionInfo(int top, int bottom)
 	selection_top_ = top;
 	selection_bottom_ = bottom;
 	emit selectionChanged();
+}
+
+void QAndroidOffscreenEditText::javaSetTextSelection(int start, int end)
+{
+	selection_start_ = start;
+	selection_end_ = end;
+	emit textSelectionChanged();
 }
 
 void QAndroidOffscreenEditText::setText(const QString & text)
@@ -956,22 +985,6 @@ void QAndroidOffscreenEditText::setSelection(int start, int stop)
 	}
 }
 
-int QAndroidOffscreenEditText::getSelectionStart()
-{
-	try
-	{
-		if (QJniObject & view = offscreenView())
-		{
-			return view.callInt("getSelectionStart");
-		}
-	}
-	catch (const std::exception & e)
-	{
-		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
-	}
-	return 0; // No selection start
-}
-
 void QAndroidOffscreenEditText::setHorizontalScrollBarEnabled(bool horizontalScrollBarEnabled)
 {
 	try
@@ -1002,20 +1015,14 @@ void QAndroidOffscreenEditText::setVerticalScrollBarEnabled(bool verticalScrollB
 	}
 }
 
-int QAndroidOffscreenEditText::getSelectionEnd()
+int QAndroidOffscreenEditText::getSelectionStart() const
 {
-	try
-	{
-		if (QJniObject & view = offscreenView())
-		{
-			return view.callInt("getSelectionEnd");
-		}
-	}
-	catch (const std::exception & e)
-	{
-		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
-	}
-	return 0; // No selection end
+	return selection_start_;
+}
+
+int QAndroidOffscreenEditText::getSelectionEnd() const
+{
+	return selection_end_;
 }
 
 int QAndroidOffscreenEditText::getSelectionTop() const

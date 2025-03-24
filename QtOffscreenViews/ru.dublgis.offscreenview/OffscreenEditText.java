@@ -47,7 +47,6 @@ import android.text.InputType;
 import android.text.Layout.Alignment;
 import android.text.StaticLayout;
 import android.text.TextWatcher;
-import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
 import android.text.method.TransformationMethod;
 import android.view.inputmethod.EditorInfo;
@@ -62,15 +61,10 @@ import android.graphics.Color;
 import android.text.TextUtils;
 import android.text.InputFilter;
 import android.text.Layout;
-import android.view.View.MeasureSpec;
-import android.content.Context;
 import android.content.ClipboardManager;
 import android.content.ClipData;
 import java.lang.CharSequence;
-import android.os.Build;
 import android.text.Spanned;
-
-import android.view.View;
 
 import ru.dublgis.androidhelpers.Log;
 import ru.dublgis.offscreenview.inputmask.InputMaskFormatter;
@@ -81,7 +75,6 @@ class OffscreenEditText extends OffscreenView
     protected String text_ = "";
     boolean single_line_ = false;
     boolean need_to_reflow_text_ = false, need_to_reflow_hint_ = false;
-    int selection_start_ = 0, selection_end_ = 0;
     int selection_top_ = 0, selection_bottom_ = 0;
     private Object variables_mutex_ = new Object();
 
@@ -483,7 +476,7 @@ class OffscreenEditText extends OffscreenView
                             {
                                 need_to_reflow_hint_ = false;
                             }
-                            
+
                             if (need_to_reflow_text_ || need_to_reflow_hint_)
                             {
                                 // Text selection markers may obtain invicibility if we call setText()
@@ -572,10 +565,8 @@ class OffscreenEditText extends OffscreenView
         {
             try {
                 super.onSelectionChanged(selStart, selEnd);
-                synchronized(variables_mutex_)
-                {
-                    selection_start_ = selStart;
-                    selection_end_ = selEnd;
+                synchronized(nativePtrMutex()) {
+                    nativeTextSelectionChanged(getNativePtr(), selStart, selEnd);
                 }
             } catch (final Throwable e) {
                 Log.e(TAG, "Exception in onSelectionChanged:", e);
@@ -708,6 +699,7 @@ class OffscreenEditText extends OffscreenView
     public native boolean nativeOnKey(long nativePtr, boolean down, int keyCode);
     public native void nativeOnEditorAction(long nativePtr, int action);
     public native void nativeSetSelectionInfo(long nativePtr, int top, int bottom);
+    public native void nativeTextSelectionChanged(long nativePtr, int start, int stop);
     public native void nativeOnContentHeightChanged(long nativePtr, int height);
     public native void nativeOnHasAcceptableInputChanged(long nativePtr, boolean hasAcceptableInput);
 
@@ -1584,22 +1576,6 @@ class OffscreenEditText extends OffscreenView
                 }
             }
         });
-    }
-
-    int getSelectionStart()
-    {
-        synchronized(variables_mutex_)
-        {
-            return selection_start_;
-        }
-    }
-
-    int getSelectionEnd()
-    {
-        synchronized(variables_mutex_)
-        {
-            return selection_end_;
-        }
     }
 
     int getSystemDrawMode()

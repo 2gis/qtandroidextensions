@@ -42,6 +42,8 @@ class QQuickAndroidOffscreenEditText: public QQuickAndroidOffscreenView
 {
 	Q_OBJECT
 	Q_PROPERTY(QString text READ getText WRITE setText NOTIFY onTextChanged)
+	Q_PROPERTY(int selectionStart READ getSelectionStart NOTIFY textSelectionChanged)
+	Q_PROPERTY(int selectionEnd READ getSelectionEnd NOTIFY textSelectionChanged)
 	Q_PROPERTY(int selectionTop READ getSelectionTop NOTIFY selectionChanged)
 	Q_PROPERTY(int selectionBottom READ getSelectionBottom NOTIFY selectionChanged)
 	Q_PROPERTY(int contentHeight READ getContentHeight NOTIFY contentHeightChanged)
@@ -200,6 +202,10 @@ public slots:
 	//! Y coordinate(in pixels) of the selection/cursor lower bound.
 	int getSelectionBottom() const { return androidEditText()->getSelectionBottom(); }
 
+	int getSelectionStart() const { return androidEditText()->getSelectionStart(); }
+
+	int getSelectionEnd() const { return androidEditText()->getSelectionEnd(); }
+
 	void setAllowFullscreenKeyboard(bool allow) { androidEditText()->setAllowFullscreenKeyboard(allow); }
 
 	void setHorizontalScrollBarEnabled(bool horizontalScrollBarEnabled) { androidEditText()->setHorizontalScrollBarEnabled(horizontalScrollBarEnabled); }
@@ -237,6 +243,7 @@ public slots:
 signals:
 	void onTextChanged(QString text);
 	void selectionChanged();
+	void textSelectionChanged();
 	void contentHeightChanged(int height);
 
 	//! Emitted when inputMask is set and text is acceptable as a final result or not
