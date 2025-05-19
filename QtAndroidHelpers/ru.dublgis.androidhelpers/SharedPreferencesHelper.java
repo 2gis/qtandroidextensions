@@ -73,7 +73,6 @@ final public class SharedPreferencesHelper
 	public void WriteString(String key, String value)
 	{
 		try {
-			Log.i(TAG, "WriteString " + value + " by key " + key);
 			SharedPreferences sharedPref = getPreferences();
 			SharedPreferences.Editor editor = sharedPref.edit();
 			editor.putString(key, value);
