@@ -1098,6 +1098,10 @@ public abstract class OffscreenView
     //! Called from C++ to change size of the view.
     public void resizeOffscreenView(final int w, final int h)
     {
+        if (w < 0 || h < 0) {
+            Log.w(TAG, "resizeOffscreenView: ignoring resize to " + w + "x" + h);
+            return;
+        }
         Log.i(TAG, "resizeOffscreenView " + w + "x" + h);
         synchronized (texture_mutex_) {
             synchronized (view_variables_mutex_) {

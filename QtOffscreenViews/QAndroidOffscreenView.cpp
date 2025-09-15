@@ -484,6 +484,11 @@ static inline void clearGlRect(int l, int b, int w, int h, const QColor & fill_c
 
 void QAndroidOffscreenView::paintGL(int l, int b, int w, int h, bool reverse_y)
 {
+	if (w <= 0 || h <=0)
+	{
+		qWarning() << __PRETTY_FUNCTION__ << "Ignoring paint with size:" << w << "x" << h;
+		return;
+	}
 	if(tex_.isAllocated() && !view_painted_
 		&& ((tex_.getTextureSize().height() != last_texture_height_ && last_texture_height_ > 0)
 			|| (tex_.getTextureSize().width() != last_texture_width_ && last_texture_width_ > 0)))
@@ -1151,17 +1156,22 @@ int QAndroidOffscreenView::getMeasuredHeight()
 
 void QAndroidOffscreenView::resize(const QSize & newsize)
 {
+	if (newsize.width() <= 0 || newsize.height() <=0)
+	{
+		qWarning() << __PRETTY_FUNCTION__ << "Ignoring resize:" << size_ << "->" << newsize;
+		return;
+	}
 	QSize size = newsize;
 	if (!s_max_gl_size.isEmpty())
 	{
 		size = QSize(qMin(size.width(), s_max_gl_size.width()), qMin(size.height(), s_max_gl_size.height()));
 	}
-
 	if (size_ != size)
 	{
 		try
 		{
-			qDebug() << __PRETTY_FUNCTION__ << "Old size:" << size_ << "New size:" << size;
+			qDebug() << __PRETTY_FUNCTION__ << "Apply resize:" << size_
+				<< "->" << newsize << "->" << size;
 			size_ = size;
 			{
 				QMutexLocker locker(&bitmaps_mutex_);
