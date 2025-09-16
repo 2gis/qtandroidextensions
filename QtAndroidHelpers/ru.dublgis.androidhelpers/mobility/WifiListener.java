@@ -141,6 +141,7 @@ public class WifiListener extends BroadcastReceiver
 		try {
 			if (mWifiMan != null && mRegistered) {
 				getContext().unregisterReceiver(this);
+				mRegistered = false;
 			}
 		} catch(Throwable e) {
 			Log.e(TAG, "Exception while stopping: ", e);
