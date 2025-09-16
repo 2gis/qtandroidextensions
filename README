@@ -16,7 +16,9 @@ Please note that the modules are published under different open-source
 licenses. Most part is distributed under BSD License, parts are under GNU LGPL
 License (please refer to the headers in the source files).
 
-This library supports Qt 5 and (partially) Qt 4.8 port to Android made by 2GIS.
+This library supports Qt 6 in the master branch and Qt 5 and (partially) Qt 4.8
+port to Android made by 2GIS in qt-master branch (4.8 support has not been
+used / tested for years).
 
 The library is currently distributed only as a set of C++ and Java source files;
 you have to create build projects or include the sources into your project.
@@ -29,7 +31,7 @@ QJniHelpers
 ===============================================================================
 
 Qt/C++ JNI helper classes.
-Classes to get Android Activity object under Qt 4.8 and Qt 5.
+Classes to get Android Activity and object under variout Qt versions.
 
 
 QtOffscreenViews
