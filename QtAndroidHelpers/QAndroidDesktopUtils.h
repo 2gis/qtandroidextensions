@@ -96,6 +96,12 @@ bool openURL(const QString & url);
 bool openFile(const QString & fileName, const QString & mimeType);
 void sendData(const QByteArray & data, const QString & mimeType);
 bool sendFiles(const QStringList & filePaths, const QString & mimeType);
+bool isPinShortcutAvailable();
+bool createPinShortcut(
+	const QString & shortcutId,
+	const QString & label,
+	const QString & deeplinkUrl,
+	const QByteArray & imageData);
 bool installApk(const QString & apk);
 void uninstallApk(const QString & packagename);
 

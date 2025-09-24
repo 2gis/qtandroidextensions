@@ -299,6 +299,49 @@ bool sendFiles(const QStringList & filePaths, const QString & mimeType)
 }
 
 
+bool isPinShortcutAvailable()
+{
+	return QJniClass(c_desktoputils_class_name_).callStaticParamBoolean(
+		"isPinShortcutAvailable"
+		, "Landroid/content/Context;"
+		, QAndroidQPAPluginGap::Context().jObject());
+}
+
+bool createPinShortcut(
+	const QString & shortcutId,
+	const QString & label,
+	const QString & deeplinkUrl,
+	const QByteArray & imageData)
+{
+	try
+	{
+		QJniEnvPtr jep;
+
+		const jbyte * const jbytes = reinterpret_cast<const jbyte*>(imageData.data());
+		jbyteArray jba = jep.env()->NewByteArray(imageData.size());
+		jep.env()->SetByteArrayRegion(jba, 0, imageData.size(), jbytes);
+
+		jboolean result = QJniClass(c_desktoputils_class_name_).callStaticParamBoolean(
+			"createPinShortcut"
+			, "Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[B"
+			, QAndroidQPAPluginGap::Context().jObject()
+			, QJniLocalRef(shortcutId).jObject()
+			, QJniLocalRef(label).jObject()
+			, QJniLocalRef(deeplinkUrl).jObject()
+			, jba);
+
+		jep.env()->DeleteLocalRef(jba);
+
+		return result;
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in createPinShortcut:" << e.what();
+		return false;
+	}
+}
+
+
 bool installApk(const QString & apk)
 {
 	QJniClass du(c_desktoputils_class_name_);
