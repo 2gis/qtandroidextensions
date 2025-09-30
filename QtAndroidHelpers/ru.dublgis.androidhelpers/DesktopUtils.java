@@ -737,13 +737,18 @@ public class DesktopUtils
                 return false;
             }
 
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(deeplinkUrl));
+            Uri uri = Uri.parse(deeplinkUrl).buildUpon()
+                    .appendQueryParameter("utm_medium",  "widget")
+                    .build();
+
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             intent.setPackage(ctx.getPackageName());
 
             ShortcutInfo shortcutInfo = new ShortcutInfo.Builder(ctx, shortcutId)
                 .setShortLabel(label)
-                .setIcon(android.graphics.drawable.Icon.createWithBitmap(bitmap))
+                .setIcon(android.graphics.drawable.Icon.createWithAdaptiveBitmap(bitmap))
                 .setIntent(intent)
                 .build();
 
