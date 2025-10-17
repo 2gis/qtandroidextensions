@@ -42,8 +42,6 @@ import java.util.Locale;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.content.pm.ShortcutInfo;
-import android.content.pm.ShortcutManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.LocaleList;
@@ -76,6 +74,9 @@ import android.provider.Settings.Secure;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.FileProvider;
+import androidx.core.content.pm.ShortcutInfoCompat;
+import androidx.core.content.pm.ShortcutManagerCompat;
+import androidx.core.graphics.drawable.IconCompat;
 import android.media.RingtoneManager;
 import android.media.Ringtone;
 import android.text.TextUtils;
@@ -700,22 +701,7 @@ public class DesktopUtils
     }
 
     public static boolean isPinShortcutAvailable(final Context ctx) {
-        try {
-            // Android 8.0+
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-                return false;
-            }
-
-            final ShortcutManager shortcutManager = (ShortcutManager) ctx.getSystemService(Context.SHORTCUT_SERVICE);
-            if (shortcutManager == null) {
-                return false;
-            }
-
-            return shortcutManager.isRequestPinShortcutSupported();
-        } catch (final Throwable e) {
-            Log.e(TAG, "isPinShortcutAvailable exception (will return 'false'): ", e);
-            return false;
-        }
+        return ShortcutManagerCompat.isRequestPinShortcutSupported(ctx);
     }
 
     public static boolean createPinShortcut(
@@ -746,14 +732,13 @@ public class DesktopUtils
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             intent.setPackage(ctx.getPackageName());
 
-            ShortcutInfo shortcutInfo = new ShortcutInfo.Builder(ctx, shortcutId)
+            ShortcutInfoCompat shortcutInfo = new ShortcutInfoCompat.Builder(ctx, shortcutId)
                 .setShortLabel(label)
-                .setIcon(android.graphics.drawable.Icon.createWithAdaptiveBitmap(bitmap))
+                .setIcon(IconCompat.createWithAdaptiveBitmap(bitmap))
                 .setIntent(intent)
                 .build();
 
-            final ShortcutManager shortcutManager = (ShortcutManager) ctx.getSystemService(Context.SHORTCUT_SERVICE);
-            return shortcutManager.requestPinShortcut(shortcutInfo, null);
+            return ShortcutManagerCompat.requestPinShortcut(ctx, shortcutInfo, null);
         } catch (final Throwable e) {
             Log.e(TAG, "Exception while creating pinned shortcut: ", e);
             return false;
