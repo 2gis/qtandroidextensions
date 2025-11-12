@@ -35,6 +35,7 @@
 */
 
 #include <QtCore/QDebug>
+#include <QtCore/QMutex>
 #include <QJniHelpers/QAndroidQPAPluginGap.h>
 #include "QAndroidDesktopUtils.h"
 #include "QAndroidSpeechRecognizer.h"
@@ -995,6 +996,8 @@ bool QAndroidSpeechRecognizer::startVoiceRecognitionActivity(
 
 bool QAndroidSpeechRecognizer::isRecognitionAvailableCached() const
 {
+	static QMutex s_mutex;
+	QMutexLocker locker(&s_mutex);
 	static bool checked = false;
 	static bool available = false;
 	if (!checked)
@@ -1009,6 +1012,8 @@ bool QAndroidSpeechRecognizer::isRecognitionAvailableCached() const
 
 bool QAndroidSpeechRecognizer::isVoiceRecognitionActivityAvailableCached() const
 {
+	static QMutex s_mutex;
+	QMutexLocker locker(&s_mutex);
 	static bool checked = false;
 	static bool available = false;
 	if (!checked)
