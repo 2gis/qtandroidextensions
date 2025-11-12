@@ -42,6 +42,8 @@ import java.util.Locale;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.LocaleList;
 import android.os.Parcelable;
 import java.io.File;
@@ -72,6 +74,9 @@ import android.provider.Settings.Secure;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.FileProvider;
+import androidx.core.content.pm.ShortcutInfoCompat;
+import androidx.core.content.pm.ShortcutManagerCompat;
+import androidx.core.graphics.drawable.IconCompat;
 import android.media.RingtoneManager;
 import android.media.Ringtone;
 import android.text.TextUtils;
@@ -691,6 +696,51 @@ public class DesktopUtils
             return true;
         } catch (final Throwable e) {
             Log.e(TAG, "Exception while sending files: ", e);
+            return false;
+        }
+    }
+
+    public static boolean isPinShortcutAvailable(final Context ctx) {
+        return ShortcutManagerCompat.isRequestPinShortcutSupported(ctx);
+    }
+
+    public static boolean createPinShortcut(
+            final Context ctx,
+            final String shortcutId,
+            final String label,
+            final String deeplinkUrl,
+            final byte[] imageData)
+    {
+        Log.d(TAG, "Will create pinned shortcut for deeplink: " + deeplinkUrl);
+        try {
+            if (!isPinShortcutAvailable(ctx)) {
+                return false;
+            }
+
+            Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+            if (bitmap == null) {
+                Log.e(TAG, "Failed to decode bitmap from byte array");
+                return false;
+            }
+
+            Uri uri = Uri.parse(deeplinkUrl).buildUpon()
+                    .appendQueryParameter("utm_medium",  "widget")
+                    .build();
+
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.setPackage(ctx.getPackageName());
+
+            ShortcutInfoCompat shortcutInfo = new ShortcutInfoCompat.Builder(ctx, shortcutId)
+                .setShortLabel(label)
+                .setIcon(IconCompat.createWithAdaptiveBitmap(bitmap))
+                .setIntent(intent)
+                .build();
+
+            return ShortcutManagerCompat.requestPinShortcut(ctx, shortcutInfo, null);
+        } catch (final Throwable e) {
+            Log.e(TAG, "Exception while creating pinned shortcut: ", e);
             return false;
         }
     }
