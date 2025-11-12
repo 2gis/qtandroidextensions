@@ -996,32 +996,26 @@ bool QAndroidSpeechRecognizer::startVoiceRecognitionActivity(
 
 bool QAndroidSpeechRecognizer::isRecognitionAvailableCached() const
 {
-	static QMutex s_mutex;
-	QMutexLocker locker(&s_mutex);
-	static bool checked = false;
-	static bool available = false;
-	if (!checked)
+	static bool available = [this]()
 	{
-		available = isRecognitionAvailable();
-		checked = true;
-		qDebug() << "isRecognitionAvailableCached:" << available;
-	}
+		const bool available = isRecognitionAvailable();
+		qDebug() << "SpeechRecognizer update isRecognitionAvailableCached value:" << available;
+		return available;
+
+	}();
 	return available;
 }
 
 
 bool QAndroidSpeechRecognizer::isVoiceRecognitionActivityAvailableCached() const
 {
-	static QMutex s_mutex;
-	QMutexLocker locker(&s_mutex);
-	static bool checked = false;
-	static bool available = false;
-	if (!checked)
+	static bool available = [this]()
 	{
-		available = isVoiceRecognitionActivityAvailable();
-		checked = true;
-		qDebug() << "isVoiceRecognitionActivityAvailableCached:" << available;
-	}
+		const bool available = isVoiceRecognitionActivityAvailable();
+		qDebug() << "SpeechRecognizer update isVoiceRecognitionActivityAvailableCached value:" << available;
+		return available;
+
+	}();
 	return available;
 }
 
