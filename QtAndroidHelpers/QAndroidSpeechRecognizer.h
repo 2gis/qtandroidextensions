@@ -6,7 +6,7 @@
 
 	Distrbuted under The BSD License
 
-	Copyright (c) 2016, DoubleGIS, LLC.
+	Copyright (c) 2016-2025, DoubleGIS, LLC.
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -127,7 +127,7 @@ public slots:
 	// but no permission to use it.
 	bool isRecognitionAvailable() const;
 	// Version of isRecognitionAvailable() that only does the check once per session.
-	bool isRecognitionAvailableCached() const;
+	static bool isRecognitionAvailableCached();
 	// Make sure to call setPermissionRequestCode(int) before doing it.
 	bool startListening(const QString & action);
 	void stopListening();
@@ -181,9 +181,9 @@ public slots:
 	void setPermissionRequestCode(int code);
 
 	// See startVoiceRecognitionActivity
-	bool isVoiceRecognitionActivityAvailable() const;
+	static bool isVoiceRecognitionActivityAvailable();
 	// Version of isVoiceRecognitionActivityAvailable() that only does the check once per session.
-	bool isVoiceRecognitionActivityAvailableCached() const;
+	static bool isVoiceRecognitionActivityAvailableCached();
 
 	// This is a function which allows to implement voice recognition without implementing
 	// any UI. In this case, you have to implement onActivityResult(int requestCode,
@@ -193,9 +193,9 @@ public slots:
 	// If prompt is empty, it is not set for the activity.
 	// If language_model is empty, ANDROID_RECOGNIZERINTENT_LANGUAGE_MODEL_FREE_FORM is used.
 	bool startVoiceRecognitionActivity(
-		int request_code
-		, const QString & prompt = QString()
-		, const QString & language_model = QString()) const;
+		int request_code,
+		const QString & prompt = QString(),
+		const QString & language_model = QString()) const;
 
 signals:
 	void listeningChanged(bool listening);

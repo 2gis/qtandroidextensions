@@ -6,7 +6,7 @@
 
 	Distrbuted under The BSD License
 
-	Copyright (c) 2016, DoubleGIS, LLC.
+	Copyright (c) 2016-2025, DoubleGIS, LLC.
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or without
@@ -950,7 +950,7 @@ QString QAndroidSpeechRecognizer::errorCodeToMessage(int code)
 }
 
 
-bool QAndroidSpeechRecognizer::isVoiceRecognitionActivityAvailable() const
+bool QAndroidSpeechRecognizer::isVoiceRecognitionActivityAvailable()
 {
 	try
 	{
@@ -969,9 +969,9 @@ bool QAndroidSpeechRecognizer::isVoiceRecognitionActivityAvailable() const
 
 
 bool QAndroidSpeechRecognizer::startVoiceRecognitionActivity(
-	int request_code
-	, const QString & prompt
-	, const QString & language_model) const
+	int request_code,
+	const QString & prompt,
+	const QString & language_model) const
 {
 	try
 	{
@@ -995,27 +995,25 @@ bool QAndroidSpeechRecognizer::startVoiceRecognitionActivity(
 }
 
 
-bool QAndroidSpeechRecognizer::isRecognitionAvailableCached() const
+bool QAndroidSpeechRecognizer::isRecognitionAvailableCached()
 {
-	static bool available = [this]()
+	static bool available = []()
 	{
-		const bool available = isRecognitionAvailable();
+		const bool available = isRecognitionAvailableStatic();
 		qDebug() << "SpeechRecognizer update isRecognitionAvailableCached value:" << available;
 		return available;
-
 	}();
 	return available;
 }
 
 
-bool QAndroidSpeechRecognizer::isVoiceRecognitionActivityAvailableCached() const
+bool QAndroidSpeechRecognizer::isVoiceRecognitionActivityAvailableCached()
 {
-	static bool available = [this]()
+	static bool available = []()
 	{
 		const bool available = isVoiceRecognitionActivityAvailable();
 		qDebug() << "SpeechRecognizer update isVoiceRecognitionActivityAvailableCached value:" << available;
 		return available;
-
 	}();
 	return available;
 }
