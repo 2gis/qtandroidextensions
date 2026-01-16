@@ -208,7 +208,6 @@ class OffscreenEditText extends OffscreenView
                     {
                         onInterceptClipDataToPlainText();
                     }
-                                onInterceptClipDataToPlainText();
                 }
             } catch (final Throwable e) {
                 Log.e(TAG, "Exception in onTextContextMenuItem:", e);
