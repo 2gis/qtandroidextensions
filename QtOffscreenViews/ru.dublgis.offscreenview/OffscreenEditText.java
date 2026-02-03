@@ -91,6 +91,40 @@ class OffscreenEditText extends OffscreenView
         private boolean allow_rich_text_ = true;
         private MyTextWatcher textWatcher_ = null;
 
+        private Typeface forcedTypeface_ = null;
+
+        public void setForcedTypeface(Typeface tf)
+        {
+            forcedTypeface_ = tf;
+            super.setTypeface(tf);
+        }
+
+        @Override
+        public void setTypeface(Typeface tf)
+        {
+            if (tf == null && forcedTypeface_ != null)
+            {
+                Log.i(TAG, "Preventing typeface reset, reapplying forcedTypeface");
+                super.setTypeface(forcedTypeface_);
+                return;
+            }
+
+            super.setTypeface(tf);
+        }
+
+        @Override
+        public void setTypeface(Typeface tf, int style)
+        {
+            if (tf == null && forcedTypeface_ != null)
+            {
+                Log.i(TAG, "Preventing typeface reset, reapplying forcedTypeface");
+                super.setTypeface(forcedTypeface_, style);
+                return;
+            }
+
+            super.setTypeface(tf, style);
+        }
+
         class MyTextWatcher implements TextWatcher
         {
             private InputMaskFormatter formatter_;
@@ -763,7 +797,7 @@ class OffscreenEditText extends OffscreenView
             public void run(){
                 try
                 {
-                    ((MyEditText)getView()).setTypeface(Typeface.create((name.length() > 0)? name: null, style));
+                    ((MyEditText)getView()).setForcedTypeface(Typeface.create((name.length() > 0)? name: null, style));
                 }
                 catch (final Throwable e)
                 {
@@ -781,7 +815,7 @@ class OffscreenEditText extends OffscreenView
                 try
                 {
                     Typeface face = Typeface.createFromFile(filename);
-                    ((MyEditText)getView()).setTypeface((style==0)? face: Typeface.create(face, style));
+                    ((MyEditText)getView()).setForcedTypeface((style==0)? face: Typeface.create(face, style));
                 }
                 catch (final Throwable e)
                 {
@@ -801,8 +835,8 @@ class OffscreenEditText extends OffscreenView
                 {
                     try
                     {
-                        Typeface face = Typeface.createFromAsset(a.getAssets(), filename);
-                        ((MyEditText)getView()).setTypeface((style==0)? face: Typeface.create(face, style));
+                    Typeface face = Typeface.createFromAsset(a.getAssets(), filename);
+                    ((MyEditText)getView()).setForcedTypeface((style==0)? face: Typeface.create(face, style));
                     }
                     catch (final Throwable e)
                     {
