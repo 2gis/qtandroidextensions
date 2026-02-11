@@ -258,6 +258,8 @@ signals:
 	void backPressed();
 	void backReleased();
 
+	void textEdited(QString text, int start, int before, int count);
+
 protected slots:
 	virtual void etTextChanged(QString text, int start, int before, int count);
 	virtual void etKeyBack(bool down);
