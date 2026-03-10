@@ -55,7 +55,6 @@ static QImage::Format AndroidBitmapFormat_to_QImageFormat(uint32_t abf)
 
 		case ANDROID_BITMAP_FORMAT_RGBA_8888:
 			return QImage::Format_ARGB32_Premultiplied;
-
 		default:
 			qCritical() << "ERROR: Invalid Android bitmap format:" << abf;
 			return QImage::Format_Invalid;
@@ -86,6 +85,25 @@ QAndroidJniImagePair::QAndroidJniImagePair(int bitness)
 	: bitness_(bitness)
 {
 	dispose();
+}
+
+
+QAndroidJniImagePair::QAndroidJniImagePair(const QImage & sourceImage, bool convertForAndroidNow, int bitness)
+	: bitness_(bitness)
+{
+	if (sourceImage.size().isEmpty())
+	{
+		dispose();
+	}
+	else
+	{
+		resize(sourceImage.size());
+		createQPainter()->drawImage(0, 0, sourceImage);
+		if (convertForAndroidNow && bitness == 32)
+		{
+			convert32BitImageFromQtToAndroid();
+		}
+	}
 }
 
 

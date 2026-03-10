@@ -67,9 +67,11 @@ public:
 	/*!
 	 * Create an image pair object for given color resoultion.
 	 * To actually allocate the bitmap call resize().
-	 * \param bitness can be 32 or 16.
+	 * \param bitness can be 32 or 16 (32 is highly recommended as it typically has better
+	 * performance; 16 is more for backward compatibility).
 	 */
 	QAndroidJniImagePair(int bitness = 32);
+	QAndroidJniImagePair(const QImage & sourceImage, bool convertForAndroidNow, int bitness = 32);
 	virtual ~QAndroidJniImagePair();
 
 	int bitness() const { return bitness_; }
