@@ -50,33 +50,28 @@ static QImage::Format AndroidBitmapFormat_to_QImageFormat(uint32_t abf)
 {
 	switch(abf)
 	{
-		case ANDROID_BITMAP_FORMAT_RGB_565:
-			return QImage::Format_RGB16;
-
-		case ANDROID_BITMAP_FORMAT_RGBA_8888:
-			return QImage::Format_ARGB32_Premultiplied;
-		default:
-			qCritical() << "ERROR: Invalid Android bitmap format:" << abf;
-			return QImage::Format_Invalid;
+	case ANDROID_BITMAP_FORMAT_RGB_565:
+		return QImage::Format_RGB16;
+	case ANDROID_BITMAP_FORMAT_RGBA_8888:
+		return QImage::Format_ARGB32_Premultiplied;
+	default:
+		qCritical() << "ERROR: Invalid Android bitmap format:" << abf;
+		return QImage::Format_Invalid;
 	}
 }
 
 
 static QImage::Format qtImageFormatForBitness(int bitness)
 {
-	// Now, everything is rewritten so the format mapping happens inside of
-	// AndroidBitmapFormat_to_QImageFormat().
 	switch(bitness)
 	{
-		case 32:
-			return AndroidBitmapFormat_to_QImageFormat(ANDROID_BITMAP_FORMAT_RGBA_8888);
-
-		case 16:
-			return AndroidBitmapFormat_to_QImageFormat(ANDROID_BITMAP_FORMAT_RGB_565);
-
-		default:
-			qCritical() << "Invalid image bitness:" << bitness;
-			return AndroidBitmapFormat_to_QImageFormat(ANDROID_BITMAP_FORMAT_RGBA_8888);
+	case 32:
+		return AndroidBitmapFormat_to_QImageFormat(ANDROID_BITMAP_FORMAT_RGBA_8888);
+	case 16:
+		return AndroidBitmapFormat_to_QImageFormat(ANDROID_BITMAP_FORMAT_RGB_565);
+	default:
+		qCritical() << "Invalid image bitness:" << bitness;
+		return AndroidBitmapFormat_to_QImageFormat(ANDROID_BITMAP_FORMAT_RGBA_8888);
 	}
 }
 

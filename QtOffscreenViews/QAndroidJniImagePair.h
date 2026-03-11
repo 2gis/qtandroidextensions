@@ -60,7 +60,7 @@
 class QAndroidJniImagePair
 	: public QObject
 {
-    Q_OBJECT
+	Q_OBJECT
 	Q_PROPERTY(int bitness READ bitness)
 	Q_PROPERTY(QSize size READ size WRITE resize)
 public:
@@ -72,7 +72,7 @@ public:
 	 */
 	QAndroidJniImagePair(int bitness = 32);
 	QAndroidJniImagePair(const QImage & sourceImage, bool convertForAndroidNow, int bitness = 32);
-	virtual ~QAndroidJniImagePair();
+	~QAndroidJniImagePair();
 
 	int bitness() const { return bitness_; }
 
