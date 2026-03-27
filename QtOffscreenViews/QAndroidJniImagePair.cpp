@@ -9,7 +9,7 @@
 
   Distrbuted under The BSD License
 
-  Copyright (c) 2014, DoubleGIS, LLC.
+  Copyright (c) 2014-2026, DoubleGIS, LLC.
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -46,7 +46,10 @@
 using namespace QJniHelpers;
 
 
-static QImage::Format AndroidBitmapFormat_to_QImageFormat(uint32_t abf)
+namespace
+{
+
+QImage::Format AndroidBitmapFormat_to_QImageFormat(uint32_t abf)
 {
 	switch(abf)
 	{
@@ -61,7 +64,7 @@ static QImage::Format AndroidBitmapFormat_to_QImageFormat(uint32_t abf)
 }
 
 
-static QImage::Format qtImageFormatForBitness(int bitness)
+QImage::Format qtImageFormatForBitness(int bitness)
 {
 	switch(bitness)
 	{
@@ -75,6 +78,15 @@ static QImage::Format qtImageFormatForBitness(int bitness)
 	}
 }
 
+} // anonymous namespace
+
+
+bool QAndroidJniImagePair::isSupportedBitness(int bitness)
+{
+	return bitness == 32 || bitness == 16;
+}
+
+
 
 QAndroidJniImagePair::QAndroidJniImagePair(int bitness)
 	: bitness_(bitness)
@@ -84,26 +96,40 @@ QAndroidJniImagePair::QAndroidJniImagePair(int bitness)
 
 
 QAndroidJniImagePair::QAndroidJniImagePair(const QImage & sourceImage, bool convertForAndroidNow, int bitness)
-	: bitness_(bitness)
+	: bitness_(isSupportedBitness(bitness) ? bitness : 32)
 {
+	assign(sourceImage, convertForAndroidNow, bitness_);
+}
+
+
+QAndroidJniImagePair & QAndroidJniImagePair::assign(const QImage & sourceImage, bool convertForAndroidNow, int bitness)
+{
+	bool disposed = false;
+
+	if (bitness != bitness_ && isSupportedBitness(bitness))
+	{
+		bitness_ = bitness;
+		dispose();
+		disposed = true;
+	}
+
 	if (sourceImage.size().isEmpty())
 	{
-		dispose();
+		if (!disposed)
+		{
+			dispose();
+		}
 	}
 	else
 	{
 		resize(sourceImage.size());
 		createQPainter()->drawImage(0, 0, sourceImage);
-		if (convertForAndroidNow && bitness == 32)
+		if (convertForAndroidNow && bitness_ == 32)
 		{
 			convert32BitImageFromQtToAndroid();
 		}
 	}
-}
-
-
-QAndroidJniImagePair::~QAndroidJniImagePair()
-{
+	return *this;
 }
 
 

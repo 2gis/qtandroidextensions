@@ -64,6 +64,8 @@ class QAndroidJniImagePair
 	Q_PROPERTY(int bitness READ bitness)
 	Q_PROPERTY(QSize size READ size WRITE resize)
 public:
+	static bool isSupportedBitness(int bitness);
+
 	/*!
 	 * Create an image pair object for given color resoultion.
 	 * To actually allocate the bitmap call resize().
@@ -72,7 +74,7 @@ public:
 	 */
 	QAndroidJniImagePair(int bitness = 32);
 	QAndroidJniImagePair(const QImage & sourceImage, bool convertForAndroidNow, int bitness = 32);
-	~QAndroidJniImagePair();
+	QAndroidJniImagePair & assign(const QImage & sourceImage, bool convertForAndroidNow, int bitness = -1);
 
 	int bitness() const { return bitness_; }
 
