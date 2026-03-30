@@ -36,12 +36,15 @@
   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
   THE POSSIBILITY OF SUCH DAMAGE.
 */
+#include "QAndroidJniImagePair.h"
+
+#include <QtCore/QDebug>
+#include <QtCore/QMetaEnum>
+#include <QtGui/QColor>
 
 #include <unistd.h>
 #include <android/bitmap.h>
-#include <QtCore/QDebug>
-#include <QtGui/QColor>
-#include "QAndroidJniImagePair.h"
+
 
 using namespace QJniHelpers;
 
@@ -78,14 +81,22 @@ QImage::Format qtImageFormatForBitness(int bitness)
 	}
 }
 
+
+// For logging
+QString formatToName(QImage::Format format)
+{
+	QMetaEnum metaEnum = QMetaEnum::fromType<QImage::Format>();
+	return QString::fromLatin1(metaEnum.valueToKey(static_cast<int>(format)));
+}
+
 } // anonymous namespace
+
 
 
 bool QAndroidJniImagePair::isSupportedBitness(int bitness)
 {
 	return bitness == 32 || bitness == 16;
 }
-
 
 
 QAndroidJniImagePair::QAndroidJniImagePair(int bitness)
@@ -95,14 +106,20 @@ QAndroidJniImagePair::QAndroidJniImagePair(int bitness)
 }
 
 
-QAndroidJniImagePair::QAndroidJniImagePair(const QImage & sourceImage, bool convertForAndroidNow, int bitness)
+QAndroidJniImagePair::QAndroidJniImagePair(
+		const QImage & sourceImage,
+		bool convertForAndroidNow,
+		int bitness)
 	: bitness_(isSupportedBitness(bitness) ? bitness : 32)
 {
 	assign(sourceImage, convertForAndroidNow, bitness_);
 }
 
 
-QAndroidJniImagePair & QAndroidJniImagePair::assign(const QImage & sourceImage, bool convertForAndroidNow, int bitness)
+QAndroidJniImagePair & QAndroidJniImagePair::assign(
+	const QImage & sourceImage,
+	bool convertForAndroidNow,
+	int bitness)
 {
 	bool disposed = false;
 
@@ -123,7 +140,7 @@ QAndroidJniImagePair & QAndroidJniImagePair::assign(const QImage & sourceImage, 
 	else
 	{
 		resize(sourceImage.size());
-		createQPainter()->drawImage(0, 0, sourceImage);
+		delete createQPainter()->drawImage(0, 0, sourceImage);
 		if (convertForAndroidNow && bitness_ == 32)
 		{
 			convert32BitImageFromQtToAndroid();
@@ -144,12 +161,7 @@ void QAndroidJniImagePair::preloadJavaClasses()
 
 void QAndroidJniImagePair::dispose()
 {
-	if (mImageOnBitmap.width() == 1 && mImageOnBitmap.height() == 1 && !mBitmap)
-	{
-		return; // Already a dispose
-	}
-
-	mImageOnBitmap = QImage(1, 1, qtImageFormatForBitness(bitness_));
+	mImageOnBitmap = QImage {};
 	mBitmap = {};
 }
 
@@ -163,17 +175,15 @@ QJniObject QAndroidJniImagePair::createBitmap(const QSize & size)
 
 		switch(bitness_)
 		{
-			case 16:
-				format_name = "RGB_565";
-				break;
-
-			case 32:
-				format_name = "ARGB_8888";
-				break;
-
-			default:
-				qWarning() << "createBitmap: Invalid pixel bit depth:" << bitness_;
-				return {}; // Not throwing an exception
+		case 16:
+			format_name = "RGB_565";
+			break;
+		case 32:
+			format_name = "ARGB_8888";
+			break;
+		default:
+			qWarning() << "createBitmap: Invalid pixel bit depth:" << bitness_;
+			return {}; // Not throwing an exception
 		}
 
 		// qDebug()<<"createBitmap: selecting format"<<format_name;
@@ -196,7 +206,7 @@ QJniObject QAndroidJniImagePair::createBitmap(const QSize & size)
 		}
 		return std::move(result);
 	}
-	catch(QJniBaseException & e)
+	catch(const std::exception & e)
 	{
 		qCritical() << "Failed to create bitmap:" << e.what();
 		return {}; // Not throwing an exception
@@ -206,11 +216,9 @@ QJniObject QAndroidJniImagePair::createBitmap(const QSize & size)
 
 bool QAndroidJniImagePair::doResize(const QSize & size)
 {
-	// qDebug()<<"QAndroidJniImagePair::resize (static) tid:"<<gettid()<<"new size:"<<size;
-
-	if (size.width() < 1 || size.height() < 1)
+	if (size.isEmpty())
 	{
-		qCritical() << __FUNCTION__ << "- Supplied image dimenstions are invalid!";
+		qCritical() << __FUNCTION__ << "- cannot resize image to empty size, use dispose() instead!";
 		return false;
 	}
 
@@ -319,11 +327,11 @@ bool QAndroidJniImagePair::doResize(const QSize & size)
 	//qDebug()<<"Constructing QImage buffer:"<<bwidth<<"x"<<bheight
 	//        <<bstride<<static_cast<int>(format);
 	mImageOnBitmap = QImage(
-		 static_cast<uchar *>(ptr),
-		 static_cast<int>(bwidth),
-		 static_cast<int>(bheight),
-		 static_cast<int>(bstride),
-		 format);
+		static_cast<uchar *>(ptr),
+		static_cast<int>(bwidth),
+		static_cast<int>(bheight),
+		static_cast<int>(bstride),
+		format);
 
 	if (mImageOnBitmap.isNull())
 	{
@@ -350,10 +358,14 @@ void QAndroidJniImagePair::fill(const QColor & color, bool to_android_color)
 }
 
 
+// static, in-place conversion
 void QAndroidJniImagePair::convert32BitImage(QImage & image)
 {
-	if (image.format() == QImage::Format::Format_ARGB32 ||
-		image.format() == QImage::Format::Format_ARGB32_Premultiplied)
+	if (!image.size().isEmpty() &&
+		(
+			image.format() == QImage::Format::Format_ARGB32 ||
+			image.format() == QImage::Format::Format_ARGB32_Premultiplied
+		))
 	{
 #if defined(__arm__)
 		// Suppress "cast increases required alignment of target type":
@@ -389,6 +401,11 @@ void QAndroidJniImagePair::convert32BitImageFromQtToAndroid(QImage & out_image) 
 			|| out_image.format() != mImageOnBitmap.format())
 		{
 			out_image = QImage(mImageOnBitmap.size(), mImageOnBitmap.format());
+		}
+
+		if (mImageOnBitmap.size().isEmpty())
+		{
+			return;
 		}
 
 #if defined(__arm__)
@@ -531,7 +548,7 @@ bool QAndroidJniImagePair::loadResource(jint res_id)
 			qWarning() << __FUNCTION__ << "Failed to decode bitmap";
 		}
 	}
-	catch(std::exception e)
+	catch(const std::exception & e)
 	{
 		qWarning() << __FUNCTION__ << "Exception:" << e.what();
 	}
@@ -568,7 +585,7 @@ bool QAndroidJniImagePair::loadResource(const QString & res_name, const QString 
 
 		qWarning() << "Resource id for" << res_name << "was not found!";
 	}
-	catch(std::exception e)
+	catch(const std::exception & e)
 	{
 		qWarning() << __FUNCTION__ << "Exception:" << e.what();
 	}

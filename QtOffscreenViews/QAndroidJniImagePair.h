@@ -96,6 +96,8 @@ public:
 	const QImage & qImage() const { return mImageOnBitmap; }
 	uchar * bits() { return mImageOnBitmap.bits(); }
 	const uchar * bits() const  { return mImageOnBitmap.bits(); }
+
+	//! Don't forget to delete the QPainter after use!
 	QPainter * createQPainter() { return new QPainter(&mImageOnBitmap); }
 
 	//! Fills image with uniform color
