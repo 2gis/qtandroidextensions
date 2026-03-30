@@ -84,21 +84,26 @@ public:
 	static void preloadJavaClasses();
 
 	/*!
-	 * After call of this function, Java-side Bitmap is released and
-	 * QImage is assigned with 1 pixel image (i.e. QImage is never a null image).
+	 * Destroy Java Bitmap and assign default-constucted QImage.
 	 */
 	void dispose();
 
-	//! Global Java reference to the Java-side Bitmap.
+	/*!
+	 * Global Java reference to the Java-side Bitmap.
+	 * The reference may be null if image is not allocated (or disposed).
+	 */
 	jobject jbitmap(){ return mBitmap.jObject(); }
 
 	//! Reference to the const QImage.
 	const QImage & qImage() const { return mImageOnBitmap; }
+
+	//! Can be used to directly write to pixels, e.g. using glReadPixels(). Very unsafe!
 	uchar * bits() { return mImageOnBitmap.bits(); }
 	const uchar * bits() const  { return mImageOnBitmap.bits(); }
 
-	//! Don't forget to delete the QPainter after use!
-	QPainter * createQPainter() { return new QPainter(&mImageOnBitmap); }
+	QScopedPointer<QPainter> createQPainter() {
+		return QScopedPointer<QPainter>{ new QPainter(&mImageOnBitmap) };
+	}
 
 	//! Fills image with uniform color
 	void fill(const QColor & color, bool to_android_color);

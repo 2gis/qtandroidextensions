@@ -140,7 +140,10 @@ QAndroidJniImagePair & QAndroidJniImagePair::assign(
 	else
 	{
 		resize(sourceImage.size());
-		delete createQPainter()->drawImage(0, 0, sourceImage);
+		{
+			QPainter painter(&mImageOnBitmap);
+			painter.drawImage(0, 0, sourceImage);
+		}
 		if (convertForAndroidNow && bitness_ == 32)
 		{
 			convert32BitImageFromQtToAndroid();
