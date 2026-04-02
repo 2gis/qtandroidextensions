@@ -95,6 +95,11 @@ Q_DECL_EXPORT void JNICALL Java_OffscreenView_nativeUpdate(JNIEnv *, jobject, jl
 		QAndroidOffscreenView * proxy = reinterpret_cast<QAndroidOffscreenView*>(vp);
 		if (proxy)
 		{
+			if (!proxy->isAlive())
+			{
+				qWarning() << __FUNCTION__ << "Object is being destroyed, ignoring callback";
+				return;
+			}
 			proxy->javaUpdate();
 			return;
 		}
@@ -110,6 +115,11 @@ Q_DECL_EXPORT void JNICALL Java_OffscreenView_nativeViewCreated(JNIEnv *, jobjec
 		QAndroidOffscreenView * proxy = reinterpret_cast<QAndroidOffscreenView*>(vp);
 		if (proxy)
 		{
+			if (!proxy->isAlive())
+			{
+				qWarning() << __FUNCTION__ << "Object is being destroyed, ignoring callback";
+				return;
+			}
 			proxy->javaViewCreated();
 			return;
 		}
@@ -125,6 +135,11 @@ Q_DECL_EXPORT void JNICALL Java_OffscreenView_onVisibleRect(JNIEnv *, jobject, j
 		QAndroidOffscreenView * proxy = reinterpret_cast<QAndroidOffscreenView*>(vp);
 		if (proxy)
 		{
+			if (!proxy->isAlive())
+			{
+				qWarning() << __FUNCTION__ << "Object is being destroyed, ignoring callback";
+				return;
+			}
 			proxy->javaVisibleRectReceived(left, top, right, bottom);
 			return;
 		}

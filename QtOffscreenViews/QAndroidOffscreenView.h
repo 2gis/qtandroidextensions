@@ -115,6 +115,13 @@ public:
 	virtual bool isIntialized() const { return tex_.isAllocated() || bitmap_a_.isAllocated(); }
 
 	/*!
+	 * Returns true if the object is still alive and can receive JNI callbacks.
+	 * This is used to prevent use-after-free crashes when Java callbacks arrive
+	 * during or after object destruction.
+	 */
+	bool isAlive() const { return offscreen_view_; }
+
+	/*!
 	 * Delete associated Android View and its rendering infrastructure. The texture continues
 	 * to exist and can be painted, but updates, resizes and so on will not work anymore.
 	 */

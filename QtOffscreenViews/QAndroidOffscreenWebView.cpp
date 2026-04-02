@@ -48,6 +48,11 @@ static inline QAndroidOffscreenWebView * AOWW(jlong nativeptr)
 		QAndroidOffscreenWebView * ret = qobject_cast<QAndroidOffscreenWebView *>(reinterpret_cast<QAndroidOffscreenView*>(reinterpret_cast<void*>(nativeptr)));
 		if (ret)
 		{
+			if (!ret->isAlive())
+			{
+				qWarning() << "QAndroidOffscreenWebView: Object is being destroyed, ignoring callback";
+				return 0;
+			}
 			return ret;
 		}
 	}

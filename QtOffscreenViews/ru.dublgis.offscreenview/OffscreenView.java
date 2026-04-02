@@ -1408,6 +1408,8 @@ public abstract class OffscreenView
         SurfaceTexture surface_texture_ = null;
         Surface surface_ = null;
         boolean has_texture_ = false;
+        private volatile boolean released_ = false;
+        private final Object surface_lock_ = new Object();
 
         public OffscreenGLTextureRenderingSurface(int w, int h, int gl_texture_id)
         {
@@ -1419,35 +1421,66 @@ public abstract class OffscreenView
             setNewSize(w, h);
         }
 
+        private boolean isSurfaceValid()
+        {
+            if (released_) {
+                return false;
+            }
+            if (surface_ == null) {
+                return false;
+            }
+            // Surface.isValid() available since API 14
+            if (Build.VERSION.SDK_INT >= 14) {
+                return surface_.isValid();
+            }
+            return true;
+        }
+
         @Override
         public Canvas lockCanvas()
         {
-            try
+            synchronized (surface_lock_)
             {
-                return surface_.lockCanvas(new Rect(0, 0, texture_width_, texture_height_));
-            }
-            catch (final Throwable e)
-            {
-                // Happens rarely, mostly on Android 4. Visual effects unknown.
-                Log.e(TAG, "Failed to lock canvas for " + object_name_ + ": " + e);
-                return null;
+                try
+                {
+                    if (!isSurfaceValid())
+                    {
+                        Log.w(TAG, "lockCanvas: Surface is not valid for " + object_name_);
+                        return null;
+                    }
+                    return surface_.lockCanvas(new Rect(0, 0, texture_width_, texture_height_));
+                }
+                catch (final Throwable e)
+                {
+                    // Happens rarely, mostly on Android 4. Visual effects unknown.
+                    Log.e(TAG, "Failed to lock canvas for " + object_name_ + ": " + e);
+                    return null;
+                }
             }
         }
 
         @Override
         public void unlockCanvas(Canvas canvas)
         {
-            try
+            synchronized (surface_lock_)
             {
-                if (canvas != null)
+                try
                 {
-                    surface_.unlockCanvasAndPost(canvas);
+                    if (canvas != null)
+                    {
+                        if (!isSurfaceValid())
+                        {
+                            Log.w(TAG, "unlockCanvas: Surface is not valid for " + object_name_);
+                            return;
+                        }
+                        surface_.unlockCanvasAndPost(canvas);
+                    }
+                    has_texture_ = true;
                 }
-                has_texture_ = true;
-            }
-            catch (final Throwable e)
-            {
-                Log.e(TAG, "Failed to unlock canvas", e);
+                catch (final Throwable e)
+                {
+                    Log.e(TAG, "Failed to unlock canvas for " + object_name_ + ": " + e);
+                }
             }
         }
 
@@ -1466,26 +1499,34 @@ public abstract class OffscreenView
         public boolean updateTexture()
         {
             // Log.i(TAG, "updateTexture tid="+Thread.currentThread().getId()+", tex="+gl_texture_id_);
-            try
+            synchronized (surface_lock_)
             {
-                // Note: with this check we don't seem to need to sync to texture_mutex_.
-                if (!has_texture_) // Nothing ever has been painted in the texture yet
+                try
                 {
+                    // Check if released or surface invalid
+                    if (released_ || surface_texture_ == null)
+                    {
+                        return false;
+                    }
+                    // Note: with this check we don't seem to need to sync to texture_mutex_.
+                    if (!has_texture_) // Nothing ever has been painted in the texture yet
+                    {
+                        return false;
+                    }
+                    surface_texture_.updateTexImage();
+                    synchronized (texture_transform_mutex_)
+                    {
+                        surface_texture_.getTransformMatrix(mtx_);
+                        last_texture_width_ = last_painted_width_;
+                        last_texture_height_ = last_painted_height_;
+                    }
+                    return true;
+                }
+                catch (final Throwable e)
+                {
+                    Log.e(TAG, "Failed to update texture for " + object_name_ + ": " + e);
                     return false;
                 }
-                surface_texture_.updateTexImage();
-                synchronized (texture_transform_mutex_)
-                {
-                    surface_texture_.getTransformMatrix(mtx_);
-                    last_texture_width_ = last_painted_width_;
-                    last_texture_height_ = last_painted_height_;
-                }
-                return true;
-            }
-            catch (final Throwable e)
-            {
-                Log.e(TAG, "Failed to update texture", e);
-                return false;
             }
         }
 
@@ -1507,9 +1548,22 @@ public abstract class OffscreenView
         @Override
         public void setNewSize(final int w, final int h)
         {
-            texture_width_ = w;
-            texture_height_ = h;
-            surface_texture_.setDefaultBufferSize(w, h); // API 15
+            synchronized (surface_lock_)
+            {
+                texture_width_ = w;
+                texture_height_ = h;
+                if (!released_ && surface_texture_ != null)
+                {
+                    try
+                    {
+                        surface_texture_.setDefaultBufferSize(w, h); // API 15
+                    }
+                    catch (final Throwable e)
+                    {
+                        Log.e(TAG, "Failed to set buffer size for " + object_name_ + ": " + e);
+                    }
+                }
+            }
         }
 
         @Override
@@ -1526,16 +1580,35 @@ public abstract class OffscreenView
         @Override
         public void release()
         {
-            if (Build.VERSION.SDK_INT >= 11) { // Android >= 3.0x / HONEYCOMB
-                try {
-                    if (surface_ != null) {
-                        // "Release the local reference to the server-side surface.
-                        // Always call release() when you're done with a Surface.
-                        // This will make the surface invalid."
-                        surface_.release();
+            synchronized (surface_lock_)
+            {
+                // Mark as released first to prevent other threads from using the surface
+                released_ = true;
+                
+                if (Build.VERSION.SDK_INT >= 11) { // Android >= 3.0x / HONEYCOMB
+                    try {
+                        if (surface_ != null) {
+                            // "Release the local reference to the server-side surface.
+                            // Always call release() when you're done with a Surface.
+                            // This will make the surface invalid."
+                            surface_.release();
+                            surface_ = null;
+                        }
+                    } catch (final Throwable e) {
+                        Log.e(TAG, "Exception while releasing surface: ", e);
                     }
-                } catch (final Throwable e) {
-                    Log.e(TAG, "Exception while releasing surface: ", e);
+                }
+                
+                // Also release SurfaceTexture (API 14+)
+                if (Build.VERSION.SDK_INT >= 14) {
+                    try {
+                        if (surface_texture_ != null) {
+                            surface_texture_.release();
+                            surface_texture_ = null;
+                        }
+                    } catch (final Throwable e) {
+                        Log.e(TAG, "Exception while releasing surface texture: ", e);
+                    }
                 }
             }
         }

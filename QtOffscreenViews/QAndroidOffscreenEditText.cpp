@@ -57,6 +57,11 @@ Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnTextChanged(
 		{
 			try
 			{
+				if (!edit->isAlive())
+				{
+					qWarning() << __PRETTY_FUNCTION__ << "Object is being destroyed, ignoring callback";
+					return;
+				}
 				edit->javaOnTextChanged(QJniEnvPtr(env).toQString(str), start, before, count);
 			}
 			catch (const std::exception & e)
@@ -83,6 +88,11 @@ Q_DECL_EXPORT jboolean JNICALL Java_AndroidOffscreenEditText_nativeOnKey(
 		if (QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(
 			reinterpret_cast<QAndroidOffscreenView*>(reinterpret_cast<void*>(param))))
 		{
+			if (!edit->isAlive())
+			{
+				qWarning() << __PRETTY_FUNCTION__ << "Object is being destroyed, ignoring callback";
+				return JNI_FALSE;
+			}
 			return static_cast<jboolean>(edit->javaOnKey((down)? true : false, keycode));
 		}
 	}
@@ -104,6 +114,11 @@ Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnEditorAction(
 		if (QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(
 			reinterpret_cast<QAndroidOffscreenView*>(reinterpret_cast<void*>(param))))
 		{
+			if (!edit->isAlive())
+			{
+				qWarning() << __PRETTY_FUNCTION__ << "Object is being destroyed, ignoring callback";
+				return;
+			}
 			edit->javaOnEditorAction(action);
 		}
 	}
@@ -126,6 +141,12 @@ Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeSetSelectionInfo(
 			reinterpret_cast<QAndroidOffscreenView*>(reinterpret_cast<void*>(param))))
 		{
 			QMetaObject::invokeMethod(edit, "javaSetSelectionInfo", Q_ARG(int, top),  Q_ARG(int, bottom));
+			if (!edit->isAlive())
+			{
+				qWarning() << __PRETTY_FUNCTION__ << "Object is being destroyed, ignoring callback";
+				return;
+			}
+			QMetaObject::invokeMethod(edit, "javaSetSelectionInfo", Q_ARG(int, top), Q_ARG(int, bottom));
 		}
 	}
 	else
@@ -144,9 +165,15 @@ Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeTextSelectionChan
 	if (param)
 	{
 		if (QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(
-				reinterpret_cast<QAndroidOffscreenView*>(reinterpret_cast<void*>(param))))
+			reinterpret_cast<QAndroidOffscreenView*>(reinterpret_cast<void*>(param))))
 		{
 			QMetaObject::invokeMethod(edit, "javaSetTextSelection", Q_ARG(int, start),  Q_ARG(int, end));
+			if (!edit->isAlive())
+			{
+				qWarning() << __PRETTY_FUNCTION__ << "Object is being destroyed, ignoring callback";
+				return;
+			}
+			QMetaObject::invokeMethod(edit, "javaSetTextSelection", Q_ARG(int, start), Q_ARG(int, end));
 		}
 	}
 	else
@@ -166,6 +193,11 @@ Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnContentHeightCh
 		if (QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(
 			reinterpret_cast<QAndroidOffscreenView*>(reinterpret_cast<void*>(param))))
 		{
+			if (!edit->isAlive())
+			{
+				qWarning() << __PRETTY_FUNCTION__ << "Object is being destroyed, ignoring callback";
+				return;
+			}
 			QMetaObject::invokeMethod(edit, "javaOnContentHeightChanged", Q_ARG(int, height));
 		}
 	}
@@ -186,6 +218,11 @@ Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnHasAcceptableIn
 		if (QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(
 			reinterpret_cast<QAndroidOffscreenView*>(reinterpret_cast<void*>(param))))
 		{
+			if (!edit->isAlive())
+			{
+				qWarning() << __PRETTY_FUNCTION__ << "Object is being destroyed, ignoring callback";
+				return;
+			}
 			QMetaObject::invokeMethod(edit, "javaOnHasAcceptableInputChanged", Q_ARG(bool, hasAcceptableInput ? true : false));
 		}
 	}
