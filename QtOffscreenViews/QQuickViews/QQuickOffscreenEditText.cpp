@@ -51,9 +51,7 @@ QQuickAndroidOffscreenEditText::QQuickAndroidOffscreenEditText()
 
 void QQuickAndroidOffscreenEditText::etTextChanged(QString text, int start, int before, int count)
 {
-	Q_UNUSED(start);
-	Q_UNUSED(before);
-	Q_UNUSED(count);
+	emit textEdited(text, start, before, count);
 	emit onTextChanged(text);
 }
 

@@ -50,6 +50,7 @@ import android.text.TextWatcher;
 import android.text.method.PasswordTransformationMethod;
 import android.text.method.TransformationMethod;
 import android.view.inputmethod.EditorInfo;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -223,6 +224,8 @@ class OffscreenEditText extends OffscreenView
                     Log.i(TAG, "MyEditText constructor: using API < 16 method (setBackgroundDrawable)");
                     setBackgroundDrawable(null);
                 }
+
+                setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
             } catch (final Throwable e) {
                 Log.e(TAG, "Exception in MyEditText ctor:", e);
             }
