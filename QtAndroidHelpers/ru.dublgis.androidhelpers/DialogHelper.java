@@ -39,7 +39,8 @@ package ru.dublgis.androidhelpers;
 import java.lang.Thread;
 import java.util.concurrent.Semaphore;
 import android.app.Activity;
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.DialogInterface;
@@ -139,7 +140,7 @@ public class DialogHelper
                     final int restore_orientation = orientation;
 
                     // Now let's build the dialog
-                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                    AlertDialog.Builder builder = new MaterialAlertDialogBuilder(context);
                     builder.setTitle(title);
                     builder.setMessage(explanation);
 
