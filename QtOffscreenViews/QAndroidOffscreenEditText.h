@@ -59,6 +59,7 @@ public:
 	void setText(const QString & text);
 	QString getText() const;
 
+	QString getInputLocale() const { return inputLocale_; }
 
 	/*!
 	 * Return internal height
@@ -402,6 +403,9 @@ signals:
 	//! Emitted when inputMask is set and text is acceptable as a final result or not
 	void hasAcceptableInputChanged(bool hasAcceptableInput);
 
+	//! Emitted when current input method locale (BCP-47 language code) has changed.
+	void inputLocaleChanged(const QString & localeBcp47);
+
 public:
 	static const int
 		ANDROID_EDITORINFO_IME_ACTION_DONE			= 0x00000006,
@@ -606,6 +610,7 @@ protected:
 	virtual void javaOnTextChanged(const QString & str, int start, int before, int count);
 	virtual bool javaOnKey(bool down, int androidKey);
 	virtual void javaOnEditorAction(int action);
+	virtual void javaOnInputLocaleChanged(const QString & localeBcp47);
 
 private slots:
 	void javaSetSelectionInfo(int top, int bottom);
@@ -620,8 +625,10 @@ private:
 	friend void JNICALL Java_AndroidOffscreenEditText_nativeSetSelectionInfo(JNIEnv *, jobject, jlong param, jint top, jint bottom);
 	friend void JNICALL Java_AndroidOffscreenEditText_nativeOnContentHeightChanged(JNIEnv *, jobject, jlong param, jint height);
 	friend void JNICALL Java_AndroidOffscreenEditText_nativeOnHasAcceptableInputChanged(JNIEnv *, jobject, jlong param, jboolean hasAcceptableInput);
+	friend void JNICALL Java_AndroidOffscreenEditText_nativeOnInputLocaleChanged(JNIEnv *, jobject, jlong param, jstring localeBcp47);
 
 private:
+	QString inputLocale_;
 	int paint_flags_;
 	int selection_start_ = 0;
 	int selection_end_ = 0;
@@ -630,4 +637,3 @@ private:
 	int content_height_ = 0;
 	bool hasAcceptableInput_ = true;
 };
-

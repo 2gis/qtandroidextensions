@@ -69,6 +69,9 @@ import android.text.Spanned;
 
 import ru.dublgis.androidhelpers.Log;
 import ru.dublgis.offscreenview.inputmask.InputMaskFormatter;
+import android.view.inputmethod.InputMethodManager;
+import android.view.inputmethod.InputMethodSubtype;
+import java.util.Locale;
 
 
 class OffscreenEditText extends OffscreenView
@@ -78,6 +81,7 @@ class OffscreenEditText extends OffscreenView
     boolean need_to_reflow_text_ = false, need_to_reflow_hint_ = false;
     int selection_top_ = 0, selection_bottom_ = 0;
     private Object variables_mutex_ = new Object();
+    private String currentInputLocale_ = "";
 
     static final int
         SYSTEM_DRAW_NEVER = 0,
@@ -603,6 +607,7 @@ class OffscreenEditText extends OffscreenView
                 super.onSelectionChanged(selStart, selEnd);
                 synchronized(nativePtrMutex()) {
                     nativeTextSelectionChanged(getNativePtr(), selStart, selEnd);
+                    checkAndNotifyInputLocale();
                 }
             } catch (final Throwable e) {
                 Log.e(TAG, "Exception in onSelectionChanged:", e);
@@ -730,6 +735,37 @@ class OffscreenEditText extends OffscreenView
 
 
 
+    private void checkAndNotifyInputLocale() {
+        try {
+            InputMethodManager imm = (InputMethodManager) getActivity()
+                .getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm == null) {
+                return;
+            }
+            InputMethodSubtype ims = imm.getCurrentInputMethodSubtype();
+            if (ims == null) {
+                return;
+            }
+            String localeString = ims.getLocale();
+            if (localeString == null || localeString.isEmpty()) {
+                return;
+            }
+            Locale locale = new Locale(localeString);
+            String language = locale.getLanguage();
+            if (language == null || language.isEmpty()
+                || language.equals(currentInputLocale_)) {
+                return;
+            }
+            currentInputLocale_ = language;
+            Log.i(TAG, "Input language: " + language);
+            synchronized(nativePtrMutex()) {
+                nativeOnInputLocaleChanged(getNativePtr(), language);
+            }
+        } catch (final Throwable e) {
+            Log.e(TAG, "Exception in checkAndNotifyInputLocale:", e);
+        }
+    }
+
 
     public native void nativeOnTextChanged(long nativePtr, String s, int start, int before, int count);
     public native boolean nativeOnKey(long nativePtr, boolean down, int keyCode);
@@ -738,6 +774,7 @@ class OffscreenEditText extends OffscreenView
     public native void nativeTextSelectionChanged(long nativePtr, int start, int stop);
     public native void nativeOnContentHeightChanged(long nativePtr, int height);
     public native void nativeOnHasAcceptableInputChanged(long nativePtr, boolean hasAcceptableInput);
+    public native void nativeOnInputLocaleChanged(long nativePtr, String localeBcp47);
 
 
 
@@ -1459,9 +1496,9 @@ class OffscreenEditText extends OffscreenView
                     final int selStart = myedittext.getSelectionStart();
                     final int selEnd = myedittext.getSelectionEnd();
                     final TransformationMethod methodInstance = enable
-                        ? PasswordTransformationMethod.getInstance() 
+                        ? PasswordTransformationMethod.getInstance()
                         : null;
-                        
+
                     myedittext.setTransformationMethod(methodInstance);
                     myedittext.setSelection(selStart, selEnd);
                 } catch (Exception e) {
@@ -1624,17 +1661,17 @@ class OffscreenEditText extends OffscreenView
         system_draw_ = mode;
     }
 
-    void setInputMask(String mask) 
+    void setInputMask(String mask)
     {
         runViewAction(new Runnable() {
             @Override
             public void run() {
-                try 
+                try
                 {
                     final MyEditText editText = ((MyEditText) getView());
                     editText.setMask(mask);
-                } 
-                catch (final Throwable e) 
+                }
+                catch (final Throwable e)
                 {
                     Log.w(TAG, "setInputMask: '" + mask + "' exeption:", e);
                 }

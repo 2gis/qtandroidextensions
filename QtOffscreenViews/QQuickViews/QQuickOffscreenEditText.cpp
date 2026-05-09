@@ -47,6 +47,7 @@ QQuickAndroidOffscreenEditText::QQuickAndroidOffscreenEditText()
 	connect(androidEditText(), SIGNAL(onPositiveAction()), this, SLOT(etPositiveAction()));
 	connect(androidEditText(), SIGNAL(contentHeightChanged(int)), this, SIGNAL(contentHeightChanged(int)));
 	connect(androidEditText(), SIGNAL(hasAcceptableInputChanged(bool)), this, SIGNAL(hasAcceptableInputChanged(bool)));
+	connect(androidEditText(), SIGNAL(inputLocaleChanged(const QString &)), this, SIGNAL(inputLocaleChanged()));
 }
 
 void QQuickAndroidOffscreenEditText::etTextChanged(QString text, int start, int before, int count)

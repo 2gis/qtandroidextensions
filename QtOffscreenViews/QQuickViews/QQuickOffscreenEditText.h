@@ -48,10 +48,12 @@ class QQuickAndroidOffscreenEditText: public QQuickAndroidOffscreenView
 	Q_PROPERTY(int selectionBottom READ getSelectionBottom NOTIFY selectionChanged)
 	Q_PROPERTY(int contentHeight READ getContentHeight NOTIFY contentHeightChanged)
 	Q_PROPERTY(bool acceptableInput READ hasAcceptableInput NOTIFY hasAcceptableInputChanged FINAL)
+	Q_PROPERTY(QString inputLocale READ getInputLocale NOTIFY inputLocaleChanged)
 public:
 	QQuickAndroidOffscreenEditText();
 
 	QString getText() const { return androidEditText()->getText(); }
+	QString getInputLocale() const { return androidEditText()->getInputLocale(); }
 
 protected:
 	QAndroidOffscreenEditText * androidEditText() { return static_cast<QAndroidOffscreenEditText*>(androidView()); }
@@ -248,6 +250,9 @@ signals:
 
 	//! Emitted when inputMask is set and text is acceptable as a final result or not
 	void hasAcceptableInputChanged(bool hasAcceptableInput);
+
+	//! Emitted when current input method locale (BCP-47 language code) has changed.
+	void inputLocaleChanged();
 
 	//! Wraps QAndroidOffscreenEditText::onEnterOrPositiveAction().
 	void returnPressed();

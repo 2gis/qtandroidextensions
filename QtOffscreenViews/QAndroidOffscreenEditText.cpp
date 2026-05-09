@@ -232,6 +232,32 @@ Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnHasAcceptableIn
 	}
 }
 
+
+Q_DECL_EXPORT void JNICALL Java_AndroidOffscreenEditText_nativeOnInputLocaleChanged(
+	JNIEnv * env,
+	jobject,
+	jlong param,
+	jstring localeBcp47)
+{
+	if (param)
+	{
+		if (QAndroidOffscreenEditText * edit = qobject_cast<QAndroidOffscreenEditText*>(
+			reinterpret_cast<QAndroidOffscreenView*>(reinterpret_cast<void*>(param))))
+		{
+			if (!edit->isAlive())
+			{
+				qWarning() << __PRETTY_FUNCTION__ << "Object is being destroyed, ignoring callback";
+				return;
+			}
+			edit->javaOnInputLocaleChanged(QJniEnvPtr(env).toQString(localeBcp47));
+		}
+	}
+	else
+	{
+		qWarning() << __PRETTY_FUNCTION__ << "Zero param!";
+	}
+}
+
 QAndroidOffscreenEditText::QAndroidOffscreenEditText(
 		const QString & object_name,
 		const QSize & def_size,
@@ -252,6 +278,7 @@ QAndroidOffscreenEditText::QAndroidOffscreenEditText(
 				{ "nativeTextSelectionChanged", "(JII)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeTextSelectionChanged) },
 				{ "nativeOnContentHeightChanged", "(JI)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnContentHeightChanged) },
 				{ "nativeOnHasAcceptableInputChanged", "(JZ)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnHasAcceptableInputChanged) },
+				{ "nativeOnInputLocaleChanged", "(JLjava/lang/String;)V", reinterpret_cast<void*>(Java_AndroidOffscreenEditText_nativeOnInputLocaleChanged) },
 			});
 		}
 	}
@@ -1208,7 +1235,7 @@ void QAndroidOffscreenEditText::setInputMask(const QString & inputMask)
 {
 	if (QJniObject & view = offscreenView())
 	{
-		try 
+		try
 		{
 			view.callVoid("setInputMask", inputMask);
 		}
@@ -1227,9 +1254,18 @@ bool QAndroidOffscreenEditText::hasAcceptableInput() const
 void QAndroidOffscreenEditText::javaOnHasAcceptableInputChanged(bool hasAcceptableInput)
 {
 
-	if (hasAcceptableInput_ != hasAcceptableInput) 
+	if (hasAcceptableInput_ != hasAcceptableInput)
 	{
 		hasAcceptableInput_ = hasAcceptableInput;
 		emit hasAcceptableInputChanged(hasAcceptableInput_);
+	}
+}
+
+void QAndroidOffscreenEditText::javaOnInputLocaleChanged(const QString & localeBcp47)
+{
+	if (inputLocale_ != localeBcp47)
+	{
+		inputLocale_ = localeBcp47;
+		emit inputLocaleChanged(inputLocale_);
 	}
 }
