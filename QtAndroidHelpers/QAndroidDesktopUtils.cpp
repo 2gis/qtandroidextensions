@@ -96,6 +96,24 @@ void showApplicationSettings()
 }
 
 
+void showApplicationNotificationSettings()
+{
+	try
+	{
+		QJniClass du(c_desktoputils_class_name_);
+		QAndroidQPAPluginGap::Context activity;
+		du.callStaticParamVoid(
+			"showApplicationNotificationSettings",
+			"Landroid/content/Context;",
+			activity.jObject());
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception in showApplicationNotificationSettings:" << e.what();
+	}
+}
+
+
 void showGeneralDeviceSettings()
 {
 	try

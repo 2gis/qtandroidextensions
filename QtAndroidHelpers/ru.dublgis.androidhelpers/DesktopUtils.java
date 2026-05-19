@@ -167,6 +167,37 @@ public class DesktopUtils
         }
     }
 
+    // Open application notification settings
+    public static void showApplicationNotificationSettings(final Context ctx) {
+        try {
+            final Intent intent = new Intent();
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                // Android 8.0+ (API 26+): dedicated app notification settings action.
+                intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+                intent.putExtra(Settings.EXTRA_APP_PACKAGE, ctx.getPackageName());
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                // Android 5.0-7.1 (API 21-25): legacy action with package and uid extras.
+                intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
+                intent.putExtra("app_package", ctx.getPackageName());
+                intent.putExtra("app_uid", ctx.getApplicationInfo().uid);
+            } else {
+                // Android 4.x and older (API < 21): no dedicated notification settings screen.
+                showApplicationSettings(ctx);
+                return;
+            }
+
+            intent.addCategory(Intent.CATEGORY_DEFAULT);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+            intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+
+            ctx.startActivity(intent);
+        } catch (final Throwable throwable) {
+            Log.e(TAG, "showApplicationNotificationSettings throwable: " + throwable);
+        }
+    }
+
     // Show generic "send to" menu
     public static boolean sendTo(
         final Context ctx,

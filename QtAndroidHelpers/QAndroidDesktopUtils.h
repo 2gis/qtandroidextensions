@@ -54,6 +54,7 @@ bool isInternetActive();
 int getNetworkType();
 
 void showApplicationSettings();
+void showApplicationNotificationSettings();
 
 void showGeneralDeviceSettings();
 
