@@ -289,16 +289,6 @@ void QAndroidOffscreenView::preloadJavaClasses()
 	});
 }
 
-bool QAndroidOffscreenView::openGlTextureSupportedOnJavaSide()
-{
-	return true;
-}
-
-bool QAndroidOffscreenView::nonAttachingModeSupported()
-{
-	return true;
-}
-
 void QAndroidOffscreenView::initializeGL()
 {
 	if (tex_.isAllocated() || bitmap_a_.isAllocated())
@@ -308,14 +298,10 @@ void QAndroidOffscreenView::initializeGL()
 	}
 
 	static bool s_capabilities_checked = false;
-	static bool s_gl_texture_mode_supported = false;
 	static bool s_blacklisted_renderer = false;
 
 	if (!s_capabilities_checked)
 	{
-		// Check that we have enough API level
-		s_gl_texture_mode_supported = openGlTextureSupportedOnJavaSide();
-
 		// Some older devices don't support non-power of 2 OES textures.
 		// (IMG textures seem to be supported by all GLES2 devices, but not OES.)
 		// We have to detect that and keep that in mind.
@@ -362,24 +348,24 @@ void QAndroidOffscreenView::initializeGL()
 			s_max_gl_size = QSize(qMin(maxdims[0], maxtextsz), qMin(maxdims[1], maxtextsz));
 		}
 
-		qDebug()<<"OffscreenView's OpenGL check result: renderer ="<<((renderer_string)?renderer_string:"!!! EMPTY !!!")
-			<<"Blacklist:"<<s_blacklisted_renderer<<"API support:"<<s_gl_texture_mode_supported
-			<<"Max dimensions:"<<s_max_gl_size;
+		qDebug() << "OffscreenView's OpenGL check result: renderer ="
+			<< ((renderer_string) ? renderer_string : "!!! EMPTY !!!")
+			<< "Blacklist:" << s_blacklisted_renderer
+			<< "Max dimensions:" << s_max_gl_size;
 
 		s_capabilities_checked = true;
 	}
 
-	// Good time to compile shaders. We don't need to compile GL_TEXTURE_EXTERNAL_OES
-	// shaders if we are not working in full GL mode.
-	QOpenGLTextureHolder::initializeGL(s_gl_texture_mode_supported);
+	// Good time to compile shaders.
+	QOpenGLTextureHolder::initializeGL(true);
 
 	// Automatically fall back to Bitmap + GL mode if pure GL is not available.
 	// Note: we could also support s_have_to_adjust_size_to_pot in pure GL, but it doesn't seem
 	// necessary as pure GL requires API >= 15 which means newer devices and newer drivers,
 	// so such situation doesn't seem probable.
-	if (!s_gl_texture_mode_supported || s_have_to_adjust_size_to_pot || s_blacklisted_renderer)
+	if (s_have_to_adjust_size_to_pot || s_blacklisted_renderer)
 	{
-		qDebug()<<__PRETTY_FUNCTION__<<"OpenGL mode is not supported on this device, will initialize for internal Bitmap mode.";
+		qDebug() << __PRETTY_FUNCTION__ << "OpenGL mode is not supported on this device, will initialize for internal Bitmap mode.";
 		initializeBitmap();
 	}
 	else
@@ -800,11 +786,6 @@ void QAndroidOffscreenView::setEnabled(bool enabled)
 
 void QAndroidOffscreenView::setAttachingMode(bool attaching)
 {
-	if (!nonAttachingModeSupported())
-	{
-		qDebug()<<__FUNCTION__<<"Ignoring ("<<attaching<<") because non-attaching mode is not supported on this device";
-		return;
-	}
 	if (offscreen_view_)
 	{
 		try
