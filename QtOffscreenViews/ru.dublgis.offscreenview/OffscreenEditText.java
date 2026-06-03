@@ -214,21 +214,10 @@ class OffscreenEditText extends OffscreenView
                 Log.i(TAG, "MyEditText constructor");
                 textWatcher_ = new MyTextWatcher();
                 addTextChangedListener(textWatcher_);
-
                 // Eliminate any system background by setting null background drawable.
                 // Any borders should be drawn on Qt side, because we simply cannot deal with
                 // all these custom vendors backrounds.
-                if (getApiLevel() >= 16)
-                {
-                    Log.i(TAG, "MyEditText constructor: using API >= 16 method (setBackground)");
-                    setBackground(null);
-                }
-                else
-                {
-                    Log.i(TAG, "MyEditText constructor: using API < 16 method (setBackgroundDrawable)");
-                    setBackgroundDrawable(null);
-                }
-
+                setBackground(null);
                 setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
             } catch (final Throwable e) {
                 Log.e(TAG, "Exception in MyEditText ctor:", e);
@@ -239,16 +228,8 @@ class OffscreenEditText extends OffscreenView
         public boolean onTextContextMenuItem(int id)
         {
             try {
-                if (id == android.R.id.paste && !allow_rich_text_)
-                {
-                    if (getApiLevel() >= 23) // Android 6.0
-                    {
-                        id = android.R.id.pasteAsPlainText;
-                    }
-                    else
-                    {
-                        onInterceptClipDataToPlainText();
-                    }
+                if (id == android.R.id.paste && !allow_rich_text_) {
+                    id = android.R.id.pasteAsPlainText;
                 }
             } catch (final Throwable e) {
                 Log.e(TAG, "Exception in onTextContextMenuItem:", e);
@@ -1446,9 +1427,7 @@ class OffscreenEditText extends OffscreenView
                 try {
                     MyEditText met = (MyEditText)getView();
                     int ops = met.getImeOptions();
-                    int flag = (getApiLevel() >= 11)?
-                        EditorInfo.IME_FLAG_NO_FULLSCREEN | EditorInfo.IME_FLAG_NO_EXTRACT_UI
-                        : EditorInfo.IME_FLAG_NO_EXTRACT_UI;
+                    int flag = EditorInfo.IME_FLAG_NO_FULLSCREEN | EditorInfo.IME_FLAG_NO_EXTRACT_UI;
                     if (allow)
                     {
                         ops &= ~flag;

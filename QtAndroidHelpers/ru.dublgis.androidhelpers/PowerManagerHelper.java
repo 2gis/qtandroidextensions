@@ -80,9 +80,7 @@ public class PowerManagerHelper extends BroadcastReceiver {
             PowerManager pm = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
             if (pm != null)
             {
-                return (Build.VERSION.SDK_INT >= 21)
-                    ? pm.isInteractive() // Android 5+
-                    : pm.isScreenOn(); // Android < 5
+                return pm.isInteractive();
             }
             else
             {

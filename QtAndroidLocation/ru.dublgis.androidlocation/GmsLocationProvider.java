@@ -219,9 +219,9 @@ public class GmsLocationProvider
 			Log.e(TAG, "Context is null in permition checker");
 			return false;
 		}
-		if (Build.VERSION.SDK_INT >= 23 &&
-				PERMISSION_GRANTED != ContextCompat.checkSelfPermission(ctx, ACCESS_FINE_LOCATION) &&
-				PERMISSION_GRANTED != ContextCompat.checkSelfPermission(ctx, ACCESS_COARSE_LOCATION)) {
+		if (PERMISSION_GRANTED != ContextCompat.checkSelfPermission(ctx, ACCESS_FINE_LOCATION) &&
+			PERMISSION_GRANTED != ContextCompat.checkSelfPermission(ctx, ACCESS_COARSE_LOCATION))
+		{
 			Log.i(TAG, "Permission is not granted");
 			return false;
 		}

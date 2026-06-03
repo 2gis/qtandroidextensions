@@ -61,9 +61,6 @@ public class SystemNavigationBarInfo {
     // Uses vendor-specific code so may not work properly on future devices.
     // Call deviceMayHaveFullscreenMode(Context) first for optimized behaviour.
     public static boolean isInFullscreenMode(final Context context) {
-        if (Build.VERSION.SDK_INT < 21) {
-            return false;
-        }
         try {
             final ContentResolver cr = context.getContentResolver();
             return
@@ -95,9 +92,6 @@ public class SystemNavigationBarInfo {
     // with hidden nav bar but may (or may not) resize the screen later.
     public static boolean hasVerticalNavBarSpace(final Activity activity) {
         try {
-            if (Build.VERSION.SDK_INT < 17) { // 4.2
-                return false;
-            }
             final Display display = activity.getWindowManager().getDefaultDisplay();
             final DisplayMetrics displayMetrics = new DisplayMetrics();
             final DisplayMetrics realDisplayMetrics = new DisplayMetrics();
@@ -158,11 +152,6 @@ public class SystemNavigationBarInfo {
     public static boolean deviceMayHaveFullscreenMode(final Context context) {
         if (mDeviceMayHaveFullscreenModeCacheSet) {
             return mDeviceMayHaveFullscreenModeCache;
-        }
-        if (Build.VERSION.SDK_INT < 21) { // 5.0
-            mDeviceMayHaveFullscreenModeCache = false;
-            mDeviceMayHaveFullscreenModeCacheSet = true;
-            return false;
         }
         // Assuming that so far only the devices with very high aspect ratio screen may have
         // a hiding nav bar. This check may not work properly for some future devices.

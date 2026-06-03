@@ -172,75 +172,70 @@ public class CellListener {
     private void reportDataCellInfo(List<CellInfo> cellInfoList) {
         synchronized(mNativePtr) {
             for (CellInfo cellInfo : cellInfoList) {
-                long timeSinceSignalMillis = Long.MAX_VALUE;
-
-                if (android.os.Build.VERSION.SDK_INT >= 30) {
+                long timeSinceSignalMillis;
+                if (android.os.Build.VERSION.SDK_INT >= 30) { // Android 11+
                     long timestampMillis = cellInfo.getTimestampMillis();
                     timeSinceSignalMillis = SystemClock.elapsedRealtime() - timestampMillis;
-                } else if (android.os.Build.VERSION.SDK_INT >= 17) {
+                } else {
                     long timestampMillis = cellInfo.getTimeStamp() / 1000000; // nanoseconds to milliseconds
                     timeSinceSignalMillis = SystemClock.elapsedRealtime() - timestampMillis;
                 }
 
-                if (Build.VERSION.SDK_INT >= 17) {
-                    if (cellInfo instanceof CellInfoCdma) {
-                        CellInfoCdma cellInfoCdma = (CellInfoCdma) cellInfo;
-                        cellUpdate(
-                            mNativePtr,
-                            "cdma",
-                            cellInfoCdma.getCellIdentity().getBasestationId(), // Base Station Id 0..65535, Integer.MAX_VALUE if unknown
-                            cellInfoCdma.getCellIdentity().getNetworkId(), // Network Id 0..65535, Integer.MAX_VALUE if unknown
-                            Integer.MAX_VALUE,
-                            cellInfoCdma.getCellIdentity().getSystemId(), // System Id 0..32767, Integer.MAX_VALUE if unknown
-                            cellInfoCdma.getCellSignalStrength().getCdmaDbm(), // Get the CDMA RSSI value in dBm
-                            Integer.MAX_VALUE,
-                            timeSinceSignalMillis
-                        );
-                    }
-                    if (cellInfo instanceof CellInfoGsm) {
-                        CellInfoGsm cellInfoGsm = (CellInfoGsm) cellInfo;
-                        cellUpdate(
-                            mNativePtr,
-                            "gsm",
-                            cellInfoGsm.getCellIdentity().getCid(), // CID Either 16-bit GSM Cell Identity described in TS 27.007, 0..65535, Integer.MAX_VALUE if unknown
-                            cellInfoGsm.getCellIdentity().getLac(), // 16-bit Location Area Code, 0..65535, Integer.MAX_VALUE if unknown
-                            cellInfoGsm.getCellIdentity().getMcc(), // 3-digit Mobile Country Code, 0..999, Integer.MAX_VALUE if unknown
-                            cellInfoGsm.getCellIdentity().getMnc(), // 2 or 3-digit Mobile Network Code, 0..999, Integer.MAX_VALUE if unknown
-                            cellInfoGsm.getCellSignalStrength().getDbm(), // Get the signal strength as dBm
-                            android.os.Build.VERSION.SDK_INT >= 26 ? cellInfoGsm.getCellSignalStrength().getTimingAdvance() : Integer.MAX_VALUE, // Get the GSM timing advance between 0..219 symbols (normally 0..63). Integer.MAX_VALUE is reported when there is no RR connection.
-                            timeSinceSignalMillis
-                        );
-                    }
-                    if (cellInfo instanceof CellInfoLte) {
-                        CellInfoLte cellInfoLte = (CellInfoLte) cellInfo;
-                        cellUpdate(
-                            mNativePtr,
-                            "lte",
-                            cellInfoLte.getCellIdentity().getCi(), // 28-bit Cell Identity, Integer.MAX_VALUE if unknown
-                            cellInfoLte.getCellIdentity().getTac(), // 16-bit Tracking Area Code, Integer.MAX_VALUE if unknown
-                            cellInfoLte.getCellIdentity().getMcc(), // 3-digit Mobile Country Code, 0..999, Integer.MAX_VALUE if unknown
-                            cellInfoLte.getCellIdentity().getMnc(), // 2 or 3-digit Mobile Network Code, 0..999, Integer.MAX_VALUE if unknown
-                            cellInfoLte.getCellSignalStrength().getDbm(), // Get signal strength as dBm
-                            cellInfoLte.getCellSignalStrength().getTimingAdvance(), // Get the timing advance value for LTE, as a value between 0..63. Integer.MAX_VALUE is reported when there is no active RRC connection. Refer to 3GPP 36.213 Sec 4.2.3
-                            timeSinceSignalMillis
-                        );
-                    }
+                if (cellInfo instanceof CellInfoCdma) {
+                    CellInfoCdma cellInfoCdma = (CellInfoCdma) cellInfo;
+                    cellUpdate(
+                        mNativePtr,
+                        "cdma",
+                        cellInfoCdma.getCellIdentity().getBasestationId(), // Base Station Id 0..65535, Integer.MAX_VALUE if unknown
+                        cellInfoCdma.getCellIdentity().getNetworkId(), // Network Id 0..65535, Integer.MAX_VALUE if unknown
+                        Integer.MAX_VALUE,
+                        cellInfoCdma.getCellIdentity().getSystemId(), // System Id 0..32767, Integer.MAX_VALUE if unknown
+                        cellInfoCdma.getCellSignalStrength().getCdmaDbm(), // Get the CDMA RSSI value in dBm
+                        Integer.MAX_VALUE,
+                        timeSinceSignalMillis
+                    );
                 }
-                if (Build.VERSION.SDK_INT >= 18) {
-                    if (cellInfo instanceof CellInfoWcdma) {
-                        CellInfoWcdma cellInfoWcdma = (CellInfoWcdma) cellInfo;
-                        cellUpdate(
-                            mNativePtr,
-                            "wcdma",
-                            cellInfoWcdma.getCellIdentity().getCid(), // CID 28-bit UMTS Cell Identity described in TS 25.331, 0..268435455, Integer.MAX_VALUE if unknown
-                            cellInfoWcdma.getCellIdentity().getLac(), // 16-bit Location Area Code, 0..65535, Integer.MAX_VALUE if unknown
-                            cellInfoWcdma.getCellIdentity().getMcc(), // 3-digit Mobile Country Code, 0..999, Integer.MAX_VALUE if unknown
-                            cellInfoWcdma.getCellIdentity().getMnc(), // 2 or 3-digit Mobile Network Code, 0..999, Integer.MAX_VALUE if unknown
-                            cellInfoWcdma.getCellSignalStrength().getDbm(), // Get the signal strength as dBm
-                            Integer.MAX_VALUE,
-                            timeSinceSignalMillis
-                        );
-                    }
+                if (cellInfo instanceof CellInfoGsm) {
+                    CellInfoGsm cellInfoGsm = (CellInfoGsm) cellInfo;
+                    cellUpdate(
+                        mNativePtr,
+                        "gsm",
+                        cellInfoGsm.getCellIdentity().getCid(), // CID Either 16-bit GSM Cell Identity described in TS 27.007, 0..65535, Integer.MAX_VALUE if unknown
+                        cellInfoGsm.getCellIdentity().getLac(), // 16-bit Location Area Code, 0..65535, Integer.MAX_VALUE if unknown
+                        cellInfoGsm.getCellIdentity().getMcc(), // 3-digit Mobile Country Code, 0..999, Integer.MAX_VALUE if unknown
+                        cellInfoGsm.getCellIdentity().getMnc(), // 2 or 3-digit Mobile Network Code, 0..999, Integer.MAX_VALUE if unknown
+                        cellInfoGsm.getCellSignalStrength().getDbm(), // Get the signal strength as dBm
+                        android.os.Build.VERSION.SDK_INT >= 26 ? cellInfoGsm.getCellSignalStrength().getTimingAdvance() : Integer.MAX_VALUE, // Get the GSM timing advance between 0..219 symbols (normally 0..63). Integer.MAX_VALUE is reported when there is no RR connection.
+                        timeSinceSignalMillis
+                    );
+                }
+                if (cellInfo instanceof CellInfoLte) {
+                    CellInfoLte cellInfoLte = (CellInfoLte) cellInfo;
+                    cellUpdate(
+                        mNativePtr,
+                        "lte",
+                        cellInfoLte.getCellIdentity().getCi(), // 28-bit Cell Identity, Integer.MAX_VALUE if unknown
+                        cellInfoLte.getCellIdentity().getTac(), // 16-bit Tracking Area Code, Integer.MAX_VALUE if unknown
+                        cellInfoLte.getCellIdentity().getMcc(), // 3-digit Mobile Country Code, 0..999, Integer.MAX_VALUE if unknown
+                        cellInfoLte.getCellIdentity().getMnc(), // 2 or 3-digit Mobile Network Code, 0..999, Integer.MAX_VALUE if unknown
+                        cellInfoLte.getCellSignalStrength().getDbm(), // Get signal strength as dBm
+                        cellInfoLte.getCellSignalStrength().getTimingAdvance(), // Get the timing advance value for LTE, as a value between 0..63. Integer.MAX_VALUE is reported when there is no active RRC connection. Refer to 3GPP 36.213 Sec 4.2.3
+                        timeSinceSignalMillis
+                    );
+                }
+                if (cellInfo instanceof CellInfoWcdma) {
+                    CellInfoWcdma cellInfoWcdma = (CellInfoWcdma) cellInfo;
+                    cellUpdate(
+                        mNativePtr,
+                        "wcdma",
+                        cellInfoWcdma.getCellIdentity().getCid(), // CID 28-bit UMTS Cell Identity described in TS 25.331, 0..268435455, Integer.MAX_VALUE if unknown
+                        cellInfoWcdma.getCellIdentity().getLac(), // 16-bit Location Area Code, 0..65535, Integer.MAX_VALUE if unknown
+                        cellInfoWcdma.getCellIdentity().getMcc(), // 3-digit Mobile Country Code, 0..999, Integer.MAX_VALUE if unknown
+                        cellInfoWcdma.getCellIdentity().getMnc(), // 2 or 3-digit Mobile Network Code, 0..999, Integer.MAX_VALUE if unknown
+                        cellInfoWcdma.getCellSignalStrength().getDbm(), // Get the signal strength as dBm
+                        Integer.MAX_VALUE,
+                        timeSinceSignalMillis
+                    );
                 }
             }
         }
@@ -321,8 +316,7 @@ public class CellListener {
             List<CellInfo> cellInfoList = null;
             List<NeighboringCellInfo> neighboringCellInfoList = null;
 
-            if (Build.VERSION.SDK_INT >= 17 &&
-                mManager != null &&
+            if (mManager != null &&
                 ActivityCompat.checkSelfPermission(getContext(), ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED) {
                     cellInfoList = mManager.getAllCellInfo();
             }
@@ -398,7 +392,7 @@ public class CellListener {
         String ret = "";
 
         try {
-            if (Build.VERSION.SDK_INT >= 30) {
+            if (Build.VERSION.SDK_INT >= 30) { // Android 11+
                 int count = mManager.getActiveModemCount();
                 String sep = "";
 

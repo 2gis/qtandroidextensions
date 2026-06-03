@@ -100,7 +100,7 @@ public class DialogHelper
         // and in the right context.
 
         // Android >= 7
-        if (a != null && Build.VERSION.SDK_INT >= 24 && a.isInPictureInPictureMode())
+        if (a != null && Build.VERSION.SDK_INT >= 24 && a.isInPictureInPictureMode()) // Android 7+
         {
             runnable = new Runnable(){
                 @Override
@@ -127,10 +127,7 @@ public class DialogHelper
                         if (lockOrientation != -1 && a != null)
                         {
                             orientation = a.getRequestedOrientation();
-                            final int newOrientation = Build.VERSION.SDK_INT >= 18 ? // Android 4.3+
-                                ActivityInfo.SCREEN_ORIENTATION_LOCKED
-                            : ActivityInfo.SCREEN_ORIENTATION_NOSENSOR;
-                            a.setRequestedOrientation(newOrientation);
+                            a.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
                         }
                     }
                     catch(Exception e)

@@ -82,11 +82,7 @@ public class HandlerExecutor {
 
      public boolean isHandlerThread() {
          try {
-             if (Build.VERSION.SDK_INT >= 23) { // Android >= 6.0
-                 return mHandler.getLooper().isCurrentThread();
-             } else {
-                 return Thread.currentThread() == mHandler.getLooper().getThread();
-             }
+             return mHandler.getLooper().isCurrentThread();
          } catch (final Throwable e) {
              Log.e(TAG, "isHandlerThread() exception: ", e);
              return false;

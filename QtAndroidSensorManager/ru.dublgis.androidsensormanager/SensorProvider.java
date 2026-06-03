@@ -115,8 +115,7 @@ public class SensorProvider implements SensorEventListener {
 			Log.e(TAG, "Exception while getting sensors: ", e);
 		}
 
-		// Android < 2.3
-		if ((Build.VERSION.SDK_INT < 9) || (samplingPeriodMicroSeconds < 0)) {
+		if (samplingPeriodMicroSeconds < 0) {
 			samplingPeriodMicroSeconds = SensorManager.SENSOR_DELAY_NORMAL;
 			maxReportLatencyMicroSeconds = SensorManager.SENSOR_DELAY_UI;
 		}
@@ -124,8 +123,7 @@ public class SensorProvider implements SensorEventListener {
 		sensorData.mRegistered = true;
 
 		try {
-			// Android >= 4.4
-			if (Build.VERSION.SDK_INT >= 19 && maxReportLatencyMicroSeconds > 0) {
+			if (maxReportLatencyMicroSeconds > 0) {
 				sensorData.mRegistered = sensorData.mRegistered && mSensorManager.registerListener(this, sensorData.mSensor, samplingPeriodMicroSeconds, maxReportLatencyMicroSeconds);
 			}
 			else {

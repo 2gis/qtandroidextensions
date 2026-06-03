@@ -80,13 +80,11 @@ public class LocationManagerWrapper
 			Log.e(TAG, "Context is null in permition checker");
 			return false;
 		}
-		if (Build.VERSION.SDK_INT >= 23) { // Android 6.0
-			// If your application only has the coarse permission then it will not have access to <...> passive location providers.
-			if ((LocationManager.PASSIVE_PROVIDER != mProvider && PERMISSION_GRANTED != ContextCompat.checkSelfPermission(mContext, ACCESS_COARSE_LOCATION)) ||
-				PERMISSION_GRANTED != ContextCompat.checkSelfPermission(mContext, ACCESS_FINE_LOCATION)) {
-				Log.i(TAG, "Permission is not granted");
-				return false;
-			}
+		// If your application only has the coarse permission then it will not have access to <...> passive location providers.
+		if ((LocationManager.PASSIVE_PROVIDER != mProvider && PERMISSION_GRANTED != ContextCompat.checkSelfPermission(mContext, ACCESS_COARSE_LOCATION)) ||
+			PERMISSION_GRANTED != ContextCompat.checkSelfPermission(mContext, ACCESS_FINE_LOCATION)) {
+			Log.i(TAG, "Permission is not granted");
+			return false;
 		}
 		return true;
 	}

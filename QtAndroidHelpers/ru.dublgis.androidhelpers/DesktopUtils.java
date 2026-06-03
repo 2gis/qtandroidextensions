@@ -176,17 +176,12 @@ public class DesktopUtils
                 // Android 8.0+ (API 26+): dedicated app notification settings action.
                 intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
                 intent.putExtra(Settings.EXTRA_APP_PACKAGE, ctx.getPackageName());
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            } else {
                 // Android 5.0-7.1 (API 21-25): legacy action with package and uid extras.
                 intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
                 intent.putExtra("app_package", ctx.getPackageName());
                 intent.putExtra("app_uid", ctx.getApplicationInfo().uid);
-            } else {
-                // Android 4.x and older (API < 21): no dedicated notification settings screen.
-                showApplicationSettings(ctx);
-                return;
             }
-
             intent.addCategory(Intent.CATEGORY_DEFAULT);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
@@ -426,19 +421,12 @@ public class DesktopUtils
 
             Uri workaround_grant_permission_for_uri = null;
             if (attach_file != null && !attach_file.isEmpty()) {
-                if (!force_content_provider && android.os.Build.VERSION.SDK_INT < 23) {
-                    i.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(attach_file)));
-                } else {
-                    // Android 6+: going the longer route.
-                    // For more information, please see:
-                    // http://stackoverflow.com/questions/32981194/android-6-cannot-share-files-anymore
-                    i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    workaround_grant_permission_for_uri = FileProvider.getUriForFile(
-                        ctx,
-                        authorities,
-                        new File(attach_file));
-                    i.putExtra(Intent.EXTRA_STREAM, workaround_grant_permission_for_uri);
-                }
+                i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                workaround_grant_permission_for_uri = FileProvider.getUriForFile(
+                    ctx,
+                    authorities,
+                    new File(attach_file));
+                i.putExtra(Intent.EXTRA_STREAM, workaround_grant_permission_for_uri);
             }
 
             for (ResolveInfo resolveInfo : resolveInfos) {
@@ -514,19 +502,12 @@ public class DesktopUtils
             boolean grant_permissions_workaround = false;
             final ArrayList<Uri> uri = new ArrayList<>();
             if (attachment.length > 0) {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-                    for (final String fileName: attachment) {
-                        uri.add(Uri.fromFile(new File(fileName)));
-                    }
-                } else {
-                    // Android 6+: going the longer route.
-                    // For more information, please see:
-                    // http://stackoverflow.com/questions/32981194/android-6-cannot-share-files-anymore
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    grant_permissions_workaround = true;
-                    for (final String fileName: attachment) {
-                        uri.add(FileProvider.getUriForFile(ctx, authorities, new File(fileName)));
-                    }
+                // For more information, please see:
+                // http://stackoverflow.com/questions/32981194/android-6-cannot-share-files-anymore
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                grant_permissions_workaround = true;
+                for (final String fileName: attachment) {
+                    uri.add(FileProvider.getUriForFile(ctx, authorities, new File(fileName)));
                 }
                 // Should not put array with only one element into intent because of a bug in GMail.
                 if (uri.size() == 1) {
@@ -583,11 +564,7 @@ public class DesktopUtils
                 chooserIntent = Intent.createChooser(targetIntent, null);
                 if (!intentList.isEmpty()) {
                     final Intent[] extraIntents = intentList.toArray(new Intent[intentList.size()]);
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-                        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
-                    } else {
-                        chooserIntent.putExtra(Intent.EXTRA_ALTERNATE_INTENTS, extraIntents);
-                    }
+                    chooserIntent.putExtra(Intent.EXTRA_ALTERNATE_INTENTS, extraIntents);
                 }
             }
 
@@ -833,12 +810,9 @@ public class DesktopUtils
             {
                 return false;
             }
-            if (Build.VERSION.SDK_INT >= 22) // Android 5.1+
+            if (!manager.isVoiceCapable())
             {
-                if (!manager.isVoiceCapable())
-                {
-                    return false;
-                }
+                return false;
             }
             return true;
         }
@@ -853,11 +827,6 @@ public class DesktopUtils
     {
         try
         {
-            if (Build.VERSION.SDK_INT < 22)
-            {
-                return 0;
-            }
-
             final TelephonyManager manager = (TelephonyManager)ctx.getSystemService(Context.TELEPHONY_SERVICE);
             final SubscriptionManager subManager = (SubscriptionManager)ctx.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
             int activeSimCount = 0;
@@ -978,10 +947,7 @@ public class DesktopUtils
     {
        try
        {
-           if (Build.VERSION.SDK_INT >= 9)
-           {
-               return Build.SERIAL;
-           }
+           return Build.SERIAL;
        }
        catch (final Throwable e)
        {
@@ -1058,7 +1024,7 @@ public class DesktopUtils
 
     public static String getTimezoneId()
     {
-        if (Build.VERSION.SDK_INT >= 26) {
+        if (Build.VERSION.SDK_INT >= 26) { // Android 8+
             try {
                 final TimeZone timezone = TimeZone.getDefault();
                 final ZoneId zoneid = timezone.toZoneId();
@@ -1170,7 +1136,7 @@ public class DesktopUtils
     }
 
     public static boolean notificationChannelDisabled(final Context ctx, final String channelId) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // Android 8+
             if(!TextUtils.isEmpty(channelId)) {
                 NotificationManager manager = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
                 if (manager == null) {

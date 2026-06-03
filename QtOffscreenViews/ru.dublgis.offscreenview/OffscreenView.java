@@ -158,13 +158,11 @@ public abstract class OffscreenView
             // on some Android versions.
             synchronized (view_variables_mutex_) {
                 child.layout(view_left_, view_top_, view_left_ + view_width_, view_top_ + view_height_);
-                if (getApiLevel() >= 11) {
-                    // Child view should not overlap with the keyboard
-                    child.layout(0, 0, view_width_, view_height_);
-                    // Translate to real position
-                    child.setX(view_left_);
-                    child.setY(view_top_);
-                }
+                // Child view should not overlap with the keyboard
+                child.layout(0, 0, view_width_, view_height_);
+                // Translate to real position
+                child.setX(view_left_);
+                child.setY(view_top_);
             }
         }
     }
@@ -305,13 +303,10 @@ public abstract class OffscreenView
 
                     // Set initial view properties
                     view.setVisibility((last_visibility_)? View.VISIBLE: View.INVISIBLE);
-                    if (getApiLevel() >= 11)
-                    {
-                        view.setLeft(0);
-                        view.setTop(0);
-                        view.setRight(view_width_);
-                        view.setBottom(view_height_);
-                    }
+                    view.setLeft(0);
+                    view.setTop(0);
+                    view.setRight(view_width_);
+                    view.setBottom(view_height_);
                     // Disabled because there is troubles with initial focus state.
                     // Initial focus (false/true) must be set in C++
                     // if (!focus_requested_) {
@@ -322,11 +317,8 @@ public abstract class OffscreenView
                     // Insert the View into layout.
                     // Note: functions of many views will crash if they are not inserted into layout.
                     layout_ = new MyLayout(activity);
-                    if (getApiLevel() >= 11)
-                    {
-                        layout_.setRight(view_width_);
-                        layout_.setBottom(view_height_);
-                    }
+                    layout_.setRight(view_width_);
+                    layout_.setBottom(view_height_);
                     layout_.addView(view, new ViewGroup.LayoutParams(view_width_, view_height_));
                     uiAttachViewToQtScreen();
                 }
@@ -1119,12 +1111,10 @@ public abstract class OffscreenView
                 if (v != null) {
                     v.setLayoutParams(new ViewGroup.LayoutParams(w, h));
                     if (!attaching_mode_) {
-                        if (getApiLevel() >= 11) {
-                            v.setLeft(0);
-                            v.setTop(0);
-                            v.setRight(w);
-                            v.setBottom(h);
-                        }
+                        v.setLeft(0);
+                        v.setTop(0);
+                        v.setRight(w);
+                        v.setBottom(h);
                     } else {
                         v.forceLayout();
                         v.requestLayout();
@@ -1429,11 +1419,7 @@ public abstract class OffscreenView
             if (surface_ == null) {
                 return false;
             }
-            // Surface.isValid() available since API 14
-            if (Build.VERSION.SDK_INT >= 14) {
-                return surface_.isValid();
-            }
-            return true;
+            return surface_.isValid();
         }
 
         @Override
@@ -1584,37 +1570,31 @@ public abstract class OffscreenView
             {
                 // Mark as released first to prevent other threads from using the surface
                 released_ = true;
-                
-                if (Build.VERSION.SDK_INT >= 11) { // Android >= 3.0x / HONEYCOMB
-                    try {
-                        if (surface_ != null) {
-                            // "Release the local reference to the server-side surface.
-                            // Always call release() when you're done with a Surface.
-                            // This will make the surface invalid."
-                            surface_.release();
-                            surface_ = null;
-                        }
-                    } catch (final Throwable e) {
-                        Log.e(TAG, "Exception while releasing surface: ", e);
+                try {
+                    if (surface_ != null) {
+                        // "Release the local reference to the server-side surface.
+                        // Always call release() when you're done with a Surface.
+                        // This will make the surface invalid."
+                        surface_.release();
+                        surface_ = null;
                     }
+                } catch (final Throwable e) {
+                    Log.e(TAG, "Exception while releasing surface: ", e);
                 }
-                
-                // Also release SurfaceTexture (API 14+)
-                if (Build.VERSION.SDK_INT >= 14) {
-                    try {
-                        if (surface_texture_ != null) {
-                            surface_texture_.release();
-                            surface_texture_ = null;
-                        }
-                    } catch (final Throwable e) {
-                        Log.e(TAG, "Exception while releasing surface texture: ", e);
+                // Also release SurfaceTexture
+                try {
+                    if (surface_texture_ != null) {
+                        surface_texture_.release();
+                        surface_texture_ = null;
                     }
+                } catch (final Throwable e) {
+                    Log.e(TAG, "Exception while releasing surface texture: ", e);
                 }
             }
         }
     }
 
-    //! Can be called from either C++ or here to get avaialble API level.
+    //! Can be called from C++ to get avaialble API level.
     final public static int getApiLevel()
     {
         return Build.VERSION.SDK_INT;
@@ -1707,10 +1687,7 @@ public abstract class OffscreenView
 
     public void setSoftInputModeAdjustNothing()
     {
-        if (Build.VERSION.SDK_INT >= 11)
-        {
-            setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
-        }
+        setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
     }
 
     public native void nativeUpdate(long nativeptr);

@@ -121,6 +121,8 @@ public class WifiListener extends BroadcastReceiver
 			final int targetSdkVersion = ctx.getApplicationInfo().targetSdkVersion;
 
 			// see https://developer.android.com/develop/connectivity/wifi/wifi-scan#wifi-scan-permissions
+			// 28: Android 9
+			// 29: Android 10
 			if ((Build.VERSION.SDK_INT < 28 && (fine_loc_granted || coarse_loc_granted || wifi_state_granted))
 				|| (Build.VERSION.SDK_INT == 28 && wifi_state_granted && settings_loc_enabled && (fine_loc_granted || coarse_loc_granted))
 				|| (Build.VERSION.SDK_INT >= 29 && wifi_state_granted && settings_loc_enabled && targetSdkVersion >= 29 && fine_loc_granted)
