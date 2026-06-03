@@ -126,55 +126,16 @@ const QStringList & QAndroidFilePaths::ExternalFilesDirectories(const QString & 
 	static QStringList dirs;
 	if (dirs.isEmpty())
 	{
-		if (QAndroidQPAPluginGap::apiLevel() < 19)
+		QString paths = QJniClass(c_directorieshelper_class_).callStaticParamString(
+			"getExternalFilesDirs",
+			"Landroid/content/Context;Ljava/lang/String;",
+			QAndroidQPAPluginGap::Context().jObject(),
+			(type.isEmpty())? jobject(0): QJniLocalRef(type).jObject());
+		dirs = paths.split(QLatin1Char('\n'), Qt::SkipEmptyParts);
+		if (dirs.isEmpty())
 		{
-			if (!type.isEmpty())
-			{
-				dirs.push_back(ExternalFilesDirectory(type));
-			}
-			else
-			{
-				// Using hack code to find external storage directories
-				QString std_card_path = ExternalFilesDirectory(QString());
-				dirs.push_back(std_card_path);
-				QString package_name = QAndroidQPAPluginGap::Context().callString("getPackageName");
-				const QStringList & storages = QAndroidStorages::externalStorages();
-				for (int i = 0; i < storages.size(); ++i)
-				{
-					if (std_card_path.startsWith(storages.at(i) + QChar('/')))
-					{
-						continue;
-					}
-					QString full_path = storages.at(i) + QLatin1String("/Android/data/") + package_name + QLatin1String("/files");
-					QDir().mkpath(full_path);
-					if (!QFile::exists(full_path))
-					{
-						qWarning() << "[ExternalFilesDirectories] Failed to create directory:" << full_path;
-						continue;
-					}
-					if (!QFileInfo(full_path).isWritable())
-					{
-						qWarning() << "[ExternalFilesDirectories] Directory exists but not writable:" << full_path;
-						continue;
-					}
-					qDebug() << "[ExternalFilesDirectories] Adding external files path:" << full_path;
-					dirs.push_back(full_path);
-				}
-			}
-		}
-		else
-		{
-			QString paths = QJniClass(c_directorieshelper_class_).callStaticParamString(
-				"getExternalFilesDirs",
-				"Landroid/content/Context;Ljava/lang/String;",
-				QAndroidQPAPluginGap::Context().jObject(),
-				(type.isEmpty())? jobject(0): QJniLocalRef(type).jObject());
-			dirs = paths.split(QLatin1Char('\n'), Qt::SkipEmptyParts);
-			if (dirs.isEmpty())
-			{
-				qWarning() << "Failed to get dirs from getExternalFilesDirs(), falling back to getExternalFilesDir().";
-				dirs.push_back(ExternalFilesDirectory(type));
-			}
+			qWarning() << "Failed to get dirs from getExternalFilesDirs(), falling back to getExternalFilesDir().";
+			dirs.push_back(ExternalFilesDirectory(type));
 		}
 	}
 	return dirs;
@@ -206,10 +167,7 @@ bool QAndroidFilePaths::IsExternalStorageEmulated()
 		if (!s_read)
 		{
 			s_read = true;
-			if (QAndroidQPAPluginGap::apiLevel() >= 11)
-			{
-				s_is_emulated = QJniClass("android/os/Environment").callStaticBoolean("isExternalStorageEmulated");
-			}
+			s_is_emulated = QJniClass("android/os/Environment").callStaticBoolean("isExternalStorageEmulated");
 		}
 	}
 	catch (const std::exception & e)
@@ -290,21 +248,10 @@ QAndroidFilePaths::StatFs QAndroidFilePaths::GetStatFs(const QString & path)
 	try
 	{
 		QJniObject stat("android/os/StatFs", "Ljava/lang/String;", QJniLocalRef(path).jObject());
-		quint64 avail_blocks = 0, total_blocks = 0, free_blocks = 0, block_size = 0;
-		if (QAndroidQPAPluginGap::apiLevel() >= 18)
-		{
-			avail_blocks = static_cast<quint64>(stat.callLong("getAvailableBlocksLong"));
-			total_blocks = static_cast<quint64>(stat.callLong("getBlockCountLong"));
-			free_blocks = static_cast<quint64>(stat.callLong("getFreeBlocksLong"));
-			block_size = static_cast<quint64>(stat.callLong("getBlockSizeLong"));
-		}
-		else
-		{
-			avail_blocks = static_cast<quint64>(stat.callInt("getAvailableBlocks"));
-			total_blocks = static_cast<quint64>(stat.callInt("getBlockCount"));
-			free_blocks = static_cast<quint64>(stat.callInt("getFreeBlocks"));
-			block_size = static_cast<quint64>(stat.callInt("getBlockSize"));
-		}
+		quint64 avail_blocks = static_cast<quint64>(stat.callLong("getAvailableBlocksLong"));
+		quint64 total_blocks = static_cast<quint64>(stat.callLong("getBlockCountLong"));
+		quint64 free_blocks = static_cast<quint64>(stat.callLong("getFreeBlocksLong"));
+		quint64 block_size = static_cast<quint64>(stat.callLong("getBlockSizeLong"));
 		result.total_bytes = block_size * total_blocks;
 		result.available_bytes = block_size * avail_blocks;
 		result.free_bytes = block_size * free_blocks;

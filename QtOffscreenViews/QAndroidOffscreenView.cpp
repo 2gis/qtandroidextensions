@@ -289,27 +289,14 @@ void QAndroidOffscreenView::preloadJavaClasses()
 	});
 }
 
-static int getApiLevel()
-{
-	try
-	{
-		return QJniHelpers::QJniClass("ru/dublgis/offscreenview/OffscreenView").callStaticInt("getApiLevel");
-	}
-	catch (const std::exception & e)
-	{
-		qCritical() << "JNI exception in" << __PRETTY_FUNCTION__ << ":" << e.what();
-		return 0;
-	}
-}
-
 bool QAndroidOffscreenView::openGlTextureSupportedOnJavaSide()
 {
-	return getApiLevel() >= 15; // Android 4.0.3+
+	return true;
 }
 
 bool QAndroidOffscreenView::nonAttachingModeSupported()
 {
-	return getApiLevel() >= 11; // Android 3.0+
+	return true;
 }
 
 void QAndroidOffscreenView::initializeGL()

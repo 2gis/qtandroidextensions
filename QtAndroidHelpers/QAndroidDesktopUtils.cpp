@@ -609,44 +609,27 @@ QString getTimezoneId()
 
 bool checkSelfPermission(const QString & permission_name)
 {
-	if (QAndroidQPAPluginGap::apiLevel() < 23)
-	{
-		return true;
-	}
-	else
-	{
-		jint result = QAndroidQPAPluginGap::Context().callParamInt(
-			"checkSelfPermission"
-			, "Ljava/lang/String;"
-			, QJniLocalRef(permission_name).jObject());
-		return result == 0; // PERMISSION_GRANTED
-	}
+	jint result = QAndroidQPAPluginGap::Context().callParamInt(
+		"checkSelfPermission", "Ljava/lang/String;", QJniLocalRef(permission_name).jObject());
+	return result == 0; // PERMISSION_GRANTED
 }
 
 
 bool shouldShowRequestPermissionRationale(const QString & permission_name)
 {
-	if (QAndroidQPAPluginGap::apiLevel() < 23)
-	{
-		return false;
-	}
-	else
-	{
-		startRequestPermissions();
-		return QAndroidQPAPluginGap::Context().callParamBoolean(
-			"shouldShowRequestPermissionRationale"
-			, "Ljava/lang/String;"
-			, QJniLocalRef(permission_name).jObject());
-	}
+	startRequestPermissions();
+	return QAndroidQPAPluginGap::Context().callParamBoolean(
+		"shouldShowRequestPermissionRationale",
+		"Ljava/lang/String;",
+		QJniLocalRef(permission_name).jObject());
 }
 
 
 void requestPermissions(const QStringList & permission_names, int permission_request_code)
 {
-	if (QAndroidQPAPluginGap::apiLevel() >= 23 && !permission_names.isEmpty())
+	if (!permission_names.isEmpty())
 	{
 		QJniEnvPtr jep;
-
 		QJniLocalRef permission_array(
 			jep.env()->NewObjectArray(
 				  permission_names.count() // size

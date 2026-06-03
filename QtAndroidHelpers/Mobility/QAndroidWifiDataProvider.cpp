@@ -159,7 +159,7 @@ void QAndroidWifiDataProvider::setScanResult(jobject scan_result)
 		wd.StringAsMac(result.getStringField("BSSID"));
 		wd.signalStrength =result.getIntField("level");
 		
-		if (QAndroidQPAPluginGap::apiLevel() < 33)
+		if (QAndroidQPAPluginGap::apiLevel() < 33) // Android < 13
 		{
 			wd.name = result.getStringField("SSID");
 		}
@@ -168,17 +168,9 @@ void QAndroidWifiDataProvider::setScanResult(jobject scan_result)
 			wd.name = result.callObj("getWifiSsid", "android/net/wifi/WifiSsid").callString("toString");
 		}
 
-		if (QAndroidQPAPluginGap::apiLevel() >= 17)
-		{
-			wd.timestamp_mks = result.getLongField("timestamp");
-			qint64 elapsed_realtime_ms = QJniClass("android/os/SystemClock").callStaticLong("elapsedRealtime");
-			wd.since_signal_ms = elapsed_realtime_ms - wd.timestamp_mks / 1000;
-		}
-		else
-		{
-			wd.timestamp_mks = 0;
-			wd.since_signal_ms = 0;
-		}
+		wd.timestamp_mks = result.getLongField("timestamp");
+		qint64 elapsed_realtime_ms = QJniClass("android/os/SystemClock").callStaticLong("elapsedRealtime");
+		wd.since_signal_ms = elapsed_realtime_ms - wd.timestamp_mks / 1000;
 
 		data_buf_.push_back(wd);
 	}

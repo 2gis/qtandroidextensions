@@ -398,19 +398,16 @@ float QAndroidDisplayMetrics::fontScale()
 
 float QAndroidDisplayMetrics::getRefreshRate(QJniObject custom_context)
 {
-	if (QAndroidQPAPluginGap::apiLevel() >= 23) // Android >= 6
+	try
 	{
-		try
+		if (auto display = getDefaultDisplay(std::move(custom_context)))
 		{
-			if (auto display = getDefaultDisplay(std::move(custom_context)))
-			{
-				return static_cast<float>(display.callFloat("getRefreshRate"));
-			}
+			return static_cast<float>(display.callFloat("getRefreshRate"));
 		}
-		catch (const std::exception & e)
-		{
-			qCritical() << "JNI exception reading refresh rate: " << e.what();
-		}
+	}
+	catch (const std::exception & e)
+	{
+		qCritical() << "JNI exception reading refresh rate: " << e.what();
 	}
 	return 0.0f;
 }
@@ -475,10 +472,6 @@ QAndroidDisplayMetrics::getAlternativeRefreshRatesForCurrentMode(QJniObject cust
 std::vector<float> QAndroidDisplayMetrics::getSupportedRefreshRates(QJniObject custom_context)
 {
 	std::vector<float> result;
-	if (QAndroidQPAPluginGap::apiLevel() < 21) // Android < 5.0
-	{
-		return result;
-	}
 	try
 	{
 		if (auto display = getDefaultDisplay(std::move(custom_context)))
@@ -510,10 +503,6 @@ std::vector<QAndroidDisplayMetrics::Mode>
 QAndroidDisplayMetrics::getSupportedModes(QJniObject custom_context)
 {
 	std::vector<Mode> result;
-	if (QAndroidQPAPluginGap::apiLevel() < 23) // Android < 6.0
-	{
-		return result;
-	}
 	try
 	{
 		if (auto display = getDefaultDisplay(std::move(custom_context)))
@@ -549,10 +538,6 @@ QAndroidDisplayMetrics::getSupportedModes(QJniObject custom_context)
 std::optional<int> QAndroidDisplayMetrics::getCurrentModeId(QJniObject custom_context)
 {
 	std::optional<int> result;
-	if (QAndroidQPAPluginGap::apiLevel() < 23) // Android < 6
-	{
-		return result;
-	}
 	try
 	{
 		if (auto display = getDefaultDisplay(std::move(custom_context)))
