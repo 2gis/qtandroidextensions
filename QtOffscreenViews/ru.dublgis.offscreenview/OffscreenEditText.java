@@ -41,6 +41,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.InputType;
@@ -283,7 +284,7 @@ class OffscreenEditText extends OffscreenView
             try
             {
                 // Access to non-SDK interfaces denied on Android >= 10
-                if (getApiLevel() >= 29)
+                if (Build.VERSION.SDK_INT >= 29)
                 {
                     setTextCursorDrawable(id);
                 }
@@ -885,7 +886,7 @@ class OffscreenEditText extends OffscreenView
     void setAutofillType(int type)
     {
         // Android 8+
-        if (getApiLevel() >= 26)
+        if (Build.VERSION.SDK_INT >= 26)
         {
             runViewAction(new Runnable(){
                 @Override
@@ -903,7 +904,7 @@ class OffscreenEditText extends OffscreenView
     void setHintType(String type)
     {
         // Android 8+
-        if (getApiLevel() >= 26)
+        if (Build.VERSION.SDK_INT >= 26)
         {
             runViewAction(new Runnable(){
                 @Override
